@@ -30,6 +30,8 @@ _pkg.publish.xml
 *.appxbundle
 *.msixbundle
 *.appinstaller
+*.cer
+*.pfx
 
 ## NuGet
 packages/
@@ -38,12 +40,17 @@ packages/
 project.lock.json
 project.assets.json
 
+## Build
+publish/
+*.appxrecipe
+
 ## Testing
 TestResults/
 
 ## OS
 Thumbs.db
 desktop.ini
+.DS_Store
 
 ## Others
 *.log
