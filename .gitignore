@@ -1,0 +1,51 @@
+## Visual Studio
+.vs/
+[Oo]bj/
+[Bb]in/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.aps
+*.ncb
+*.userprefs
+*.vso
+*.vssscc
+*.vspscc
+*.opendb
+*.dbmdl
+*.pidb
+*.vc.db
+*.cache
+*.sou
+
+## Windows App SDK / WinUI 3
+Generated Files/
+AppPackages/
+BundleArtifacts/
+_pkg.publish.xml
+*_pkg.publish.xml
+*.msix
+*.appx
+*.appxbundle
+*.msixbundle
+*.appinstaller
+
+## NuGet
+packages/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.assets.json
+
+## Testing
+TestResults/
+
+## OS
+Thumbs.db
+desktop.ini
+
+## Others
+*.log
+*.tmp
+/tmp/

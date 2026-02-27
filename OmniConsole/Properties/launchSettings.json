@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OmniConsole (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OmniConsole (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="OmniConsole.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OmniConsole"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="OmniConsole">
+
+    <Grid Background="#1e1e1e">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+            <TextBlock Text="OmniConsole" 
+                       Foreground="White"
+                       FontSize="64"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Choose your gaming platform (Coming Soon)" 
+                       Foreground="#cccccc"
+                       FontSize="24"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>
