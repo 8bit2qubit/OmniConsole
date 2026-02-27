@@ -10,15 +10,11 @@
     Title="OmniConsole">
 
     <Grid Background="#1e1e1e">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-            <TextBlock Text="OmniConsole" 
-                       Foreground="White"
-                       FontSize="64"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="Choose your gaming platform (Coming Soon)" 
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+            <TextBlock x:Name="StatusText"
+                       Text="正在啟動 Steam..."
                        Foreground="#cccccc"
-                       FontSize="24"
+                       FontSize="28"
                        HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
