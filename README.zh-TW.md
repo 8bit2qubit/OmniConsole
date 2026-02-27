@@ -19,12 +19,15 @@
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主機般的體驗。當您按下 **Xbox 鍵**，OmniConsole 會自動啟動您設定的遊戲平台。
+OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主機般的體驗。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 突破了這項限制，讓您自由選擇要啟動的遊戲平台：
+
+- **開機時**：啟用「啟動時進入全螢幕體驗」後，開機即自動啟動您設定的遊戲平台。
+- **使用中**：按下 **Xbox 鍵** 開啟 Game Bar，點選**首頁**或**媒體櫃**即可啟動遊戲平台。
 
 ### 運作方式
 
 ```
-開機 / Xbox 鍵 → OmniConsole 啟動 → 啟動您選擇的平台 → 自動隱藏
+開機 / Game Bar 首頁・媒體櫃 → OmniConsole 啟動 → 啟動您選擇的平台 → 自動隱藏
 ```
 
 此應用程式透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。

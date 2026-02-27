@@ -19,12 +19,15 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 
 ## 💡 What is OmniConsole?
 
-OmniConsole turns your Windows PC or handheld device (ROG Xbox Ally, etc.) into a console-like experience. When you press the **Xbox button**, OmniConsole launches your preferred gaming platform automatically.
+OmniConsole turns your Windows PC or handheld device (ROG Xbox Ally, etc.) into a console-like experience. The default Full Screen Experience home only supports launching the Xbox App — OmniConsole goes beyond this limitation, allowing you to choose your preferred gaming platform:
+
+- **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
+- **During use**: Press the **Xbox button** to open Game Bar, then select **Home** or **Media Library** to launch your gaming platform.
 
 ### How It Works
 
 ```
-Power on / Xbox button → OmniConsole activates → Launches your chosen platform → Hides itself
+Boot / Game Bar Home・Media Library → OmniConsole activates → Launches your chosen platform → Hides itself
 ```
 
 The app registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
