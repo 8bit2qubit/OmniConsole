@@ -1,0 +1,118 @@
+name: "❓ Report an Issue or Ask a Question"
+description: Report reproducible issues or ask questions after checking the README.
+title: "[Issue]: "
+labels:
+  - question
+assignees: []
+body:
+  - type: checkboxes
+    id: required-checks
+    attributes:
+      label: "⚠️ Step 1: Required Checks"
+      description: "Please check all boxes."
+      options:
+        - label: >-
+            I have **read the** [**README**](https://github.com/8bit2qubit/OmniConsole?tab=readme-ov-file#readme), including the **Prerequisites** and **Quick Start** sections.
+          required: true
+        - label: >-
+            I have searched the [**existing Issues**](https://github.com/8bit2qubit/OmniConsole/issues) to ensure my problem is not already reported.
+          required: true
+  - type: markdown
+    attributes:
+      value: "---"
+  - type: markdown
+    attributes:
+      value: "### 📋 Step 2: Your Environment"
+  - type: dropdown
+    id: pc-type
+    attributes:
+      label: "1. What is your PC Type?"
+      options:
+        - Desktop
+        - Laptop
+        - Handheld
+    validations:
+      required: true
+  - type: input
+    id: pc-model
+    attributes:
+      label: "PC Model"
+      description: '(e.g., ROG Xbox Ally X, or "Custom-built Desktop")'
+      placeholder: "Answer:"
+    validations:
+      required: true
+  - type: input
+    id: os-build
+    attributes:
+      label: "2. What is your full Windows OS Build number?"
+      description: "(Start > Settings > System > About)"
+      placeholder: "e.g., 26200.7019"
+    validations:
+      required: true
+  - type: dropdown
+    id: default-platform
+    attributes:
+      label: "3. Which default gaming platform have you configured?"
+      options:
+        - Steam Big Picture
+        - Xbox App
+        - Epic Games Launcher
+    validations:
+      required: true
+  - type: dropdown
+    id: tool-version
+    attributes:
+      label: "4. Which OmniConsole version are you using?"
+      options:
+        - v0.1.0.0
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "---"
+  - type: markdown
+    attributes:
+      value: "### 📝 Step 3: Issue Details"
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: "5. Describe your issue or question:"
+      description: "(A clear and concise description of what the problem is.)"
+      placeholder: "Answer:"
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: "6. Steps to Reproduce (if applicable):"
+      description: "(If you are reporting a reproducible problem, list the steps.)"
+      placeholder: |
+        1. Boot the PC / Press Xbox button.
+        2. Observed ...
+        3. ...
+    validations:
+      required: false
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "7. Expected Behavior:"
+      description: "(What did you expect to happen?)"
+      placeholder: "Answer:"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "8. Actual Behavior:"
+      description: "(What actually happened?)"
+      placeholder: "Answer:"
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "9. Screenshots / Videos / Error Messages"
+      description: "(Attach screenshots, videos, or error messages if possible.)"
+      placeholder: "Answer:"
+    validations:
+      required: false
