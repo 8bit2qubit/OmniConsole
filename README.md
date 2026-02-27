@@ -100,7 +100,7 @@ Press the **Xbox button** — OmniConsole will instantly launch your chosen plat
 
 2.  **Open in Visual Studio**
 
-    Open `OmniConsole.sln` with Visual Studio 2022 (17.0+). Ensure the **Windows App SDK** workload is installed.
+    Open `OmniConsole.sln` with Visual Studio 2022 (17.0+). Ensure the **WinUI application development** workload is installed.
 
 3.  **Run for Development**
 

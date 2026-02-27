@@ -100,7 +100,7 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 2.  **以 Visual Studio 開啟**
 
-    使用 Visual Studio 2022 (17.0+) 開啟 `OmniConsole.sln`。確保已安裝 **Windows App SDK** 工作負載。
+    使用 Visual Studio 2022 (17.0+) 開啟 `OmniConsole.sln`。確保已安裝 **WinUI 應用程式開發** 工作負載。
 
 3.  **開發模式執行**
 
