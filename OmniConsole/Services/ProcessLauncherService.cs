@@ -24,8 +24,6 @@ namespace OmniConsole.Services
 
         // Epic Games
         private const string EpicUri = "com.epicgames.launcher://";
-        private const string EpicRegistryKey = @"SOFTWARE\WOW6432Node\EpicGames\Unreal Engine";
-        private const string EpicLauncherRegistryKey = @"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher";
 
         private static readonly ResourceLoader _resourceLoader = new();
 
