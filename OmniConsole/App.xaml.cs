@@ -1,34 +1,40 @@
-﻿using Microsoft.UI.Xaml;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 
 namespace OmniConsole
 {
     /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
+    /// 提供應用程式層級的行為與重導啟動的橋接。
     /// </summary>
     public partial class App : Application
     {
-        private Window? _window;
+        private static Window? _window;
+        private static DispatcherQueue? _dispatcherQueue;
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
+            _dispatcherQueue = _window.DispatcherQueue;
             _window.Activate();
+        }
+
+        /// <summary>
+        /// 從 Program.cs 的重導啟動事件呼叫，在 UI 執行緒上顯示設定介面。
+        /// </summary>
+        public static void ShowSettingsFromRedirect()
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                if (_window is MainWindow mainWindow)
+                {
+                    mainWindow.ShowSettings();
+                }
+            });
         }
     }
 }

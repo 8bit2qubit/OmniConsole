@@ -10,11 +10,53 @@
     Title="OmniConsole">
 
     <Grid Background="#1e1e1e">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+        <!-- 啟動模式：自動啟動平台時顯示 -->
+        <StackPanel x:Name="LaunchPanel"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="16">
             <TextBlock x:Name="StatusText"
-                       Text="正在啟動 Steam..."
+                       Text="正在啟動..."
                        Foreground="#cccccc"
                        FontSize="28"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- 設定模式：從開始功能表啟動時顯示 -->
+        <StackPanel x:Name="SettingsPanel"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="24" Visibility="Collapsed"
+                    MaxWidth="500">
+
+            <TextBlock Text="OmniConsole 設定"
+                       Foreground="White"
+                       FontSize="36"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="選擇預設啟動的遊戲平台："
+                       Foreground="#cccccc"
+                       FontSize="18"/>
+
+            <RadioButtons x:Name="PlatformSelector" MaxColumns="1">
+                <RadioButton x:Name="RadioSteam" Content="Steam Big Picture" Tag="SteamBigPicture"
+                             Foreground="White" FontSize="18"/>
+                <RadioButton x:Name="RadioXbox" Content="Xbox App" Tag="XboxApp"
+                             Foreground="White" FontSize="18"/>
+                <RadioButton x:Name="RadioEpic" Content="Epic Games Launcher" Tag="EpicGames"
+                             Foreground="White" FontSize="18"/>
+            </RadioButtons>
+
+            <Button x:Name="SaveButton" Content="儲存設定"
+                    Click="SaveButton_Click"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    Padding="24,12"
+                    Style="{StaticResource AccentButtonStyle}"/>
+
+            <TextBlock x:Name="SaveStatusText"
+                       Text=""
+                       Foreground="#88cc88"
+                       FontSize="16"
                        HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>

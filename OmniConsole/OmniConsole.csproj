@@ -13,6 +13,8 @@
 		<!-- 綁定 SCCD 檔案 -->
 		<AppxCustomCapabilityCcd>CustomCapability.SCCD</AppxCustomCapabilityCcd>
 		<Nullable>enable</Nullable>
+		<!-- 自訂 Program.cs 進入點，用於實現單一實例 -->
+		<DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 	</PropertyGroup>
 
 	<!-- 確保 SCCD 檔案被包含在專案中 -->
