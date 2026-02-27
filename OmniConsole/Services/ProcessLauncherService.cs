@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using System;
 using System.Diagnostics;
@@ -26,6 +27,8 @@ namespace OmniConsole.Services
         private const string EpicRegistryKey = @"SOFTWARE\WOW6432Node\EpicGames\Unreal Engine";
         private const string EpicLauncherRegistryKey = @"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher";
 
+        private static readonly ResourceLoader _resourceLoader = new();
+
         /// <summary>
         /// 依據指定平台啟動對應的遊戲應用程式。
         /// </summary>
@@ -41,17 +44,28 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 取得平台的顯示名稱。
+        /// 取得平台的在地化顯示名稱。
+        /// 優先從 .resw 資源檔讀取，若失敗則回退到列舉名稱。
         /// </summary>
         public static string GetPlatformDisplayName(GamePlatform platform)
         {
-            return platform switch
+            string key = platform switch
             {
-                GamePlatform.SteamBigPicture => "Steam Big Picture",
-                GamePlatform.XboxApp => "Xbox App",
-                GamePlatform.EpicGames => "Epic Games Launcher",
+                GamePlatform.SteamBigPicture => "Platform_SteamBigPicture",
+                GamePlatform.XboxApp => "Platform_XboxApp",
+                GamePlatform.EpicGames => "Platform_EpicGames",
                 _ => platform.ToString()
             };
+
+            try
+            {
+                string? name = _resourceLoader.GetString(key);
+                return !string.IsNullOrEmpty(name) ? name : platform.ToString();
+            }
+            catch
+            {
+                return platform.ToString();
+            }
         }
 
         /// <summary>
@@ -136,6 +150,9 @@ namespace OmniConsole.Services
         /// <summary>
         /// 通用的程式啟動方法。
         /// </summary>
+        /// <param name="filePath">執行檔路徑。</param>
+        /// <param name="arguments">命令列參數。</param>
+        /// <returns>是否成功啟動。</returns>
         public static bool LaunchProcess(string filePath, string arguments = "")
         {
             try

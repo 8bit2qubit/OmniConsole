@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
@@ -20,6 +21,7 @@ namespace OmniConsole
         private const int SW_SHOW = 5;
 
         private bool _isLaunching = false;
+        private readonly ResourceLoader _resourceLoader = new();
 
         public MainWindow()
         {
@@ -56,13 +58,13 @@ namespace OmniConsole
                 var platform = SettingsService.GetDefaultPlatform();
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
 
-                StatusText.Text = $"正在啟動 {platformName}...";
+                StatusText.Text = string.Format(_resourceLoader.GetString("Launching"), platformName);
 
                 bool success = await ProcessLauncherService.LaunchPlatformAsync(platform);
 
                 StatusText.Text = success
-                    ? $"{platformName} 已啟動"
-                    : $"啟動失敗，請確認 {platformName} 已安裝";
+                    ? string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName)
+                    : string.Format(_resourceLoader.GetString("LaunchFailed"), platformName);
 
                 // 啟動成功後完全隱藏視窗（從工作檢視和工作列消失）
                 if (success)
@@ -133,7 +135,7 @@ namespace OmniConsole
             SettingsService.SetDefaultPlatform(selected);
 
             string name = ProcessLauncherService.GetPlatformDisplayName(selected);
-            SaveStatusText.Text = $"✓ 已儲存！預設平台：{name}";
+            SaveStatusText.Text = string.Format(_resourceLoader.GetString("SavedStatus"), name);
         }
     }
 }

@@ -14,8 +14,7 @@
         <StackPanel x:Name="LaunchPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Spacing="16">
-            <TextBlock x:Name="StatusText"
-                       Text="正在啟動..."
+            <TextBlock x:Name="StatusText" x:Uid="StatusText"
                        FontSize="28"
                        HorizontalAlignment="Center"/>
         </StackPanel>
@@ -26,12 +25,12 @@
                     Spacing="24" Visibility="Collapsed"
                     MaxWidth="500">
 
-            <TextBlock Text="OmniConsole 設定"
+            <TextBlock x:Uid="SettingsTitle"
                        FontSize="36"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"/>
 
-            <TextBlock Text="選擇預設啟動的遊戲平台："
+            <TextBlock x:Uid="SettingsDescription"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        FontSize="18"/>
 
@@ -44,7 +43,7 @@
                              FontSize="18"/>
             </RadioButtons>
 
-            <Button x:Name="SaveButton" Content="儲存設定"
+            <Button x:Name="SaveButton" x:Uid="SaveButton"
                     Click="SaveButton_Click"
                     HorizontalAlignment="Center"
                     FontSize="18"
