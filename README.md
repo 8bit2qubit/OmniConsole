@@ -26,9 +26,7 @@ OmniConsole turns your Windows PC or handheld device (ROG Xbox Ally, etc.) into 
 
 ### How It Works
 
-```
 Boot / Game Bar Home・Media Library → OmniConsole activates → Launches your chosen platform → Hides itself
-```
 
 The app registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
@@ -56,9 +54,10 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 1. Install OmniConsole
 
-1.  Download the latest `.msix` package from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
-2.  Install the self-signed certificate to your **Trusted People** certificate store (included in the release).
-3.  Double-click the `.msix` file to install.
+1.  Go to **Settings → System → Advanced** and enable **Developer Mode**.
+2.  Download the latest `.msixbundle` package and `.cer` certificate from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
+3.  Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
+4.  Double-click the `.msixbundle` file to install.
 
 ### 2. Configure Your Default Platform
 

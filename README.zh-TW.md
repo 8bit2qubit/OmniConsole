@@ -26,9 +26,7 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 ### 運作方式
 
-```
 開機 / Game Bar 首頁・媒體櫃 → OmniConsole 啟動 → 啟動您選擇的平台 → 自動隱藏
-```
 
 此應用程式透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
 
@@ -56,9 +54,10 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 ### 1. 安裝 OmniConsole
 
-1.  從[**發布頁面**](https://github.com/8bit2qubit/OmniConsole/releases/latest)下載最新的 `.msix` 安裝包。
-2.  將自簽憑證安裝到您的**受信任的人**憑證存放區（隨發布包附帶）。
-3.  點兩下 `.msix` 檔案進行安裝。
+1.  前往**設定 → 系統 → 進階**，啟用**開發人員模式**。
+2.  從[**發布頁面**](https://github.com/8bit2qubit/OmniConsole/releases/latest)下載最新的 `.msixbundle` 安裝套件與 `.cer` 憑證檔。
+3.  點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
+4.  點兩下 `.msixbundle` 檔案進行安裝。
 
 ### 2. 設定預設平台
 
