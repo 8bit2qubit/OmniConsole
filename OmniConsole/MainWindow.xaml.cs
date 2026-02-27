@@ -36,10 +36,23 @@ namespace OmniConsole
             // 若設定面板正在顯示，不自動啟動
             if (SettingsPanel.Visibility == Visibility.Visible) return;
 
+            await LaunchDefaultPlatformAsync();
+        }
+
+        /// <summary>
+        /// 自動啟動已設定的預設平台並隱藏視窗。
+        /// </summary>
+        private async System.Threading.Tasks.Task LaunchDefaultPlatformAsync()
+        {
+            if (_isLaunching) return;
             _isLaunching = true;
 
             try
             {
+                // 確保為啟動模式
+                LaunchPanel.Visibility = Visibility.Visible;
+                SettingsPanel.Visibility = Visibility.Collapsed;
+
                 var platform = SettingsService.GetDefaultPlatform();
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
 
@@ -65,7 +78,20 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 從 App.ShowSettingsFromRedirect() 呼叫，顯示設定介面並將視窗帶到前景。
+        /// 從 FSE/Game Bar 重導時呼叫，顯示視窗並啟動平台。
+        /// </summary>
+        public async void Reactivate()
+        {
+            // 先顯示視窗
+            var hwnd = WindowNative.GetWindowHandle(this);
+            ShowWindow(hwnd, SW_SHOW);
+
+            // 啟動平台
+            await LaunchDefaultPlatformAsync();
+        }
+
+        /// <summary>
+        /// 從設定入口呼叫，顯示設定介面並將視窗帶到前景。
         /// </summary>
         public void ShowSettings()
         {

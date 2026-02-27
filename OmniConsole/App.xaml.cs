@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Windows.Storage;
 
 namespace OmniConsole
 {
@@ -20,11 +21,30 @@ namespace OmniConsole
         {
             _window = new MainWindow();
             _dispatcherQueue = _window.DispatcherQueue;
+
+            // 檢查是否為設定入口冷啟動
+            bool showSettings = false;
+            try
+            {
+                var values = ApplicationData.Current.LocalSettings.Values;
+                if (values.ContainsKey("_ShowSettings"))
+                {
+                    values.Remove("_ShowSettings");
+                    showSettings = true;
+                }
+            }
+            catch { }
+
+            if (showSettings && _window is MainWindow mainWindow)
+            {
+                mainWindow.ShowSettings();
+            }
+
             _window.Activate();
         }
 
         /// <summary>
-        /// 從 Program.cs 的重導啟動事件呼叫，在 UI 執行緒上顯示設定介面。
+        /// 從設定入口重導時呼叫，在 UI 執行緒上顯示設定介面。
         /// </summary>
         public static void ShowSettingsFromRedirect()
         {
@@ -33,6 +53,20 @@ namespace OmniConsole
                 if (_window is MainWindow mainWindow)
                 {
                     mainWindow.ShowSettings();
+                }
+            });
+        }
+
+        /// <summary>
+        /// 從 FSE/Game Bar 重導時呼叫，重新啟動平台。
+        /// </summary>
+        public static void ReactivateFromRedirect()
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                if (_window is MainWindow mainWindow)
+                {
+                    mainWindow.Reactivate();
                 }
             });
         }

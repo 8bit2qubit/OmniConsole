@@ -53,6 +53,22 @@
 			</Extensions>
 
 		</Application>
+
+		<!-- 設定介面入口：獨立出現在開始功能表「所有應用程式」中 -->
+		<Application Id="Settings"
+		  Executable="$targetnametoken$.exe"
+		  EntryPoint="$targetentrypoint$">
+			<uap:VisualElements
+			  DisplayName="OmniConsole 設定"
+			  Description="OmniConsole 設定介面"
+			  BackgroundColor="transparent"
+			  Square150x150Logo="Assets\Square150x150Logo.png"
+			  Square44x44Logo="Assets\Square44x44Logo.png">
+				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+				<uap:SplashScreen Image="Assets\SplashScreen.png" />
+			</uap:VisualElements>
+		</Application>
+
 	</Applications>
 
 	<Capabilities>
