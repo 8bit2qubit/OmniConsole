@@ -22,11 +22,14 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 OmniConsole turns your Windows PC or handheld device (ROG Xbox Ally, etc.) into a console-like experience. The default Full Screen Experience home only supports launching the Xbox App — OmniConsole goes beyond this limitation, allowing you to choose your preferred gaming platform:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
-- **During use**: Press the **Xbox button** to open Game Bar, then select **Home** or **Media Library** to launch your gaming platform.
+- **During use**: Press the **Xbox button** to open Game Bar, then select **Home** or **Library** to launch your gaming platform.
 
 ### How It Works
 
-Boot / Game Bar Home・Media Library → OmniConsole activates → Launches your chosen platform → Hides itself
+```
+Trigger (Boot / Xbox button → Game Bar Home or Library)
+  → OmniConsole activates → Launches your chosen platform → Hides itself
+```
 
 The app registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
@@ -36,7 +39,7 @@ The app registers as a Windows 11 Full Screen Experience Home App through the of
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, and **Epic Games Launcher**.
-- **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime without interfering with the FSE behavior.
+- **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
 ---
@@ -55,9 +58,9 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 ### 1. Install OmniConsole
 
 1.  Go to **Settings → System → Advanced** and enable **Developer Mode**.
-2.  Download the latest `.msixbundle` package and `.cer` certificate from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
+2.  Download the latest `.msix` package and `.cer` certificate from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
 3.  Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
-4.  Double-click the `.msixbundle` file to install.
+4.  Double-click the `.msix` file to install.
 
 ### 2. Configure Your Default Platform
 
@@ -76,7 +79,7 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 4. Done!
 
-Press the **Xbox button** — OmniConsole will instantly launch your chosen platform and hide itself.
+Press the **Xbox button** and select **Home** or **Library** in Game Bar to launch your chosen platform. If you've enabled **"Enter full screen experience on startup"**, it also launches automatically on boot.
 
 ---
 
