@@ -150,4 +150,10 @@
   <data name="Platform_EpicGames" xml:space="preserve">
     <value>Epic Games Launcher</value>
   </data>
+  <data name="SettingsAppDisplayName" xml:space="preserve">
+    <value>OmniConsole Settings</value>
+  </data>
+  <data name="SettingsAppDescription" xml:space="preserve">
+    <value>OmniConsole Settings</value>
+  </data>
 </root>
