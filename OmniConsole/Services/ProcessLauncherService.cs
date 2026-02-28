@@ -114,6 +114,15 @@ namespace OmniConsole.Services
             try
             {
                 var uri = new Uri(uriString);
+
+                // 檢查是否有應用程式註冊此 Protocol URI，避免跳出「在 Store 中尋找應用程式」對話方塊
+                var supportStatus = await Windows.System.Launcher.QueryUriSupportAsync(uri, Windows.System.LaunchQuerySupportType.Uri);
+                if (supportStatus != Windows.System.LaunchQuerySupportStatus.Available)
+                {
+                    Debug.WriteLine($"[ProcessLauncher] {platformName} URI not supported/installed: {supportStatus}");
+                    return false;
+                }
+
                 bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
                 if (success)
                 {
