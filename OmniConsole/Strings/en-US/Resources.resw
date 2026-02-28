@@ -127,7 +127,7 @@
     <value>Select the default gaming platform:</value>
   </data>
   <data name="SaveButton.Content" xml:space="preserve">
-    <value>Save Settings</value>
+    <value>Save &amp; Exit</value>
   </data>
   <data name="Launching" xml:space="preserve">
     <value>Launching {0}...</value>

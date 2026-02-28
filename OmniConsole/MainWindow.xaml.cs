@@ -173,8 +173,7 @@ namespace OmniConsole
 
             SettingsService.SetDefaultPlatform(selected);
 
-            string name = ProcessLauncherService.GetPlatformDisplayName(selected);
-            SaveStatusText.Text = string.Format(_resourceLoader.GetString("SavedStatus"), name);
+            Application.Current.Exit();
         }
     }
 }

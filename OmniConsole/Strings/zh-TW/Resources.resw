@@ -127,7 +127,7 @@
     <value>選擇預設啟動的遊戲平台：</value>
   </data>
   <data name="SaveButton.Content" xml:space="preserve">
-    <value>儲存設定</value>
+    <value>儲存並退出</value>
   </data>
   <data name="Launching" xml:space="preserve">
     <value>正在啟動 {0}...</value>
