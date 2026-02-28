@@ -164,6 +164,12 @@ namespace OmniConsole.Services
         {
             try
             {
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Debug.WriteLine($"[ProcessLauncher] Executable not found: {filePath}");
+                    return false;
+                }
+
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = filePath,
