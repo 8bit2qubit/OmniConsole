@@ -3,7 +3,6 @@ using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage;
 
 namespace OmniConsole
 {
@@ -18,18 +17,31 @@ namespace OmniConsole
         {
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            // 偵測是否從「OmniConsole 設定」入口啟動
+            // 偵測是否透過特定方式啟動（Settings 入口或 Protocol URIs）
             bool isSettingsEntry = false;
+            var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+
             try
             {
-                // 每個 Application 入口的 AppUserModelId 不同：
-                // 主程式: ...!App    設定: ...!Settings
+                // 1. 檢查是否從「OmniConsole 設定」入口啟動 (AUMID)
                 var aumid = Windows.ApplicationModel.AppInfo.Current.AppUserModelId;
                 isSettingsEntry = aumid.EndsWith("!Settings", StringComparison.OrdinalIgnoreCase);
+
+                // 2. 檢查是否透過 Protocol 啟動 (例如 Win+R omniconsole://show-settings)
+                if (!isSettingsEntry && activationArgs.Kind == ExtendedActivationKind.Protocol)
+                {
+                    if (activationArgs.Data is Windows.ApplicationModel.Activation.ProtocolActivatedEventArgs protocolArgs)
+                    {
+                        if (protocolArgs.Uri.Host == "show-settings")
+                        {
+                            isSettingsEntry = true;
+                        }
+                    }
+                }
             }
             catch
             {
-                // 若 API 不可用，預設為非設定入口
+                // 若 API 不可用，維持現狀
             }
 
             // 確認是否已有主實例
@@ -37,32 +49,30 @@ namespace OmniConsole
 
             if (!mainInstance.IsCurrent)
             {
-                // 已有主實例 → 設定旗標（若為設定入口）→ 重導 → 退出
-                if (isSettingsEntry)
+                // 已有主實例 → 重導訊號 → 退出
+                // 注意：如果本身就是 Protocol 啟動，直接 Redirect 即可，OnRedirectedActivation 會處理
+                // 如果是 Settings 入口啟動 (AUMID)，則手動發送 Protocol 訊號以利統一處理
+                if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
                 {
-                    ApplicationData.Current.LocalSettings.Values["_ShowSettings"] = true;
+                    var uri = new Uri("omniconsole://show-settings");
+                    await Windows.System.Launcher.LaunchUriAsync(uri);
                 }
-
-                var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
-                await mainInstance.RedirectActivationToAsync(activationArgs);
+                else
+                {
+                    await mainInstance.RedirectActivationToAsync(activationArgs);
+                }
                 return 0;
             }
 
             // 這是主實例
             mainInstance.Activated += OnRedirectedActivation;
 
-            // 若主實例本身就是從設定入口冷啟動的，也設定旗標
-            if (isSettingsEntry)
-            {
-                ApplicationData.Current.LocalSettings.Values["_ShowSettings"] = true;
-            }
-
             // 正常啟動 WinUI App
             Microsoft.UI.Xaml.Application.Start(p =>
             {
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                new App();
+                new App(isSettingsEntry);
             });
 
             return 0;
@@ -74,26 +84,19 @@ namespace OmniConsole
         /// </summary>
         private static void OnRedirectedActivation(object? sender, AppActivationArguments args)
         {
-            bool showSettings = false;
-            try
+            if (args.Kind == ExtendedActivationKind.Protocol)
             {
-                var values = ApplicationData.Current.LocalSettings.Values;
-                if (values.ContainsKey("_ShowSettings"))
+                if (args.Data is Windows.ApplicationModel.Activation.ProtocolActivatedEventArgs protocolArgs)
                 {
-                    values.Remove("_ShowSettings");
-                    showSettings = true;
+                    if (protocolArgs.Uri.Host == "show-settings")
+                    {
+                        App.ShowSettingsFromRedirect();
+                        return;
+                    }
                 }
             }
-            catch { }
 
-            if (showSettings)
-            {
-                App.ShowSettingsFromRedirect();
-            }
-            else
-            {
-                App.ReactivateFromRedirect();
-            }
+            App.ReactivateFromRedirect();
         }
     }
 }

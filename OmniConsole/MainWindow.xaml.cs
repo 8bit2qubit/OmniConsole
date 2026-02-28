@@ -93,7 +93,7 @@ namespace OmniConsole
                 if (success)
                 {
                     // 啟動成功：顯示狀態，等待目標平台進入前景後結束應用程式
-                    // 3 秒延遲確保平台已到前景，FSE 不會重啟首頁
+                    // 5 秒延遲確保平台已到前景，FSE 不會重啟首頁
                     // 結束後開設定或 Game Bar 重導都是冷啟動全新實例，避免視窗恢復問題
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName);
 

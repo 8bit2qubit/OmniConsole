@@ -1,6 +1,5 @@
 ﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Windows.Storage;
 
 namespace OmniConsole
 {
@@ -11,9 +10,11 @@ namespace OmniConsole
     {
         private static Window? _window;
         private static DispatcherQueue? _dispatcherQueue;
+        private readonly bool _startWithSettings;
 
-        public App()
+        public App(bool showSettings = false)
         {
+            _startWithSettings = showSettings;
             InitializeComponent();
         }
 
@@ -23,17 +24,7 @@ namespace OmniConsole
             _dispatcherQueue = _window.DispatcherQueue;
 
             // 檢查是否為設定入口冷啟動
-            bool showSettings = false;
-            try
-            {
-                var values = ApplicationData.Current.LocalSettings.Values;
-                if (values.ContainsKey("_ShowSettings"))
-                {
-                    values.Remove("_ShowSettings");
-                    showSettings = true;
-                }
-            }
-            catch { }
+            bool showSettings = _startWithSettings;
 
             // 設定模式：在 Activate 前標記，防止 Activated 事件觸發平台啟動
             var mainWindow = _window as MainWindow;
