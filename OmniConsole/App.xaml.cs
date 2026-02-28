@@ -35,12 +35,12 @@ namespace OmniConsole
             }
             catch { }
 
+            _window.Activate();
+
             if (showSettings && _window is MainWindow mainWindow)
             {
                 mainWindow.ShowSettings();
             }
-
-            _window.Activate();
         }
 
         /// <summary>
