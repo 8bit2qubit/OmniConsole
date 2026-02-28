@@ -3,14 +3,27 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using OmniConsole.Services;
+using System;
+using System.Runtime.InteropServices;
+using WinRT.Interop;
 
 namespace OmniConsole
 {
     public sealed partial class MainWindow : Window
     {
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+
         private bool _isLaunching = false;
         private bool _hasLaunchedOnce = false;
         private bool _isFullScreenSet = false;
+        private bool _isSettingsMode = false;
         private readonly ResourceLoader _resourceLoader = new();
 
         public MainWindow()
@@ -18,6 +31,14 @@ namespace OmniConsole
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
             this.Activated += MainWindow_Activated;
+        }
+
+        /// <summary>
+        /// 在 Activate() 之前呼叫，標記為設定模式，防止 Activated 事件觸發平台啟動。
+        /// </summary>
+        public void PrepareForSettings()
+        {
+            _isSettingsMode = true;
         }
 
         private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -35,6 +56,9 @@ namespace OmniConsole
 
             // 已經成功啟動過一次，不再透過 Activated 事件重複啟動
             if (_hasLaunchedOnce) return;
+
+            // 設定模式不自動啟動平台
+            if (_isSettingsMode) return;
 
             // 若設定面板正在顯示，不自動啟動
             if (SettingsPanel.Visibility == Visibility.Visible) return;
@@ -68,11 +92,20 @@ namespace OmniConsole
 
                 if (success)
                 {
-                    // 啟動成功：顯示狀態後清空 UI
-                    // OmniConsole 維持全螢幕黑底，目標平台會覆蓋在上面
+                    // 啟動成功：顯示狀態，等待目標平台進入前景後結束應用程式
+                    // 3 秒延遲確保平台已到前景，FSE 不會重啟首頁
+                    // 結束後開設定或 Game Bar 重導都是冷啟動全新實例，避免視窗恢復問題
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName);
-                    await System.Threading.Tasks.Task.Delay(3000);
-                    LaunchPanel.Visibility = Visibility.Collapsed;
+
+                    // 立即從工作檢視和工作列隱藏
+                    var hwnd = WindowNative.GetWindowHandle(this);
+                    int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+
+                    // 等待目標平台進入前景後結束應用程式
+                    await System.Threading.Tasks.Task.Delay(5000);
+                    Application.Current.Exit();
+                    return;
                 }
                 else
                 {

@@ -35,9 +35,17 @@ namespace OmniConsole
             }
             catch { }
 
+            // 設定模式：在 Activate 前標記，防止 Activated 事件觸發平台啟動
+            var mainWindow = _window as MainWindow;
+            if (showSettings && mainWindow != null)
+            {
+                mainWindow.PrepareForSettings();
+            }
+
             _window.Activate();
 
-            if (showSettings && _window is MainWindow mainWindow)
+            // Activate 後再呼叫 ShowSettings 切換 UI
+            if (showSettings && mainWindow != null)
             {
                 mainWindow.ShowSettings();
             }
