@@ -64,6 +64,7 @@ body:
     attributes:
       label: "4. Which OmniConsole version are you using?"
       options:
+        - v0.1.4.0
         - v0.1.3.0
         - v0.1.2.0
         - v0.1.1.0

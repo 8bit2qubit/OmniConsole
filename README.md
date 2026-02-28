@@ -7,6 +7,10 @@
 </p>
 
 <p align="center">
+  <img src="demo.png" alt="OmniConsole Demo" width="450">
+</p>
+
+<p align="center">
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat-square&color=blue" alt="Latest Release"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total" alt="Total Downloads"></a>
 <a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat-square" alt="Tech"></a>
