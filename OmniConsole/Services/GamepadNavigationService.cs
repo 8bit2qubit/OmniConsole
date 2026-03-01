@@ -1,6 +1,7 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using System;
 using Windows.Gaming.Input;
 
@@ -61,6 +62,12 @@ namespace OmniConsole.Services
                     var gamepad = Gamepad.Gamepads[0];
                     var reading = gamepad.GetCurrentReading();
 
+                    // 在處理任何按鈕或位移前，先確保焦點位於有效的控制項上
+                    if (IsAnyInputActive(reading))
+                    {
+                        EnsureFocus();
+                    }
+
                     if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadDown))
                         TryMoveGamepadFocus(FocusNavigationDirection.Down);
                     else if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadUp))
@@ -90,6 +97,58 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
+        /// 檢查手把是否有任何具備意圖的輸入（方向或 A 鍵）。
+        /// </summary>
+        private bool IsAnyInputActive(GamepadReading reading)
+        {
+            return (reading.Buttons & (GamepadButtons.DPadDown | GamepadButtons.DPadUp | GamepadButtons.DPadLeft | GamepadButtons.DPadRight | GamepadButtons.A)) != 0 ||
+                   Math.Abs(reading.LeftThumbstickY) > 0.5 ||
+                   Math.Abs(reading.LeftThumbstickX) > 0.5;
+        }
+
+        /// <summary>
+        /// 確保焦點目前落在 <see cref="_searchRoot"/> 內的有效控制項上。
+        /// 若焦點遺失或位於非互動元件，則強制恢復。
+        /// </summary>
+        private void EnsureFocus()
+        {
+            try
+            {
+                var focusedElement = FocusManager.GetFocusedElement(_searchRoot.XamlRoot);
+
+                // 檢查焦點是否遺失、不是 Control，或是焦點不在預期的 _searchRoot 範圍內
+                if (focusedElement == null ||
+                    !(focusedElement is Microsoft.UI.Xaml.Controls.Control) ||
+                    !IsDescendantOf(_searchRoot, focusedElement as DependencyObject))
+                {
+                    var firstElement = FocusManager.FindFirstFocusableElement(_searchRoot);
+                    if (firstElement is Microsoft.UI.Xaml.Controls.Control firstControl)
+                    {
+                        firstControl.Focus(FocusState.Keyboard);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// 遞迴檢查某個元件是否為特定父元件的子系。
+        /// </summary>
+        private bool IsDescendantOf(DependencyObject parent, DependencyObject? child)
+        {
+            if (child == null) return false;
+            if (ReferenceEquals(parent, child)) return true;
+
+            var current = VisualTreeHelper.GetParent(child);
+            while (current != null)
+            {
+                if (ReferenceEquals(parent, current)) return true;
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 嘗試將焦點朝指定方向移動，並強制使用高反差外框的 Keyboard 焦點狀態定錨選項。
         /// </summary>
         /// <param name="direction">焦點移動的方向 (上下左右)。</param>
@@ -111,7 +170,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 檢查特定的手把按鈕是否在當前影格被按下 (排除按住不放的情況)。
+        /// 檢查特定的手把按鈕是否在目前影格被按下 (排除按住不放的情況)。
         /// </summary>
         /// <param name="current">目前的按鈕狀態。</param>
         /// <param name="previous">前一個影格的按鈕狀態。</param>

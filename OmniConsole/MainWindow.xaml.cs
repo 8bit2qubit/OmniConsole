@@ -189,7 +189,7 @@ namespace OmniConsole
             if (_gamepadNavigationService == null)
             {
                 _gamepadNavigationService = new GamepadNavigationService(
-                    this.Content,
+                    this.SettingsPanel,
                     this.DispatcherQueue,
                     OnGamepadAButtonPressed
                 );
