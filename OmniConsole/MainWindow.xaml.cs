@@ -1,5 +1,6 @@
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using OmniConsole.Services;
@@ -25,6 +26,8 @@ namespace OmniConsole
         private bool _isFullScreenSet = false;
         private bool _isSettingsMode = false;
         private readonly ResourceLoader _resourceLoader = new();
+
+        private GamepadNavigationService? _gamepadNavigationService;
 
         public MainWindow()
         {
@@ -158,18 +161,62 @@ namespace OmniConsole
             {
                 case GamePlatform.SteamBigPicture:
                     RadioSteam.IsChecked = true;
+                    RadioSteam.Focus(FocusState.Keyboard);
                     break;
                 case GamePlatform.XboxApp:
                     RadioXbox.IsChecked = true;
+                    RadioXbox.Focus(FocusState.Keyboard);
                     break;
                 case GamePlatform.EpicGames:
                     RadioEpic.IsChecked = true;
+                    RadioEpic.Focus(FocusState.Keyboard);
                     break;
             }
 
             // 確保全螢幕並帶到前景
             this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
             this.Activate();
+
+            StartGamepadPolling();
+        }
+
+        /// <summary>
+        /// 啟動 Xbox 手把的輸入輪詢機制。
+        /// 若尚未初始化 <see cref="GamepadNavigationService"/>，則會在此建立其實體，並傳遞 UI 根容器與 A 鍵的回呼函式。
+        /// </summary>
+        private void StartGamepadPolling()
+        {
+            if (_gamepadNavigationService == null)
+            {
+                _gamepadNavigationService = new GamepadNavigationService(
+                    this.Content,
+                    this.DispatcherQueue,
+                    OnGamepadAButtonPressed
+                );
+            }
+            _gamepadNavigationService.Start();
+        }
+
+        /// <summary>
+        /// 停止 Xbox 手把的輸入輪詢機制。
+        /// 於結束應用程式或離開需要手把輸入的畫面時呼叫。
+        /// </summary>
+        private void StopGamepadPolling()
+        {
+            _gamepadNavigationService?.Stop();
+        }
+
+        /// <summary>
+        /// 處理手把 'A' 鍵被按下的回呼函式。
+        /// 根據目前 UI 焦點所在的位置，觸發對應的平台選擇或儲存動作。
+        /// </summary>
+        private void OnGamepadAButtonPressed()
+        {
+            var focusedElement = FocusManager.GetFocusedElement(this.Content.XamlRoot);
+            if (ReferenceEquals(focusedElement, RadioSteam)) RadioSteam.IsChecked = true;
+            else if (ReferenceEquals(focusedElement, RadioXbox)) RadioXbox.IsChecked = true;
+            else if (ReferenceEquals(focusedElement, RadioEpic)) RadioEpic.IsChecked = true;
+            else if (ReferenceEquals(focusedElement, SaveButton)) SaveButton_Click(this, new RoutedEventArgs());
         }
 
         /// <summary>
@@ -187,6 +234,7 @@ namespace OmniConsole
             SettingsService.SetDefaultPlatform(selected);
             SettingsService.SaveCurrentVersion();
 
+            StopGamepadPolling();
             Application.Current.Exit();
         }
     }

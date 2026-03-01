@@ -23,7 +23,8 @@
         <StackPanel x:Name="SettingsPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Spacing="24" Visibility="Collapsed"
-                    MaxWidth="500">
+                    MaxWidth="500"
+                    XYFocusKeyboardNavigation="Enabled">
 
             <TextBlock x:Uid="SettingsTitle"
                        FontSize="36"
@@ -34,14 +35,14 @@
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        FontSize="18"/>
 
-            <RadioButtons x:Name="PlatformSelector" MaxColumns="1">
+            <StackPanel x:Name="PlatformSelector" Spacing="8">
                 <RadioButton x:Name="RadioSteam" Content="Steam Big Picture" Tag="SteamBigPicture"
-                             FontSize="18"/>
+                             GroupName="Platform" FontSize="18"/>
                 <RadioButton x:Name="RadioXbox" Content="Xbox App" Tag="XboxApp"
-                             FontSize="18"/>
+                             GroupName="Platform" FontSize="18"/>
                 <RadioButton x:Name="RadioEpic" Content="Epic Games Launcher" Tag="EpicGames"
-                             FontSize="18"/>
-            </RadioButtons>
+                             GroupName="Platform" FontSize="18"/>
+            </StackPanel>
 
             <Button x:Name="SaveButton" x:Uid="SaveButton"
                     Click="SaveButton_Click"
