@@ -24,11 +24,9 @@ namespace OmniConsole
             _dispatcherQueue = _window.DispatcherQueue;
 
             // 檢查是否為設定入口冷啟動
-            bool showSettings = _startWithSettings;
-
             // 設定模式：在 Activate 前標記，防止 Activated 事件觸發平台啟動
             var mainWindow = _window as MainWindow;
-            if (showSettings && mainWindow != null)
+            if (_startWithSettings && mainWindow != null)
             {
                 mainWindow.PrepareForSettings();
             }
@@ -36,7 +34,7 @@ namespace OmniConsole
             _window.Activate();
 
             // Activate 後再呼叫 ShowSettings 切換 UI
-            if (showSettings && mainWindow != null)
+            if (_startWithSettings && mainWindow != null)
             {
                 mainWindow.ShowSettings();
             }

@@ -140,7 +140,6 @@ namespace OmniConsole
             // 切換到設定模式
             LaunchPanel.Visibility = Visibility.Collapsed;
             SettingsPanel.Visibility = Visibility.Visible;
-            SaveStatusText.Text = "";
 
             // 載入目前設定
             var currentPlatform = SettingsService.GetDefaultPlatform();

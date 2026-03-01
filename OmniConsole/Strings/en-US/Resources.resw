@@ -138,9 +138,6 @@
   <data name="LaunchFailed" xml:space="preserve">
     <value>Launch failed. Please verify {0} is installed.</value>
   </data>
-  <data name="SavedStatus" xml:space="preserve">
-    <value>✓ Saved! Default platform: {0}</value>
-  </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
   </data>

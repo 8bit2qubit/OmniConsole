@@ -50,11 +50,6 @@
                     Padding="24,12"
                     Style="{StaticResource AccentButtonStyle}"/>
 
-            <TextBlock x:Name="SaveStatusText"
-                       Text=""
-                       Foreground="#88cc88"
-                       FontSize="16"
-                       HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>

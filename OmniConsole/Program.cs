@@ -8,7 +8,7 @@ namespace OmniConsole
 {
     /// <summary>
     /// 自訂進入點，實現單一實例機制。
-    /// 透過 LocalSettings 旗標區分「Settings 入口 → 設定」與「FSE/Game Bar → 自動啟動」。
+    /// 透過 AUMID 或 Protocol 區分「Settings 入口 → 設定」與「FSE/Game Bar → 自動啟動」。
     /// </summary>
     public static class Program
     {
@@ -80,7 +80,7 @@ namespace OmniConsole
 
         /// <summary>
         /// 當其他實例的啟動被重導到這裡時觸發。
-        /// 根據 LocalSettings 旗標決定顯示設定介面或重新啟動平台。
+        /// 根據啟動參數 (Activation Arguments) 決定顯示設定介面或重新啟動平台。
         /// </summary>
         private static void OnRedirectedActivation(object? sender, AppActivationArguments args)
         {

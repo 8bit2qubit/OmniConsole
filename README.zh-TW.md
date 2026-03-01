@@ -97,7 +97,7 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 ## 🛠️ 本機開發
 
-1.  **Clone 儲存庫**
+1.  **複製儲存庫**
 
     ```bash
     git clone https://github.com/8bit2qubit/OmniConsole.git

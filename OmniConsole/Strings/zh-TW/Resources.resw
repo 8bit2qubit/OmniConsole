@@ -138,9 +138,6 @@
   <data name="LaunchFailed" xml:space="preserve">
     <value>啟動失敗，請確認 {0} 已安裝</value>
   </data>
-  <data name="SavedStatus" xml:space="preserve">
-    <value>✓ 已儲存！預設平台：{0}</value>
-  </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
   </data>
