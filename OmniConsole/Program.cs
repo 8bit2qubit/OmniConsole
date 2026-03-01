@@ -38,6 +38,12 @@ namespace OmniConsole
                         }
                     }
                 }
+
+                // 3. 檢查是否為首次啟動（尚未設定任何平台）
+                if (!isSettingsEntry)
+                {
+                    isSettingsEntry = Services.SettingsService.IsFirstRun();
+                }
             }
             catch
             {

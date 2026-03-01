@@ -41,6 +41,9 @@ namespace OmniConsole
             _isSettingsMode = true;
         }
 
+        /// <summary>
+        /// 處理視窗啟動事件，負責初始化全螢幕狀態並在符合條件時自動啟動預設平台。
+        /// </summary>
         private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             // 僅在視窗取得前景焦點時啟動，且防止重入
@@ -68,11 +71,19 @@ namespace OmniConsole
 
         /// <summary>
         /// 自動啟動已設定的預設平台。
-        /// 啟動成功後清空 UI（黑底），平台會覆蓋在上面。
+        /// 啟動成功後將隱藏視窗並在延遲後結束應用程式。
         /// </summary>
         private async System.Threading.Tasks.Task LaunchDefaultPlatformAsync()
         {
             if (_isLaunching) return;
+
+            // 若目前為設定模式或尚未設定平台，則不執行自動啟動
+            if (_isSettingsMode || SettingsService.IsFirstRun())
+            {
+                ShowSettings();
+                return;
+            }
+
             _isLaunching = true;
 
             try
@@ -161,6 +172,9 @@ namespace OmniConsole
             this.Activate();
         }
 
+        /// <summary>
+        /// 儲存使用者選擇的預設遊戲平台，並結束應用程式。
+        /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             GamePlatform selected = GamePlatform.SteamBigPicture;

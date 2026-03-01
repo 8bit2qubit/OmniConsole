@@ -12,6 +12,15 @@ namespace OmniConsole.Services
         private const string DefaultPlatformKey = "DefaultPlatform";
 
         /// <summary>
+        /// 判斷是否為首次啟動（尚未設定預設平台）。
+        /// </summary>
+        public static bool IsFirstRun()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            return !settings.Values.ContainsKey(DefaultPlatformKey);
+        }
+
+        /// <summary>
         /// 取得使用者設定的預設遊戲平台。
         /// 若尚未設定，回傳 SteamBigPicture 作為預設值。
         /// </summary>
