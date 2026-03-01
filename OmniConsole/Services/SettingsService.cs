@@ -10,14 +10,61 @@ namespace OmniConsole.Services
     public static class SettingsService
     {
         private const string DefaultPlatformKey = "DefaultPlatform";
+        private const string LastLaunchedVersionKey = "LastLaunchedVersion";
 
         /// <summary>
-        /// 判斷是否為首次啟動（尚未設定預設平台）。
+        /// 取得目前應用程式的版本號字串。
         /// </summary>
-        public static bool IsFirstRun()
+        private static string GetAppVersion()
+        {
+            try
+            {
+                var version = Windows.ApplicationModel.Package.Current.Id.Version;
+                return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            }
+            catch
+            {
+                return "Unknown";
+            }
+        }
+
+        /// <summary>
+        /// 判斷是否為首次啟動（尚未設定預設平台），或為更新後的首次啟動。
+        /// </summary>
+        public static bool IsFirstRunOrUpdate()
         {
             var settings = ApplicationData.Current.LocalSettings;
-            return !settings.Values.ContainsKey(DefaultPlatformKey);
+
+            // 若尚未設定平台，必為首次安裝啟動
+            if (!settings.Values.ContainsKey(DefaultPlatformKey))
+            {
+                return true;
+            }
+
+            // 若已設定平台，檢查是否為剛更新版本
+            if (settings.Values.TryGetValue(LastLaunchedVersionKey, out object? value) && value is string lastVersion)
+            {
+                if (lastVersion != GetAppVersion())
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                // 若無版本紀錄 (例如從舊版升級上來)，亦視為需重新確認的更新啟動
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 儲存目前應用程式的版本號以供下次啟動比對。
+        /// </summary>
+        public static void SaveCurrentVersion()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            settings.Values[LastLaunchedVersionKey] = GetAppVersion();
         }
 
         /// <summary>

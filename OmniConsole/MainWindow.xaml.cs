@@ -77,8 +77,8 @@ namespace OmniConsole
         {
             if (_isLaunching) return;
 
-            // 若目前為設定模式或尚未設定平台，則不執行自動啟動
-            if (_isSettingsMode || SettingsService.IsFirstRun())
+            // 若目前為設定模式或尚未設定平台/已更新，則不執行自動啟動
+            if (_isSettingsMode || SettingsService.IsFirstRunOrUpdate())
             {
                 ShowSettings();
                 return;
@@ -185,6 +185,7 @@ namespace OmniConsole
                 selected = GamePlatform.EpicGames;
 
             SettingsService.SetDefaultPlatform(selected);
+            SettingsService.SaveCurrentVersion();
 
             Application.Current.Exit();
         }
