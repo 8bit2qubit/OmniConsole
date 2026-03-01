@@ -114,6 +114,18 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 ---
 
+## 🌟 星標歷史紀錄 (Star History)
+
+<a href="https://star-history.com/#8bit2qubit/OmniConsole&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date" />
+    <img alt="星標歷史紀錄圖表" src="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date" />
+  </picture>
+</a>
+
+---
+
 ## 📄 授權
 
 本專案採用 [GNU 通用公共授權條款第 3 版 (GPL-3.0)](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權。
