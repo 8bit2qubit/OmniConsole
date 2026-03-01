@@ -68,18 +68,20 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 2. Configure Your Default Platform
 
+OmniConsole will present the Settings UI on **first launch** or **after an app update**. You can also open it manually anytime from the Start Menu:
+
 1.  Open **"OmniConsole Settings"** from the Start Menu (All Apps).
-2.  Select your preferred gaming platform:
+2.  Select your preferred gaming platform using a **Mouse**, **Touch**, or **Xbox Controller** (**D-Pad/Left Stick** to navigate, **A** to select):
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
-3.  Click **Save Settings**.
+3.  Click/Press **Save Settings**.
 
 ### 3. Set as FSE Home App
 
 1.  Go to **Settings → Gaming → Full Screen Experience**.
 2.  Set "Choose Home app" to **OmniConsole**.
-3.  Enable **"Enter full screen experience on startup"** (optional).
+3.  Enable **"Enter full screen experience on startup"** (**Highly Recommended**).
 
 ### 4. Done!
 
