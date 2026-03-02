@@ -7,7 +7,8 @@
 </p>
 
 <p align="center">
-  <img src="demo.png" alt="OmniConsole Demo" width="450">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="250">
+  <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="250">
 </p>
 
 <p align="center">
@@ -43,6 +44,7 @@ The app registers as a Windows 11 Full Screen Experience Home App through the of
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, and **Epic Games Launcher**.
+- **Gamepad Support for Settings UI** – The Settings UI supports Xbox controllers, enabling directional navigation and interaction.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
 

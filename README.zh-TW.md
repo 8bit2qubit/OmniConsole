@@ -7,7 +7,8 @@
 </p>
 
 <p align="center">
-  <img src="demo.png" alt="OmniConsole 展示" width="450">
+  <img src="docs/images/app-settings.png" alt="OmniConsole 設定介面" height="250">
+  <img src="docs/images/fse-settings.png" alt="Windows 全螢幕體驗設定" height="250">
 </p>
 
 <p align="center">
@@ -43,6 +44,7 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App** 和 **Epic Games Launcher**。
+- **設定介面手把支援** – 設定介面支援 Xbox 手把操作，提供焦點導覽與互動。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
 
