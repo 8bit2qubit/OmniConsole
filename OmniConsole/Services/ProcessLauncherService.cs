@@ -26,6 +26,7 @@ namespace OmniConsole.Services
         private const string EpicUri = "com.epicgames.launcher://";
 
         // Armoury Crate SE
+        private const string ArmouryCrateUri = "asusac://";
         private const string ArmouryCratePackageName = "B9ECED6F.ArmouryCrateSE";
         private const string ArmouryCratePublisher = "CN=38BC0208-0916-4E44-909B-E6832F47CDE7";
 
@@ -114,10 +115,16 @@ namespace OmniConsole.Services
 
         /// <summary>
         /// 啟動 Armoury Crate SE。
-        /// 透過 PackageManager 找到已安裝的 MSIX 套件，取得應用程式入口後執行。
+        /// 策略一：透過 <c>asusac://</c> Protocol URI 啟動（輕量優先）。
+        /// 策略二：透過 PackageManager 找到已安裝的 MSIX 套件，取得應用程式入口後執行。
         /// </summary>
         private static async Task<bool> LaunchArmouryCrateSEAsync()
         {
+            // 策略一：透過 Protocol URI 啟動
+            if (await TryLaunchUriAsync(ArmouryCrateUri, "Armoury Crate SE"))
+                return true;
+
+            // 策略二：透過 PackageManager 啟動
             try
             {
                 var pm = new Windows.Management.Deployment.PackageManager();
@@ -139,10 +146,10 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] Armoury Crate SE launch failed: {ex.Message}");
+                Debug.WriteLine($"[ProcessLauncher] Armoury Crate SE PackageManager launch failed: {ex.Message}");
             }
 
-            Debug.WriteLine("[ProcessLauncher] Armoury Crate SE: package not found or launch failed.");
+            Debug.WriteLine("[ProcessLauncher] Armoury Crate SE: all launch strategies failed.");
             return false;
         }
 
