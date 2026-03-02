@@ -74,6 +74,52 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
+        /// 檢查指定平台是否已安裝（不觸發啟動）。
+        /// </summary>
+        public static async Task<bool> CheckPlatformAvailableAsync(GamePlatform platform)
+        {
+            return platform switch
+            {
+                GamePlatform.SteamBigPicture => await IsSteamAvailableAsync(),
+                GamePlatform.XboxApp => await IsUriSupportedAsync(XboxUri),
+                GamePlatform.EpicGames => await IsUriSupportedAsync(EpicUri),
+                GamePlatform.ArmouryCrateSE => await IsUriSupportedAsync(ArmouryCrateUri),
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// 檢查指定 URI scheme 是否有已安裝的應用程式處理。
+        /// </summary>
+        private static async Task<bool> IsUriSupportedAsync(string uriString)
+        {
+            try
+            {
+                var uri = new Uri(uriString);
+                var status = await Windows.System.Launcher.QueryUriSupportAsync(uri, Windows.System.LaunchQuerySupportType.Uri);
+                return status == Windows.System.LaunchQuerySupportStatus.Available;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 檢查 Steam 是否已安裝。
+        /// 優先查詢 URI，其次從 Registry 確認安裝路徑。
+        /// </summary>
+        private static async Task<bool> IsSteamAvailableAsync()
+        {
+            if (await IsUriSupportedAsync(SteamBigPictureUri))
+                return true;
+
+            string? steamPath = TryGetRegistryValue(Registry.CurrentUser, SteamRegistryKey, SteamRegistryValue)
+                             ?? TryGetRegistryValue(Registry.LocalMachine, SteamRegistryKey, SteamRegistryValue);
+            return !string.IsNullOrEmpty(steamPath);
+        }
+
+        /// <summary>
         /// 啟動 Steam Big Picture 模式。
         /// 優先使用 Protocol URI，若失敗則嘗試從 Registry 查找執行檔路徑。
         /// </summary>

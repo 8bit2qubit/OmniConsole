@@ -1,5 +1,6 @@
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -182,6 +183,44 @@ namespace OmniConsole
             this.Activate();
 
             StartGamepadPolling();
+
+            // 非同步查詢各平台可用性，完成後更新 RadioButton 啟用狀態
+            _ = LoadPlatformAvailabilityAsync();
+        }
+
+        /// <summary>
+        /// 非同步查詢所有平台的安裝狀態，並停用未安裝的選項。
+        /// 若目前選取的平台不可用，自動切換至第一個可用的平台。
+        /// </summary>
+        private async System.Threading.Tasks.Task LoadPlatformAvailabilityAsync()
+        {
+            bool[] available = await System.Threading.Tasks.Task.WhenAll(
+                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.SteamBigPicture),
+                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.XboxApp),
+                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.EpicGames),
+                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.ArmouryCrateSE)
+            );
+
+            RadioSteam.IsEnabled = available[0];
+            RadioXbox.IsEnabled = available[1];
+            RadioEpic.IsEnabled = available[2];
+            RadioArmouryCrate.IsEnabled = available[3];
+
+            // 若目前選取的平台已被停用，切換至第一個可用的平台
+            RadioButton[] allRadios = [RadioSteam, RadioXbox, RadioEpic, RadioArmouryCrate];
+            RadioButton? checkedButton = null;
+            RadioButton? firstAvailable = null;
+            foreach (var rb in allRadios)
+            {
+                if (rb.IsChecked == true) checkedButton = rb;
+                if (rb.IsEnabled && firstAvailable == null) firstAvailable = rb;
+            }
+
+            if (checkedButton != null && !checkedButton.IsEnabled && firstAvailable != null)
+            {
+                firstAvailable.IsChecked = true;
+                firstAvailable.Focus(FocusState.Keyboard);
+            }
         }
 
         /// <summary>
