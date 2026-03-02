@@ -171,6 +171,10 @@ namespace OmniConsole
                     RadioEpic.IsChecked = true;
                     RadioEpic.Focus(FocusState.Keyboard);
                     break;
+                case GamePlatform.ArmouryCrateSE:
+                    RadioArmouryCrate.IsChecked = true;
+                    RadioArmouryCrate.Focus(FocusState.Keyboard);
+                    break;
             }
 
             // 確保全螢幕並帶到前景
@@ -216,6 +220,7 @@ namespace OmniConsole
             if (ReferenceEquals(focusedElement, RadioSteam)) RadioSteam.IsChecked = true;
             else if (ReferenceEquals(focusedElement, RadioXbox)) RadioXbox.IsChecked = true;
             else if (ReferenceEquals(focusedElement, RadioEpic)) RadioEpic.IsChecked = true;
+            else if (ReferenceEquals(focusedElement, RadioArmouryCrate)) RadioArmouryCrate.IsChecked = true;
             else if (ReferenceEquals(focusedElement, SaveButton)) SaveButton_Click(this, new RoutedEventArgs());
         }
 
@@ -230,6 +235,8 @@ namespace OmniConsole
                 selected = GamePlatform.XboxApp;
             else if (RadioEpic.IsChecked == true)
                 selected = GamePlatform.EpicGames;
+            else if (RadioArmouryCrate.IsChecked == true)
+                selected = GamePlatform.ArmouryCrateSE;
 
             SettingsService.SetDefaultPlatform(selected);
             SettingsService.SaveCurrentVersion();

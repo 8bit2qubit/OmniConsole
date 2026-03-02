@@ -25,6 +25,10 @@ namespace OmniConsole.Services
         // Epic Games
         private const string EpicUri = "com.epicgames.launcher://";
 
+        // Armoury Crate SE
+        private const string ArmouryCratePackageName = "B9ECED6F.ArmouryCrateSE";
+        private const string ArmouryCratePublisher = "CN=38BC0208-0916-4E44-909B-E6832F47CDE7";
+
         private static readonly ResourceLoader _resourceLoader = new();
 
         /// <summary>
@@ -37,6 +41,7 @@ namespace OmniConsole.Services
                 GamePlatform.SteamBigPicture => await LaunchSteamBigPictureAsync(),
                 GamePlatform.XboxApp => await LaunchXboxAppAsync(),
                 GamePlatform.EpicGames => await LaunchEpicGamesAsync(),
+                GamePlatform.ArmouryCrateSE => await LaunchArmouryCrateSEAsync(),
                 _ => false
             };
         }
@@ -52,6 +57,7 @@ namespace OmniConsole.Services
                 GamePlatform.SteamBigPicture => "Platform_SteamBigPicture",
                 GamePlatform.XboxApp => "Platform_XboxApp",
                 GamePlatform.EpicGames => "Platform_EpicGames",
+                GamePlatform.ArmouryCrateSE => "Platform_ArmouryCrateSE",
                 _ => platform.ToString()
             };
 
@@ -104,6 +110,40 @@ namespace OmniConsole.Services
         private static async Task<bool> LaunchEpicGamesAsync()
         {
             return await TryLaunchUriAsync(EpicUri, "Epic Games");
+        }
+
+        /// <summary>
+        /// 啟動 Armoury Crate SE。
+        /// 透過 PackageManager 找到已安裝的 MSIX 套件，取得應用程式入口後執行。
+        /// </summary>
+        private static async Task<bool> LaunchArmouryCrateSEAsync()
+        {
+            try
+            {
+                var pm = new Windows.Management.Deployment.PackageManager();
+                var packages = pm.FindPackagesForUser(string.Empty, ArmouryCratePackageName, ArmouryCratePublisher);
+
+                foreach (var package in packages)
+                {
+                    var entries = await package.GetAppListEntriesAsync();
+                    if (entries.Count > 0)
+                    {
+                        bool result = await entries[0].LaunchAsync();
+                        if (result)
+                        {
+                            Debug.WriteLine("[ProcessLauncher] Armoury Crate SE launched via PackageManager.");
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ProcessLauncher] Armoury Crate SE launch failed: {ex.Message}");
+            }
+
+            Debug.WriteLine("[ProcessLauncher] Armoury Crate SE: package not found or launch failed.");
+            return false;
         }
 
         /// <summary>

@@ -42,6 +42,8 @@
                              GroupName="Platform" FontSize="18"/>
                 <RadioButton x:Name="RadioEpic" Content="Epic Games Launcher" Tag="EpicGames"
                              GroupName="Platform" FontSize="18"/>
+                <RadioButton x:Name="RadioArmouryCrate" Content="Armoury Crate SE" Tag="ArmouryCrateSE"
+                             GroupName="Platform" FontSize="18"/>
             </StackPanel>
 
             <Button x:Name="SaveButton" x:Uid="SaveButton"

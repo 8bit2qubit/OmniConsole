@@ -147,6 +147,9 @@
   <data name="Platform_EpicGames" xml:space="preserve">
     <value>Epic Games Launcher</value>
   </data>
+  <data name="Platform_ArmouryCrateSE" xml:space="preserve">
+    <value>Armoury Crate SE</value>
+  </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole 設定</value>
   </data>
