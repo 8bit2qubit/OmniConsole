@@ -24,7 +24,7 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 
 ## 💡 What is OmniConsole?
 
-OmniConsole turns your Windows PC or handheld device (ROG Xbox Ally, etc.) into a console-like experience. The default Full Screen Experience home only supports launching the Xbox App — OmniConsole goes beyond this limitation, allowing you to choose your preferred gaming platform:
+OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
 - **During use**: Press the **Xbox button** to open Game Bar, then select **Home** or **Library** to launch your gaming platform.
@@ -43,7 +43,7 @@ The app registers as a Windows 11 Full Screen Experience Home App through the of
 ## ✨ Features
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
-- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, and **Epic Games Launcher**.
+- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
 - **Gamepad Support for Settings UI** – The Settings UI supports Xbox controllers, enabling directional navigation and interaction.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -77,7 +77,8 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
-3.  Click/Press **Save Settings**.
+    - **Armoury Crate SE**
+3.  Click/Press **Save & Exit**.
 
 ### 3. Set as FSE Home App
 

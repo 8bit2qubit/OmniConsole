@@ -24,7 +24,7 @@
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主機般的體驗。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 突破了這項限制，讓您自由選擇要啟動的遊戲平台：
+OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 或掌機裝置（ROG Xbox Ally 等）上，每當全螢幕體驗被觸發時自動啟動您選擇的遊戲平台。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 突破了這項限制，讓您自由選擇要啟動的遊戲平台：
 
 - **開機時**：啟用「啟動時進入全螢幕體驗」後，開機即自動啟動您設定的遊戲平台。
 - **使用中**：按下 **Xbox 鍵** 開啟 Game Bar，點選**首頁**或**媒體櫃**即可啟動遊戲平台。
@@ -43,7 +43,7 @@ OmniConsole 將您的 Windows PC 或掌機裝置（ROG Xbox Ally 等）變成主
 ## ✨ 功能特色
 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
-- **多平台支援** – 支援 **Steam Big Picture**、**Xbox App** 和 **Epic Games Launcher**。
+- **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher** 和 **Armoury Crate SE**。
 - **設定介面手把支援** – 設定介面支援 Xbox 手把操作，提供焦點導覽與互動。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
@@ -77,7 +77,8 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
-3.  點選/按下**儲存設定**。
+    - **Armoury Crate SE**
+3.  點選/按下**儲存並退出**。
 
 ### 3. 設為 FSE 首頁應用程式
 
