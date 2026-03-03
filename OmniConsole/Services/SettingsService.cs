@@ -6,6 +6,7 @@ namespace OmniConsole.Services
     /// <summary>
     /// 管理應用程式設定的持久化讀寫。
     /// 使用 ApplicationData.Current.LocalSettings 儲存於本機。
+    /// 預設平台以穩定的字串 Id 儲存，而非列舉整數，確保平台清單調整後設定仍可正確讀取。
     /// </summary>
     public static class SettingsService
     {
@@ -37,25 +38,14 @@ namespace OmniConsole.Services
 
             // 若尚未設定平台，必為首次安裝啟動
             if (!settings.Values.ContainsKey(DefaultPlatformKey))
-            {
                 return true;
-            }
 
             // 若已設定平台，檢查是否為剛更新版本
             if (settings.Values.TryGetValue(LastLaunchedVersionKey, out object? value) && value is string lastVersion)
-            {
-                if (lastVersion != GetAppVersion())
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                // 若無版本紀錄 (例如從舊版升級上來)，亦視為需重新確認的更新啟動
-                return true;
-            }
+                return lastVersion != GetAppVersion();
 
-            return false;
+            // 若無版本紀錄（例如從舊版升級），亦視為需重新確認的更新啟動
+            return true;
         }
 
         /// <summary>
@@ -63,31 +53,31 @@ namespace OmniConsole.Services
         /// </summary>
         public static void SaveCurrentVersion()
         {
-            var settings = ApplicationData.Current.LocalSettings;
-            settings.Values[LastLaunchedVersionKey] = GetAppVersion();
+            ApplicationData.Current.LocalSettings.Values[LastLaunchedVersionKey] = GetAppVersion();
         }
 
         /// <summary>
         /// 取得使用者設定的預設遊戲平台。
-        /// 若尚未設定，回傳 SteamBigPicture 作為預設值。
+        /// 儲存值為平台 Id 字串；若找不到對應的平台定義，則回退至清單中的第一個平台。
         /// </summary>
-        public static GamePlatform GetDefaultPlatform()
+        public static PlatformDefinition GetDefaultPlatform()
         {
             var settings = ApplicationData.Current.LocalSettings;
-            if (settings.Values.TryGetValue(DefaultPlatformKey, out object? value) && value is int intValue)
+
+            if (settings.Values.TryGetValue(DefaultPlatformKey, out object? value) && value is string id)
             {
-                return (GamePlatform)intValue;
+                return PlatformCatalog.FindById(id) ?? PlatformCatalog.All[0];
             }
-            return GamePlatform.SteamBigPicture;
+
+            return PlatformCatalog.All[0];
         }
 
         /// <summary>
-        /// 儲存使用者選擇的預設遊戲平台。
+        /// 儲存使用者選擇的預設遊戲平台（以 Id 字串持久化）。
         /// </summary>
-        public static void SetDefaultPlatform(GamePlatform platform)
+        public static void SetDefaultPlatform(PlatformDefinition platform)
         {
-            var settings = ApplicationData.Current.LocalSettings;
-            settings.Values[DefaultPlatformKey] = (int)platform;
+            ApplicationData.Current.LocalSettings.Values[DefaultPlatformKey] = platform.Id;
         }
     }
 }

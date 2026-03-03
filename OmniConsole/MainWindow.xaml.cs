@@ -6,7 +6,10 @@ using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using WinRT.Interop;
 
 namespace OmniConsole
@@ -29,6 +32,11 @@ namespace OmniConsole
         private readonly ResourceLoader _resourceLoader = new();
 
         private GamepadNavigationService? _gamepadNavigationService;
+        private GamepadNavigationService? _launchPanelGamepadService;
+
+        // 設定介面的平台卡片清單與目前選取的平台 Id
+        private List<PlatformCardItem> _cardItems = [];
+        private string _selectedPlatformId = "";
 
         public MainWindow()
         {
@@ -77,7 +85,7 @@ namespace OmniConsole
         /// 自動啟動已設定的預設平台。
         /// 啟動成功後將隱藏視窗並在延遲後結束應用程式。
         /// </summary>
-        private async System.Threading.Tasks.Task LaunchDefaultPlatformAsync()
+        private async Task LaunchDefaultPlatformAsync()
         {
             if (_isLaunching) return;
 
@@ -118,13 +126,16 @@ namespace OmniConsole
                     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
                     // 等待目標平台進入前景後結束應用程式
-                    await System.Threading.Tasks.Task.Delay(5000);
+                    await Task.Delay(5000);
                     Application.Current.Exit();
                     return;
                 }
                 else
                 {
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchFailed"), platformName);
+                    OpenSettingsButton.Visibility = Visibility.Visible;
+                    OpenSettingsButton.Focus(FocusState.Programmatic);
+                    StartLaunchPanelGamepadPolling();
                 }
             }
             finally
@@ -148,7 +159,7 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 從設定入口呼叫，顯示設定介面。
+        /// 顯示設定介面，從 PlatformCatalog 動態建立卡片清單。
         /// </summary>
         public void ShowSettings()
         {
@@ -156,70 +167,90 @@ namespace OmniConsole
             LaunchPanel.Visibility = Visibility.Collapsed;
             SettingsPanel.Visibility = Visibility.Visible;
 
-            // 載入目前設定
-            var currentPlatform = SettingsService.GetDefaultPlatform();
-            switch (currentPlatform)
+            // 從 PlatformCatalog 動態建立卡片清單（顯示名稱從資源檔讀取）
+            _cardItems = PlatformCatalog.All
+                .Select(p => new PlatformCardItem
+                {
+                    Platform = p,
+                    DisplayName = ProcessLauncherService.GetPlatformDisplayName(p),
+                })
+                .ToList();
+
+            PlatformGridView.ItemsSource = _cardItems;
+
+            // 還原上次儲存的選取狀態
+            var current = SettingsService.GetDefaultPlatform();
+            _selectedPlatformId = current.Id;
+
+            var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
+            if (selectedCard != null)
             {
-                case GamePlatform.SteamBigPicture:
-                    RadioSteam.IsChecked = true;
-                    RadioSteam.Focus(FocusState.Keyboard);
-                    break;
-                case GamePlatform.XboxApp:
-                    RadioXbox.IsChecked = true;
-                    RadioXbox.Focus(FocusState.Keyboard);
-                    break;
-                case GamePlatform.EpicGames:
-                    RadioEpic.IsChecked = true;
-                    RadioEpic.Focus(FocusState.Keyboard);
-                    break;
-                case GamePlatform.ArmouryCrateSE:
-                    RadioArmouryCrate.IsChecked = true;
-                    RadioArmouryCrate.Focus(FocusState.Keyboard);
-                    break;
+                PlatformGridView.SelectedItem = selectedCard;
             }
 
-            // 確保全螢幕並帶到前景
             this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
             this.Activate();
 
             StartGamepadPolling();
 
-            // 非同步查詢各平台可用性，完成後更新 RadioButton 啟用狀態
+            // 非同步查詢各平台可用性，完成後更新卡片狀態（透過 INotifyPropertyChanged 驅動）
             _ = LoadPlatformAvailabilityAsync();
         }
 
         /// <summary>
-        /// 非同步查詢所有平台的安裝狀態，並停用未安裝的選項。
+        /// 非同步查詢所有平台的安裝狀態，更新 IsAvailable 後重新指定 ItemsSource 重新整理 OneTime 繫結。
         /// 若目前選取的平台不可用，自動切換至第一個可用的平台。
         /// </summary>
-        private async System.Threading.Tasks.Task LoadPlatformAvailabilityAsync()
+        private async Task LoadPlatformAvailabilityAsync()
         {
-            bool[] available = await System.Threading.Tasks.Task.WhenAll(
-                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.SteamBigPicture),
-                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.XboxApp),
-                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.EpicGames),
-                ProcessLauncherService.CheckPlatformAvailableAsync(GamePlatform.ArmouryCrateSE)
-            );
+            bool[] available = await Task.WhenAll(
+                _cardItems.Select(c => ProcessLauncherService.CheckPlatformAvailableAsync(c.Platform)));
 
-            RadioSteam.IsEnabled = available[0];
-            RadioXbox.IsEnabled = available[1];
-            RadioEpic.IsEnabled = available[2];
-            RadioArmouryCrate.IsEnabled = available[3];
-
-            // 若目前選取的平台已被停用，切換至第一個可用的平台
-            RadioButton[] allRadios = [RadioSteam, RadioXbox, RadioEpic, RadioArmouryCrate];
-            RadioButton? checkedButton = null;
-            RadioButton? firstAvailable = null;
-            foreach (var rb in allRadios)
+            for (int i = 0; i < _cardItems.Count; i++)
             {
-                if (rb.IsChecked == true) checkedButton = rb;
-                if (rb.IsEnabled && firstAvailable == null) firstAvailable = rb;
+                _cardItems[i].IsAvailable = available[i];
             }
 
-            if (checkedButton != null && !checkedButton.IsEnabled && firstAvailable != null)
+            // 若目前選取的平台已停用，先調整選取的 Id
+            var currentSelected = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
+            if (currentSelected is { IsAvailable: false })
             {
-                firstAvailable.IsChecked = true;
-                firstAvailable.Focus(FocusState.Keyboard);
+                var firstAvailable = _cardItems.FirstOrDefault(c => c.IsAvailable);
+                if (firstAvailable != null)
+                {
+                    _selectedPlatformId = firstAvailable.Id;
+                }
+            }
+
+            // 重新指定 ItemsSource 讓 OneTime 繫結重新求值（CardOpacity 依最新 IsAvailable 更新）
+            PlatformGridView.ItemsSource = null;
+            PlatformGridView.ItemsSource = _cardItems;
+
+            // 還原選取狀態
+            var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
+            if (selectedCard != null)
+            {
+                PlatformGridView.SelectedItem = selectedCard;
+            }
+        }
+
+        /// <summary>
+        /// 處理 GridView 選取狀態變更。
+        /// 若選取的平台不可用，則還原至上一個有效選取。
+        /// </summary>
+        private void PlatformGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PlatformGridView.SelectedItem is PlatformCardItem selected)
+            {
+                if (!selected.IsAvailable)
+                {
+                    // 還原為上一個有效選取
+                    var previous = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
+                    PlatformGridView.SelectedItem = previous;
+                    return;
+                }
+
+                _selectedPlatformId = selected.Id;
             }
         }
 
@@ -251,16 +282,58 @@ namespace OmniConsole
 
         /// <summary>
         /// 處理手把 'A' 鍵被按下的回呼函式。
-        /// 根據目前 UI 焦點所在的位置，觸發對應的平台選擇或儲存動作。
+        /// 焦點在 GridViewItem 上時確認選取該平台；焦點在儲存按鈕時觸發儲存。
         /// </summary>
         private void OnGamepadAButtonPressed()
         {
-            var focusedElement = FocusManager.GetFocusedElement(this.Content.XamlRoot);
-            if (ReferenceEquals(focusedElement, RadioSteam)) RadioSteam.IsChecked = true;
-            else if (ReferenceEquals(focusedElement, RadioXbox)) RadioXbox.IsChecked = true;
-            else if (ReferenceEquals(focusedElement, RadioEpic)) RadioEpic.IsChecked = true;
-            else if (ReferenceEquals(focusedElement, RadioArmouryCrate)) RadioArmouryCrate.IsChecked = true;
-            else if (ReferenceEquals(focusedElement, SaveButton)) SaveButton_Click(this, new RoutedEventArgs());
+            var focused = FocusManager.GetFocusedElement(this.Content.XamlRoot);
+
+            if (focused is GridViewItem gridViewItem &&
+                gridViewItem.Content is PlatformCardItem card &&
+                card.IsAvailable)
+            {
+                PlatformGridView.SelectedItem = card;
+                _selectedPlatformId = card.Id;
+            }
+            else if (ReferenceEquals(focused, SaveButton))
+            {
+                SaveButton_Click(this, new RoutedEventArgs());
+            }
+        }
+
+        /// <summary>
+        /// 啟動失敗後，點選「開啟設定」按鈕時呼叫，切換至設定介面。
+        /// </summary>
+        private void OpenSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            _launchPanelGamepadService?.Stop();
+            OpenSettingsButton.Visibility = Visibility.Collapsed;
+            ShowSettings();
+        }
+
+        /// <summary>
+        /// 啟動失敗時為 LaunchPanel 啟動手把輪詢，使 A 鍵可觸發「開啟設定」按鈕。
+        /// </summary>
+        private void StartLaunchPanelGamepadPolling()
+        {
+            _launchPanelGamepadService ??= new GamepadNavigationService(
+                this.LaunchPanel,
+                this.DispatcherQueue,
+                OnLaunchPanelGamepadAButtonPressed
+            );
+            _launchPanelGamepadService.Start();
+        }
+
+        /// <summary>
+        /// LaunchPanel 中手把 'A' 鍵的處理：焦點在「開啟設定」按鈕時觸發點選。
+        /// </summary>
+        private void OnLaunchPanelGamepadAButtonPressed()
+        {
+            var focused = FocusManager.GetFocusedElement(this.Content.XamlRoot);
+            if (ReferenceEquals(focused, OpenSettingsButton))
+            {
+                OpenSettingsButton_Click(this, new RoutedEventArgs());
+            }
         }
 
         /// <summary>
@@ -268,16 +341,9 @@ namespace OmniConsole
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            GamePlatform selected = GamePlatform.SteamBigPicture;
+            var platform = PlatformCatalog.FindById(_selectedPlatformId) ?? PlatformCatalog.All[0];
 
-            if (RadioXbox.IsChecked == true)
-                selected = GamePlatform.XboxApp;
-            else if (RadioEpic.IsChecked == true)
-                selected = GamePlatform.EpicGames;
-            else if (RadioArmouryCrate.IsChecked == true)
-                selected = GamePlatform.ArmouryCrateSE;
-
-            SettingsService.SetDefaultPlatform(selected);
+            SettingsService.SetDefaultPlatform(platform);
             SettingsService.SaveCurrentVersion();
 
             StopGamepadPolling();

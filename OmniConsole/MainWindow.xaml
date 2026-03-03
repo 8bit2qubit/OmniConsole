@@ -4,26 +4,37 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:OmniConsole"
+    xmlns:models="using:OmniConsole.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="OmniConsole">
 
     <Grid Background="#1e1e1e" RequestedTheme="Dark">
+
         <!-- 啟動模式：自動啟動平台時顯示 -->
         <StackPanel x:Name="LaunchPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Spacing="16">
+                    Spacing="16"
+                    XYFocusKeyboardNavigation="Enabled">
             <TextBlock x:Name="StatusText" x:Uid="StatusText"
                        FontSize="28"
                        HorizontalAlignment="Center"/>
+            <!-- 啟動失敗時才顯示，讓使用者可以進入設定介面 -->
+            <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton"
+                    Visibility="Collapsed"
+                    Click="OpenSettingsButton_Click"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    Padding="32,14"
+                    Style="{StaticResource AccentButtonStyle}"/>
         </StackPanel>
 
         <!-- 設定模式：從開始功能表啟動時顯示 -->
         <StackPanel x:Name="SettingsPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Spacing="24" Visibility="Collapsed"
-                    MaxWidth="500"
+                    Spacing="32" Visibility="Collapsed"
+                    MaxWidth="760"
                     XYFocusKeyboardNavigation="Enabled">
 
             <TextBlock x:Uid="SettingsTitle"
@@ -33,24 +44,72 @@
 
             <TextBlock x:Uid="SettingsDescription"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                       FontSize="18"/>
+                       FontSize="18"
+                       TextAlignment="Center"/>
 
-            <StackPanel x:Name="PlatformSelector" Spacing="8">
-                <RadioButton x:Name="RadioSteam" Content="Steam Big Picture" Tag="SteamBigPicture"
-                             GroupName="Platform" FontSize="18"/>
-                <RadioButton x:Name="RadioXbox" Content="Xbox App" Tag="XboxApp"
-                             GroupName="Platform" FontSize="18"/>
-                <RadioButton x:Name="RadioEpic" Content="Epic Games Launcher" Tag="EpicGames"
-                             GroupName="Platform" FontSize="18"/>
-                <RadioButton x:Name="RadioArmouryCrate" Content="Armoury Crate SE" Tag="ArmouryCrateSE"
-                             GroupName="Platform" FontSize="18"/>
-            </StackPanel>
+            <!-- 平台選擇卡片網格
+                 GridView 原生支援 XY 焦點導覽，D-pad 移動焦點框但不自動改變選取，
+                 需按 A 鍵（手把）/ 點選（觸控、滑鼠）才確認選取。 -->
+            <GridView x:Name="PlatformGridView"
+                      SelectionMode="Single"
+                      HorizontalAlignment="Center"
+                      IsTabStop="False"
+                      SelectionChanged="PlatformGridView_SelectionChanged">
+
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- 每列最多 3 欄；平台增加時自動換行，UI 虛擬化預設啟用 -->
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="3"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+
+                <!-- 移除 GridViewItem 預設的內距，讓 DataTemplate 的 Border Margin 完全控制間距 -->
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="IsTabStop" Value="True"/>
+                        <Setter Property="MinWidth" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
+
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PlatformCardItem">
+                        <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
+                        <!-- 使用預設 OneTime 而非 OneWay，避免 INotifyPropertyChanged 訂閱被 Release Trimming 修剪 -->
+                        <!-- 可用性更新後由程式碼重新指定 ItemsSource 觸發重新整理 -->
+                        <Border Width="200" Height="140" CornerRadius="12" Margin="10"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                Opacity="{x:Bind CardOpacity}">
+                            <Grid>
+                                <!-- 平台圖片作為全滿卡片背景，類似 Steam 遊戲卡面 -->
+                                <Image Source="{x:Bind IconAsset}"
+                                       Stretch="UniformToFill"/>
+                                <!-- 底部文字區域，半透明暗底確保文字可讀性 -->
+                                <Border VerticalAlignment="Bottom"
+                                        CornerRadius="0,0,12,12"
+                                        Background="#BB000000">
+                                    <TextBlock Text="{x:Bind DisplayName}"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               TextAlignment="Center"
+                                               Margin="8,5,8,5"
+                                               MaxWidth="170"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+
+            </GridView>
 
             <Button x:Name="SaveButton" x:Uid="SaveButton"
                     Click="SaveButton_Click"
                     HorizontalAlignment="Center"
                     FontSize="18"
-                    Padding="24,12"
+                    Padding="32,14"
                     Style="{StaticResource AccentButtonStyle}"/>
 
         </StackPanel>

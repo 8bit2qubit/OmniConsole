@@ -81,11 +81,15 @@ namespace OmniConsole.Services
                         _onAButtonPressed?.Invoke();
                     }
 
-                    // 也將左搖桿映射到上下
+                    // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）
                     if (reading.LeftThumbstickY < -0.5 && _previousReading.LeftThumbstickY >= -0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Down);
                     else if (reading.LeftThumbstickY > 0.5 && _previousReading.LeftThumbstickY <= 0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Up);
+                    else if (reading.LeftThumbstickX < -0.5 && _previousReading.LeftThumbstickX >= -0.5)
+                        TryMoveGamepadFocus(FocusNavigationDirection.Left);
+                    else if (reading.LeftThumbstickX > 0.5 && _previousReading.LeftThumbstickX <= 0.5)
+                        TryMoveGamepadFocus(FocusNavigationDirection.Right);
 
                     _previousReading = reading;
                 }
