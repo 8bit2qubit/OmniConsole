@@ -8,6 +8,7 @@ namespace OmniConsole.Models
         SteamBigPicture,
         XboxApp,
         EpicGames,
-        ArmouryCrateSE
+        ArmouryCrateSE,
+        NvidiaApp
     }
 }
