@@ -7,8 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="250">
-  <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="250">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" width="480">
 </p>
 
 <p align="center">
@@ -44,7 +43,8 @@ The app registers as a Windows 11 Full Screen Experience Home App through the of
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
-- **Gamepad Support for Settings UI** – The Settings UI supports Xbox controllers, enabling directional navigation and interaction.
+- **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
+- **Gamepad Support** – Navigate the platform card grid with **D-Pad** or **Left Stick** (all four directions) and press **A** to confirm.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
@@ -73,7 +73,7 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 OmniConsole will present the Settings UI on **first launch** or **after an app update**. You can also open it manually anytime from the Start Menu:
 
 1.  Open **"OmniConsole Settings"** from the Start Menu (All Apps).
-2.  Select your preferred gaming platform using a **Mouse**, **Touch**, or **Xbox Controller** (**D-Pad/Left Stick** to navigate, **A** to select):
+2.  Select your preferred gaming platform from the card grid using a **Mouse**, **Touch**, or **Xbox Controller** (**D-Pad/Left Stick** to navigate in all four directions, **A** to confirm):
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
@@ -82,6 +82,10 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 
 ### 3. Set as FSE Home App
 
+<p>
+  <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="220">
+</p>
+
 1.  Go to **Settings → Gaming → Full Screen Experience**.
 2.  Set "Choose Home app" to **OmniConsole**.
 3.  Enable **"Enter full screen experience on startup"** (**Highly Recommended**).
@@ -89,6 +93,16 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 ### 4. Done!
 
 Press the **Xbox button** and select **Home** or **Library** in Game Bar to launch your chosen platform. If you've enabled **"Enter full screen experience on startup"**, it also launches automatically on boot.
+
+---
+
+## 🔄 How to Revert
+
+> ⚠️ **Change the FSE Home App setting _before_ uninstalling OmniConsole.** If OmniConsole is removed while it is still set as the FSE Home App, Windows **Task View will stop working**. This is a bug in Windows itself.
+
+1. Go to **Settings → Gaming → Full Screen Experience**.
+2. Set "Choose Home app" to **Xbox** or **None**.
+3. Uninstall **OmniConsole** from **Settings → Apps → Installed apps**, or right-click **OmniConsole** in the Start Menu and select **Uninstall**.
 
 ---
 

@@ -7,8 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole 設定介面" height="250">
-  <img src="docs/images/fse-settings.png" alt="Windows 全螢幕體驗設定" height="250">
+  <img src="docs/images/app-settings.png" alt="OmniConsole 設定介面" width="480">
 </p>
 
 <p align="center">
@@ -44,7 +43,8 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher** 和 **Armoury Crate SE**。
-- **設定介面手把支援** – 設定介面支援 Xbox 手把操作，提供焦點導覽與互動。
+- **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
+- **手把完整支援** – 使用**方向鍵**或**左搖桿**（四個方向）在平台卡片網格中導覽，按 **A 鍵**確認選取。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
 
@@ -73,7 +73,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面。您也可以隨時手動開啟：
 
 1.  從開始功能表（所有應用程式）中開啟「**OmniConsole 設定**」。
-2.  選擇您偏好的遊戲平台。支援使用**滑鼠**、**觸控**或 **Xbox 手把**（**方向鍵/左搖桿**移動，**A 鍵**選取）：
+2.  從卡片網格中選擇您偏好的遊戲平台。支援使用**滑鼠**、**觸控**或 **Xbox 手把**（**方向鍵/左搖桿**四向移動，**A 鍵**確認）：
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
@@ -82,6 +82,10 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ### 3. 設為 FSE 首頁應用程式
 
+<p>
+  <img src="docs/images/fse-settings.png" alt="Windows 全螢幕體驗設定" height="220">
+</p>
+
 1.  前往**設定 → 遊戲 → 全螢幕體驗**。
 2.  將「選擇首頁應用程式」設為 **OmniConsole**。
 3.  啟用「**啟動時進入全螢幕體驗**」（**強烈建議**）。
@@ -89,6 +93,16 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 ### 4. 完成！
 
 按下 **Xbox 鍵**，點選 Game Bar 的**首頁**或**媒體櫃**即可啟動您選擇的平台。若已啟用「**啟動時進入全螢幕體驗**」，開機時也會自動啟動。
+
+---
+
+## 🔄 如何還原
+
+> ⚠️ **解除安裝前，請務必先變更 FSE 首頁應用程式設定。** 若在 OmniConsole 仍設為 FSE 首頁應用程式的情況下直接解除安裝，Windows **工作檢視將無法正常開啟**。這是 Windows 本身的 Bug。
+
+1. 前往**設定 → 遊戲 → 全螢幕體驗**。
+2. 將「選擇首頁應用程式」改為 **Xbox** 或 **無**。
+3. 從**設定 → 應用程式 → 已安裝的應用程式**中解除安裝 **OmniConsole**，或在開始功能表中對 **OmniConsole** 按右鍵選擇**解除安裝**。
 
 ---
 
