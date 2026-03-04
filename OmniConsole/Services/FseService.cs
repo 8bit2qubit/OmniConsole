@@ -1,0 +1,114 @@
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+// keybd_event 虛擬按鍵碼
+file static class VK
+{
+    public const byte LWIN = 0x5B;
+    public const byte F11 = 0x7A;
+}
+
+file static class KEYEVENTF
+{
+    public const uint KEYUP = 0x0002;
+}
+
+namespace OmniConsole.Services
+{
+    /// <summary>
+    /// 封裝 Windows Gaming Full Screen Experience (FSE) 的偵測與觸發。
+    /// 使用 api-ms-win-gaming-experience-l1-1-0.dll（Windows API Set，由 OS loader 動態解析）。
+    /// </summary>
+    public static class FseService
+    {
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsGamingFullScreenExperienceActive();
+
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CanSetGamingFullScreenExperience();
+
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        private static extern int SetGamingFullScreenExperience();
+
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+        /// <summary>
+        /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
+        /// </summary>
+        public static bool IsActive()
+        {
+            try
+            {
+                bool result = IsGamingFullScreenExperienceActive();
+                Debug.WriteLine($"[FseService] IsActive = {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] IsActive failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 回傳目前是否可以觸發 FSE（例如系統不支援時為 false）。
+        /// </summary>
+        public static bool CanActivate()
+        {
+            try
+            {
+                bool result = CanSetGamingFullScreenExperience();
+                Debug.WriteLine($"[FseService] CanActivate = {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] CanActivate failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 模擬 Win+F11，從 FSE 模式觸發「切換回桌面」確認對話方塊。
+        /// </summary>
+        public static void TryExitToDesktop()
+        {
+            try
+            {
+                keybd_event(VK.LWIN, 0, 0, 0);
+                keybd_event(VK.F11, 0, 0, 0);
+                keybd_event(VK.F11, 0, KEYEVENTF.KEYUP, 0);
+                keybd_event(VK.LWIN, 0, KEYEVENTF.KEYUP, 0);
+                Debug.WriteLine("[FseService] TryExitToDesktop: Win+F11 sent");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] TryExitToDesktop failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 觸發進入 FSE 模式（等同於按 Win+F11 或 Game Bar 的進入 FSE 按鈕）。
+        /// 成功後 Windows 會顯示確認對話方塊，使用者確認後重新啟動本應用程式於 FSE 環境。
+        /// </summary>
+        /// <returns>HRESULT >= 0 為成功。</returns>
+        public static bool TryActivate()
+        {
+            try
+            {
+                int hr = SetGamingFullScreenExperience();
+                Debug.WriteLine($"[FseService] SetGamingFullScreenExperience HRESULT: 0x{hr:X8}");
+                return hr >= 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] TryActivate failed: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using OmniConsole.Services;
 
 namespace OmniConsole
 {
@@ -20,6 +21,30 @@ namespace OmniConsole
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
+            if (!_startWithSettings && !FseService.IsActive())
+            {
+                if (!FseService.CanActivate())
+                {
+                    // 系統未啟用 FSE，顯示提示引導使用者先啟用
+                    _window = new MainWindow();
+                    _dispatcherQueue = _window.DispatcherQueue;
+                    var notAvailableWindow = _window as MainWindow;
+                    notAvailableWindow?.PrepareForSettings(); // 防止 Activated 觸發平台啟動
+                    _window.Activate();
+                    notAvailableWindow?.ShowFseNotAvailable();
+                    return;
+                }
+
+                if (FseService.TryActivate())
+                {
+                    // FSE 已觸發，Windows 會重新以 FSE 環境啟動本應用程式
+                    Application.Current.Exit();
+                    return;
+                }
+                // TryActivate 失敗（系統支援但觸發失敗），繼續正常啟動
+            }
+
             _window = new MainWindow();
             _dispatcherQueue = _window.DispatcherQueue;
 

@@ -20,14 +20,25 @@
             <TextBlock x:Name="StatusText" x:Uid="StatusText"
                        FontSize="28"
                        HorizontalAlignment="Center"/>
-            <!-- 啟動失敗時才顯示，讓使用者可以進入設定介面 -->
-            <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton"
-                    Visibility="Collapsed"
-                    Click="OpenSettingsButton_Click"
-                    HorizontalAlignment="Center"
-                    FontSize="18"
-                    Padding="32,14"
-                    Style="{StaticResource AccentButtonStyle}"/>
+            <!-- 啟動失敗時才顯示 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton"
+                        Visibility="Collapsed"
+                        Click="OpenSettingsButton_Click"
+                        FontSize="18"
+                        Padding="32,14"
+                        Style="{StaticResource AccentButtonStyle}"/>
+                <Button x:Name="ReturnToDesktopButton" x:Uid="ReturnToDesktopButton"
+                        Visibility="Collapsed"
+                        Click="ReturnToDesktopButton_Click"
+                        FontSize="18"
+                        Padding="32,14"/>
+                <!-- FSE 未啟用時才顯示 -->
+                <HyperlinkButton x:Name="EnableFseButton" x:Uid="EnableFseButton"
+                                 Visibility="Collapsed"
+                                 Click="EnableFseButton_Click"
+                                 FontSize="18"
+                                 Padding="32,14"/></StackPanel>
         </StackPanel>
 
         <!-- 設定模式：從開始功能表啟動時顯示 -->

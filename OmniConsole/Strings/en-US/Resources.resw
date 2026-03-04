@@ -141,6 +141,15 @@
   <data name="OpenSettingsButton.Content" xml:space="preserve">
     <value>Open Settings</value>
   </data>
+  <data name="ReturnToDesktopButton.Content" xml:space="preserve">
+    <value>Return to Desktop</value>
+  </data>
+  <data name="FseNotAvailable" xml:space="preserve">
+    <value>Full Screen Experience is not available. Please enable it first using Xbox Full Screen Experience Tool.</value>
+  </data>
+  <data name="EnableFseButton.Content" xml:space="preserve">
+    <value>Xbox Full Screen Experience Tool</value>
+  </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
   </data>

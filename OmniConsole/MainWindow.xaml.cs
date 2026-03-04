@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using WinRT.Interop;
 
@@ -33,6 +34,7 @@ namespace OmniConsole
 
         private GamepadNavigationService? _gamepadNavigationService;
         private GamepadNavigationService? _launchPanelGamepadService;
+        private CancellationTokenSource? _fseExitCts;
 
         // 設定介面的平台卡片清單與目前選取的平台 Id
         private List<PlatformCardItem> _cardItems = [];
@@ -134,6 +136,7 @@ namespace OmniConsole
                 {
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchFailed"), platformName);
                     OpenSettingsButton.Visibility = Visibility.Visible;
+                    ReturnToDesktopButton.Visibility = Visibility.Visible;
                     OpenSettingsButton.Focus(FocusState.Programmatic);
                     StartLaunchPanelGamepadPolling();
                 }
@@ -156,6 +159,30 @@ namespace OmniConsole
             this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
 
             await LaunchDefaultPlatformAsync();
+        }
+
+        /// <summary>
+        /// 系統未啟用 FSE 時顯示提示，引導使用者透過工具啟用。
+        /// </summary>
+        public void ShowFseNotAvailable()
+        {
+            LaunchPanel.Visibility = Visibility.Visible;
+            SettingsPanel.Visibility = Visibility.Collapsed;
+            StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
+            EnableFseButton.Visibility = Visibility.Visible;
+            EnableFseButton.Focus(FocusState.Programmatic);
+            StartLaunchPanelGamepadPolling();
+        }
+
+        /// <summary>
+        /// 開啟 Xbox Full Screen Experience Tool 頁面後結束應用程式。
+        /// 等待 LaunchUriAsync 完成確保瀏覽器已開啟再退出。
+        /// </summary>
+        private async void EnableFseButton_Click(object _, RoutedEventArgs __)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(
+                new Uri("https://github.com/8bit2qubit/XboxFullScreenExperienceTool"));
+            Application.Current.Exit();
         }
 
         /// <summary>
@@ -308,7 +335,39 @@ namespace OmniConsole
         {
             _launchPanelGamepadService?.Stop();
             OpenSettingsButton.Visibility = Visibility.Collapsed;
+            ReturnToDesktopButton.Visibility = Visibility.Collapsed;
             ShowSettings();
+        }
+
+        /// <summary>
+        /// 啟動失敗後，點選「返回桌面」按鈕時呼叫，觸發 FSE 退出流程。
+        /// FSE overlay 對話方塊顯示期間使用者無法點選 OmniConsole 的按鈕，
+        /// 因此不需要停用按鈕；只需在背景輪詢 IsActive() 等待繼續。
+        ///   - 對話方塊繼續 → IsActive() 變 false → Exit()
+        ///   - 對話方塊取消 → overlay 消失，OmniConsole 按鈕自動恢復可點選
+        ///   - 再次點選本按鈕 → 取消上一輪背景輪詢，重新送 Win+F11
+        /// </summary>
+        private async void ReturnToDesktopButton_Click(object sender, RoutedEventArgs e)
+        {
+            _fseExitCts?.Cancel();
+            _fseExitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var token = _fseExitCts.Token;
+
+            FseService.TryExitToDesktop();
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(200, token);
+                    if (!FseService.IsActive())
+                    {
+                        Application.Current.Exit();
+                        return;
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -331,9 +390,11 @@ namespace OmniConsole
         {
             var focused = FocusManager.GetFocusedElement(this.Content.XamlRoot);
             if (ReferenceEquals(focused, OpenSettingsButton))
-            {
                 OpenSettingsButton_Click(this, new RoutedEventArgs());
-            }
+            else if (ReferenceEquals(focused, ReturnToDesktopButton))
+                ReturnToDesktopButton_Click(this, new RoutedEventArgs());
+            else if (ReferenceEquals(focused, EnableFseButton))
+                EnableFseButton_Click(this, new RoutedEventArgs());
         }
 
         /// <summary>
