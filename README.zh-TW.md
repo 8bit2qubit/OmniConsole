@@ -1,4 +1,4 @@
-# OmniConsole
+﻿# OmniConsole
 
 > 🌐 [English](README.md) | **繁體中文**
 
@@ -30,12 +30,10 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 
 ### 運作方式
 
-```
-觸發（開機 / Xbox 鍵 → Game Bar 首頁或媒體櫃）
-  → OmniConsole 啟動 → 啟動您選擇的平台 → 自動隱藏
-```
-
-此應用程式透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
+> 觸發（開機 / Xbox 鍵 → Game Bar 首頁或媒體櫃 / 開始功能表 → OmniConsole）  
+> → OmniConsole 啟動  
+> → 已在 FSE 中：啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束  
+> → FSE 模式外：FSE 進入對話方塊 → 確認 → 在 FSE 中重新啟動 → 啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束  
 
 ---
 
@@ -93,7 +91,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ### 4. 完成！
 
-按下 **Xbox 鍵**，點選 Game Bar 的**首頁**或**媒體櫃**即可啟動您選擇的平台。若已啟用「**啟動時進入全螢幕體驗**」，開機時也會自動啟動。
+按下 **Xbox 鍵**，點選 Game Bar 的**首頁**或**媒體櫃**即可啟動您選擇的遊戲平台。若已啟用「**啟動時進入全螢幕體驗**」，開機時也會自動啟動。您也可以直接從開始功能表啟動 OmniConsole，FSE 會自動觸發並開始啟動所選平台。
 
 ---
 

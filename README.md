@@ -1,4 +1,4 @@
-# OmniConsole
+﻿# OmniConsole
 
 > 🌐 **English** | [繁體中文](README.zh-TW.md)
 
@@ -30,12 +30,10 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 
 ### How It Works
 
-```
-Trigger (Boot / Xbox button → Game Bar Home or Library)
-  → OmniConsole activates → Launches your chosen platform → Hides itself
-```
-
-The app registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
+> Trigger (System boot / Xbox button → Game Bar Home or Library / Start Menu → OmniConsole)  
+> → OmniConsole activates  
+> → Already in FSE: Launches your chosen gaming platform → OmniConsole hides and exits  
+> → Outside FSE: FSE entry dialog → Confirm → Re-launches in FSE → Launches your chosen gaming platform → OmniConsole hides and exits  
 
 ---
 
@@ -93,7 +91,7 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 
 ### 4. Done!
 
-Press the **Xbox button** and select **Home** or **Library** in Game Bar to launch your chosen platform. If you've enabled **"Enter full screen experience on startup"**, it also launches automatically on boot.
+Press the **Xbox button** and select **Home** or **Library** in Game Bar to launch your chosen gaming platform. If you've enabled **"Enter full screen experience on startup"**, it also launches automatically on boot. You can also launch OmniConsole directly from the Start Menu — FSE will activate automatically.
 
 ---
 
