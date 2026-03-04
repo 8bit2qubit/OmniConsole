@@ -42,6 +42,7 @@ The app registers as a Windows 11 Full Screen Experience Home App through the of
 ## ✨ Features
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
+- **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Gamepad Support** – Navigate the platform card grid with **D-Pad** or **Left Stick** (all four directions) and press **A** to confirm.

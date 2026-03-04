@@ -42,6 +42,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 ## ✨ 功能特色
 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
+- **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher** 和 **Armoury Crate SE**。
 - **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
 - **手把完整支援** – 使用**方向鍵**或**左搖桿**（四個方向）在平台卡片網格中導覽，按 **A 鍵**確認選取。
