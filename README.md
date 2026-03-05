@@ -33,7 +33,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 > Trigger (System boot / Xbox button → Game Bar Home or Library / Start Menu → OmniConsole)  
 > → OmniConsole activates  
 > → Already in FSE: Launches your chosen gaming platform → OmniConsole hides and exits  
-> → Outside FSE: FSE entry dialog → Confirm → Re-launches in FSE → Launches your chosen gaming platform → OmniConsole hides and exits  
+> → Outside FSE: FSE entry dialog → Confirm → Re-launches in FSE → Launches your chosen gaming platform → OmniConsole hides and exits
 
 ---
 
@@ -43,7 +43,8 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
-- **Gamepad Support** – Navigate the platform card grid with **D-Pad** or **Left Stick** (all four directions) and press **A** to confirm.
+- **Built-in Troubleshoot Page** – A dedicated page for emergency FSE recovery if the FSE entry dialog ("Restart for better performance") fails to appear due to a Windows bug.
+- **Gamepad Support** – Navigate the platform card grid and settings pages with **D-Pad** or **Left Stick** and press **A** to confirm.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
@@ -102,6 +103,16 @@ Press the **Xbox button** and select **Home** or **Library** in Game Bar to laun
 1. Go to **Settings → Gaming → Full Screen Experience**.
 2. Set "Choose Home app" to **Xbox** or **None**.
 3. Uninstall **OmniConsole** from **Settings → Apps → Installed apps**, or right-click **OmniConsole** in the Start Menu and select **Uninstall**.
+
+---
+
+## 🛠️ Troubleshoot
+
+If you experience an issue where the Windows Full Screen Experience (FSE) entry dialog ("Restart for better performance") fails to appear due to a Windows bug:
+
+1. Open **OmniConsole Settings** from the Start Menu.
+2. Navigate to the **Troubleshoot** tab using the left menu.
+3. Click the **"Reset GameBar & Enter FSE"** button. This will force-close any stuck Game Bar processes and re-trigger the FSE entry dialog ("Restart for better performance").
 
 ---
 
