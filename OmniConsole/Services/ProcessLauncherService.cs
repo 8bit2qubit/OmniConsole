@@ -186,15 +186,15 @@ namespace OmniConsole.Services
         /// 以 PackageManager 搜尋指定 packageName / publisher 的 MSIX 套件，
         /// 判斷是否已為目前使用者安裝。
         /// </summary>
-        private static async Task<bool> IsMsixPackageInstalledAsync(string packageName, string publisher)
+        private static Task<bool> IsMsixPackageInstalledAsync(string packageName, string publisher)
         {
             try
             {
                 var pm = new Windows.Management.Deployment.PackageManager();
                 var packages = pm.FindPackagesForUser(string.Empty, packageName, publisher);
-                return packages.Any();
+                return Task.FromResult(packages.Any());
             }
-            catch { return false; }
+            catch { return Task.FromResult(false); }
         }
 
         // ── 通用輔助方法 ──────────────────────────────────────────────────────

@@ -16,7 +16,7 @@ namespace OmniConsole.Services
         /// <summary>
         /// 取得目前應用程式的版本號字串。
         /// </summary>
-        private static string GetAppVersion()
+        public static string GetAppVersion()
         {
             try
             {

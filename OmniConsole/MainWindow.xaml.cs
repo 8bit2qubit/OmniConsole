@@ -109,6 +109,12 @@ namespace OmniConsole
                 var platform = SettingsService.GetDefaultPlatform();
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
 
+                // 顯示平台圖示與進度指示
+                LaunchIconImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(platform.IconAsset));
+                LaunchIconBorder.Visibility = Visibility.Visible;
+                LaunchProgressRing.IsActive = true;
+                LaunchProgressRing.Visibility = Visibility.Visible;
+
                 StatusText.Text = string.Format(_resourceLoader.GetString("Launching"), platformName);
 
                 bool success = await ProcessLauncherService.LaunchPlatformAsync(platform);
@@ -134,6 +140,13 @@ namespace OmniConsole
                 }
                 else
                 {
+                    // 啟動失敗時隱藏平台圖示
+                    LaunchIconBorder.Visibility = Visibility.Collapsed;
+
+                    // 啟動失敗時隱藏進度指示
+                    LaunchProgressRing.IsActive = false;
+                    LaunchProgressRing.Visibility = Visibility.Collapsed;
+
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchFailed"), platformName);
                     OpenSettingsButton.Visibility = Visibility.Visible;
                     ReturnToDesktopButton.Visibility = Visibility.Visible;
@@ -194,6 +207,11 @@ namespace OmniConsole
             LaunchPanel.Visibility = Visibility.Collapsed;
             SettingsPanel.Visibility = Visibility.Visible;
 
+            // 初始化 NavigationView，預設選取第一個「一般」項目
+            SettingsNav.SelectedItem = SettingsNav.MenuItems[0];
+            GeneralPage.Visibility = Visibility.Visible;
+            TroubleshootPage.Visibility = Visibility.Collapsed;
+
             // 從 PlatformCatalog 動態建立卡片清單（顯示名稱從資源檔讀取）
             _cardItems = PlatformCatalog.All
                 .Select(p => new PlatformCardItem
@@ -204,6 +222,12 @@ namespace OmniConsole
                 .ToList();
 
             PlatformGridView.ItemsSource = _cardItems;
+
+            // 顯示版本號
+            VersionText.Text = $"v{SettingsService.GetAppVersion()}";
+
+            // 檢查「重設 GameBar 並進入 FSE」按鈕的顯示條件
+            ResetGameBarButton.Visibility = FseService.CanActivate() ? Visibility.Visible : Visibility.Collapsed;
 
             // 還原上次儲存的選取狀態
             var current = SettingsService.GetDefaultPlatform();
@@ -222,6 +246,21 @@ namespace OmniConsole
 
             // 非同步查詢各平台可用性，完成後更新卡片狀態（透過 INotifyPropertyChanged 驅動）
             _ = LoadPlatformAvailabilityAsync();
+        }
+
+        /// <summary>
+        /// 處理 NavigationView 選項變更，切換內容頁面。
+        /// </summary>
+        private void SettingsNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.SelectedItemContainer is NavigationViewItem selectedItem)
+            {
+                string? tag = selectedItem.Tag?.ToString();
+
+                // 切換分頁可見性
+                GeneralPage.Visibility = (tag == "General") ? Visibility.Visible : Visibility.Collapsed;
+                TroubleshootPage.Visibility = (tag == "Troubleshoot") ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -282,6 +321,24 @@ namespace OmniConsole
         }
 
         /// <summary>
+        /// 強制結束 GameBar.exe 並重新嘗試觸發 FSE。
+        /// 當 FSE 進入對話方塊卡住時，透過此方法可重置環境並達成「殺死後重發」的備援路徑。
+        /// </summary>
+        private void ResetGameBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            FseService.KillGameBar();
+
+            // 給予系統一點時間清理
+            System.Threading.Thread.Sleep(500);
+
+            if (FseService.TryActivate())
+            {
+                // 對話方塊重新觸發成功，使用者點選確認後此應用程式會被重新啟動在 FSE 環境
+                Application.Current.Exit();
+            }
+        }
+
+        /// <summary>
         /// 啟動 Xbox 手把的輸入輪詢機制。
         /// 若尚未初始化 <see cref="GamepadNavigationService"/>，則會在此建立其實體，並傳遞 UI 根容器與 A 鍵的回呼函式。
         /// </summary>
@@ -321,6 +378,27 @@ namespace OmniConsole
             {
                 PlatformGridView.SelectedItem = card;
                 _selectedPlatformId = card.Id;
+            }
+            else if (focused is NavigationViewItem navItem)
+            {
+                SettingsNav.SelectedItem = navItem;
+                // 選取後自動收合
+                SettingsNav.IsPaneOpen = false;
+            }
+            else if (focused is Button btn && btn.Name == "NavigationViewBackButton")
+            {
+                // 忽略返回按鈕
+            }
+            else if (focused is DependencyObject dep && dep.GetType().Name == "Button" &&
+                     FocusManager.GetFocusedElement(this.Content.XamlRoot) is FrameworkElement fe &&
+                     fe.Name == "TogglePaneButton")
+            {
+                // 處理漢堡按鈕的點選
+                SettingsNav.IsPaneOpen = !SettingsNav.IsPaneOpen;
+            }
+            else if (ReferenceEquals(focused, ResetGameBarButton))
+            {
+                ResetGameBarButton_Click(this, new RoutedEventArgs());
             }
             else if (ReferenceEquals(focused, SaveButton))
             {

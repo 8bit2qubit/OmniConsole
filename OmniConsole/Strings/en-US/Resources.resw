@@ -168,4 +168,19 @@
   <data name="SettingsAppDescription" xml:space="preserve">
     <value>OmniConsole Settings</value>
   </data>
+  <data name="ResetGameBarButton.Content" xml:space="preserve">
+    <value>Reset GameBar &amp; Enter FSE</value>
+  </data>
+  <data name="Nav_General.Content" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Nav_Troubleshoot.Content" xml:space="preserve">
+    <value>Troubleshoot</value>
+  </data>
+  <data name="TroubleshootDescription.Text" xml:space="preserve">
+    <value>If the FSE confirmation dialog doesn't appear, use this to reset the environment.</value>
+  </data>
+  <data name="TroubleshootTitle.Text" xml:space="preserve">
+    <value>Troubleshoot</value>
+  </data>
 </root>

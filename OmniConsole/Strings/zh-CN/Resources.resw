@@ -168,4 +168,19 @@
   <data name="SettingsAppDescription" xml:space="preserve">
     <value>OmniConsole 设置界面</value>
   </data>
+  <data name="ResetGameBarButton.Content" xml:space="preserve">
+    <value>重置 GameBar 并进入 FSE</value>
+  </data>
+  <data name="Nav_General.Content" xml:space="preserve">
+    <value>常规</value>
+  </data>
+  <data name="Nav_Troubleshoot.Content" xml:space="preserve">
+    <value>疑难解答</value>
+  </data>
+  <data name="TroubleshootDescription.Text" xml:space="preserve">
+    <value>若進入 FSE 的确认对话框没有出现，请按此按钮重置环境。</value>
+  </data>
+  <data name="TroubleshootTitle.Text" xml:space="preserve">
+    <value>疑难解答</value>
+  </data>
 </root>
