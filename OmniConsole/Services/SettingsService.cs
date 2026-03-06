@@ -79,5 +79,48 @@ namespace OmniConsole.Services
         {
             ApplicationData.Current.LocalSettings.Values[DefaultPlatformKey] = platform.Id;
         }
+        /// <summary>
+        /// 取得是否啟用「Game Bar 媒體櫃按鈕進入設定介面」功能。
+        /// 預設為 true。
+        /// </summary>
+        public static bool GetUseGameBarLibraryForSettings()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UseGameBarLibraryForSettings", out object? value) && value is bool isEnabled)
+            {
+                return isEnabled;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用「Game Bar 媒體櫃按鈕進入設定介面」功能。
+        /// </summary>
+        public static void SetUseGameBarLibraryForSettings(bool isEnabled)
+        {
+            ApplicationData.Current.LocalSettings.Values["UseGameBarLibraryForSettings"] = isEnabled;
+        }
+
+        /// <summary>
+        /// 取得是否啟用「Game Bar 平台對接 (Passthrough)」功能。
+        /// 預設為 false。
+        /// </summary>
+        public static bool GetEnablePassthrough()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("EnablePassthrough", out object? value) && value is bool isEnabled)
+            {
+                return isEnabled;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用「Game Bar 平台對接 (Passthrough)」功能。
+        /// </summary>
+        public static void SetEnablePassthrough(bool isEnabled)
+        {
+            ApplicationData.Current.LocalSettings.Values["EnablePassthrough"] = isEnabled;
+        }
     }
 }

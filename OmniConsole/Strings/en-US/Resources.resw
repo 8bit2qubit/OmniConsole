@@ -126,9 +126,6 @@
   <data name="SettingsDescription.Text" xml:space="preserve">
     <value>Select the default gaming platform:</value>
   </data>
-  <data name="SaveButton.Content" xml:space="preserve">
-    <value>Save &amp; Exit</value>
-  </data>
   <data name="Launching" xml:space="preserve">
     <value>Launching {0}...</value>
   </data>
@@ -169,7 +166,7 @@
     <value>OmniConsole Settings</value>
   </data>
   <data name="ResetGameBarButton.Content" xml:space="preserve">
-    <value>Reset GameBar &amp; Enter FSE</value>
+    <value>Run</value>
   </data>
   <data name="Nav_General.Content" xml:space="preserve">
     <value>General</value>
@@ -178,9 +175,60 @@
     <value>Troubleshoot</value>
   </data>
   <data name="TroubleshootDescription.Text" xml:space="preserve">
-    <value>If the FSE confirmation dialog doesn't appear, use this to reset the environment.</value>
+    <value>Diagnose and fix common issues.</value>
   </data>
   <data name="TroubleshootTitle.Text" xml:space="preserve">
     <value>Troubleshoot</value>
+  </data>
+  <data name="TroubleshootSection_Fse.Text" xml:space="preserve">
+    <value>Full Screen Experience (FSE)</value>
+  </data>
+  <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
+    <value>Kill Game Bar &amp; Enter FSE</value>
+  </data>
+  <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
+    <value>Kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.</value>
+  </data>
+  <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
+    <value>Platform</value>
+  </data>
+  <data name="UseGameBarLibrarySwitch.OnContent" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_Advanced.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="AdvancedTitle.Text" xml:space="preserve">
+    <value>Advanced Settings</value>
+  </data>
+  <data name="AdvancedDescription.Text" xml:space="preserve">
+    <value>Fine-tune system behavior and integration options.</value>
+  </data>
+  <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
+    <value>Game Bar</value>
+  </data>
+  <data name="GameBarLibrarySetting_Title.Text" xml:space="preserve">
+    <value>Library Button Opens Settings</value>
+  </data>
+  <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
+    <value>Action to perform when pressing the "Library" button in Game Bar.</value>
+  </data>
+  <data name="PassthroughSetting_Title.Text" xml:space="preserve">
+    <value>Direct to Platform</value>
+  </data>
+  <data name="PassthroughSetting_Description.Text" xml:space="preserve">
+    <value>"Home" and "Library" buttons navigate directly to the default platform instead of OmniConsole.</value>
+  </data>
+  <data name="PassthroughSetting_Note.Text" xml:space="preserve">
+    <value>Currently only supports Xbox App. "Library" button setting above takes priority.</value>
+  </data>
+  <data name="EnablePassthroughSwitch.OffContent" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="EnablePassthroughSwitch.OnContent" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="ExitAppButton.Content" xml:space="preserve">
+    <value>Exit</value>
   </data>
 </root>

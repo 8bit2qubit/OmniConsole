@@ -161,11 +161,7 @@ namespace OmniConsole.Services
             try
             {
                 var options = new FindNextElementOptions { SearchRoot = _searchRoot };
-                var nextElement = FocusManager.FindNextElement(direction, options);
-                if (nextElement is Microsoft.UI.Xaml.Controls.Control control)
-                {
-                    control.Focus(FocusState.Keyboard);
-                }
+                _ = FocusManager.TryMoveFocusAsync(direction, options);
             }
             catch
             {

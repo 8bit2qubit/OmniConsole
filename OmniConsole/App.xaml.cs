@@ -92,5 +92,17 @@ namespace OmniConsole
                 }
             });
         }
+
+        /// <summary>
+        /// 從 Game Bar 重導時呼叫，直接啟動平台專屬 URI (Passthrough) 後退出應用程式。
+        /// </summary>
+        public static void PassthroughFromRedirect(string uri)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                _ = Windows.System.Launcher.LaunchUriAsync(new System.Uri(uri));
+                Application.Current.Exit();
+            });
+        }
     }
 }

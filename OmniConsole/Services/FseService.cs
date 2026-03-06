@@ -112,7 +112,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 強制終止 GameBar.exe 程序。
+        /// 強制終止 GameBar.exe 行程。
         /// 適用於 FSE 進入對話方塊卡住時的手動修復機制。
         /// </summary>
         public static void KillGameBar()

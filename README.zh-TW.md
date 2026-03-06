@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole 設定介面" width="480">
+  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" width="650">
 </p>
 
 <p align="center">
@@ -26,11 +26,11 @@
 OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 或掌機裝置（ROG Xbox Ally 等）上，每當全螢幕體驗被觸發時自動啟動您選擇的遊戲平台。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 突破了這項限制，讓您自由選擇要啟動的遊戲平台：
 
 - **開機時**：啟用「啟動時進入全螢幕體驗」後，開機即自動啟動您設定的遊戲平台。
-- **使用中**：按下 **Xbox 鍵** 開啟 Game Bar，點選**首頁**或**媒體櫃**即可啟動遊戲平台。
+- **使用中**：按下 **Xbox 鍵**，點選 Game Bar 的「**首頁**」或「**媒體櫃**」即可啟動遊戲平台。（「媒體櫃」預設開啟 OmniConsole 設定。）
 
 ### 運作方式
 
-> 觸發（開機 / Xbox 鍵 → Game Bar 首頁或媒體櫃 / 開始功能表 → OmniConsole）  
+> 觸發（開機 / Xbox 鍵 → Game Bar「首頁」或「媒體櫃」/ 開始功能表 → OmniConsole）  
 > → OmniConsole 啟動  
 > → 已在 FSE 中：啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束  
 > → FSE 模式外：FSE 進入對話方塊 → 確認 → 在 FSE 中重新啟動 → 啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束
@@ -43,7 +43,8 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 - **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher** 和 **Armoury Crate SE**。
 - **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
-- **內建疑難排解頁面** – 專屬頁面提供緊急修復途徑，解決因 Windows 系統 Bug 導致 FSE 進入對話方塊（「重新啟動以提升效能」）未出現的問題。
+- **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：開啟 OmniConsole 設定、啟動遊戲平台，或直接導向 Xbox App 等平台。
+- **內建疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
 - **手把完整支援** – 使用**方向鍵**或**左搖桿**在設定介面及平台卡片網格中導覽，按 **A 鍵**確認選取。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
@@ -83,7 +84,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 ### 3. 設為 FSE 首頁應用程式
 
 <p>
-  <img src="docs/images/fse-settings.png" alt="Windows 全螢幕體驗設定" height="220">
+  <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="220">
 </p>
 
 1.  前往**設定 → 遊戲 → 全螢幕體驗**。
@@ -92,7 +93,11 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ### 4. 完成！
 
-按下 **Xbox 鍵**，點選 Game Bar 的**首頁**或**媒體櫃**即可啟動您選擇的遊戲平台。若已啟用「**啟動時進入全螢幕體驗**」，開機時也會自動啟動。您也可以直接從開始功能表啟動 OmniConsole，FSE 會自動觸發並開始啟動所選平台。
+您的遊戲平台現在可透過以下任一方式啟動：
+
+- **Game Bar**：按下 **Xbox 鍵**，點選「**首頁**」或「**媒體櫃**」。（「媒體櫃」預設開啟 OmniConsole 設定。）
+- **開機**：啟用「**啟動時進入全螢幕體驗**」即可開機自動啟動。
+- **開始功能表**：直接啟動 OmniConsole，FSE 會自動觸發。
 
 ---
 
@@ -112,7 +117,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 1. 從開始功能表開啟 **OmniConsole 設定**。
 2. 透過左側導覽選單切換至 **疑難排解** 頁面。
-3. 點選 **「重設 GameBar 並進入 FSE」** 按鈕。這將會強制關閉卡住的 Game Bar 行程，並重新觸發 FSE 進入對話方塊（「重新啟動以提升效能」）。
+3. 在 **「結束 Game Bar 並進入 FSE」** 旁點選 **「執行」** 按鈕。這將會結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
 
 ---
 

@@ -11,7 +11,6 @@
     Title="OmniConsole">
 
     <Grid Background="#1e1e1e" RequestedTheme="Dark">
-
         <!-- 啟動模式：自動啟動平台時顯示 -->
         <StackPanel x:Name="LaunchPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -144,6 +143,11 @@
                             <FontIcon Glyph="&#xF0E2;" />
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
+                    <NavigationViewItem x:Uid="Nav_Advanced" Tag="Advanced" FontSize="24">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE713;" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
                     <NavigationViewItem x:Uid="Nav_Troubleshoot" Tag="Troubleshoot" FontSize="24">
                         <NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xE90F;" />
@@ -220,22 +224,125 @@
                                 </GridView.ItemTemplate>
                             </GridView>
 
-                            <Button x:Name="SaveButton" x:Uid="SaveButton"
-                                    Click="SaveButton_Click"
+                            <Button x:Name="GeneralExitButton" x:Uid="ExitAppButton"
+                                    Click="ExitAppButton_Click"
+                                    HorizontalAlignment="Center"
+                                    FontSize="18" Padding="40,16"/>
+
+                        </StackPanel>
+
+                        <!-- 進階設定頁面 -->
+                        <StackPanel x:Name="AdvancedPage" Visibility="Collapsed" Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
+                            <TextBlock x:Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock x:Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                            <!-- Game Bar 分類標題 -->
+                            <TextBlock x:Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Margin="2,0,0,0"/>
+
+                            <!-- Game Bar 群組卡片 -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="400">
+                                <StackPanel>
+                                    <!-- 媒體櫃按鈕開啟設定 -->
+                                    <Grid Padding="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <FontIcon Glyph="&#xE8F1;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <TextBlock x:Uid="GameBarLibrarySetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                            <TextBlock x:Uid="GameBarLibrarySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        </StackPanel>
+
+                                        <ToggleSwitch x:Name="UseGameBarLibrarySwitch" x:Uid="UseGameBarLibrarySwitch"
+                                                      Toggled="UseGameBarLibrarySwitch_Toggled"
+                                                      FlowDirection="RightToLeft"
+                                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                    </Grid>
+
+                                    <!-- 分隔線 -->
+                                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                    <!-- 直接導向平台 -->
+                                    <Grid Padding="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <FontIcon Glyph="&#xE71B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <TextBlock x:Uid="PassthroughSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                            <TextBlock x:Uid="PassthroughSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                            <TextBlock x:Uid="PassthroughSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        </StackPanel>
+
+                                        <ToggleSwitch x:Name="EnablePassthroughSwitch" x:Uid="EnablePassthroughSwitch"
+                                                      Toggled="EnablePassthroughSwitch_Toggled"
+                                                      FlowDirection="RightToLeft"
+                                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 退出按鈕 -->
+                            <Button x:Name="ExitAppButton" x:Uid="ExitAppButton"
+                                    Click="ExitAppButton_Click"
+                                    GettingFocus="ExitAppButton_GettingFocus"
                                     HorizontalAlignment="Center"
                                     FontSize="18" Padding="40,16"
-                                    Style="{StaticResource AccentButtonStyle}"/>
+                                    Margin="0,8,0,0"/>
                         </StackPanel>
 
                         <!-- 疑難排解頁面 -->
-                        <StackPanel x:Name="TroubleshootPage" Visibility="Collapsed" Spacing="32" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="600">
-                            <TextBlock x:Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock x:Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap"/>
-                            
-                            <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton"
-                                    Click="ResetGameBarButton_Click"
-                                    HorizontalAlignment="Center"
-                                    FontSize="18" Padding="40,16"/>
+                        <StackPanel x:Name="TroubleshootPage" Visibility="Collapsed" Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
+                            <TextBlock x:Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock x:Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                            <!-- FSE 分類標題 -->
+                            <TextBlock x:Uid="TroubleshootSection_Fse" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Margin="2,0,0,0"/>
+
+                            <!-- FSE 群組卡片 -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="400">
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE72C;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="ResetGameBarSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="ResetGameBarSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton"
+                                            Click="ResetGameBarButton_Click"
+                                            Grid.Column="2" VerticalAlignment="Center"
+                                            FontSize="14" Padding="24,8"/>
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </Grid>
                 </NavigationView.Content>

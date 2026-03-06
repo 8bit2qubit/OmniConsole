@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" width="480">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" width="650">
 </p>
 
 <p align="center">
@@ -26,11 +26,11 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
-- **During use**: Press the **Xbox button** to open Game Bar, then select **Home** or **Library** to launch your gaming platform.
+- **During use**: Press the **Xbox button**, then select **"Home"** or **"Library"** in Game Bar to launch your gaming platform. ("Library" opens OmniConsole settings by default.)
 
 ### How It Works
 
-> Trigger (System boot / Xbox button → Game Bar Home or Library / Start Menu → OmniConsole)  
+> Trigger (System boot / Xbox button → Game Bar "Home" or "Library" / Start Menu → OmniConsole)  
 > → OmniConsole activates  
 > → Already in FSE: Launches your chosen gaming platform → OmniConsole hides and exits  
 > → Outside FSE: FSE entry dialog → Confirm → Re-launches in FSE → Launches your chosen gaming platform → OmniConsole hides and exits
@@ -43,7 +43,8 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
-- **Built-in Troubleshoot Page** – A dedicated page for emergency FSE recovery if the FSE entry dialog ("Restart for better performance") fails to appear due to a Windows bug.
+- **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
+- **Built-in Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate the platform card grid and settings pages with **D-Pad** or **Left Stick** and press **A** to confirm.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -92,7 +93,11 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 
 ### 4. Done!
 
-Press the **Xbox button** and select **Home** or **Library** in Game Bar to launch your chosen gaming platform. If you've enabled **"Enter full screen experience on startup"**, it also launches automatically on boot. You can also launch OmniConsole directly from the Start Menu — FSE will activate automatically.
+Your gaming platform now launches via any of these entry points:
+
+- **Game Bar**: Press the **Xbox button**, then select **"Home"** or **"Library"**. ("Library" opens OmniConsole settings by default.)
+- **Boot**: Enable **"Enter full screen experience on startup"** for automatic launch at boot.
+- **Start Menu**: Launch OmniConsole directly — FSE activates automatically.
 
 ---
 
@@ -112,7 +117,7 @@ If you experience an issue where the Windows Full Screen Experience (FSE) entry 
 
 1. Open **OmniConsole Settings** from the Start Menu.
 2. Navigate to the **Troubleshoot** tab using the left menu.
-3. Click the **"Reset GameBar & Enter FSE"** button. This will force-close any stuck Game Bar processes and re-trigger the FSE entry dialog ("Restart for better performance").
+3. Click the **"Run"** button next to **"Kill Game Bar & Enter FSE"**. This will force-close Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.
 
 ---
 

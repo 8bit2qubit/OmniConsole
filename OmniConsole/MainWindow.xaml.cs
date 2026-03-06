@@ -23,12 +23,17 @@ namespace OmniConsole
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+        private const int DWMWCP_DONOTROUND = 1;
 
         private bool _isLaunching = false;
         private bool _hasLaunchedOnce = false;
-        private bool _isFullScreenSet = false;
+        private bool _isMaximized = false;
         private bool _isSettingsMode = false;
         private readonly ResourceLoader _resourceLoader = new();
 
@@ -43,7 +48,21 @@ namespace OmniConsole
         public MainWindow()
         {
             InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;
+
+            // 移除標題列與邊框，避免全螢幕時出現最小化/最大化/關閉按鈕
+            // 使用無邊框最大化取代 FullScreen presenter，FSE 模式下工作列已由 FSE shell 隱藏
+            if (this.AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.SetBorderAndTitleBar(false, false);
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+            }
+
+            // 強制直角，避免 Windows 11 預設圓角
+            var hwnd = WindowNative.GetWindowHandle(this);
+            int corner = DWMWCP_DONOTROUND;
+            DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+
             this.Activated += MainWindow_Activated;
         }
 
@@ -64,11 +83,11 @@ namespace OmniConsole
             if (args.WindowActivationState == WindowActivationState.Deactivated) return;
             if (_isLaunching) return;
 
-            // 首次啟動時切換到全螢幕（延遲到 Activated 才執行，避免建構函式中卡住）
-            if (!_isFullScreenSet)
+            // 首次啟動時最大化（延遲到 Activated 才執行，避免建構函式中卡住）
+            if (!_isMaximized)
             {
-                _isFullScreenSet = true;
-                this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+                _isMaximized = true;
+                (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
             }
 
             // 已經成功啟動過一次，不再透過 Activated 事件重複啟動
@@ -168,8 +187,8 @@ namespace OmniConsole
             _hasLaunchedOnce = false;
             LaunchPanel.Visibility = Visibility.Visible;
 
-            // 確保全螢幕
-            this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+            // 確保最大化
+            (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
 
             await LaunchDefaultPlatformAsync();
         }
@@ -210,6 +229,7 @@ namespace OmniConsole
             // 初始化 NavigationView，預設選取第一個「一般」項目
             SettingsNav.SelectedItem = SettingsNav.MenuItems[0];
             GeneralPage.Visibility = Visibility.Visible;
+            AdvancedPage.Visibility = Visibility.Collapsed;
             TroubleshootPage.Visibility = Visibility.Collapsed;
 
             // 從 PlatformCatalog 動態建立卡片清單（顯示名稱從資源檔讀取）
@@ -226,8 +246,8 @@ namespace OmniConsole
             // 顯示版本號
             VersionText.Text = $"v{SettingsService.GetAppVersion()}";
 
-            // 檢查「重設 GameBar 並進入 FSE」按鈕的顯示條件
-            ResetGameBarButton.Visibility = FseService.CanActivate() ? Visibility.Visible : Visibility.Collapsed;
+            // FSE 不可用時反灰按鈕而非隱藏
+            ResetGameBarButton.IsEnabled = FseService.CanActivate();
 
             // 還原上次儲存的選取狀態
             var current = SettingsService.GetDefaultPlatform();
@@ -239,7 +259,13 @@ namespace OmniConsole
                 PlatformGridView.SelectedItem = selectedCard;
             }
 
-            this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+            // 還原 Game Bar 媒體櫃的開關狀態
+            UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
+
+            // 還原 Passthrough 開關狀態
+            EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
+
+            (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
             this.Activate();
 
             StartGamepadPolling();
@@ -259,6 +285,7 @@ namespace OmniConsole
 
                 // 切換分頁可見性
                 GeneralPage.Visibility = (tag == "General") ? Visibility.Visible : Visibility.Collapsed;
+                AdvancedPage.Visibility = (tag == "Advanced") ? Visibility.Visible : Visibility.Collapsed;
                 TroubleshootPage.Visibility = (tag == "Troubleshoot") ? Visibility.Visible : Visibility.Collapsed;
             }
         }
@@ -317,6 +344,11 @@ namespace OmniConsole
                 }
 
                 _selectedPlatformId = selected.Id;
+
+                // 選取即儲存
+                var platform = PlatformCatalog.FindById(_selectedPlatformId) ?? PlatformCatalog.All[0];
+                SettingsService.SetDefaultPlatform(platform);
+                SettingsService.SaveCurrentVersion();
             }
         }
 
@@ -400,9 +432,21 @@ namespace OmniConsole
             {
                 ResetGameBarButton_Click(this, new RoutedEventArgs());
             }
-            else if (ReferenceEquals(focused, SaveButton))
+            else if (ReferenceEquals(focused, UseGameBarLibrarySwitch))
             {
-                SaveButton_Click(this, new RoutedEventArgs());
+                UseGameBarLibrarySwitch.IsOn = !UseGameBarLibrarySwitch.IsOn;
+            }
+            else if (ReferenceEquals(focused, EnablePassthroughSwitch))
+            {
+                EnablePassthroughSwitch.IsOn = !EnablePassthroughSwitch.IsOn;
+            }
+            else if (ReferenceEquals(focused, ExitAppButton))
+            {
+                ExitAppButton_Click(this, new RoutedEventArgs());
+            }
+            else if (ReferenceEquals(focused, GeneralExitButton))
+            {
+                ExitAppButton_Click(this, new RoutedEventArgs());
             }
         }
 
@@ -476,15 +520,38 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 儲存使用者選擇的預設遊戲平台，並結束應用程式。
+        /// 當 Game Bar 媒體櫃設定開關切換時，立即儲存設定。
         /// </summary>
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void UseGameBarLibrarySwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            var platform = PlatformCatalog.FindById(_selectedPlatformId) ?? PlatformCatalog.All[0];
+            SettingsService.SetUseGameBarLibraryForSettings(UseGameBarLibrarySwitch.IsOn);
+        }
 
-            SettingsService.SetDefaultPlatform(platform);
-            SettingsService.SaveCurrentVersion();
+        /// <summary>
+        /// 當 Passthrough 開關切換時，立即儲存設定。
+        /// </summary>
+        private void EnablePassthroughSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetEnablePassthrough(EnablePassthroughSwitch.IsOn);
+        }
 
+        /// <summary>
+        /// 修正 XY 焦點導航：從導覽列按右進入進階頁面時，導向第一個開關而非退出按鈕。
+        /// </summary>
+        private void ExitAppButton_GettingFocus(UIElement sender, GettingFocusEventArgs e)
+        {
+            if (e.Direction == FocusNavigationDirection.Right)
+            {
+                e.TrySetNewFocusedElement(UseGameBarLibrarySwitch);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// 退出應用程式，釋放單例鎖，使下次啟動走冷啟動路徑。
+        /// </summary>
+        private void ExitAppButton_Click(object sender, RoutedEventArgs e)
+        {
             StopGamepadPolling();
             Application.Current.Exit();
         }

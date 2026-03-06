@@ -63,6 +63,8 @@ namespace OmniConsole.Models
                 Id = "XboxApp",
                 DisplayNameKey = "Platform_XboxApp",
                 IconAsset = "ms-appx:///Assets/Platforms/xbox.png",
+                HomeUri = "xbox://",
+                LibraryUri = "xbox://library",
                 AvailabilityStrategy = new()
                 {
                     Type = LaunchStrategyType.ProtocolUri,

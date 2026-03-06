@@ -34,5 +34,17 @@ namespace OmniConsole.Models
         /// 用於「可用性檢查」的策略。僅查詢是否已安裝，不觸發啟動。
         /// </summary>
         public required LaunchStrategy AvailabilityStrategy { get; init; }
+
+        /// <summary>
+        /// 平台首頁的 URI，用於 Game Bar「首頁」按鈕的 Passthrough 對接。
+        /// 若為 null 則走正常啟動流程。
+        /// </summary>
+        public string? HomeUri { get; init; }
+
+        /// <summary>
+        /// 平台媒體櫃的 URI，用於 Game Bar「媒體櫃」按鈕的 Passthrough 對接。
+        /// 若為 null 則走正常啟動流程。
+        /// </summary>
+        public string? LibraryUri { get; init; }
     }
 }

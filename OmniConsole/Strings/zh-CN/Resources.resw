@@ -126,9 +126,6 @@
   <data name="SettingsDescription.Text" xml:space="preserve">
     <value>选择默认启动的游戏平台：</value>
   </data>
-  <data name="SaveButton.Content" xml:space="preserve">
-    <value>保存并退出</value>
-  </data>
   <data name="Launching" xml:space="preserve">
     <value>正在启动 {0}...</value>
   </data>
@@ -169,7 +166,7 @@
     <value>OmniConsole 设置界面</value>
   </data>
   <data name="ResetGameBarButton.Content" xml:space="preserve">
-    <value>重置 GameBar 并进入 FSE</value>
+    <value>执行</value>
   </data>
   <data name="Nav_General.Content" xml:space="preserve">
     <value>常规</value>
@@ -178,9 +175,60 @@
     <value>疑难解答</value>
   </data>
   <data name="TroubleshootDescription.Text" xml:space="preserve">
-    <value>若進入 FSE 的确认对话框没有出现，请按此按钮重置环境。</value>
+    <value>诊断并修复常见问题。</value>
   </data>
   <data name="TroubleshootTitle.Text" xml:space="preserve">
     <value>疑难解答</value>
+  </data>
+  <data name="TroubleshootSection_Fse.Text" xml:space="preserve">
+    <value>全屏体验 (FSE)</value>
+  </data>
+  <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
+    <value>终止 Game Bar 并进入 FSE</value>
+  </data>
+  <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
+    <value>终止 Game Bar 后将绕过 FSE 确认对话框，直接进入 FSE。</value>
+  </data>
+  <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
+    <value>游戏平台</value>
+  </data>
+  <data name="UseGameBarLibrarySwitch.OnContent" xml:space="preserve">
+    <value>设置界面</value>
+  </data>
+  <data name="Nav_Advanced.Content" xml:space="preserve">
+    <value>高级</value>
+  </data>
+  <data name="AdvancedTitle.Text" xml:space="preserve">
+    <value>高级设置</value>
+  </data>
+  <data name="AdvancedDescription.Text" xml:space="preserve">
+    <value>微调系统行为与集成选项。</value>
+  </data>
+  <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
+    <value>Game Bar</value>
+  </data>
+  <data name="GameBarLibrarySetting_Title.Text" xml:space="preserve">
+    <value>媒体库按钮打开设置</value>
+  </data>
+  <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
+    <value>按下 Game Bar 中的“媒体库”按钮时所执行的操作。</value>
+  </data>
+  <data name="PassthroughSetting_Title.Text" xml:space="preserve">
+    <value>直接导向平台</value>
+  </data>
+  <data name="PassthroughSetting_Description.Text" xml:space="preserve">
+    <value>"主页"和"媒体库"按钮将直接导向默认平台，跳过 OmniConsole。</value>
+  </data>
+  <data name="PassthroughSetting_Note.Text" xml:space="preserve">
+    <value>目前仅支持 Xbox App。媒体库按钮以上方设置为优先。</value>
+  </data>
+  <data name="EnablePassthroughSwitch.OffContent" xml:space="preserve">
+    <value>正常流程</value>
+  </data>
+  <data name="EnablePassthroughSwitch.OnContent" xml:space="preserve">
+    <value>直接导向</value>
+  </data>
+  <data name="ExitAppButton.Content" xml:space="preserve">
+    <value>退出</value>
   </data>
 </root>
