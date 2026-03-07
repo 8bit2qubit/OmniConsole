@@ -149,7 +149,7 @@ namespace OmniConsole
                 if (success)
                 {
                     // 啟動成功：顯示狀態，等待目標平台進入前景後結束應用程式
-                    // 5 秒延遲確保平台已到前景，FSE 不會重啟首頁
+                    // 給予足夠的逾時時間來確保平台順利到前景，避免 FSE 重啟首頁
                     // 結束後開設定或 Game Bar 重導都是冷啟動全新實例，避免視窗恢復問題
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName);
 
@@ -159,9 +159,11 @@ namespace OmniConsole
                     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
                     // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
-                    // 最多等 5 秒作為 fallback（避免平台啟動但未取得前景的極端情況）
+                    // 最多等 15 秒 (30 * 0.5s)，避免平台啟動但未取得前景的極端情況
                     bool platformToForeground = false;
-                    for (int i = 0; i < 10; i++)
+                    int maxRetries = 30;
+
+                    for (int i = 0; i < maxRetries; i++)
                     {
                         await Task.Delay(500);
                         if (GetForegroundWindow() != hwnd)
@@ -177,7 +179,7 @@ namespace OmniConsole
                         return;
                     }
 
-                    // 若 5 秒超時仍未取得前景，還原視窗狀態並進入失敗流程
+                    // 若逾時仍未取得前景，還原視窗狀態並進入失敗流程
                     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
                     success = false;
                     isTimeout = true;
