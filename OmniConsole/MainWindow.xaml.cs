@@ -23,6 +23,9 @@ namespace OmniConsole
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
@@ -50,7 +53,6 @@ namespace OmniConsole
             InitializeComponent();
 
             // 移除標題列與邊框，避免全螢幕時出現最小化/最大化/關閉按鈕
-            // 使用無邊框最大化取代 FullScreen presenter，FSE 模式下工作列已由 FSE shell 隱藏
             if (this.AppWindow.Presenter is OverlappedPresenter presenter)
             {
                 presenter.SetBorderAndTitleBar(false, false);
@@ -124,6 +126,9 @@ namespace OmniConsole
                 // 確保為啟動模式
                 LaunchPanel.Visibility = Visibility.Visible;
                 SettingsPanel.Visibility = Visibility.Collapsed;
+                GamepadHintBar.Visibility = Visibility.Collapsed;
+
+                StartLaunchPanelGamepadPolling();
 
                 var platform = SettingsService.GetDefaultPlatform();
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
@@ -136,6 +141,7 @@ namespace OmniConsole
 
                 StatusText.Text = string.Format(_resourceLoader.GetString("Launching"), platformName);
 
+                bool isTimeout = false;
                 bool success = await ProcessLauncherService.LaunchPlatformAsync(platform);
 
                 _hasLaunchedOnce = true;
@@ -152,12 +158,32 @@ namespace OmniConsole
                     int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
                     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
-                    // 等待目標平台進入前景後結束應用程式
-                    await Task.Delay(5000);
-                    Application.Current.Exit();
-                    return;
+                    // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
+                    // 最多等 5 秒作為 fallback（避免平台啟動但未取得前景的極端情況）
+                    bool platformToForeground = false;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        await Task.Delay(500);
+                        if (GetForegroundWindow() != hwnd)
+                        {
+                            platformToForeground = true;
+                            break;
+                        }
+                    }
+
+                    if (platformToForeground)
+                    {
+                        Application.Current.Exit();
+                        return;
+                    }
+
+                    // 若 5 秒超時仍未取得前景，還原視窗狀態並進入失敗流程
+                    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
+                    success = false;
+                    isTimeout = true;
                 }
-                else
+
+                if (!success)
                 {
                     // 啟動失敗時隱藏平台圖示
                     LaunchIconBorder.Visibility = Visibility.Collapsed;
@@ -166,11 +192,12 @@ namespace OmniConsole
                     LaunchProgressRing.IsActive = false;
                     LaunchProgressRing.Visibility = Visibility.Collapsed;
 
-                    StatusText.Text = string.Format(_resourceLoader.GetString("LaunchFailed"), platformName);
+                    string errorStringKey = isTimeout ? "LaunchTimeout" : "LaunchFailed";
+                    StatusText.Text = string.Format(_resourceLoader.GetString(errorStringKey), platformName);
                     OpenSettingsButton.Visibility = Visibility.Visible;
                     ReturnToDesktopButton.Visibility = Visibility.Visible;
+                    GamepadHintBar.Visibility = Visibility.Visible;
                     OpenSettingsButton.Focus(FocusState.Programmatic);
-                    StartLaunchPanelGamepadPolling();
                 }
             }
             finally
@@ -200,6 +227,7 @@ namespace OmniConsole
         {
             LaunchPanel.Visibility = Visibility.Visible;
             SettingsPanel.Visibility = Visibility.Collapsed;
+            GamepadHintBar.Visibility = Visibility.Visible;
             StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
             EnableFseButton.Visibility = Visibility.Visible;
             EnableFseButton.Focus(FocusState.Programmatic);
@@ -225,6 +253,7 @@ namespace OmniConsole
             // 切換到設定模式
             LaunchPanel.Visibility = Visibility.Collapsed;
             SettingsPanel.Visibility = Visibility.Visible;
+            GamepadHintBar.Visibility = Visibility.Visible;
 
             // 初始化 NavigationView，預設選取第一個「一般」項目
             SettingsNav.SelectedItem = SettingsNav.MenuItems[0];
@@ -265,6 +294,7 @@ namespace OmniConsole
             // 還原 Passthrough 開關狀態
             EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
 
+            this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
             (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
             this.Activate();
 
@@ -353,6 +383,22 @@ namespace OmniConsole
         }
 
         /// <summary>
+        /// GridView 大小變更時，依可用寬度計算每張卡片的尺寸，使卡片填滿整列。
+        /// </summary>
+        private void PlatformGridView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (PlatformGridView.ItemsPanelRoot is ItemsWrapGrid wrapGrid)
+            {
+                double availableWidth = e.NewSize.Width;
+                // 根據可用寬度決定欄數：寬螢幕 4 欄，中等 3 欄，窄螢幕 2 欄
+                int columns = availableWidth >= 1100 ? 4 : availableWidth >= 700 ? 3 : 2;
+                double itemWidth = Math.Floor(availableWidth / columns);
+                wrapGrid.ItemWidth = itemWidth;
+                wrapGrid.ItemHeight = Math.Floor(itemWidth * 0.7); // 維持約 7:10 的高寬比
+            }
+        }
+
+        /// <summary>
         /// 強制結束 GameBar.exe 並重新嘗試觸發 FSE。
         /// 當 FSE 進入對話方塊卡住時，透過此方法可重置環境並達成「殺死後重發」的備援路徑。
         /// </summary>
@@ -381,7 +427,8 @@ namespace OmniConsole
                 _gamepadNavigationService = new GamepadNavigationService(
                     this.SettingsPanel,
                     this.DispatcherQueue,
-                    OnGamepadAButtonPressed
+                    OnGamepadAButtonPressed,
+                    OnGamepadBButtonPressed
                 );
             }
             _gamepadNavigationService.Start();
@@ -440,13 +487,74 @@ namespace OmniConsole
             {
                 EnablePassthroughSwitch.IsOn = !EnablePassthroughSwitch.IsOn;
             }
-            else if (ReferenceEquals(focused, ExitAppButton))
+        }
+
+        /// <summary>
+        /// 處理手把 'B' 鍵被按下的回呼函式。
+        /// 導覽選單展開時先收合，否則觸發全域退出。
+        /// </summary>
+        private void OnGamepadBButtonPressed()
+        {
+            if (SettingsNav.IsPaneOpen)
             {
-                ExitAppButton_Click(this, new RoutedEventArgs());
+                SettingsNav.IsPaneOpen = false;
+                return;
             }
-            else if (ReferenceEquals(focused, GeneralExitButton))
+
+            RequestExitApplication();
+        }
+
+        /// <summary>
+        /// 全域退出邏輯。
+        /// 若在設定介面中，直接退出應用程式（返回 FSE）。
+        /// 若在其他介面且在 FSE 中，觸發退回桌面對話方塊。若不在則直接退出。
+        /// </summary>
+        private async void RequestExitApplication()
+        {
+            // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面 (如 FSE) 即可
+            if (SettingsPanel.Visibility == Visibility.Visible)
             {
-                ExitAppButton_Click(this, new RoutedEventArgs());
+                StopGamepadPolling();
+                Application.Current.Exit();
+                return;
+            }
+
+            // 啟動失敗等其他介面時，若系統啟用了 FSE 機制，必須透過模擬 Win+F11 叫出退回桌面對話方塊
+            // 例如：啟動失敗後，點選「返回桌面」按鈕時呼叫，觸發 FSE 退出流程
+            // FSE 退出對話方塊顯示期間使用者無法點選 OmniConsole 的按鈕，
+            // 因此不需要停用按鈕；只需在背景輪詢 IsActive() 等待繼續
+            //   - 對話方塊繼續 → IsActive() 變 false → Exit()
+            //   - 對話方塊取消 → FSE 退出對話方塊消失，OmniConsole 按鈕可以點選
+            //   - 再次點選「返回桌面」按鈕 → 取消上一輪背景輪詢，重新送 Win+F11
+            if (FseService.IsActive())
+            {
+                _fseExitCts?.Cancel();
+                _fseExitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                var token = _fseExitCts.Token;
+
+                FseService.TryExitToDesktop();
+
+                try
+                {
+                    // 一旦 IsActive() 變成 false，代表對話方塊通過且準備退回桌面，此時可安全結束此應用程式。
+                    while (!token.IsCancellationRequested)
+                    {
+                        await Task.Delay(200, token);
+                        if (!FseService.IsActive())
+                        {
+                            StopGamepadPolling();
+                            Application.Current.Exit();
+                            return;
+                        }
+                    }
+                }
+                catch (OperationCanceledException) { }
+            }
+            // 若為一般視窗模式、或是尚未進入 FSE 環境時，一律直接退出應用程式
+            else
+            {
+                StopGamepadPolling();
+                Application.Current.Exit();
             }
         }
 
@@ -462,51 +570,29 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 啟動失敗後，點選「返回桌面」按鈕時呼叫，觸發 FSE 退出流程。
-        /// FSE overlay 對話方塊顯示期間使用者無法點選 OmniConsole 的按鈕，
-        /// 因此不需要停用按鈕；只需在背景輪詢 IsActive() 等待繼續。
-        ///   - 對話方塊繼續 → IsActive() 變 false → Exit()
-        ///   - 對話方塊取消 → overlay 消失，OmniConsole 按鈕自動恢復可點選
-        ///   - 再次點選本按鈕 → 取消上一輪背景輪詢，重新送 Win+F11
+        /// 啟動失敗後，點選「返回桌面」按鈕時呼叫，觸發退出流程。
         /// </summary>
-        private async void ReturnToDesktopButton_Click(object sender, RoutedEventArgs e)
+        private void ReturnToDesktopButton_Click(object sender, RoutedEventArgs e)
         {
-            _fseExitCts?.Cancel();
-            _fseExitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var token = _fseExitCts.Token;
-
-            FseService.TryExitToDesktop();
-
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    await Task.Delay(200, token);
-                    if (!FseService.IsActive())
-                    {
-                        Application.Current.Exit();
-                        return;
-                    }
-                }
-            }
-            catch (OperationCanceledException) { }
+            RequestExitApplication();
         }
 
         /// <summary>
-        /// 啟動失敗時為 LaunchPanel 啟動手把輪詢，使 A 鍵可觸發「開啟設定」按鈕。
+        /// 啟動失敗時為 LaunchPanel 啟動手把輪詢，使 A 鍵可觸發按鈕。
         /// </summary>
         private void StartLaunchPanelGamepadPolling()
         {
             _launchPanelGamepadService ??= new GamepadNavigationService(
                 this.LaunchPanel,
                 this.DispatcherQueue,
-                OnLaunchPanelGamepadAButtonPressed
+                OnLaunchPanelGamepadAButtonPressed,
+                OnGamepadBButtonPressed
             );
             _launchPanelGamepadService.Start();
         }
 
         /// <summary>
-        /// LaunchPanel 中手把 'A' 鍵的處理：焦點在「開啟設定」按鈕時觸發點選。
+        /// LaunchPanel 中手把 'A' 鍵的處理：焦點在按鈕時觸發點選。
         /// </summary>
         private void OnLaunchPanelGamepadAButtonPressed()
         {
@@ -528,6 +614,14 @@ namespace OmniConsole
         }
 
         /// <summary>
+        /// 底部提示列「B 退出」按鈕的滑鼠點選處理。
+        /// </summary>
+        private void ExitHintButton_Click(object sender, RoutedEventArgs e)
+        {
+            RequestExitApplication();
+        }
+
+        /// <summary>
         /// 當 Passthrough 開關切換時，立即儲存設定。
         /// </summary>
         private void EnablePassthroughSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -535,25 +629,5 @@ namespace OmniConsole
             SettingsService.SetEnablePassthrough(EnablePassthroughSwitch.IsOn);
         }
 
-        /// <summary>
-        /// 修正 XY 焦點導航：從導覽列按右進入進階頁面時，導向第一個開關而非退出按鈕。
-        /// </summary>
-        private void ExitAppButton_GettingFocus(UIElement sender, GettingFocusEventArgs e)
-        {
-            if (e.Direction == FocusNavigationDirection.Right)
-            {
-                e.TrySetNewFocusedElement(UseGameBarLibrarySwitch);
-                e.Handled = true;
-            }
-        }
-
-        /// <summary>
-        /// 退出應用程式，釋放單例鎖，使下次啟動走冷啟動路徑。
-        /// </summary>
-        private void ExitAppButton_Click(object sender, RoutedEventArgs e)
-        {
-            StopGamepadPolling();
-            Application.Current.Exit();
-        }
     }
 }

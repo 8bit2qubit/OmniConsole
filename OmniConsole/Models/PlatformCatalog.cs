@@ -120,12 +120,36 @@ namespace OmniConsole.Models
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "asusac://",
                     },
-                    // 策略二：透過 PackageManager 取得 MSIX 入口啟動
+                    // 策略二：MSIX 應用程式啟動（填入 PackageName 與 Publisher）
                     new()
                     {
                         Type = LaunchStrategyType.MsixPackage,
                         PackageName = "B9ECED6F.ArmouryCrateSE",
                         Publisher = "CN=38BC0208-0916-4E44-909B-E6832F47CDE7",
+                    },
+                ],
+            },
+
+            // ── Playnite Fullscreen ───────────────────────────────────────────
+            new()
+            {
+                Id = "PlayniteFullscreen",
+                DisplayNameKey = "Platform_PlayniteFullscreen",
+                IconAsset = "ms-appx:///Assets/Platforms/playnite.png",
+                AvailabilityStrategy = new()
+                {
+                    Type = LaunchStrategyType.ProtocolUri,
+                    Uri = "playnite://",
+                },
+                LaunchStrategies =
+                [
+                    // 執行 Playnite 全螢幕應用程式
+                    new()
+                    {
+                        Type = LaunchStrategyType.Executable,
+                        ExecutableName = "Playnite.FullscreenApp.exe",
+                        Arguments = "--hidesplashscreen",
+                        SearchPaths = [ @"%LOCALAPPDATA%\Playnite" ],
                     },
                 ],
             },

@@ -20,7 +20,7 @@ namespace OmniConsole.Services
     /// 封裝 Windows Gaming Full Screen Experience (FSE) 的偵測與觸發。
     /// 使用 api-ms-win-gaming-experience-l1-1-0.dll（Windows API Set，由 OS loader 動態解析）。
     /// </summary>
-    public static class FseService
+    public static partial class FseService
     {
         [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -112,23 +112,27 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 強制終止 GameBar.exe 行程。
+        /// 強制終止 GameBar.exe 與 GameBarFTServer.exe 行程。
         /// 適用於 FSE 進入對話方塊卡住時的手動修復機制。
         /// </summary>
         public static void KillGameBar()
         {
-            try
+            string[] processNames = ["GameBar", "GameBarFTServer"];
+            foreach (var name in processNames)
             {
-                var processes = Process.GetProcessesByName("GameBar");
-                foreach (var process in processes)
+                try
                 {
-                    Debug.WriteLine($"[FseService] Killing GameBar.exe (PID: {process.Id})");
-                    process.Kill();
+                    var processes = Process.GetProcessesByName(name);
+                    foreach (var process in processes)
+                    {
+                        Debug.WriteLine($"[FseService] Killing {name}.exe (PID: {process.Id})");
+                        process.Kill();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[FseService] KillGameBar failed: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[FseService] Kill {name} failed: {ex.Message}");
+                }
             }
         }
     }

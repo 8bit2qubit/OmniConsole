@@ -13,6 +13,9 @@ namespace OmniConsole.Models
 
         /// <summary>透過 PackageManager 找到已安裝的 MSIX 套件並啟動。</summary>
         MsixPackage,
+
+        /// <summary>直接執行指定的執行檔（配合絕對路徑、SearchPaths 或系統 PATH/App Paths 機制）。</summary>
+        Executable,
     }
 
     /// <summary>
@@ -40,7 +43,9 @@ namespace OmniConsole.Models
         /// <summary>要讀取的登錄值名稱（例如 "InstallPath"）。</summary>
         public string? RegistryValueName { get; init; }
 
-        /// <summary>位於安裝目錄下的執行檔名稱（例如 "steam.exe"）。</summary>
+        // ── Executable 與 Registry 共用屬性 ──────────────────────────────────
+
+        /// <summary>執行檔名稱或絕對路徑（例如 "steam.exe" 或 "C:\Games\GameName\Game.exe"）。</summary>
         public string? ExecutableName { get; init; }
 
         /// <summary>傳遞給執行檔的命令列參數（例如 "-bigpicture"）。</summary>
@@ -53,5 +58,10 @@ namespace OmniConsole.Models
 
         /// <summary>MSIX 套件發佈者識別字串。</summary>
         public string? Publisher { get; init; }
+
+        // ── Executable 策略 ──────────────────────────────────────────────
+
+        /// <summary>純檔名啟動時的額外搜尋目錄（支援環境變數，例如 "%LOCALAPPDATA%\Playnite"），適用於 Executable 策略。</summary>
+        public string[]? SearchPaths { get; init; }
     }
 }

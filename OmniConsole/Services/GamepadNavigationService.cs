@@ -17,6 +17,7 @@ namespace OmniConsole.Services
         private GamepadReading _previousReading;
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
+        private readonly Action? _onBButtonPressed;
 
         /// <summary>
         /// 初始化 <see cref="GamepadNavigationService"/> 類別的新執行個體。
@@ -24,10 +25,12 @@ namespace OmniConsole.Services
         /// <param name="searchRoot">要在其中搜尋下一個焦點元素的根容器 (通常是 Window.Content)。</param>
         /// <param name="dispatcherQueue">目前 UI 執行緒的 DispatcherQueue，用於建立輪詢計時器。</param>
         /// <param name="onAButtonPressed">當按下手把 'A' 鍵時觸發的委派動作。</param>
-        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed)
+        /// <param name="onBButtonPressed">當按下手把 'B' 鍵時觸發的委派動作（可選）。</param>
+        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed, Action? onBButtonPressed = null)
         {
             _searchRoot = searchRoot;
             _onAButtonPressed = onAButtonPressed;
+            _onBButtonPressed = onBButtonPressed;
 
             _gamepadTimer = dispatcherQueue.CreateTimer();
             _gamepadTimer.Interval = TimeSpan.FromMilliseconds(50); // 20 FPS
@@ -80,6 +83,10 @@ namespace OmniConsole.Services
                     {
                         _onAButtonPressed?.Invoke();
                     }
+                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.B))
+                    {
+                        _onBButtonPressed?.Invoke();
+                    }
 
                     // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）
                     if (reading.LeftThumbstickY < -0.5 && _previousReading.LeftThumbstickY >= -0.5)
@@ -105,7 +112,7 @@ namespace OmniConsole.Services
         /// </summary>
         private bool IsAnyInputActive(GamepadReading reading)
         {
-            return (reading.Buttons & (GamepadButtons.DPadDown | GamepadButtons.DPadUp | GamepadButtons.DPadLeft | GamepadButtons.DPadRight | GamepadButtons.A)) != 0 ||
+            return (reading.Buttons & (GamepadButtons.DPadDown | GamepadButtons.DPadUp | GamepadButtons.DPadLeft | GamepadButtons.DPadRight | GamepadButtons.A | GamepadButtons.B)) != 0 ||
                    Math.Abs(reading.LeftThumbstickY) > 0.5 ||
                    Math.Abs(reading.LeftThumbstickX) > 0.5;
         }

@@ -132,6 +132,9 @@
   <data name="LaunchSuccess" xml:space="preserve">
     <value>{0} 已启动</value>
   </data>
+  <data name="LaunchTimeout" xml:space="preserve">
+    <value>启动等待超时，请确认 {0} 运行正常</value>
+  </data>
   <data name="LaunchFailed" xml:space="preserve">
     <value>启动失败，请确认 {0} 已安装</value>
   </data>
@@ -158,6 +161,9 @@
   </data>
   <data name="Platform_ArmouryCrateSE" xml:space="preserve">
     <value>Armoury Crate SE</value>
+  </data>
+  <data name="Platform_PlayniteFullscreen" xml:space="preserve">
+    <value>Playnite Fullscreen</value>
   </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole 设置</value>
@@ -228,7 +234,10 @@
   <data name="EnablePassthroughSwitch.OnContent" xml:space="preserve">
     <value>直接导向</value>
   </data>
-  <data name="ExitAppButton.Content" xml:space="preserve">
+  <data name="GamepadHint_Select.Text" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="GamepadHint_Exit.Text" xml:space="preserve">
     <value>退出</value>
   </data>
 </root>
