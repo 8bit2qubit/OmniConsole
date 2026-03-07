@@ -41,11 +41,11 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
-- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, and **Armoury Crate SE**.
+- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
-- **Built-in Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
-- **Gamepad Support** – Navigate the platform card grid and settings pages with **D-Pad** or **Left Stick** and press **A** to confirm.
+- **Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
+- **Gamepad Support** – Navigate the platform card grid and settings pages with **D-Pad** or **Left Stick**, press **A** to confirm, and press **B** to exit.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
 
@@ -79,7 +79,9 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
     - **Xbox App**
     - **Epic Games Launcher**
     - **Armoury Crate SE**
-3.  Click/Press **Save & Exit**.
+    - **Playnite Fullscreen**
+
+    Your selection is saved automatically. Press **B** on your controller or click/press **Exit** to finish.
 
 ### 3. Set as FSE Home App
 
@@ -97,7 +99,7 @@ Your gaming platform now launches via any of these entry points:
 
 - **Game Bar**: Press the **Xbox button**, then select **"Home"** or **"Library"**. ("Library" opens OmniConsole settings by default.)
 - **Boot**: Enable **"Enter full screen experience on startup"** for automatic launch at boot.
-- **Start Menu**: Launch OmniConsole directly — FSE activates automatically.
+- **Start Menu**: Launch OmniConsole directly to automatically activate the Full Screen Experience (FSE).
 
 ---
 
