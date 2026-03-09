@@ -240,4 +240,131 @@
   <data name="GamepadHint_Exit.Text" xml:space="preserve">
     <value>退出</value>
   </data>
+  <data name="Nav_SystemPlatforms.Content" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="Nav_UserPlatforms.Content" xml:space="preserve">
+    <value>自定义</value>
+  </data>
+  <data name="AddPlatformText.Text" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="GamepadHint_SwitchTab.Text" xml:space="preserve">
+    <value>切换选项卡</value>
+  </data>
+  <data name="GamepadHint_Add.Text" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="GamepadHint_Edit.Text" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="PlatformDialog_AddTitle" xml:space="preserve">
+    <value>添加平台</value>
+  </data>
+  <data name="PlatformDialog_EditTitle" xml:space="preserve">
+    <value>编辑平台</value>
+  </data>
+  <data name="PlatformDialog_NameLabel" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="PlatformDialog_NamePlaceholder" xml:space="preserve">
+    <value>例如 My Gaming Platform</value>
+  </data>
+  <data name="PlatformDialog_LaunchTypeLabel" xml:space="preserve">
+    <value>启动方式</value>
+  </data>
+  <data name="PlatformDialog_Executable" xml:space="preserve">
+    <value>可执行文件</value>
+  </data>
+  <data name="PlatformDialog_TargetLabel" xml:space="preserve">
+    <value>URI 或路径</value>
+  </data>
+  <data name="PlatformDialog_TargetPlaceholder" xml:space="preserve">
+    <value>例如 steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_UriLabel" xml:space="preserve">
+    <value>URI</value>
+  </data>
+  <data name="PlatformDialog_UriPlaceholder" xml:space="preserve">
+    <value>例如 steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_PathLabel" xml:space="preserve">
+    <value>路径</value>
+  </data>
+  <data name="PlatformDialog_PathPlaceholder" xml:space="preserve">
+    <value>例如 C:\Program Files (x86)\Steam\steam.exe</value>
+  </data>
+  <data name="PlatformDialog_IconLabel" xml:space="preserve">
+    <value>卡片封面图（可选）</value>
+  </data>
+  <data name="PlatformDialog_IconHint" xml:space="preserve">
+    <value>建议尺寸：800 x 560 px（10:7）</value>
+  </data>
+  <data name="PlatformDialog_ConfigWarning" xml:space="preserve">
+    <value>注意：配置不正确可能导致平台启动失败或产生非预期的行为。</value>
+  </data>
+  <data name="PlatformDialog_ValidationNameTooLong" xml:space="preserve">
+    <value>名称不可超过 50 个字符。</value>
+  </data>
+  <data name="PlatformDialog_ValidationNameInvalid" xml:space="preserve">
+    <value>名称包含不合法的字符。</value>
+  </data>
+  <data name="PlatformDialog_ValidationTargetEmpty" xml:space="preserve">
+    <value>此为必填栏位。</value>
+  </data>
+  <data name="PlatformDialog_ValidationUriInvalid" xml:space="preserve">
+    <value>URI 格式无效。范例：steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
+    <value>路径格式无效。范例：C:\Program Files (x86)\Steam\steam.exe</value>
+  </data>
+  <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
+    <value>启动参数包含不安全的字符。</value>
+  </data>
+  <data name="CustomPlatform_ConsentTitle.Text" xml:space="preserve">
+    <value>自定义平台支持（实验性功能）</value>
+  </data>
+  <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
+    <value>此功能允许您自行添加自定义平台启动配置。请在继续之前仔细阅读以下内容：
+
+- 本开源项目按“现状”提供。此自定义功能为实验性质，更不提供任何功能上的担保或保证。
+- 配置错误的平台可能无法正常启动，进而导致全屏体验环境崩溃，甚至必须重置应用程序才能恢复正常。
+- 开发者不对因使用本程序或自定义平台配置所造成的任何损害、数据丢失或其他问题承担责任。
+- 您需自行确保所有配置的安全性、正确性及合法性。
+
+点击“我了解并接受”即表示您已充分了解上述风险，并同意完全自行承担使用此功能的一切责任与后果。</value>
+  </data>
+  <data name="CustomPlatform_ConsentAccept.Content" xml:space="preserve">
+    <value>我了解并接受</value>
+  </data>
+  <data name="PlatformDialog_ArgsLabel" xml:space="preserve">
+    <value>启动参数（可选）</value>
+  </data>
+  <data name="PlatformDialog_ArgsPlaceholder" xml:space="preserve">
+    <value>例如 -bigpicture</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathNotExe" xml:space="preserve">
+    <value>仅支持可执行文件（.exe）。</value>
+  </data>
+  <data name="PlatformDialog_ValidationArgsTooLong" xml:space="preserve">
+    <value>启动参数不可超过 500 个字符。</value>
+  </data>
+  <data name="PlatformNotAvailable" xml:space="preserve">
+    <value>{0} 无法使用，请确认已安装或选择其他平台。</value>
+  </data>
+  <data name="PlatformDialog_ValidationUriTooLong" xml:space="preserve">
+    <value>URI 不可超过 2048 个字符。</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathTooLong" xml:space="preserve">
+    <value>路径不可超过 260 个字符。</value>
+  </data>
+  <data name="PlatformDialog_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="PlatformDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="PlatformDialog_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
 </root>

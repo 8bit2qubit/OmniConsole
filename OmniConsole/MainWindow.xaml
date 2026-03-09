@@ -11,6 +11,13 @@
     Title="OmniConsole">
 
     <Grid Background="#1e1e1e" RequestedTheme="Dark">
+        <!-- 浮水印：啟動畫面底部顯示 -->
+        <TextBlock x:Name="BrandingText" Text="OmniConsole"
+                   FontSize="16" FontWeight="Light"
+                   Foreground="#66FFFFFF"
+                   HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                   Margin="0,0,0,32"/>
+
         <!-- 啟動模式：自動啟動平台時顯示 -->
         <StackPanel x:Name="LaunchPanel"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -169,128 +176,176 @@
                                 <TextBlock x:Uid="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center"/>
                             </StackPanel>
 
-                            <!-- 平台選擇卡片網格（依可用寬度自動決定欄數，垂直捲動） -->
-                            <GridView x:Name="PlatformGridView"
-                                      Grid.Row="1"
-                                      SelectionMode="Single"
-                                      SingleSelectionFollowsFocus="False"
-                                      HorizontalAlignment="Stretch"
-                                      IsTabStop="False"
-                                      SizeChanged="PlatformGridView_SizeChanged"
-                                      SelectionChanged="PlatformGridView_SelectionChanged">
-                                <GridView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <ItemsWrapGrid x:Name="PlatformWrapGrid" Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </GridView.ItemsPanel>
+                            <!-- 分類索引標籤 + 平台卡片 -->
+                            <NavigationView x:Name="PlatformCategoryNav"
+                                            Grid.Row="1"
+                                            PaneDisplayMode="Top"
+                                            IsBackButtonVisible="Collapsed"
+                                            IsSettingsVisible="False"
+                                            SelectionChanged="PlatformCategoryNav_SelectionChanged"
+                                            XYFocusKeyboardNavigation="Enabled">
 
-                                <GridView.Resources>
-                                    <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemAccentColorDark2}"/>
-                                    <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemAccentColorDark1}"/>
-                                    <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemAccentColorDark3}"/>
-                                    <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SystemAccentColorDark3}"/>
-                                    <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="{ThemeResource SystemAccentColorDark2}"/>
-                                </GridView.Resources>
+                                <NavigationView.MenuItems>
+                                    <NavigationViewItem x:Uid="Nav_SystemPlatforms" Tag="System" IsSelected="True">
+                                        <NavigationViewItem.Icon>
+                                            <FontIcon Glyph="&#xE7FC;" />
+                                        </NavigationViewItem.Icon>
+                                    </NavigationViewItem>
+                                    <NavigationViewItem x:Uid="Nav_UserPlatforms" Tag="User">
+                                        <NavigationViewItem.Icon>
+                                            <FontIcon Glyph="&#xE77B;" />
+                                        </NavigationViewItem.Icon>
+                                    </NavigationViewItem>
+                                </NavigationView.MenuItems>
 
-                                <!-- 自訂 GridViewItem 模板：實現圓角選取/焦點效果 -->
-                                <!-- 預設 ListViewItemPresenter 的 CornerRadius 屬性對焦點框和選取邊框無效，
-                                     必須完整覆寫模板，用明確的 Border + CornerRadius 取代 -->
-                                <GridView.ItemContainerStyle>
-                                    <Style TargetType="GridViewItem">
-                                        <Setter Property="Padding" Value="0"/>
-                                        <Setter Property="Margin" Value="0"/>
-                                        <Setter Property="IsTabStop" Value="True"/>
-                                        <Setter Property="MinWidth" Value="0"/>
-                                        <Setter Property="MinHeight" Value="0"/>
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                                        <!-- 停用系統預設直角焦點框，改由模板內的 FocusBorder 處理 -->
-                                        <Setter Property="UseSystemFocusVisuals" Value="False"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="GridViewItem">
-                                                    <Grid x:Name="RootGrid">
-                                                        <!-- 選取/懸停背景（圓角） -->
-                                                        <Border x:Name="BackgroundBorder" CornerRadius="14" Background="Transparent"/>
-                                                        <!-- 手把/鍵盤焦點白框（圓角） -->
-                                                        <Border x:Name="FocusBorder" CornerRadius="14" BorderThickness="3" BorderBrush="Transparent"/>
-                                                        <ContentPresenter x:Name="ContentPresenter"
-                                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                                          Margin="{TemplateBinding Padding}"/>
-                                                        <VisualStateManager.VisualStateGroups>
-                                                            <VisualStateGroup x:Name="CommonStates">
-                                                                <VisualState x:Name="Normal"/>
-                                                                <VisualState x:Name="PointerOver">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPointerOver}"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState x:Name="Pressed">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPressed}"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState x:Name="Selected">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelected}"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState x:Name="PointerOverSelected">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState x:Name="PressedSelected">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPressed}"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                            </VisualStateGroup>
-                                                            <VisualStateGroup x:Name="FocusStates">
-                                                                <VisualState x:Name="Focused">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Target="FocusBorder.BorderBrush" Value="White"/>
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState x:Name="Unfocused"/>
-                                                                <VisualState x:Name="PointerFocused"/>
-                                                            </VisualStateGroup>
-                                                        </VisualStateManager.VisualStateGroups>
-                                                    </Grid>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </GridView.ItemContainerStyle>
+                                <Grid>
+                                <!-- 平台選擇卡片網格（依可用寬度自動決定欄數，垂直捲動） -->
+                                <GridView x:Name="PlatformGridView"
+                                          SelectionMode="Single"
+                                          SingleSelectionFollowsFocus="False"
+                                          HorizontalAlignment="Stretch"
+                                          IsTabStop="False"
+                                          SizeChanged="PlatformGridView_SizeChanged"
+                                          SelectionChanged="PlatformGridView_SelectionChanged">
+                                    <GridView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <ItemsWrapGrid x:Name="PlatformWrapGrid" Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </GridView.ItemsPanel>
 
-                                <GridView.ItemTemplate>
-                                    <DataTemplate x:DataType="models:PlatformCardItem">
-                                        <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
-                                        <!-- 可用性更新後由程式碼重新指定 ItemsSource 觸發重新整理 -->
-                                        <Border CornerRadius="16" Margin="8"
-                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                Opacity="{x:Bind CardOpacity}">
-                                            <Grid>
-                                                <!-- 平台圖片作為全滿卡片背景 -->
-                                                <Image Source="{x:Bind IconAsset}" Stretch="UniformToFill"/>
-                                                <!-- 底部文字區域，半透明暗底確保文字可讀性 -->
-                                                <Border VerticalAlignment="Bottom"
-                                                        CornerRadius="0,0,12,12"
-                                                        Background="#BB000000">
-                                                    <TextBlock Text="{x:Bind DisplayName}"
-                                                               FontSize="14"
-                                                               FontWeight="SemiBold"
-                                                               HorizontalAlignment="Center"
-                                                               TextWrapping="Wrap"
-                                                               TextAlignment="Center"
-                                                               Margin="8,5,8,5"/>
-                                                </Border>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </GridView.ItemTemplate>
-                            </GridView>
+                                    <GridView.Resources>
+                                        <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemAccentColorDark2}"/>
+                                        <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemAccentColorDark1}"/>
+                                        <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemAccentColorDark3}"/>
+                                        <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SystemAccentColorDark3}"/>
+                                        <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="{ThemeResource SystemAccentColorDark2}"/>
+                                    </GridView.Resources>
+
+                                    <!-- 自訂 GridViewItem 模板：實現圓角選取/焦點效果 -->
+                                    <!-- 預設 ListViewItemPresenter 的 CornerRadius 屬性對焦點框和選取邊框無效，
+                                         必須完整覆寫模板，用明確的 Border + CornerRadius 取代 -->
+                                    <GridView.ItemContainerStyle>
+                                        <Style TargetType="GridViewItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="IsTabStop" Value="True"/>
+                                            <Setter Property="MinWidth" Value="0"/>
+                                            <Setter Property="MinHeight" Value="0"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                            <!-- 停用系統預設直角焦點框，改由模板內的 FocusBorder 處理 -->
+                                            <Setter Property="UseSystemFocusVisuals" Value="False"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="GridViewItem">
+                                                        <Grid x:Name="RootGrid">
+                                                            <!-- 選取/懸停背景（圓角） -->
+                                                            <Border x:Name="BackgroundBorder" CornerRadius="14" Background="Transparent"/>
+                                                            <!-- 手把/鍵盤焦點白框（圓角） -->
+                                                            <Border x:Name="FocusBorder" CornerRadius="14" BorderThickness="3" BorderBrush="Transparent"/>
+                                                            <ContentPresenter x:Name="ContentPresenter"
+                                                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                              Margin="{TemplateBinding Padding}"/>
+                                                            <VisualStateManager.VisualStateGroups>
+                                                                <VisualStateGroup x:Name="CommonStates">
+                                                                    <VisualState x:Name="Normal"/>
+                                                                    <VisualState x:Name="PointerOver">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPointerOver}"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Pressed">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPressed}"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Selected">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelected}"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="PointerOverSelected">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="PressedSelected">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPressed}"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                </VisualStateGroup>
+                                                                <VisualStateGroup x:Name="FocusStates">
+                                                                    <VisualState x:Name="Focused">
+                                                                        <VisualState.Setters>
+                                                                            <Setter Target="FocusBorder.BorderBrush" Value="White"/>
+                                                                        </VisualState.Setters>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Unfocused"/>
+                                                                    <VisualState x:Name="PointerFocused"/>
+                                                                </VisualStateGroup>
+                                                            </VisualStateManager.VisualStateGroups>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GridView.ItemContainerStyle>
+
+                                    <GridView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:PlatformCardItem">
+                                            <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
+                                            <!-- 可用性更新後由程式碼重新指定 ItemsSource 觸發重新整理 -->
+                                            <Border CornerRadius="16" Margin="8"
+                                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                    Opacity="{x:Bind CardOpacity}">
+                                                <Grid>
+                                                    <!-- 平台圖片作為全滿卡片背景 -->
+                                                    <Image Source="{x:Bind IconAsset}" Stretch="UniformToFill"/>
+                                                    <!-- 底部文字區域，半透明暗底確保文字可讀性 -->
+                                                    <Border VerticalAlignment="Bottom"
+                                                            CornerRadius="0,0,12,12"
+                                                            Background="#BB000000">
+                                                        <TextBlock Text="{x:Bind DisplayName}"
+                                                                   FontSize="14"
+                                                                   FontWeight="SemiBold"
+                                                                   HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap"
+                                                                   TextAlignment="Center"
+                                                                   Margin="8,5,8,5"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </GridView.ItemTemplate>
+                                </GridView>
+
+                                <!-- 自訂平台免責聲明（首次進入自訂索引標籤時顯示，接受後隱藏） -->
+                                <ScrollViewer x:Name="CustomConsentPanel" Visibility="Collapsed"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                MaxWidth="600" Spacing="16" Padding="0,32">
+                                        <FontIcon Glyph="&#xE7BA;" FontSize="48"
+                                                  HorizontalAlignment="Center"
+                                                  Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                                        <TextBlock x:Uid="CustomPlatform_ConsentTitle"
+                                                   FontSize="24" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock x:Uid="CustomPlatform_ConsentBody"
+                                                   FontSize="14" TextWrapping="Wrap"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <Button x:Name="CustomConsentAcceptButton"
+                                                x:Uid="CustomPlatform_ConsentAccept"
+                                                Click="CustomConsentAcceptButton_Click"
+                                                HorizontalAlignment="Center"
+                                                Style="{StaticResource AccentButtonStyle}"
+                                                FontSize="16" Padding="32,12" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                                </Grid>
+                            </NavigationView>
 
                         </Grid>
 
@@ -424,6 +479,18 @@
                     HorizontalAlignment="Center"
                     Margin="0,0,0,24" Spacing="32"
                     IsHitTestVisible="True">
+            <!-- LB/RB 索引標籤切換提示 -->
+            <StackPanel x:Name="GamepadHintLBRB" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
+                <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                        Padding="6,2">
+                    <TextBlock Text="LB / RB" FontSize="12" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </Border>
+                <TextBlock x:Uid="GamepadHint_SwitchTab" FontSize="14"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
                         Width="28" Height="28">
@@ -435,6 +502,42 @@
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
+            <!-- Y 鍵新增提示（僅使用者索引標籤時顯示，滑鼠可點選） -->
+            <Button x:Name="GamepadHintY" Visibility="Collapsed"
+                    Click="AddPlatformHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                            Width="28" Height="28">
+                        <TextBlock Text="Y" FontSize="14" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                    <TextBlock x:Uid="GamepadHint_Add" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <!-- X 鍵編輯提示（僅使用者索引標籤時顯示，滑鼠可點選） -->
+            <Button x:Name="GamepadHintX" Visibility="Collapsed"
+                    Click="EditPlatformHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                            Width="28" Height="28">
+                        <TextBlock Text="X" FontSize="14" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                    <TextBlock x:Uid="GamepadHint_Edit" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
             <!-- 滑鼠可點選退出，手把 B 鍵也觸發同一動作 -->
             <Button Click="ExitHintButton_Click"
                     Background="Transparent" BorderBrush="Transparent"

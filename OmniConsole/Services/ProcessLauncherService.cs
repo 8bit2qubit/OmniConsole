@@ -38,6 +38,13 @@ namespace OmniConsole.Services
         /// </summary>
         public static string GetPlatformDisplayName(PlatformDefinition platform)
         {
+            // 使用者自訂平台的 DisplayNameKey 以 __user__ 開頭，直接從 UserPlatformStore 取名稱
+            if (platform.DisplayNameKey.StartsWith("__user__"))
+            {
+                var entry = UserPlatformStore.FindEntryById(platform.Id);
+                return entry?.DisplayName ?? platform.Id;
+            }
+
             try
             {
                 string? name = _resourceLoader.GetString(platform.DisplayNameKey);
@@ -60,6 +67,7 @@ namespace OmniConsole.Services
                 LaunchStrategyType.ProtocolUri => IsUriSupportedAsync(s.Uri!),
                 LaunchStrategyType.Registry => Task.FromResult(IsRegistryPathPresent(s)),
                 LaunchStrategyType.MsixPackage => IsMsixPackageInstalledAsync(s.PackageName!, s.Publisher!),
+                LaunchStrategyType.Executable => Task.FromResult(IsExecutableAvailable(s)),
                 _ => Task.FromResult(false),
             };
         }
@@ -77,7 +85,7 @@ namespace OmniConsole.Services
             };
 
         /// <summary>
-        /// 透過 Protocol URI 啟動，啟動前先確認 URI handler 已註冊。
+        /// 透過 Protocol URI 啟動，啟動前先確認 URI handler 已登錄。
         /// </summary>
         private static async Task<bool> TryLaunchUriAsync(string uriString, string platformId)
         {
@@ -109,17 +117,20 @@ namespace OmniConsole.Services
 
         /// <summary>
         /// 從登錄機碼讀取安裝路徑，直接啟動執行檔。
+        /// ExecutableName 有值時視為目錄 + 檔名組合；為 null 時視登錄值本身為完整執行檔路徑。
         /// </summary>
         private static bool TryLaunchFromRegistry(LaunchStrategy strategy, string platformId)
         {
             try
             {
-                string? installPath = ReadRegistryValue(
+                string? registryValue = ReadRegistryValue(
                     strategy.RegistryRoot!, strategy.RegistrySubKey!, strategy.RegistryValueName!);
 
-                if (string.IsNullOrEmpty(installPath)) return false;
+                if (string.IsNullOrEmpty(registryValue)) return false;
 
-                string exePath = Path.Combine(installPath, strategy.ExecutableName!);
+                string exePath = strategy.ExecutableName is not null
+                    ? Path.Combine(registryValue, strategy.ExecutableName)
+                    : registryValue;
                 return LaunchProcess(exePath, strategy.Arguments ?? "");
             }
             catch (Exception ex)
@@ -212,7 +223,7 @@ namespace OmniConsole.Services
         // ── 可用性查詢輔助方法 ────────────────────────────────────────────────
 
         /// <summary>
-        /// 查詢系統是否有已註冊的 URI handler 可處理指定 URI scheme，
+        /// 查詢系統是否有已登錄的 URI handler 可處理指定 URI scheme，
         /// 不實際啟動應用程式。
         /// </summary>
         private static async Task<bool> IsUriSupportedAsync(string uriString)
@@ -233,7 +244,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 嘗試檢查 URI Scheme 在登錄檔中註冊的執行檔是否真實存在。
+        /// 嘗試檢查 URI Scheme 在登錄檔中登錄的執行檔是否真實存在。
         /// 針對傳統桌面應用程式會解析絕對路徑並檢查檔案；若為 UWP 應用程式或無法解析絕對路徑時，預設回傳 true 交由系統處理。
         /// </summary>
         private static bool IsUriHandlerExecutableValid(string scheme)
@@ -326,6 +337,34 @@ namespace OmniConsole.Services
                 return Task.FromResult(packages.Any());
             }
             catch { return Task.FromResult(false); }
+        }
+
+        /// <summary>
+        /// 檢查執行檔策略的目標是否存在。
+        /// 絕對路徑直接檢查檔案；相對路徑或純檔名則嘗試 SearchPaths 後視為可用。
+        /// </summary>
+        private static bool IsExecutableAvailable(LaunchStrategy strategy)
+        {
+            if (string.IsNullOrEmpty(strategy.ExecutableName)) return false;
+
+            string exePath = Environment.ExpandEnvironmentVariables(strategy.ExecutableName);
+
+            if (Path.IsPathRooted(exePath))
+                return File.Exists(exePath);
+
+            // 非絕對路徑：嘗試 SearchPaths
+            if (strategy.SearchPaths != null)
+            {
+                foreach (string dir in strategy.SearchPaths)
+                {
+                    string expandedDir = Environment.ExpandEnvironmentVariables(dir);
+                    if (File.Exists(Path.Combine(expandedDir, exePath)))
+                        return true;
+                }
+            }
+
+            // 非絕對路徑且無 SearchPaths 或未找到：無法驗證，視為不可用
+            return false;
         }
 
         // ── 通用輔助方法 ──────────────────────────────────────────────────────

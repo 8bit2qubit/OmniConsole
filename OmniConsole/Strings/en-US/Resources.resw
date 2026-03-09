@@ -240,4 +240,131 @@
   <data name="GamepadHint_Exit.Text" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="Nav_SystemPlatforms.Content" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Nav_UserPlatforms.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="AddPlatformText.Text" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="GamepadHint_SwitchTab.Text" xml:space="preserve">
+    <value>Switch Tab</value>
+  </data>
+  <data name="GamepadHint_Add.Text" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="GamepadHint_Edit.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PlatformDialog_AddTitle" xml:space="preserve">
+    <value>Add Platform</value>
+  </data>
+  <data name="PlatformDialog_EditTitle" xml:space="preserve">
+    <value>Edit Platform</value>
+  </data>
+  <data name="PlatformDialog_NameLabel" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PlatformDialog_NamePlaceholder" xml:space="preserve">
+    <value>e.g. My Gaming Platform</value>
+  </data>
+  <data name="PlatformDialog_LaunchTypeLabel" xml:space="preserve">
+    <value>Launch Type</value>
+  </data>
+  <data name="PlatformDialog_Executable" xml:space="preserve">
+    <value>Executable</value>
+  </data>
+  <data name="PlatformDialog_TargetLabel" xml:space="preserve">
+    <value>URI or Path</value>
+  </data>
+  <data name="PlatformDialog_TargetPlaceholder" xml:space="preserve">
+    <value>e.g. steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_UriLabel" xml:space="preserve">
+    <value>URI</value>
+  </data>
+  <data name="PlatformDialog_UriPlaceholder" xml:space="preserve">
+    <value>e.g. steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_PathLabel" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="PlatformDialog_PathPlaceholder" xml:space="preserve">
+    <value>e.g. C:\Program Files (x86)\Steam\steam.exe</value>
+  </data>
+  <data name="PlatformDialog_IconLabel" xml:space="preserve">
+    <value>Card Cover (optional)</value>
+  </data>
+  <data name="PlatformDialog_IconHint" xml:space="preserve">
+    <value>Recommended: 800 x 560 px (10:7)</value>
+  </data>
+  <data name="PlatformDialog_ConfigWarning" xml:space="preserve">
+    <value>Caution: Incorrect configuration may cause platform launch failure or unexpected behavior.</value>
+  </data>
+  <data name="PlatformDialog_ValidationNameTooLong" xml:space="preserve">
+    <value>Name must not exceed 50 characters.</value>
+  </data>
+  <data name="PlatformDialog_ValidationNameInvalid" xml:space="preserve">
+    <value>Name contains invalid characters.</value>
+  </data>
+  <data name="PlatformDialog_ValidationTargetEmpty" xml:space="preserve">
+    <value>This field is required.</value>
+  </data>
+  <data name="PlatformDialog_ValidationUriInvalid" xml:space="preserve">
+    <value>Invalid URI format. Example: steam://open/bigpicture</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
+    <value>Invalid file path. Example: C:\Program Files (x86)\Steam\steam.exe</value>
+  </data>
+  <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
+    <value>Arguments contain potentially unsafe characters.</value>
+  </data>
+  <data name="CustomPlatform_ConsentTitle.Text" xml:space="preserve">
+    <value>Custom Platform Support (Experimental)</value>
+  </data>
+  <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
+    <value>This feature allows you to add custom platform launch configurations. Please read the following carefully before proceeding:
+
+- As an open-source project, this software is provided "as-is". This custom feature is experimental and offers no warranty or guarantee of functionality.
+- Incorrectly configured platforms may fail to launch, which could crash the Full Screen Experience environment or even require an app reset to recover.
+- The developer assumes no responsibility or liability for any damage, data loss, or issues arising from the use of this program or custom platform configurations.
+- You are solely responsible for ensuring the safety, correctness, and legitimacy of all configurations you create.
+
+By clicking "I Understand and Accept", you acknowledge these risks and agree to use this feature entirely at your own discretion and responsibility.</value>
+  </data>
+  <data name="CustomPlatform_ConsentAccept.Content" xml:space="preserve">
+    <value>I Understand and Accept</value>
+  </data>
+  <data name="PlatformDialog_ArgsLabel" xml:space="preserve">
+    <value>Arguments (optional)</value>
+  </data>
+  <data name="PlatformDialog_ArgsPlaceholder" xml:space="preserve">
+    <value>e.g. -bigpicture</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathNotExe" xml:space="preserve">
+    <value>Only executable files (.exe) are supported.</value>
+  </data>
+  <data name="PlatformDialog_ValidationArgsTooLong" xml:space="preserve">
+    <value>Arguments must not exceed 500 characters.</value>
+  </data>
+  <data name="PlatformNotAvailable" xml:space="preserve">
+    <value>{0} is not available. Please verify it is installed or choose a different platform.</value>
+  </data>
+  <data name="PlatformDialog_ValidationUriTooLong" xml:space="preserve">
+    <value>URI must not exceed 2048 characters.</value>
+  </data>
+  <data name="PlatformDialog_ValidationPathTooLong" xml:space="preserve">
+    <value>Path must not exceed 260 characters.</value>
+  </data>
+  <data name="PlatformDialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PlatformDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PlatformDialog_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

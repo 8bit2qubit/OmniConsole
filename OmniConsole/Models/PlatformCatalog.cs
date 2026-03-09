@@ -34,17 +34,7 @@ namespace OmniConsole.Models
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "steam://open/bigpicture",
                     },
-                    // 策略二：從 HKCU 登錄機碼讀取安裝路徑
-                    new()
-                    {
-                        Type = LaunchStrategyType.Registry,
-                        RegistryRoot = "HKCU",
-                        RegistrySubKey = @"SOFTWARE\Valve\Steam",
-                        RegistryValueName = "InstallPath",
-                        ExecutableName = "steam.exe",
-                        Arguments = "-bigpicture",
-                    },
-                    // 策略三：從 HKLM 讀取（部分安裝情境的備援）
+                    // 策略二：從 HKLM 登錄機碼讀取安裝路徑
                     new()
                     {
                         Type = LaunchStrategyType.Registry,
@@ -72,10 +62,18 @@ namespace OmniConsole.Models
                 },
                 LaunchStrategies =
                 [
+                    // 策略一：Protocol URI（最快，Xbox App 已登錄 URI handler）
                     new()
                     {
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "xbox://",
+                    },
+                    // 策略二：MSIX 應用程式啟動（Protocol URI 失敗時的備援）
+                    new()
+                    {
+                        Type = LaunchStrategyType.MsixPackage,
+                        PackageName = "Microsoft.GamingApp",
+                        Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
                     },
                 ],
             },
@@ -93,10 +91,26 @@ namespace OmniConsole.Models
                 },
                 LaunchStrategies =
                 [
+                    // 策略一：Protocol URI
                     new()
                     {
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "com.epicgames.launcher://",
+                    },
+                    // 策略二：從 HKCU 登錄機碼讀取 ModSdkCommand 取得安裝路徑
+                    new()
+                    {
+                        Type = LaunchStrategyType.Registry,
+                        RegistryRoot = "HKCU",
+                        RegistrySubKey = @"SOFTWARE\Epic Games\EOS",
+                        RegistryValueName = "ModSdkCommand",
+                    },
+                    // 策略三：直接執行 Epic Games Launcher
+                    new()
+                    {
+                        Type = LaunchStrategyType.Executable,
+                        ExecutableName = "EpicGamesLauncher.exe",
+                        SearchPaths = [ @"%ProgramFiles(x86)%\Epic Games\Launcher\Portal\Binaries\Win64" ],
                     },
                 ],
             },

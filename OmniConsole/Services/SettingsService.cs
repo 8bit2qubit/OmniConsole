@@ -66,7 +66,10 @@ namespace OmniConsole.Services
 
             if (settings.Values.TryGetValue(DefaultPlatformKey, out object? value) && value is string id)
             {
-                return PlatformCatalog.FindById(id) ?? PlatformCatalog.All[0];
+                // 先查系統平台，再查使用者自訂平台
+                return PlatformCatalog.FindById(id)
+                    ?? UserPlatformStore.FindById(id)
+                    ?? PlatformCatalog.All[0];
             }
 
             return PlatformCatalog.All[0];
@@ -121,6 +124,27 @@ namespace OmniConsole.Services
         public static void SetEnablePassthrough(bool isEnabled)
         {
             ApplicationData.Current.LocalSettings.Values["EnablePassthrough"] = isEnabled;
+        }
+
+        /// <summary>
+        /// 取得使用者是否已接受自訂平台實驗性功能的免責聲明。
+        /// </summary>
+        public static bool GetCustomPlatformConsentAccepted()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CustomPlatformConsentAccepted", out object? value) && value is bool accepted)
+            {
+                return accepted;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 儲存使用者已接受自訂平台實驗性功能的免責聲明。
+        /// </summary>
+        public static void SetCustomPlatformConsentAccepted(bool accepted)
+        {
+            ApplicationData.Current.LocalSettings.Values["CustomPlatformConsentAccepted"] = accepted;
         }
     }
 }

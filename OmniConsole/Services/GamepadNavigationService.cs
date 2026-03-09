@@ -18,6 +18,10 @@ namespace OmniConsole.Services
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
         private readonly Action? _onBButtonPressed;
+        private readonly Action? _onLBPressed;
+        private readonly Action? _onRBPressed;
+        private readonly Action? _onXButtonPressed;
+        private readonly Action? _onYButtonPressed;
 
         /// <summary>
         /// 初始化 <see cref="GamepadNavigationService"/> 類別的新執行個體。
@@ -26,11 +30,19 @@ namespace OmniConsole.Services
         /// <param name="dispatcherQueue">目前 UI 執行緒的 DispatcherQueue，用於建立輪詢計時器。</param>
         /// <param name="onAButtonPressed">當按下手把 'A' 鍵時觸發的委派動作。</param>
         /// <param name="onBButtonPressed">當按下手把 'B' 鍵時觸發的委派動作（可選）。</param>
-        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed, Action? onBButtonPressed = null)
+        /// <param name="onLBPressed">當按下手把 'LB' 肩鍵時觸發的委派動作（可選）。</param>
+        /// <param name="onRBPressed">當按下手把 'RB' 肩鍵時觸發的委派動作（可選）。</param>
+        /// <param name="onXButtonPressed">當按下手把 'X' 鍵時觸發的委派動作（可選）。</param>
+        /// <param name="onYButtonPressed">當按下手把 'Y' 鍵時觸發的委派動作（可選）。</param>
+        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed, Action? onBButtonPressed = null, Action? onLBPressed = null, Action? onRBPressed = null, Action? onXButtonPressed = null, Action? onYButtonPressed = null)
         {
             _searchRoot = searchRoot;
             _onAButtonPressed = onAButtonPressed;
             _onBButtonPressed = onBButtonPressed;
+            _onLBPressed = onLBPressed;
+            _onRBPressed = onRBPressed;
+            _onXButtonPressed = onXButtonPressed;
+            _onYButtonPressed = onYButtonPressed;
 
             _gamepadTimer = dispatcherQueue.CreateTimer();
             _gamepadTimer.Interval = TimeSpan.FromMilliseconds(50); // 20 FPS
@@ -87,6 +99,22 @@ namespace OmniConsole.Services
                     {
                         _onBButtonPressed?.Invoke();
                     }
+                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.LeftShoulder))
+                    {
+                        _onLBPressed?.Invoke();
+                    }
+                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.RightShoulder))
+                    {
+                        _onRBPressed?.Invoke();
+                    }
+                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.X))
+                    {
+                        _onXButtonPressed?.Invoke();
+                    }
+                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.Y))
+                    {
+                        _onYButtonPressed?.Invoke();
+                    }
 
                     // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）
                     if (reading.LeftThumbstickY < -0.5 && _previousReading.LeftThumbstickY >= -0.5)
@@ -112,7 +140,7 @@ namespace OmniConsole.Services
         /// </summary>
         private bool IsAnyInputActive(GamepadReading reading)
         {
-            return (reading.Buttons & (GamepadButtons.DPadDown | GamepadButtons.DPadUp | GamepadButtons.DPadLeft | GamepadButtons.DPadRight | GamepadButtons.A | GamepadButtons.B)) != 0 ||
+            return (reading.Buttons & (GamepadButtons.DPadDown | GamepadButtons.DPadUp | GamepadButtons.DPadLeft | GamepadButtons.DPadRight | GamepadButtons.A | GamepadButtons.B | GamepadButtons.LeftShoulder | GamepadButtons.RightShoulder)) != 0 ||
                    Math.Abs(reading.LeftThumbstickY) > 0.5 ||
                    Math.Abs(reading.LeftThumbstickX) > 0.5;
         }
