@@ -2,7 +2,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace OmniConsole
 {
@@ -13,7 +12,7 @@ namespace OmniConsole
     public static class Program
     {
         [STAThread]
-        public static async Task<int> Main(string[] args)
+        public static int Main(string[] args)
         {
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
@@ -65,7 +64,7 @@ namespace OmniConsole
                                 if (platform.LibraryUri != null)
                                 {
                                     Services.DebugLogger.Log($"→ PASSTHROUGH to {platform.LibraryUri}");
-                                    await Windows.System.Launcher.LaunchUriAsync(new Uri(platform.LibraryUri));
+                                    Windows.System.Launcher.LaunchUriAsync(new Uri(platform.LibraryUri)).AsTask().GetAwaiter().GetResult();
                                     Services.DebugLogger.Log("→ LaunchUriAsync completed");
                                     return 0;
                                 }
@@ -87,7 +86,7 @@ namespace OmniConsole
                                 if (platform.HomeUri != null)
                                 {
                                     Services.DebugLogger.Log($"→ PASSTHROUGH to {platform.HomeUri}");
-                                    await Windows.System.Launcher.LaunchUriAsync(new Uri(platform.HomeUri));
+                                    Windows.System.Launcher.LaunchUriAsync(new Uri(platform.HomeUri)).AsTask().GetAwaiter().GetResult();
                                     Services.DebugLogger.Log("→ LaunchUriAsync completed");
                                     return 0;
                                 }
@@ -131,11 +130,11 @@ namespace OmniConsole
                 if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
                 {
                     var uri = new Uri("omniconsole://show-settings");
-                    await Windows.System.Launcher.LaunchUriAsync(uri);
+                    Windows.System.Launcher.LaunchUriAsync(uri).AsTask().GetAwaiter().GetResult();
                 }
                 else
                 {
-                    await mainInstance.RedirectActivationToAsync(activationArgs);
+                    mainInstance.RedirectActivationToAsync(activationArgs).AsTask().GetAwaiter().GetResult();
                 }
                 return 0;
             }

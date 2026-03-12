@@ -16,7 +16,7 @@ namespace OmniConsole.Models
         [JsonPropertyName("displayName")]
         public string DisplayName { get; set; } = "";
 
-        /// <summary>啟動類型：ProtocolUri 或 Executable。</summary>
+        /// <summary>啟動類型：ProtocolUri、Executable 或 PackagedApp。</summary>
         [JsonPropertyName("launchType")]
         public string LaunchType { get; set; } = "ProtocolUri";
 
@@ -28,6 +28,10 @@ namespace OmniConsole.Models
         [JsonPropertyName("arguments")]
         public string Arguments { get; set; } = "";
 
+        /// <summary>封裝應用程式家族名稱（僅 PackagedApp 類型使用，例如 "Microsoft.GamingApp_8wekyb3d8bbwe"）。</summary>
+        [JsonPropertyName("packageFamilyName")]
+        public string PackageFamilyName { get; set; } = "";
+
         /// <summary>自訂圖示的檔案名稱（存放於 LocalFolder/PlatformIcons/，選填）。</summary>
         [JsonPropertyName("iconFileName")]
         public string IconFileName { get; set; } = "";
@@ -37,22 +41,25 @@ namespace OmniConsole.Models
         /// </summary>
         public PlatformDefinition ToPlatformDefinition()
         {
-            var strategyType = LaunchType == "Executable"
-                ? LaunchStrategyType.Executable
-                : LaunchStrategyType.ProtocolUri;
-
-            var strategy = strategyType == LaunchStrategyType.ProtocolUri
-                ? new LaunchStrategy
+            var strategy = LaunchType switch
+            {
+                "PackagedApp" => new LaunchStrategy
                 {
-                    Type = LaunchStrategyType.ProtocolUri,
-                    Uri = LaunchTarget,
-                }
-                : new LaunchStrategy
+                    Type = LaunchStrategyType.PackagedApp,
+                    PackageFamilyName = PackageFamilyName,
+                },
+                "Executable" => new LaunchStrategy
                 {
                     Type = LaunchStrategyType.Executable,
                     ExecutableName = LaunchTarget,
                     Arguments = string.IsNullOrEmpty(Arguments) ? null : Arguments,
-                };
+                },
+                _ => new LaunchStrategy
+                {
+                    Type = LaunchStrategyType.ProtocolUri,
+                    Uri = LaunchTarget,
+                },
+            };
 
             string iconAsset = string.IsNullOrEmpty(IconFileName)
                 ? "ms-appx:///Assets/Platforms/custom.png"

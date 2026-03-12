@@ -68,12 +68,18 @@ namespace OmniConsole.Models
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "xbox://",
                     },
-                    // 策略二：MSIX 應用程式啟動（Protocol URI 失敗時的備援）
+                    // 策略二：封裝應用程式以 PackageName + Publisher 啟動
                     new()
                     {
-                        Type = LaunchStrategyType.MsixPackage,
+                        Type = LaunchStrategyType.PackagedApp,
                         PackageName = "Microsoft.GamingApp",
                         Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+                    },
+                    // 策略三：封裝應用程式以 PackageFamilyName 啟動
+                    new()
+                    {
+                        Type = LaunchStrategyType.PackagedApp,
+                        PackageFamilyName = "Microsoft.GamingApp_8wekyb3d8bbwe",
                     },
                 ],
             },
@@ -134,12 +140,18 @@ namespace OmniConsole.Models
                         Type = LaunchStrategyType.ProtocolUri,
                         Uri = "asusac://",
                     },
-                    // 策略二：MSIX 應用程式啟動（填入 PackageName 與 Publisher）
+                    // 策略二：封裝應用程式以 PackageName + Publisher 啟動
                     new()
                     {
-                        Type = LaunchStrategyType.MsixPackage,
+                        Type = LaunchStrategyType.PackagedApp,
                         PackageName = "B9ECED6F.ArmouryCrateSE",
                         Publisher = "CN=38BC0208-0916-4E44-909B-E6832F47CDE7",
+                    },
+                    // 策略三：封裝應用程式以 PackageFamilyName 啟動
+                    new()
+                    {
+                        Type = LaunchStrategyType.PackagedApp,
+                        PackageFamilyName = "B9ECED6F.ArmouryCrateSE_qmba6cd70vzyy",
                     },
                 ],
             },

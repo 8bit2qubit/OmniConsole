@@ -136,7 +136,7 @@
     <value>Launch timed out. Please verify {0} is running normally.</value>
   </data>
   <data name="LaunchFailed" xml:space="preserve">
-    <value>Launch failed. Please verify {0} is installed.</value>
+    <value>Unable to launch {0}. Please ensure the app can be launched and check its installation or settings.</value>
   </data>
   <data name="OpenSettingsButton.Content" xml:space="preserve">
     <value>Open Settings</value>
@@ -165,11 +165,20 @@
   <data name="Platform_PlayniteFullscreen" xml:space="preserve">
     <value>Playnite Fullscreen</value>
   </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>OmniConsole</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Custom Windows 11 Full Screen Experience (FSE) Home shell for gaming PCs and handhelds.</value>
+  </data>
+  <data name="AppExtensionDescription" xml:space="preserve">
+    <value>Custom Home Shell for Windows Full Screen Experience.</value>
+  </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole Settings</value>
   </data>
   <data name="SettingsAppDescription" xml:space="preserve">
-    <value>OmniConsole Settings</value>
+    <value>Configure default gaming platform, Game Bar behavior, and custom launch targets.</value>
   </data>
   <data name="ResetGameBarButton.Content" xml:space="preserve">
     <value>Run</value>
@@ -366,5 +375,26 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   </data>
   <data name="PlatformDialog_Delete" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="PlatformDialog_PackagedApp" xml:space="preserve">
+    <value>Packaged App (MSIX / APPX / Bundle)</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppLabel" xml:space="preserve">
+    <value>Package Family Name</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppPlaceholder" xml:space="preserve">
+    <value>Type to search installed packages...</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppWarning" xml:space="preserve">
+    <value>Caution: Not all packages support launching (e.g., extensions or background services). Ensure you select an app with a "user interface."</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppEmpty" xml:space="preserve">
+    <value>Please select a packaged app.</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppSelf" xml:space="preserve">
+    <value>Cannot add OmniConsole itself as a platform.</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
+    <value>Cannot add Game Bar as a platform.</value>
   </data>
 </root>

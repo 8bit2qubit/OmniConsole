@@ -22,13 +22,23 @@ namespace OmniConsole.Services
         /// </summary>
         public static async Task<bool> LaunchPlatformAsync(PlatformDefinition platform)
         {
-            foreach (var strategy in platform.LaunchStrategies)
+            DebugLogger.Log($"[ProcessLauncher] Launching platform: {platform.Id} ({platform.LaunchStrategies.Count} strategies defined)");
+
+            for (int i = 0; i < platform.LaunchStrategies.Count; i++)
             {
+                var strategy = platform.LaunchStrategies[i];
+                DebugLogger.Log($"[ProcessLauncher] Strategy {i + 1}/{platform.LaunchStrategies.Count}: Attempting {strategy.Type}...");
+
                 if (await ExecuteStrategyAsync(strategy, platform.Id))
+                {
+                    DebugLogger.Log($"[ProcessLauncher] Strategy {i + 1} ({strategy.Type}) succeeded.");
                     return true;
+                }
+
+                DebugLogger.Log($"[ProcessLauncher] Strategy {i + 1} ({strategy.Type}) failed.");
             }
 
-            Debug.WriteLine($"[ProcessLauncher] {platform.Id}: all launch strategies failed.");
+            DebugLogger.Log($"[ProcessLauncher] {platform.Id}: All launch strategies failed.");
             return false;
         }
 
@@ -66,7 +76,7 @@ namespace OmniConsole.Services
             {
                 LaunchStrategyType.ProtocolUri => IsUriSupportedAsync(s.Uri!),
                 LaunchStrategyType.Registry => Task.FromResult(IsRegistryPathPresent(s)),
-                LaunchStrategyType.MsixPackage => IsMsixPackageInstalledAsync(s.PackageName!, s.Publisher!),
+                LaunchStrategyType.PackagedApp => IsPackagedAppInstalledAsync(s),
                 LaunchStrategyType.Executable => Task.FromResult(IsExecutableAvailable(s)),
                 _ => Task.FromResult(false),
             };
@@ -79,7 +89,7 @@ namespace OmniConsole.Services
             {
                 LaunchStrategyType.ProtocolUri => TryLaunchUriAsync(strategy.Uri!, platformId),
                 LaunchStrategyType.Registry => Task.FromResult(TryLaunchFromRegistry(strategy, platformId)),
-                LaunchStrategyType.MsixPackage => TryLaunchMsixAsync(strategy, platformId),
+                LaunchStrategyType.PackagedApp => TryLaunchPackagedAppAsync(strategy, platformId),
                 LaunchStrategyType.Executable => Task.FromResult(TryLaunchExecutable(strategy, platformId)),
                 _ => Task.FromResult(false),
             };
@@ -91,6 +101,7 @@ namespace OmniConsole.Services
         {
             try
             {
+                DebugLogger.Log($"[ProcessLauncher]   Target URI: {uriString}");
                 var uri = new Uri(uriString);
 
                 // 確認 URI handler 已安裝，避免跳出「在 Store 中尋找應用程式」對話方塊
@@ -99,18 +110,18 @@ namespace OmniConsole.Services
 
                 if (status != Windows.System.LaunchQuerySupportStatus.Available)
                 {
-                    Debug.WriteLine($"[ProcessLauncher] {platformId} URI not supported: {status}");
+                    DebugLogger.Log($"[ProcessLauncher]   URI not supported: {status}");
                     return false;
                 }
 
                 bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
                 if (success)
-                    Debug.WriteLine($"[ProcessLauncher] {platformId} launched via URI.");
+                    DebugLogger.Log($"[ProcessLauncher]   LaunchUriAsync call succeeded.");
                 return success;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] {platformId} URI launch failed: {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher]   URI launch exception: {ex.Message}");
                 return false;
             }
         }
@@ -123,47 +134,66 @@ namespace OmniConsole.Services
         {
             try
             {
+                DebugLogger.Log($"[ProcessLauncher]   Registry lookup: {strategy.RegistryRoot}\\{strategy.RegistrySubKey}\\{strategy.RegistryValueName}");
                 string? registryValue = ReadRegistryValue(
                     strategy.RegistryRoot!, strategy.RegistrySubKey!, strategy.RegistryValueName!);
 
-                if (string.IsNullOrEmpty(registryValue)) return false;
+                if (string.IsNullOrEmpty(registryValue))
+                {
+                    DebugLogger.Log("[ProcessLauncher]   Registry value is empty or missing.");
+                    return false;
+                }
 
                 string exePath = strategy.ExecutableName is not null
                     ? Path.Combine(registryValue, strategy.ExecutableName)
                     : registryValue;
+
+                DebugLogger.Log($"[ProcessLauncher]   Resolved registry path: {exePath}");
                 return LaunchProcess(exePath, strategy.Arguments ?? "");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] {platformId} Registry launch failed: {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher]   Registry launch exception: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// 透過 PackageManager 找到已安裝的 MSIX 套件並啟動。
+        /// 透過 PackageManager 找到已安裝的封裝應用程式並啟動。
         /// </summary>
-        private static async Task<bool> TryLaunchMsixAsync(LaunchStrategy strategy, string platformId)
+        private static async Task<bool> TryLaunchPackagedAppAsync(LaunchStrategy strategy, string platformId)
         {
             try
             {
-                var pm = new Windows.Management.Deployment.PackageManager();
-                var packages = pm.FindPackagesForUser(
-                    string.Empty, strategy.PackageName!, strategy.Publisher!);
+                string identifier = strategy.PackageFamilyName ?? strategy.PackageName ?? "Unknown";
+                DebugLogger.Log($"[ProcessLauncher]   Target Packaged App: {identifier}");
 
-                foreach (var package in packages)
+                var pm = new Windows.Management.Deployment.PackageManager();
+                var packages = !string.IsNullOrEmpty(strategy.PackageFamilyName)
+                    ? pm.FindPackagesForUser(string.Empty, strategy.PackageFamilyName)
+                    : pm.FindPackagesForUser(string.Empty, strategy.PackageName!, strategy.Publisher!);
+
+                var packageList = packages.ToList();
+                if (!packageList.Any())
+                {
+                    DebugLogger.Log("[ProcessLauncher]   No matching package found for current user.");
+                    return false;
+                }
+
+                foreach (var package in packageList)
                 {
                     var entries = await package.GetAppListEntriesAsync();
                     if (entries.Count > 0 && await entries[0].LaunchAsync())
                     {
-                        Debug.WriteLine($"[ProcessLauncher] {platformId} launched via PackageManager.");
+                        DebugLogger.Log($"[ProcessLauncher]   Successfully launched: {package.Id.FullName}");
                         return true;
                     }
                 }
+                DebugLogger.Log("[ProcessLauncher]   Found package but failed to launch any app entry.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] {platformId} MSIX launch failed: {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher]   Packaged App launch exception: {ex.Message}");
             }
             return false;
         }
@@ -177,13 +207,18 @@ namespace OmniConsole.Services
         {
             try
             {
-                if (string.IsNullOrEmpty(strategy.ExecutableName)) return false;
+                if (string.IsNullOrEmpty(strategy.ExecutableName))
+                {
+                    DebugLogger.Log("[ProcessLauncher]   ExecutableName is empty.");
+                    return false;
+                }
 
                 string exeName = Environment.ExpandEnvironmentVariables(strategy.ExecutableName);
                 string launchPath = exeName;
 
                 if (!Path.IsPathRooted(exeName) && strategy.SearchPaths != null)
                 {
+                    DebugLogger.Log($"[ProcessLauncher]   Searching for {exeName} in {strategy.SearchPaths.Length} paths...");
                     foreach (string dir in strategy.SearchPaths)
                     {
                         string expandedDir = Environment.ExpandEnvironmentVariables(dir);
@@ -191,6 +226,7 @@ namespace OmniConsole.Services
                         if (File.Exists(fullPath))
                         {
                             launchPath = fullPath;
+                            DebugLogger.Log($"[ProcessLauncher]   Found at: {launchPath}");
                             break;
                         }
                     }
@@ -199,23 +235,15 @@ namespace OmniConsole.Services
                 // 若為絕對路徑，則可以事前檢查檔案是否存在
                 if (Path.IsPathRooted(launchPath) && !File.Exists(launchPath))
                 {
-                    Debug.WriteLine($"[ProcessLauncher] Executable not found: {launchPath}");
+                    DebugLogger.Log($"[ProcessLauncher]   Executable not found at rooted path: {launchPath}");
                     return false;
                 }
 
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = launchPath,
-                    Arguments = strategy.Arguments ?? "",
-                    UseShellExecute = true,
-                };
-                Process.Start(startInfo);
-                Debug.WriteLine($"[ProcessLauncher] {platformId} launched via Executable: {launchPath}");
-                return true;
+                return LaunchProcess(launchPath, strategy.Arguments ?? "");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] {platformId} Executable launch failed: {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher]   Executable launch exception: {ex.Message}");
                 return false;
             }
         }
@@ -297,11 +325,11 @@ namespace OmniConsole.Services
                     bool exists = File.Exists(exePath);
                     if (!exists)
                     {
-                        Debug.WriteLine($"[ProcessLauncher] Ghost URI Handler '{scheme}://' detected! Executable missing: {exePath}");
+                        DebugLogger.Log($"[ProcessLauncher] Ghost URI Handler '{scheme}://' detected! Executable missing: {exePath}");
                     }
                     else
                     {
-                        Debug.WriteLine($"[ProcessLauncher] Valid URI Handler '{scheme}://' confirmed at: {exePath}");
+                        DebugLogger.Log($"[ProcessLauncher] Valid URI Handler '{scheme}://' confirmed at: {exePath}");
                     }
                     return exists;
                 }
@@ -311,7 +339,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] URI handler validation failed for '{scheme}://': {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher] URI handler validation failed for '{scheme}://': {ex.Message}");
                 return true;
             }
         }
@@ -325,15 +353,17 @@ namespace OmniConsole.Services
                 strategy.RegistryRoot!, strategy.RegistrySubKey!, strategy.RegistryValueName!));
 
         /// <summary>
-        /// 以 PackageManager 搜尋指定 packageName / publisher 的 MSIX 套件，
-        /// 判斷是否已為目前使用者安裝。
+        /// 以 PackageManager 搜尋封裝應用程式，判斷是否已為目前使用者安裝。
+        /// 優先使用 PackageFamilyName（雙參數多載），否則使用 PackageName + Publisher（三參數多載）。
         /// </summary>
-        private static Task<bool> IsMsixPackageInstalledAsync(string packageName, string publisher)
+        private static Task<bool> IsPackagedAppInstalledAsync(LaunchStrategy strategy)
         {
             try
             {
                 var pm = new Windows.Management.Deployment.PackageManager();
-                var packages = pm.FindPackagesForUser(string.Empty, packageName, publisher);
+                var packages = !string.IsNullOrEmpty(strategy.PackageFamilyName)
+                    ? pm.FindPackagesForUser(string.Empty, strategy.PackageFamilyName)
+                    : pm.FindPackagesForUser(string.Empty, strategy.PackageName!, strategy.Publisher!);
                 return Task.FromResult(packages.Any());
             }
             catch { return Task.FromResult(false); }
@@ -385,7 +415,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] Registry read failed ({registryRoot}\\{subKeyPath}): {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher] Registry read failed ({registryRoot}\\{subKeyPath}): {ex.Message}");
                 return null;
             }
         }
@@ -400,10 +430,11 @@ namespace OmniConsole.Services
             {
                 if (!File.Exists(filePath))
                 {
-                    Debug.WriteLine($"[ProcessLauncher] Executable not found: {filePath}");
+                    DebugLogger.Log($"[ProcessLauncher]   LaunchProcess: Executable not found: {filePath}");
                     return false;
                 }
 
+                DebugLogger.Log($"[ProcessLauncher]   Process launched: {filePath} {arguments}");
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = filePath,
@@ -411,12 +442,11 @@ namespace OmniConsole.Services
                     UseShellExecute = true,
                 };
                 Process.Start(startInfo);
-                Debug.WriteLine($"[ProcessLauncher] Process launched: {filePath} {arguments}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ProcessLauncher] Process launch failed: {ex.Message}");
+                DebugLogger.Log($"[ProcessLauncher]   Process launch failed: {ex.Message}");
                 return false;
             }
         }

@@ -11,8 +11,8 @@ namespace OmniConsole.Models
         /// <summary>從 Windows 登錄機碼讀取安裝路徑，直接執行執行檔。</summary>
         Registry,
 
-        /// <summary>透過 PackageManager 找到已安裝的 MSIX 套件並啟動。</summary>
-        MsixPackage,
+        /// <summary>透過 PackageManager 找到已安裝的封裝應用程式 (Packaged App, 如 MSIX/APPX/Bundle) 並啟動。</summary>
+        PackagedApp,
 
         /// <summary>直接執行指定的執行檔（配合絕對路徑、SearchPaths 或系統 PATH/App Paths 機制）。</summary>
         Executable,
@@ -51,13 +51,16 @@ namespace OmniConsole.Models
         /// <summary>傳遞給執行檔的命令列參數（例如 "-bigpicture"）。</summary>
         public string? Arguments { get; init; }
 
-        // ── MsixPackage 策略 ─────────────────────────────────────────────────
+        // ── PackagedApp (MSIX/APPX/Bundle) 策略 ───────────────────────────────
 
-        /// <summary>MSIX 套件名稱（PackageFamilyName 格式）。</summary>
+        /// <summary>套件名稱（例如 "Microsoft.GamingApp"），需搭配 Publisher 使用。</summary>
         public string? PackageName { get; init; }
 
-        /// <summary>MSIX 套件發佈者識別字串。</summary>
+        /// <summary>套件發佈者憑證名稱（例如 "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"），搭配 PackageName 使用。</summary>
         public string? Publisher { get; init; }
+
+        /// <summary>套件家族名稱（例如 "Microsoft.GamingApp_8wekyb3d8bbwe"），可單獨使用，優先於 PackageName + Publisher。</summary>
+        public string? PackageFamilyName { get; init; }
 
         // ── Executable 策略 ──────────────────────────────────────────────
 

@@ -1,20 +1,22 @@
+#if DEBUG
 using System;
-using System.Diagnostics;
 using System.IO;
+#endif
+using System.Diagnostics;
 
 namespace OmniConsole.Services
 {
     /// <summary>
     /// 簡易的檔案式 Debug 日誌工具。
     /// 僅在 DEBUG 建置時實際寫入檔案；Release 建置中所有呼叫皆為空操作 (no-op)。
-    /// 日誌位置：%LOCALAPPDATA%\Packages\{PackageFamilyName}\LocalCache\Local\OmniConsole\activation.log
+    /// 日誌位置：%LOCALAPPDATA%\Packages\{PackageFamilyName}\LocalCache\Local\OmniConsole\LaunchTrace.log
     /// </summary>
     public static class DebugLogger
     {
 #if DEBUG
         private static readonly string _logPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "OmniConsole", "activation.log");
+            "OmniConsole", "LaunchTrace.log");
 #endif
 
         /// <summary>

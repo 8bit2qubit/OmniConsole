@@ -7,6 +7,7 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -962,7 +963,12 @@ namespace OmniConsole
         {
             bool isEdit = existingEntry != null;
             bool isExecutable = existingEntry?.LaunchType == "Executable";
+            bool isPackagedApp = existingEntry?.LaunchType == "PackagedApp";
             _pendingIconFile = null;
+
+            // 封裝應用程式快取（首次切換至「封裝套件」模式時延遲載入）
+            List<(string DisplayName, string PackageFamilyName)>? packagedAppCache = null;
+            string selectedPackageFamilyName = existingEntry?.PackageFamilyName ?? "";
 
             // 平台名稱
             var nameBox = new TextBox
@@ -982,22 +988,30 @@ namespace OmniConsole
                 Margin = new Thickness(0, 0, 0, 8),
             };
 
-            // 啟動類型選擇（Protocol URI / 執行檔）
+            // 啟動類型選擇（Protocol URI / 執行檔 / 封裝套件）
             var launchTypeCombo = new ComboBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Margin = new Thickness(0, 0, 0, 12),
-                Items = { "Protocol URI", _resourceLoader.GetString("PlatformDialog_Executable") },
-                SelectedIndex = isExecutable ? 1 : 0,
+                Items =
+                {
+                    "Protocol URI",
+                    _resourceLoader.GetString("PlatformDialog_Executable"),
+                    _resourceLoader.GetString("PlatformDialog_PackagedApp"),
+                },
+                SelectedIndex = isPackagedApp ? 2 : isExecutable ? 1 : 0,
             };
 
-            // 動態標籤：依啟動類型顯示 URI / 路徑
+            // 動態標籤：依啟動類型顯示 URI / 路徑 / 封裝套件
             var targetLabel = new TextBlock
             {
-                Text = isExecutable
-                    ? _resourceLoader.GetString("PlatformDialog_PathLabel")
-                    : _resourceLoader.GetString("PlatformDialog_UriLabel"),
+                Text = isPackagedApp
+                    ? _resourceLoader.GetString("PlatformDialog_PackagedAppLabel")
+                    : isExecutable
+                        ? _resourceLoader.GetString("PlatformDialog_PathLabel")
+                        : _resourceLoader.GetString("PlatformDialog_UriLabel"),
                 Margin = new Thickness(0, 0, 0, 4),
+                Visibility = isPackagedApp ? Visibility.Collapsed : Visibility.Visible,
             };
 
             // URI 或執行檔路徑輸入
@@ -1029,10 +1043,11 @@ namespace OmniConsole
                 Visibility = isExecutable ? Visibility.Visible : Visibility.Collapsed,
             };
 
-            // 目標路徑行：TextBox + 瀏覽按鈕
+            // 目標路徑行：TextBox + 瀏覽按鈕（封裝套件模式隱藏）
             var targetRow = new Grid
             {
                 Margin = new Thickness(0, 0, 0, 4),
+                Visibility = isPackagedApp ? Visibility.Collapsed : Visibility.Visible,
                 ColumnDefinitions =
                 {
                     new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
@@ -1073,6 +1088,162 @@ namespace OmniConsole
                 Margin = new Thickness(0, 0, 0, 8),
             };
 
+            // 封裝應用程式搜尋（僅「封裝套件」模式可見）
+            var packagedAppWarning = new TextBlock
+            {
+                Text = _resourceLoader.GetString("PlatformDialog_PackagedAppWarning"),
+                FontSize = 12,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Orange),
+                Margin = new Thickness(0, 0, 0, 4),
+                Visibility = isPackagedApp ? Visibility.Visible : Visibility.Collapsed,
+            };
+
+            var packagedAppLabel = new TextBlock
+            {
+                Text = _resourceLoader.GetString("PlatformDialog_PackagedAppLabel"),
+                Margin = new Thickness(0, 0, 0, 4),
+                Visibility = isPackagedApp ? Visibility.Visible : Visibility.Collapsed,
+            };
+
+            // 封裝應用程式 AutoSuggestBox：輸入即時過濾已安裝套件
+            var packagedAppSuggestBox = new AutoSuggestBox
+            {
+                PlaceholderText = _resourceLoader.GetString("PlatformDialog_PackagedAppPlaceholder"),
+                Text = selectedPackageFamilyName,
+                Margin = new Thickness(0, 0, 0, 4),
+                Visibility = isPackagedApp ? Visibility.Visible : Visibility.Collapsed,
+            };
+
+            // 封裝應用程式驗證錯誤提示
+            var packagedAppError = new TextBlock
+            {
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red),
+                FontSize = 12,
+                Visibility = Visibility.Collapsed,
+                Margin = new Thickness(0, 0, 0, 8),
+            };
+
+            // 載入已安裝封裝應用程式清單（快取），排除自身與 Game Bar 以防循環啟動
+            string ownFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
+            const string gameBarFamilyName = "Microsoft.XboxGamingOverlay_8wekyb3d8bbwe";
+            List<(string DisplayName, string PackageFamilyName)> EnsurePackagedAppCache()
+            {
+                if (packagedAppCache != null) return packagedAppCache;
+
+                packagedAppCache = [];
+                try
+                {
+                    var pm = new Windows.Management.Deployment.PackageManager();
+                    foreach (var pkg in pm.FindPackagesForUser(string.Empty))
+                    {
+                        try
+                        {
+                            if (pkg.IsFramework || pkg.IsResourcePackage || pkg.IsBundle) continue;
+                            if (pkg.SignatureKind == Windows.ApplicationModel.PackageSignatureKind.System) continue;
+                            // 排除自身與 Game Bar，避免循環啟動
+                            if (pkg.Id.FamilyName == ownFamilyName || pkg.Id.FamilyName == gameBarFamilyName) continue;
+
+                            string name = pkg.Id.Name;
+
+                            // 全域過濾：去除任何發行商的延伸模組或系統功能負載
+                            if (name.Contains("Extension", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.Contains("DecoderOEM", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.Contains("ASUSCommandCenter", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.Contains("RSXCM", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.StartsWith("aimgr", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.StartsWith("ASUSAmbientHAL", StringComparison.OrdinalIgnoreCase)) continue;
+                            if (name.StartsWith("WindowsWorkload.", StringComparison.OrdinalIgnoreCase)) continue;
+
+                            // 排除沒有進入點的微軟套件
+                            bool isMicrosoftOrOfficial = name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase) ||
+                                                         name.StartsWith("MicrosoftWindows.", StringComparison.OrdinalIgnoreCase) ||
+                                                         name.StartsWith("MicrosoftCorporationII.", StringComparison.OrdinalIgnoreCase);
+                            if (isMicrosoftOrOfficial)
+                            {
+                                if (name.Contains("WinAppRuntime", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("ExperiencePack", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("IdentityProvider", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("Notification", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("GamingServices", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("Overlay", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("TCUI", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("OneDriveSync", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("PurchaseApp", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("ActionsServer", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("AppInstaller", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("Handwriting", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("GameAssist", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("CrossDevice", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("DevHome", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("MicrosoftEdge", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("WidgetsPlatformRuntime", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("WebExperience", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("StartExperiences", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("ApplicationCompatibility", StringComparison.OrdinalIgnoreCase) ||
+                                    name.Contains("AutoSuperResolution", StringComparison.OrdinalIgnoreCase))
+                                    continue;
+                            }
+
+                            string displayName = pkg.DisplayName;
+                            if (string.IsNullOrWhiteSpace(displayName)) continue;
+                            packagedAppCache.Add((displayName, pkg.Id.FamilyName));
+                        }
+                        catch { /* 部分系統套件存取 DisplayName 會拋例外 */ }
+                    }
+                    packagedAppCache = packagedAppCache
+                        .OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PackagedApp] Package enumeration failed: {ex.Message}");
+                }
+                return packagedAppCache;
+            }
+
+            // 聚焦時顯示完整清單（點選欄位即可瀏覽）
+            packagedAppSuggestBox.GotFocus += (sender, _) =>
+            {
+                var box = (AutoSuggestBox)sender;
+                var cache = EnsurePackagedAppCache();
+                box.ItemsSource = cache
+                    .Select(p => $"{p.DisplayName}  ({p.PackageFamilyName})")
+                    .ToList();
+                box.IsSuggestionListOpen = true;
+            };
+
+            // AutoSuggestBox 文字變更時過濾套件清單
+            packagedAppSuggestBox.TextChanged += (sender, args) =>
+            {
+                if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+                var cache = EnsurePackagedAppCache();
+                string query = sender.Text.Trim();
+                sender.ItemsSource = string.IsNullOrEmpty(query)
+                    ? cache.Select(p => $"{p.DisplayName}  ({p.PackageFamilyName})").ToList()
+                    : cache
+                        .Where(p => p.DisplayName.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                                 || p.PackageFamilyName.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                        .Select(p => $"{p.DisplayName}  ({p.PackageFamilyName})")
+                        .ToList();
+            };
+
+            // 選取建議項目後記錄 PackageFamilyName 並自動填入平台名稱
+            packagedAppSuggestBox.SuggestionChosen += (sender, args) =>
+            {
+                string chosen = args.SelectedItem?.ToString() ?? "";
+                var cache = EnsurePackagedAppCache();
+                var match = cache.FirstOrDefault(p => $"{p.DisplayName}  ({p.PackageFamilyName})" == chosen);
+                if (match != default)
+                {
+                    selectedPackageFamilyName = match.PackageFamilyName;
+                    sender.Text = $"{match.DisplayName}  ({match.PackageFamilyName})";
+                    // 自動填入平台名稱（僅在空白時）
+                    if (string.IsNullOrWhiteSpace(nameBox.Text))
+                        nameBox.Text = match.DisplayName;
+                }
+            };
+
             // 卡片背景圖瀏覽
             var iconFileNameText = new TextBlock
             {
@@ -1110,6 +1281,9 @@ namespace OmniConsole
             launchTypeCombo.SelectionChanged += (_, _) =>
             {
                 bool isExe = launchTypeCombo.SelectedIndex == 1;
+                bool isPackagedAppMode = launchTypeCombo.SelectedIndex == 2;
+
+                // Protocol URI / 執行檔控制項
                 targetLabel.Text = isExe
                     ? _resourceLoader.GetString("PlatformDialog_PathLabel")
                     : _resourceLoader.GetString("PlatformDialog_UriLabel");
@@ -1117,12 +1291,24 @@ namespace OmniConsole
                     ? _resourceLoader.GetString("PlatformDialog_PathPlaceholder")
                     : _resourceLoader.GetString("PlatformDialog_UriPlaceholder");
                 targetBox.MaxLength = isExe ? 260 : 2048;
+                targetLabel.Visibility = isPackagedAppMode ? Visibility.Collapsed : Visibility.Visible;
+                targetRow.Visibility = isPackagedAppMode ? Visibility.Collapsed : Visibility.Visible;
                 argsLabel.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
                 argsBox.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
-                argsError.Visibility = Visibility.Collapsed;
                 browseExeButton.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
-                // 清除目標驗證錯誤
+
+                // 封裝應用程式控制項
+                packagedAppWarning.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
+                packagedAppLabel.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
+                packagedAppSuggestBox.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
+
+                // 首次切換至「封裝套件」模式時預載套件清單
+                if (isPackagedAppMode) EnsurePackagedAppCache();
+
+                // 清除驗證錯誤
                 targetError.Visibility = Visibility.Collapsed;
+                argsError.Visibility = Visibility.Collapsed;
+                packagedAppError.Visibility = Visibility.Collapsed;
             };
 
             // 瀏覽執行檔
@@ -1183,6 +1369,10 @@ namespace OmniConsole
                     argsLabel,
                     argsBox,
                     argsError,
+                    packagedAppWarning,
+                    packagedAppLabel,
+                    packagedAppSuggestBox,
+                    packagedAppError,
                     new TextBlock { Text = _resourceLoader.GetString("PlatformDialog_IconLabel"), Margin = new Thickness(0, 0, 0, 4) },
                     new TextBlock { Text = _resourceLoader.GetString("PlatformDialog_IconHint"), FontSize = 12,
                         Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray), Margin = new Thickness(0, 0, 0, 4) },
@@ -1220,15 +1410,43 @@ namespace OmniConsole
                 else nameError.Visibility = Visibility.Collapsed;
 
                 bool isExe = launchTypeCombo.SelectedIndex == 1;
-                string? targetErr = isExe ? ValidatePath(targetBox.Text.Trim()) : ValidateUri(targetBox.Text.Trim());
-                if (targetErr != null) { targetError.Text = targetErr; targetError.Visibility = Visibility.Visible; hasError = true; }
-                else targetError.Visibility = Visibility.Collapsed;
+                bool isPackagedAppMode = launchTypeCombo.SelectedIndex == 2;
 
-                if (isExe)
+                if (isPackagedAppMode)
                 {
-                    string? argsErr = ValidateArgs(argsBox.Text.Trim());
-                    if (argsErr != null) { argsError.Text = argsErr; argsError.Visibility = Visibility.Visible; hasError = true; }
-                    else argsError.Visibility = Visibility.Collapsed;
+                    // 封裝套件驗證：PackageFamilyName 不可為空，且不可選取自身或 Game Bar
+                    if (string.IsNullOrWhiteSpace(selectedPackageFamilyName))
+                    {
+                        packagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppEmpty");
+                        packagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else if (selectedPackageFamilyName == ownFamilyName)
+                    {
+                        packagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppSelf");
+                        packagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else if (selectedPackageFamilyName == gameBarFamilyName)
+                    {
+                        packagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppGameBar");
+                        packagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else packagedAppError.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    string? targetErr = isExe ? ValidatePath(targetBox.Text.Trim()) : ValidateUri(targetBox.Text.Trim());
+                    if (targetErr != null) { targetError.Text = targetErr; targetError.Visibility = Visibility.Visible; hasError = true; }
+                    else targetError.Visibility = Visibility.Collapsed;
+
+                    if (isExe)
+                    {
+                        string? argsErr = ValidateArgs(argsBox.Text.Trim());
+                        if (argsErr != null) { argsError.Text = argsErr; argsError.Visibility = Visibility.Visible; hasError = true; }
+                        else argsError.Visibility = Visibility.Collapsed;
+                    }
                 }
 
                 if (hasError) args.Cancel = true;
@@ -1243,9 +1461,21 @@ namespace OmniConsole
 
                 var entry = existingEntry ?? new UserPlatformEntry();
                 entry.DisplayName = name;
-                entry.LaunchType = launchTypeCombo.SelectedIndex == 1 ? "Executable" : "ProtocolUri";
-                entry.LaunchTarget = target;
-                entry.Arguments = launchTypeCombo.SelectedIndex == 1 ? argsBox.Text.Trim() : "";
+
+                if (launchTypeCombo.SelectedIndex == 2)
+                {
+                    entry.LaunchType = "PackagedApp";
+                    entry.LaunchTarget = "";
+                    entry.Arguments = "";
+                    entry.PackageFamilyName = selectedPackageFamilyName;
+                }
+                else
+                {
+                    entry.LaunchType = launchTypeCombo.SelectedIndex == 1 ? "Executable" : "ProtocolUri";
+                    entry.LaunchTarget = target;
+                    entry.Arguments = launchTypeCombo.SelectedIndex == 1 ? argsBox.Text.Trim() : "";
+                    entry.PackageFamilyName = "";
+                }
 
                 // 匯入卡片背景圖（縮放至 800x560）
                 if (_pendingIconFile != null)

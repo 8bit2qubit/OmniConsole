@@ -127,16 +127,16 @@
     <value>選擇預設啟動的遊戲平台：</value>
   </data>
   <data name="Launching" xml:space="preserve">
-    <value>正在啟動 {0}...</value>
+    <value>正在啟動「{0}」...</value>
   </data>
   <data name="LaunchSuccess" xml:space="preserve">
-    <value>{0} 已啟動</value>
+    <value>「{0}」已啟動</value>
   </data>
   <data name="LaunchTimeout" xml:space="preserve">
-    <value>啟動等待逾時，請確認 {0} 運作正常</value>
+    <value>啟動等待逾時，請確認「{0}」運作正常</value>
   </data>
   <data name="LaunchFailed" xml:space="preserve">
-    <value>啟動失敗，請確認 {0} 已安裝</value>
+    <value>無法啟動「{0}」。請確認該應用程式可正常執行，並檢查其安裝狀態或設定。</value>
   </data>
   <data name="OpenSettingsButton.Content" xml:space="preserve">
     <value>開啟設定</value>
@@ -165,11 +165,20 @@
   <data name="Platform_PlayniteFullscreen" xml:space="preserve">
     <value>Playnite Fullscreen</value>
   </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>OmniConsole</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>為遊戲 PC 與掌機設計的自訂 Windows 11 全螢幕體驗 (FSE) 首頁 Shell。</value>
+  </data>
+  <data name="AppExtensionDescription" xml:space="preserve">
+    <value>為 Windows 全螢幕體驗設計的自訂首頁 Shell。</value>
+  </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole 設定</value>
   </data>
   <data name="SettingsAppDescription" xml:space="preserve">
-    <value>OmniConsole 設定介面</value>
+    <value>設定預設遊戲平台、Game Bar 行為與自訂啟動目標。</value>
   </data>
   <data name="ResetGameBarButton.Content" xml:space="preserve">
     <value>執行</value>
@@ -313,10 +322,10 @@
     <value>此為必填欄位。</value>
   </data>
   <data name="PlatformDialog_ValidationUriInvalid" xml:space="preserve">
-    <value>URI 格式無效。範例：steam://open/bigpicture</value>
+    <value>URI 格式無效。例如 steam://open/bigpicture</value>
   </data>
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
-    <value>路徑格式無效。範例：C:\Program Files (x86)\Steam\steam.exe</value>
+    <value>路徑格式無效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>啟動參數包含不安全的字元。</value>
@@ -350,7 +359,7 @@
     <value>啟動參數不可超過 500 個字元。</value>
   </data>
   <data name="PlatformNotAvailable" xml:space="preserve">
-    <value>{0} 無法使用，請確認已安裝或選擇其他平台。</value>
+    <value>「{0}」無法使用，請確認已安裝或選擇其他平台。</value>
   </data>
   <data name="PlatformDialog_ValidationUriTooLong" xml:space="preserve">
     <value>URI 不可超過 2048 個字元。</value>
@@ -366,5 +375,26 @@
   </data>
   <data name="PlatformDialog_Delete" xml:space="preserve">
     <value>刪除</value>
+  </data>
+  <data name="PlatformDialog_PackagedApp" xml:space="preserve">
+    <value>封裝套件 (MSIX / APPX / Bundle)</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppLabel" xml:space="preserve">
+    <value>套件系列名稱</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppPlaceholder" xml:space="preserve">
+    <value>輸入以搜尋已安裝的套件...</value>
+  </data>
+  <data name="PlatformDialog_PackagedAppWarning" xml:space="preserve">
+    <value>注意：並非所有套件都支援啟動（例如各種延伸模組或背景服務）。請確保選取的是具備「使用者介面」的應用程式。</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppEmpty" xml:space="preserve">
+    <value>請選取封裝套件。</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppSelf" xml:space="preserve">
+    <value>無法將 OmniConsole 本身加入為平台。</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
+    <value>無法將 Game Bar 加入為平台。</value>
   </data>
 </root>
