@@ -92,11 +92,13 @@ namespace OmniConsole
             if (args.WindowActivationState == WindowActivationState.Deactivated) return;
             if (_isLaunching) return;
 
-            // 首次啟動時最大化（延遲到 Activated 才執行，避免建構函式中卡住）
-            if (!_isMaximized)
+            // 首次啟動時設定全螢幕（延遲到 Activated 才執行，避免建構函式中卡住）
+            // 在此 Activated 回呼中設定，視窗尚未完成第一次繪製，
+            // 可避免 OverlappedPresenter → FullScreen 的可見轉換及其系統音效（Windows Background.wav）
+            if (!_isMaximized && !_isSettingsMode)
             {
                 _isMaximized = true;
-                (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
+                (AppWindow.Presenter as OverlappedPresenter)?.Maximize();
             }
 
             // 已經成功啟動過一次，不再透過 Activated 事件重複啟動
@@ -322,8 +324,9 @@ namespace OmniConsole
             // 還原 Passthrough 開關狀態
             EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
 
-            this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-            (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
+            // 僅在尚未進入 FullScreen 時才切換，避免重複設定造成視覺閃動
+            if (this.AppWindow.Presenter?.Kind != AppWindowPresenterKind.FullScreen)
+                this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
             this.Activate();
 
             StartGamepadPolling();

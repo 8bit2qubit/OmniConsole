@@ -54,14 +54,11 @@ namespace OmniConsole
             if (_startWithSettings && mainWindow != null)
             {
                 mainWindow.PrepareForSettings();
-            }
-
-            _window.Activate();
-
-            // Activate 後再呼叫 ShowSettings 切換 UI
-            if (_startWithSettings && mainWindow != null)
-            {
                 mainWindow.ShowSettings();
+            }
+            else
+            {
+                _window.Activate();
             }
         }
 

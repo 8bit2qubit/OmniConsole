@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.Gaming.Input;
 
 namespace OmniConsole.Services
@@ -14,7 +16,7 @@ namespace OmniConsole.Services
     public class GamepadNavigationService
     {
         private DispatcherQueueTimer? _gamepadTimer;
-        private GamepadReading _previousReading;
+        private readonly Dictionary<Gamepad, GamepadReading> _previousReadings = new();
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
         private readonly Action? _onBButtonPressed;
@@ -72,62 +74,57 @@ namespace OmniConsole.Services
         {
             try
             {
-                if (Gamepad.Gamepads.Count > 0)
+                var gamepads = Gamepad.Gamepads;
+                if (gamepads.Count == 0) return;
+
+                foreach (var gamepad in gamepads)
                 {
-                    var gamepad = Gamepad.Gamepads[0];
                     var reading = gamepad.GetCurrentReading();
+                    _previousReadings.TryGetValue(gamepad, out var prev);
 
                     // 在處理任何按鈕或位移前，先確保焦點位於有效的控制項上
                     if (IsAnyInputActive(reading))
-                    {
                         EnsureFocus();
-                    }
 
-                    if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadDown))
+                    if (IsButtonPressed(reading, prev, GamepadButtons.DPadDown))
                         TryMoveGamepadFocus(FocusNavigationDirection.Down);
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadUp))
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.DPadUp))
                         TryMoveGamepadFocus(FocusNavigationDirection.Up);
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadLeft))
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.DPadLeft))
                         TryMoveGamepadFocus(FocusNavigationDirection.Left);
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.DPadRight))
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.DPadRight))
                         TryMoveGamepadFocus(FocusNavigationDirection.Right);
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.A))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.A))
                         _onAButtonPressed?.Invoke();
-                    }
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.B))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.B))
                         _onBButtonPressed?.Invoke();
-                    }
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.LeftShoulder))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.LeftShoulder))
                         _onLBPressed?.Invoke();
-                    }
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.RightShoulder))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.RightShoulder))
                         _onRBPressed?.Invoke();
-                    }
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.X))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.X))
                         _onXButtonPressed?.Invoke();
-                    }
-                    else if (IsButtonPressed(reading, _previousReading, GamepadButtons.Y))
-                    {
+                    else if (IsButtonPressed(reading, prev, GamepadButtons.Y))
                         _onYButtonPressed?.Invoke();
-                    }
 
                     // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）
-                    if (reading.LeftThumbstickY < -0.5 && _previousReading.LeftThumbstickY >= -0.5)
+                    if (reading.LeftThumbstickY < -0.5 && prev.LeftThumbstickY >= -0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Down);
-                    else if (reading.LeftThumbstickY > 0.5 && _previousReading.LeftThumbstickY <= 0.5)
+                    else if (reading.LeftThumbstickY > 0.5 && prev.LeftThumbstickY <= 0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Up);
-                    else if (reading.LeftThumbstickX < -0.5 && _previousReading.LeftThumbstickX >= -0.5)
+                    else if (reading.LeftThumbstickX < -0.5 && prev.LeftThumbstickX >= -0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Left);
-                    else if (reading.LeftThumbstickX > 0.5 && _previousReading.LeftThumbstickX <= 0.5)
+                    else if (reading.LeftThumbstickX > 0.5 && prev.LeftThumbstickX <= 0.5)
                         TryMoveGamepadFocus(FocusNavigationDirection.Right);
 
-                    _previousReading = reading;
+                    _previousReadings[gamepad] = reading;
                 }
+
+                // 清理已斷線的手把
+                var connected = new HashSet<Gamepad>(gamepads);
+                foreach (var key in _previousReadings.Keys.ToList())
+                    if (!connected.Contains(key))
+                        _previousReadings.Remove(key);
             }
             catch (Exception ex)
             {
