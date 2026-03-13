@@ -42,7 +42,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
-- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with optional launch arguments and card cover image.
+- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with optional launch arguments (executable paths only) and card cover image.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
@@ -56,8 +56,8 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 
 Before installing OmniConsole, you need to enable the Windows 11 Full Screen Experience feature:
 
-- **Desktops & Laptops**: Use [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to enable FSE first.
-- **Native Handheld Devices** (e.g., ROG Xbox Ally series): These devices natively support FSE. You can skip the Xbox Full Screen Experience Tool and install OmniConsole directly.
+- **Desktops, Laptops, Tablets & Handhelds without native FSE**: Use [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to enable FSE first.
+- **Native FSE Handheld Devices** (e.g., ROG Xbox Ally series): FSE is natively supported. Install OmniConsole directly.
 
 ---
 
@@ -65,9 +65,9 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 1. Install OmniConsole
 
-1.  Go to **Settings → System → Advanced** and enable **Developer Mode**.
+1.  **[Critical]** Go to **Settings → System → Advanced** and enable **Developer Mode**.
 2.  Download the latest `.msix` package and `.cer` certificate from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
-3.  Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
+3.  **[Critical]** Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
 4.  Double-click the `.msix` file to install.
 
 ### 2. Configure Your Default Platform
@@ -84,7 +84,7 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 
     Your selection is saved automatically. Press **B** on your controller or click/press **Exit** to finish.
 
-### 3. Set as FSE Home App
+### 3. [Critical] Set as FSE Home App
 
 <p>
   <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="220">

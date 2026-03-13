@@ -23,7 +23,7 @@
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 或掌機裝置（ROG Xbox Ally 等）上，每當全螢幕體驗被觸發時自動啟動您選擇的遊戲平台。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 突破了這項限制，讓您自由選擇要啟動的遊戲平台：
+OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 或掌機裝置（ROG Xbox Ally 等）上，每當全螢幕體驗被觸發時自動啟動您選擇的遊戲平台。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 解除了這項限制，讓您自由選擇要啟動的遊戲平台：
 
 - **開機時**：啟用「啟動時進入全螢幕體驗」後，開機即自動啟動您設定的遊戲平台。
 - **使用中**：按下 **Xbox 鍵**，點選 Game Bar 的「**首頁**」或「**媒體櫃**」即可啟動遊戲平台。（「媒體櫃」預設開啟 OmniConsole 設定。）
@@ -42,7 +42,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
 - **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
-- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填啟動參數與卡片封面圖。
+- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填啟動參數（僅執行檔路徑適用）與卡片封面圖。
 - **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
 - **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：開啟 OmniConsole 設定、啟動遊戲平台，或直接導向 Xbox App 等平台。
 - **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
@@ -56,8 +56,8 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 
 在安裝 OmniConsole 之前，您需要先啟用 Windows 11 的全螢幕體驗功能：
 
-- **桌上型電腦 / 筆記型電腦**：請先使用 [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) 啟用 FSE 功能。
-- **原生掌機裝置**（如 ROG Xbox Ally 系列）：這些裝置已原生支援 FSE，無需使用 Xbox Full Screen Experience Tool，可直接安裝 OmniConsole。
+- **桌機、筆電、平板及未內建 FSE 的掌機**：請先使用 [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) 啟用 FSE 功能。
+- **原生 FSE 掌機裝置**（如 ROG Xbox Ally 系列）：已原生支援 FSE，可直接安裝 OmniConsole。
 
 ---
 
@@ -65,9 +65,9 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 
 ### 1. 安裝 OmniConsole
 
-1.  前往**設定 → 系統 → 進階**，啟用**開發人員模式**。
+1.  **[重要]** 前往**設定 → 系統 → 進階**，啟用**開發人員模式**。
 2.  從[**發布頁面**](https://github.com/8bit2qubit/OmniConsole/releases/latest)下載最新的 `.msix` 安裝套件與 `.cer` 憑證檔。
-3.  點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
+3.  **[重要]** 點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下的存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
 4.  點兩下 `.msix` 檔案進行安裝。
 
 ### 2. 設定預設平台
@@ -84,7 +84,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
     選取後會自動儲存，完成後按下手把 **B 鍵**或點選**退出**即可。
 
-### 3. 設為 FSE 首頁應用程式
+### 3. [重要] 設為 FSE 首頁應用程式
 
 <p>
   <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="220">
