@@ -37,7 +37,10 @@
             <!-- 狀態文字：顯示目前的啟動進度或錯誤訊息 -->
             <TextBlock x:Name="StatusText" x:Uid="StatusText"
                        FontSize="28"
-                       HorizontalAlignment="Center"/>
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       MaxWidth="800"/>
 
             <!-- 啟動中的進度指示 -->
             <ProgressRing x:Name="LaunchProgressRing"
@@ -59,12 +62,17 @@
                         Click="ReturnToDesktopButton_Click"
                         FontSize="18"
                         Padding="40,16"/>
-                <!-- FSE 未啟用時才顯示 -->
-                <HyperlinkButton x:Name="EnableFseButton" x:Uid="EnableFseButton"
-                                 Visibility="Collapsed"
-                                 Click="EnableFseButton_Click"
-                                 FontSize="18"
-                                 Padding="40,16"/>
+                <!-- FSE 設定步驟按鈕：CanActivate()=false 時同時顯示雙按鈕，點選後 OmniConsole 保持開啟，引導使用者手動重啟 -->
+                <Button x:Name="EnableFseButton" x:Uid="EnableFseButton"
+                        Visibility="Collapsed"
+                        Click="EnableFseButton_Click"
+                        FontSize="18"
+                        Padding="40,16"/>
+                <Button x:Name="OpenFseSettingsButton" x:Uid="OpenFseSettingsButton"
+                        Visibility="Collapsed"
+                        Click="OpenFseSettingsButton_Click"
+                        FontSize="18"
+                        Padding="40,16"/>
             </StackPanel>
         </StackPanel>
 

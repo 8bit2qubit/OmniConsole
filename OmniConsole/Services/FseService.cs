@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -107,6 +108,28 @@ namespace OmniConsole.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"[FseService] TryActivate failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 檢查 GamingHomeApp 是否設為 OmniConsole（比對動態取得的 AUMID）。
+        /// 僅在 CanActivate()=true 後呼叫；CanActivate()=false 時不適用。
+        /// </summary>
+        public static bool IsOmniConsoleSetAsHomeApp()
+        {
+            try
+            {
+                string aumid = Windows.ApplicationModel.Package.Current.Id.FamilyName + "!App";
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\GamingConfiguration");
+                if (key is null) return false;
+                return key.GetValue("GamingHomeApp") is string value &&
+                       value.Equals(aumid, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] IsOmniConsoleSetAsHomeApp failed: {ex.Message}");
                 return false;
             }
         }

@@ -145,10 +145,16 @@
     <value>返回桌面</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>全屏体验（FSE）无法使用，请先通过 Xbox Full Screen Experience Tool 启用。</value>
+    <value>请完成以下步骤后手动重启 OmniConsole：</value>
+  </data>
+  <data name="FseHomeAppNotSet" xml:space="preserve">
+    <value>请前往 Windows 设置 → 游戏 → 全屏体验，在「选择主应用」中指定 OmniConsole，完成后手动重启本应用。</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
-    <value>Xbox Full Screen Experience Tool</value>
+    <value>启用全屏体验</value>
+  </data>
+  <data name="OpenFseSettingsButton.Content" xml:space="preserve">
+    <value>将 OmniConsole 设为主应用</value>
   </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>

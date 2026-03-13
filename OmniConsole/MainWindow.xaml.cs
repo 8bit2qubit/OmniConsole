@@ -258,19 +258,46 @@ namespace OmniConsole
             GamepadHintBar.Visibility = Visibility.Visible;
             StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
             EnableFseButton.Visibility = Visibility.Visible;
+            OpenFseSettingsButton.Visibility = Visibility.Visible;
             EnableFseButton.Focus(FocusState.Programmatic);
             StartLaunchPanelGamepadPolling();
         }
 
         /// <summary>
-        /// 開啟 Xbox Full Screen Experience Tool 頁面後結束應用程式。
-        /// 等待 LaunchUriAsync 完成確保瀏覽器已開啟再退出。
+        /// FSE 可用但 Home App 未設為 OmniConsole 時顯示提示，只引導使用者至設定頁面。
+        /// </summary>
+        public void ShowFseHomeAppNotSet()
+        {
+            LaunchPanel.Visibility = Visibility.Visible;
+            SettingsPanel.Visibility = Visibility.Collapsed;
+            BrandingText.Visibility = Visibility.Collapsed;
+            GamepadHintBar.Visibility = Visibility.Visible;
+            StatusText.Text = _resourceLoader.GetString("FseHomeAppNotSet");
+            EnableFseButton.Visibility = Visibility.Collapsed;
+            OpenFseSettingsButton.Visibility = Visibility.Visible;
+            OpenFseSettingsButton.Focus(FocusState.Programmatic);
+            StartLaunchPanelGamepadPolling();
+        }
+
+        /// <summary>
+        /// 若 Xbox Full Screen Experience Tool 已安裝則直接啟動，否則開啟 GitHub 下載頁面。OmniConsole 保持開啟。
         /// </summary>
         private async void EnableFseButton_Click(object _, RoutedEventArgs __)
         {
-            await Windows.System.Launcher.LaunchUriAsync(
-                new Uri("https://github.com/8bit2qubit/XboxFullScreenExperienceTool"));
-            Application.Current.Exit();
+            const string toolExePath = @"C:\Program Files\8bit2qubit\Xbox FullScreen Experience Tool\XboxFullScreenExperienceTool.exe";
+            if (System.IO.File.Exists(toolExePath))
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(toolExePath) { UseShellExecute = true });
+            else
+                await Windows.System.Launcher.LaunchUriAsync(
+                    new Uri("https://github.com/8bit2qubit/XboxFullScreenExperienceTool"));
+        }
+
+        /// <summary>
+        /// 開啟 Windows 設定中的全螢幕體驗頁面。
+        /// </summary>
+        private async void OpenFseSettingsButton_Click(object _, RoutedEventArgs __)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:gaming-fullscreen"));
         }
 
         // ── 設定介面 ──────────────────────────────────────────────────────────
@@ -690,6 +717,8 @@ namespace OmniConsole
                 ReturnToDesktopButton_Click(this, new RoutedEventArgs());
             else if (ReferenceEquals(focused, EnableFseButton))
                 EnableFseButton_Click(this, new RoutedEventArgs());
+            else if (ReferenceEquals(focused, OpenFseSettingsButton))
+                OpenFseSettingsButton_Click(this, new RoutedEventArgs());
         }
 
         /// <summary>

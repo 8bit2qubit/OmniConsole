@@ -36,6 +36,18 @@ namespace OmniConsole
                     return;
                 }
 
+                if (!FseService.IsOmniConsoleSetAsHomeApp())
+                {
+                    // FSE 可用，但 Home App 未設為 OmniConsole，引導使用者至設定頁面
+                    _window = new MainWindow();
+                    _dispatcherQueue = _window.DispatcherQueue;
+                    var wrongHomeAppWindow = _window as MainWindow;
+                    wrongHomeAppWindow?.PrepareForSettings();
+                    _window.Activate();
+                    wrongHomeAppWindow?.ShowFseHomeAppNotSet();
+                    return;
+                }
+
                 if (FseService.TryActivate())
                 {
                     // FSE 已觸發，Windows 會重新以 FSE 環境啟動本應用程式

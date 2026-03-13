@@ -145,10 +145,16 @@
     <value>Return to Desktop</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Full Screen Experience is not available. Please enable it first using Xbox Full Screen Experience Tool.</value>
+    <value>Please complete the following steps, then manually restart OmniConsole:</value>
+  </data>
+  <data name="FseHomeAppNotSet" xml:space="preserve">
+    <value>Go to Windows Settings → Gaming → Full Screen Experience and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
-    <value>Xbox Full Screen Experience Tool</value>
+    <value>Enable Full Screen Experience</value>
+  </data>
+  <data name="OpenFseSettingsButton.Content" xml:space="preserve">
+    <value>Set OmniConsole as Home App</value>
   </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
