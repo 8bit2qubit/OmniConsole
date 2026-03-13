@@ -48,6 +48,12 @@ namespace OmniConsole.Models
         /// <summary>執行檔名稱或絕對路徑（例如 "steam.exe" 或 "C:\Games\GameName\Game.exe"）。</summary>
         public string? ExecutableName { get; init; }
 
+        /// <summary>
+        /// 為 true 時，Registry 策略將登錄值視為命令字串（例如 URI handler 的 shell\open\command），
+        /// 解析出其中的執行檔路徑，取其目錄後與 <see cref="ExecutableName"/> 組合成最終啟動路徑。
+        /// </summary>
+        public bool ParseCommandToDirectory { get; init; }
+
         /// <summary>傳遞給執行檔的命令列參數（例如 "-bigpicture"）。</summary>
         public string? Arguments { get; init; }
 

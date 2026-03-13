@@ -144,9 +144,28 @@ namespace OmniConsole.Services
                     return false;
                 }
 
-                string exePath = strategy.ExecutableName is not null
-                    ? Path.Combine(registryValue, strategy.ExecutableName)
-                    : registryValue;
+                string exePath;
+                if (strategy.ParseCommandToDirectory)
+                {
+                    // 登錄值為命令字串（例如 URI handler 的 shell\open\command），
+                    // 解析出執行檔路徑，取其目錄後與 ExecutableName 組合
+                    string? parsedExe = ParseExePathFromCommand(registryValue);
+                    string? dir = parsedExe is not null ? Path.GetDirectoryName(parsedExe) : null;
+                    if (string.IsNullOrEmpty(dir))
+                    {
+                        DebugLogger.Log("[ProcessLauncher]   Failed to parse directory from command string.");
+                        return false;
+                    }
+                    exePath = strategy.ExecutableName is not null
+                        ? Path.Combine(dir, strategy.ExecutableName)
+                        : dir;
+                }
+                else
+                {
+                    exePath = strategy.ExecutableName is not null
+                        ? Path.Combine(registryValue, strategy.ExecutableName)
+                        : registryValue;
+                }
 
                 DebugLogger.Log($"[ProcessLauncher]   Resolved registry path: {exePath}");
                 return LaunchProcess(exePath, strategy.Arguments ?? "");
@@ -289,31 +308,7 @@ namespace OmniConsole.Services
                     return true;
                 }
 
-                command = command.Trim();
-                string exePath = "";
-
-                // 簡單解析命令字串中的執行檔路徑 (例如: "C:\Program Files\Steam\steam.exe" "%1")
-                if (command.StartsWith("\""))
-                {
-                    int endQuote = command.IndexOf("\"", 1);
-                    if (endQuote > 1)
-                    {
-                        exePath = command.Substring(1, endQuote - 1);
-                    }
-                }
-                else
-                {
-                    int spaceIndex = command.IndexOf(" ");
-                    if (spaceIndex > 0)
-                    {
-                        exePath = command.Substring(0, spaceIndex);
-                    }
-                    else
-                    {
-                        exePath = command;
-                    }
-                }
-
+                string? exePath = ParseExePathFromCommand(command);
                 if (string.IsNullOrEmpty(exePath))
                     return true;
 
@@ -398,6 +393,27 @@ namespace OmniConsole.Services
         }
 
         // ── 通用輔助方法 ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 從命令字串（例如 URI handler 的 shell\open\command 值）解析出執行檔路徑。
+        /// 支援帶引號（"C:\...\app.exe" "%1"）與不帶引號（C:\...\app.exe %1）兩種格式。
+        /// </summary>
+        private static string? ParseExePathFromCommand(string command)
+        {
+            command = command.Trim();
+            if (command.StartsWith("\""))
+            {
+                int endQuote = command.IndexOf("\"", 1);
+                if (endQuote > 1)
+                    return command.Substring(1, endQuote - 1);
+            }
+            else
+            {
+                int spaceIndex = command.IndexOf(" ");
+                return spaceIndex > 0 ? command.Substring(0, spaceIndex) : command;
+            }
+            return null;
+        }
 
         /// <summary>
         /// 從 Windows 登錄機碼讀取字串值。

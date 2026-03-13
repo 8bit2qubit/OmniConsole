@@ -169,7 +169,19 @@ namespace OmniConsole.Models
                 },
                 LaunchStrategies =
                 [
-                    // 執行 Playnite 全螢幕應用程式
+                    // 策略一：從 playnite:// URI handler 登錄機碼解析安裝目錄
+                    // Playnite 允許自訂安裝路徑，此策略可應對任意安裝位置
+                    new()
+                    {
+                        Type = LaunchStrategyType.Registry,
+                        RegistryRoot = "HKCU",
+                        RegistrySubKey = @"Software\Classes\playnite\shell\open\command",
+                        RegistryValueName = "",
+                        ParseCommandToDirectory = true,
+                        ExecutableName = "Playnite.FullscreenApp.exe",
+                        Arguments = "--hidesplashscreen",
+                    },
+                    // 策略二：預設安裝路徑備援
                     new()
                     {
                         Type = LaunchStrategyType.Executable,

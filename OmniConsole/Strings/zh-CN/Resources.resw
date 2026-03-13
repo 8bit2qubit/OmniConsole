@@ -223,19 +223,19 @@
     <value>Game Bar</value>
   </data>
   <data name="GameBarLibrarySetting_Title.Text" xml:space="preserve">
-    <value>媒体库按钮打开设置</value>
+    <value>库按钮打开设置</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>按下 Game Bar 中的“媒体库”按钮时所执行的操作。</value>
+    <value>按下 Game Bar 中的“库”按钮时所执行的操作。</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>直接导向平台</value>
   </data>
   <data name="PassthroughSetting_Description.Text" xml:space="preserve">
-    <value>"主页"和"媒体库"按钮将直接导向默认平台，跳过 OmniConsole。</value>
+    <value>"主页"和"库"按钮将直接导向默认平台，跳过 OmniConsole。</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
-    <value>目前仅支持 Xbox App。媒体库按钮以上方设置为优先。</value>
+    <value>目前仅支持 Xbox App。库按钮以上方设置为优先。</value>
   </data>
   <data name="EnablePassthroughSwitch.OffContent" xml:space="preserve">
     <value>正常流程</value>
