@@ -42,13 +42,14 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
-- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with optional launch arguments (executable paths only) and card cover image.
+- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with optional launch arguments (executable paths only) and card cover image. Right-click a custom platform card to export its configuration as shareable text; import shared configurations with the Import button.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, and **X** to edit.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
+- **Multilingual UI** – Supports English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文).
 
 ---
 

@@ -59,6 +59,7 @@ body:
         - Epic Games Launcher
         - Armoury Crate SE
         - Playnite Fullscreen
+        - Custom Platform
     validations:
       required: true
   - type: dropdown
@@ -66,6 +67,7 @@ body:
     attributes:
       label: "4. Which OmniConsole version are you using?"
       options:
+        - v1.0.0.0
         - v0.9.3.0
         - v0.9.2.0
         - v0.9.1.0
