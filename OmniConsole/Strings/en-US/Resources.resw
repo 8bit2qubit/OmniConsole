@@ -342,7 +342,7 @@
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
     <value>This feature allows you to add custom platform launch configurations. Please read the following carefully before proceeding:
 
-- As an open-source project, this software is provided "as-is". This custom feature is experimental and offers no warranty or guarantee of functionality.
+- This open-source software is provided "as-is", without warranty of any kind, express or implied; this experimental feature is provided with no assurances whatsoever.
 - Incorrectly configured platforms may fail to launch, which could crash the Full Screen Experience environment or even require an app reset to recover.
 - The developer assumes no responsibility or liability for any damage, data loss, or issues arising from the use of this program or custom platform configurations.
 - You are solely responsible for ensuring the safety, correctness, and legitimacy of all configurations you create.
@@ -402,5 +402,68 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   </data>
   <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
     <value>Cannot add Game Bar as a platform.</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppNotAllowed" xml:space="preserve">
+    <value>This package cannot be used as a platform (e.g., it may be an extension, service, or runtime component).</value>
+  </data>
+  <data name="CardMenu_Export.Text" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ImportPlatformButton.Content" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ImportPlatformDialog_Title" xml:space="preserve">
+    <value>Import Platform</value>
+  </data>
+  <data name="ImportPlatformDialog_Warning" xml:space="preserve">
+    <value>Caution: Only import configurations from sources you trust. Malicious configurations could launch harmful programs.</value>
+  </data>
+  <data name="ImportPlatformDialog_Placeholder" xml:space="preserve">
+    <value>Paste JSON here... e.g.
+{
+  "shell": "OmniConsole",
+  "displayName": "Steam Big Picture",
+  "launchType": "ProtocolUri",
+  "launchTarget": "steam://open/bigpicture"
+}</value>
+  </data>
+  <data name="ImportPlatformDialog_Primary" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Import_Error_EmptyJson" xml:space="preserve">
+    <value>Please paste a JSON string.</value>
+  </data>
+  <data name="Import_Error_InvalidJson" xml:space="preserve">
+    <value>The text is not valid JSON.</value>
+  </data>
+  <data name="Import_Error_MissingName" xml:space="preserve">
+    <value>Display name is required.</value>
+  </data>
+  <data name="Import_Error_InvalidLaunchType" xml:space="preserve">
+    <value>Unknown launch type.</value>
+  </data>
+  <data name="Import_Error_MissingTarget" xml:space="preserve">
+    <value>Launch target is required.</value>
+  </data>
+  <data name="Import_Error_InvalidCharacters" xml:space="preserve">
+    <value>Content contains invalid characters.</value>
+  </data>
+  <data name="Import_Error_InvalidUri" xml:space="preserve">
+    <value>Invalid protocol URI format.</value>
+  </data>
+  <data name="Import_Error_InvalidExecutable" xml:space="preserve">
+    <value>Executable path must end with .exe.</value>
+  </data>
+  <data name="Import_Error_PackageNotAllowed" xml:space="preserve">
+    <value>This package cannot be used as a platform (e.g., it may be an extension, service, or runtime component).</value>
+  </data>
+  <data name="ExportSuccessTeachingTip.Title" xml:space="preserve">
+    <value>Copied!</value>
+  </data>
+  <data name="ExportSuccessTeachingTip.Subtitle" xml:space="preserve">
+    <value>Platform configuration copied to clipboard.</value>
+  </data>
+  <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
+    <value>⚠ The system file picker does not support gamepad. Use a mouse, touch, or keyboard to browse.</value>
   </data>
 </root>

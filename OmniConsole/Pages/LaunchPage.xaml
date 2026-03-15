@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="OmniConsole.Pages.LaunchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LaunchPhase">
+                <!-- Idle：初始狀態，所有元素恢復預設值（BrandingText 可見，其餘元素均 Collapsed） -->
+                <VisualState x:Name="Idle"/>
+                <!-- Launching：顯示平台圖示與進度圈，等待啟動完成 -->
+                <VisualState x:Name="Launching">
+                    <VisualState.Setters>
+                        <Setter Target="LaunchIconBorder.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchProgressRing.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchProgressRing.IsActive" Value="True"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <!-- LaunchError：涵蓋預檢失敗（PlatformNotAvailable）與啟動失敗（LaunchFailed/Timeout） -->
+                <VisualState x:Name="LaunchError">
+                    <VisualState.Setters>
+                        <Setter Target="BrandingText.Visibility" Value="Collapsed"/>
+                        <Setter Target="OpenSettingsButton.Visibility" Value="Visible"/>
+                        <Setter Target="ReturnToDesktopButton.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchHintBar.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <!-- FseNotAvailable：FSE 功能未啟用，引導使用者透過工具啟用 -->
+                <VisualState x:Name="FseNotAvailable">
+                    <VisualState.Setters>
+                        <Setter Target="BrandingText.Visibility" Value="Collapsed"/>
+                        <Setter Target="EnableFseButton.Visibility" Value="Visible"/>
+                        <Setter Target="OpenFseSettingsButton.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchHintBar.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <!-- FseHomeAppNotSet：FSE 可用但 Home App 未設為 OmniConsole，只引導至 FSE 設定 -->
+                <VisualState x:Name="FseHomeAppNotSet">
+                    <VisualState.Setters>
+                        <Setter Target="BrandingText.Visibility" Value="Collapsed"/>
+                        <Setter Target="OpenFseSettingsButton.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchHintBar.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <!-- 浮水印：啟動畫面底部顯示 -->
+        <TextBlock x:Name="BrandingText" Text="OmniConsole"
+                   FontSize="16" FontWeight="Light"
+                   Foreground="#66FFFFFF"
+                   HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                   Margin="0,0,0,32"/>
+
+        <!-- 啟動模式：自動啟動平台時顯示 -->
+        <StackPanel x:Name="LaunchPanel"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="24"
+                    XYFocusKeyboardNavigation="Enabled">
+
+            <!-- 平台圖示：啟動過渡期間居中顯示 -->
+            <Border x:Name="LaunchIconBorder"
+                    Width="240" Height="168" CornerRadius="16"
+                    Background="#22FFFFFF"
+                    HorizontalAlignment="Center"
+                    Visibility="Collapsed">
+                <Image x:Name="LaunchIconImage"
+                       Stretch="UniformToFill"/>
+            </Border>
+
+            <!-- 狀態文字：顯示目前的啟動進度或錯誤訊息 -->
+            <TextBlock x:Name="StatusText" x:Uid="StatusText"
+                       FontSize="28"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       MaxWidth="800"/>
+
+            <!-- 啟動中的進度指示 -->
+            <ProgressRing x:Name="LaunchProgressRing"
+                          IsActive="False"
+                          Width="32" Height="32"
+                          HorizontalAlignment="Center"
+                          Visibility="Collapsed"/>
+
+            <!-- 啟動失敗時才顯示 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton"
+                        Visibility="Collapsed"
+                        Click="OpenSettingsButton_Click"
+                        FontSize="18"
+                        Padding="40,16"
+                        Style="{StaticResource AccentButtonStyle}"/>
+                <Button x:Name="ReturnToDesktopButton" x:Uid="ReturnToDesktopButton"
+                        Visibility="Collapsed"
+                        Click="ReturnToDesktopButton_Click"
+                        FontSize="18"
+                        Padding="40,16"/>
+                <!-- FSE 設定步驟按鈕：CanActivate()=false 時同時顯示雙按鈕，點選後 OmniConsole 保持開啟，引導使用者手動重啟 -->
+                <Button x:Name="EnableFseButton" x:Uid="EnableFseButton"
+                        Visibility="Collapsed"
+                        Click="EnableFseButton_Click"
+                        FontSize="18"
+                        Padding="40,16"/>
+                <Button x:Name="OpenFseSettingsButton" x:Uid="OpenFseSettingsButton"
+                        Visibility="Collapsed"
+                        Click="OpenFseSettingsButton_Click"
+                        FontSize="18"
+                        Padding="40,16"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- 底部手把按鍵提示列：啟動失敗或 FSE 引導時顯示 -->
+        <StackPanel x:Name="LaunchHintBar"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,24" Spacing="32"
+                    Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                        Width="28" Height="28">
+                    <TextBlock Text="A" FontSize="14" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </Border>
+                <TextBlock x:Uid="GamepadHint_Select" FontSize="14"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- 滑鼠可點選退出，手把 B 鍵也觸發同一動作 -->
+            <Button Click="ExitHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                            Width="28" Height="28">
+                        <TextBlock Text="B" FontSize="14" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                    <TextBlock x:Uid="GamepadHint_Exit" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

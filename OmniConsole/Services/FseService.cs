@@ -135,6 +135,37 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
+        /// 回傳 GameBar.exe 是否正在執行。
+        /// </summary>
+        public static bool IsGameBarRunning()
+            => Process.GetProcessesByName("GameBar").Length > 0;
+
+        /// <summary>
+        /// 透過 ms-gamebar:// URI 啟動 GameBar，輪詢直到 GameBarFTServer.exe 出現或逾時。
+        /// GameBarFTServer 是 GameBar 的服務端元件，出現時代表 GameBar 已完成初始化。
+        /// </summary>
+        /// <param name="timeoutMs">最長等待毫秒數，預設 5000ms。</param>
+        public static async System.Threading.Tasks.Task EnsureGameBarRunningAsync(int timeoutMs = 5000)
+        {
+            _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-gamebar://"));
+
+            int elapsed = 0;
+            const int interval = 200;
+            while (elapsed < timeoutMs)
+            {
+                await System.Threading.Tasks.Task.Delay(interval);
+                elapsed += interval;
+                if (Process.GetProcessesByName("GameBarFTServer").Length > 0)
+                {
+                    Debug.WriteLine($"[FseService] GameBar ready after {elapsed}ms");
+                    return;
+                }
+            }
+
+            Debug.WriteLine($"[FseService] EnsureGameBarRunning timed out after {timeoutMs}ms");
+        }
+
+        /// <summary>
         /// 強制終止 GameBar.exe 與 GameBarFTServer.exe 行程。
         /// 適用於 FSE 進入對話方塊卡住時的手動修復機制。
         /// </summary>

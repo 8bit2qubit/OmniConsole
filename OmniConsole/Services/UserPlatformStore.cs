@@ -159,6 +159,7 @@ namespace OmniConsole.Services
 
         // ── 內部方法 ──────────────────────────────────────────────────────────
 
+        /// <summary>延遲初始化：首次呼叫時從 LocalFolder 讀取 JSON 並反序列化至 <see cref="_entries"/>；後續呼叫直接返回。</summary>
         private static void EnsureLoaded()
         {
             if (_loaded) return;
@@ -181,6 +182,7 @@ namespace OmniConsole.Services
             }
         }
 
+        /// <summary>將目前 <see cref="_entries"/> 序列化為 JSON 並寫入 LocalFolder；失敗時僅記錄 Debug 訊息，不拋例外。</summary>
         private static void Save()
         {
             try

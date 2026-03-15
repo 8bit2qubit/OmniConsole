@@ -17,6 +17,7 @@
 		<!-- 綁定 SCCD 檔案 -->
 		<AppxCustomCapabilityCcd>CustomCapability.SCCD</AppxCustomCapabilityCcd>
 		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<!-- 自訂 Program.cs 進入點，用於實現單一實例 -->
 		<DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 	</PropertyGroup>
@@ -34,6 +35,7 @@
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
+		<Content Include="Assets\AppIcon.ico" />
 		<Content Include="Assets\LockScreenLogo.scale-200.png" />
 		<Content Include="Assets\Square150x150Logo.scale-200.png" />
 		<Content Include="Assets\Square44x44Logo.scale-200.png" />

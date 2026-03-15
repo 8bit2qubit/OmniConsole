@@ -19,7 +19,7 @@ namespace OmniConsole
             InitializeComponent();
         }
 
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
             if (!_startWithSettings && !FseService.IsActive())
@@ -27,26 +27,22 @@ namespace OmniConsole
                 if (!FseService.CanActivate())
                 {
                     // 系統未啟用 FSE，顯示提示引導使用者先啟用
-                    _window = new MainWindow();
-                    _dispatcherQueue = _window.DispatcherQueue;
-                    var notAvailableWindow = _window as MainWindow;
-                    notAvailableWindow?.PrepareForSettings(); // 防止 Activated 觸發平台啟動
-                    _window.Activate();
-                    notAvailableWindow?.ShowFseNotAvailable();
+                    ShowGuidanceWindow(w => w.ShowFseNotAvailable());
                     return;
                 }
 
                 if (!FseService.IsOmniConsoleSetAsHomeApp())
                 {
                     // FSE 可用，但 Home App 未設為 OmniConsole，引導使用者至設定頁面
-                    _window = new MainWindow();
-                    _dispatcherQueue = _window.DispatcherQueue;
-                    var wrongHomeAppWindow = _window as MainWindow;
-                    wrongHomeAppWindow?.PrepareForSettings();
-                    _window.Activate();
-                    wrongHomeAppWindow?.ShowFseHomeAppNotSet();
+                    ShowGuidanceWindow(w => w.ShowFseHomeAppNotSet());
                     return;
                 }
+
+                // [Windows Bug] Game Bar 未執行時（常見於系統從休眠回復後尚未就緒），FSE 觸發雖會回
+                // 傳成功，但 FSE 進入對話方塊不會出現，導致靜默退出後無任何視窗。此為 Windows 本身
+                // 的缺陷，非 OmniConsole 可控範圍；先確保 Game Bar 就緒再觸發以避免 FSE 啟動失敗。
+                if (!FseService.IsGameBarRunning())
+                    await FseService.EnsureGameBarRunningAsync();
 
                 if (FseService.TryActivate())
                 {
@@ -57,21 +53,34 @@ namespace OmniConsole
                 // TryActivate 失敗（系統支援但觸發失敗），繼續正常啟動
             }
 
-            _window = new MainWindow();
-            _dispatcherQueue = _window.DispatcherQueue;
+            var mainWindow = new MainWindow();
+            _window = mainWindow;
+            _dispatcherQueue = mainWindow.DispatcherQueue;
 
-            // 檢查是否為設定入口冷啟動
             // 設定模式：在 Activate 前標記，防止 Activated 事件觸發平台啟動
-            var mainWindow = _window as MainWindow;
-            if (_startWithSettings && mainWindow != null)
+            if (_startWithSettings)
             {
                 mainWindow.PrepareForSettings();
                 mainWindow.ShowSettings();
             }
             else
             {
-                _window.Activate();
+                mainWindow.Activate();
             }
+        }
+
+        /// <summary>
+        /// 建立引導視窗並顯示指定的引導畫面。
+        /// 用於 FSE 不可用、Home App 未設定等需要顯示說明但不執行平台啟動的情境。
+        /// </summary>
+        private void ShowGuidanceWindow(System.Action<MainWindow> show)
+        {
+            var win = new MainWindow();
+            _window = win;
+            _dispatcherQueue = win.DispatcherQueue;
+            win.PrepareForSettings(); // 防止 Activated 觸發平台啟動
+            win.Activate();
+            show(win);
         }
 
         /// <summary>

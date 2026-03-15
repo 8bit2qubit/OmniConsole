@@ -148,7 +148,7 @@
     <value>請完成以下步驟後手動重啟 OmniConsole：</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>請前往 Windows 設定 → 遊戲 → 全螢幕體驗，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟本應用程式。</value>
+    <value>請前往 Windows 設定 → 遊戲 → 全螢幕體驗，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟 OmniConsole。</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
     <value>啟用全螢幕體驗</value>
@@ -342,12 +342,12 @@
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
     <value>此功能允許您自行新增自訂平台啟動配置。請在繼續之前仔細閱讀以下內容：
 
-- 本開源專案按「現狀」提供。此自訂功能為實驗性質，更不提供任何功能上的擔保或保證。
+- 本開源軟體按「現狀」提供，不提供明示或默示的擔保；此自訂功能為實驗性質，更不提供任何保證。
 - 配置錯誤的平台可能無法正常啟動，進而導致全螢幕體驗環境崩潰，甚至必須重設應用程式才能恢復正常。
 - 開發者不對因使用本程式或自訂平台配置所造成的任何損害、資料遺失或其他問題承擔責任。
 - 您需自行確保所有配置的安全性、正確性及合法性。
 
-點選「我了解並接受」即表示您已充分了解上述風險，並同意完全自行承擔使用此功能的一切責任與後果。</value>
+點選「我了解並接受」即表示您已充分了解上述風險，並同意完全自行斟酌決定，承擔使用此功能的一切責任與後果。</value>
   </data>
   <data name="CustomPlatform_ConsentAccept.Content" xml:space="preserve">
     <value>我了解並接受</value>
@@ -402,5 +402,68 @@
   </data>
   <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
     <value>無法將 Game Bar 加入為平台。</value>
+  </data>
+  <data name="PlatformDialog_ValidationPackagedAppNotAllowed" xml:space="preserve">
+    <value>此套件無法作為平台使用（例如延伸模組、背景服務或執行時期元件）。</value>
+  </data>
+  <data name="CardMenu_Export.Text" xml:space="preserve">
+    <value>匯出</value>
+  </data>
+  <data name="ImportPlatformButton.Content" xml:space="preserve">
+    <value>匯入</value>
+  </data>
+  <data name="ImportPlatformDialog_Title" xml:space="preserve">
+    <value>匯入平台</value>
+  </data>
+  <data name="ImportPlatformDialog_Warning" xml:space="preserve">
+    <value>注意：請僅匯入來自信任來源的配置。惡意配置可能啟動有害的程式。</value>
+  </data>
+  <data name="ImportPlatformDialog_Placeholder" xml:space="preserve">
+    <value>在此貼上 JSON… 例如
+{
+  "shell": "OmniConsole",
+  "displayName": "Steam Big Picture",
+  "launchType": "ProtocolUri",
+  "launchTarget": "steam://open/bigpicture"
+}</value>
+  </data>
+  <data name="ImportPlatformDialog_Primary" xml:space="preserve">
+    <value>匯入</value>
+  </data>
+  <data name="Import_Error_EmptyJson" xml:space="preserve">
+    <value>請貼上 JSON 字串。</value>
+  </data>
+  <data name="Import_Error_InvalidJson" xml:space="preserve">
+    <value>內容不是有效的 JSON。</value>
+  </data>
+  <data name="Import_Error_MissingName" xml:space="preserve">
+    <value>缺少顯示名稱。</value>
+  </data>
+  <data name="Import_Error_InvalidLaunchType" xml:space="preserve">
+    <value>不明的啟動類型。</value>
+  </data>
+  <data name="Import_Error_MissingTarget" xml:space="preserve">
+    <value>缺少啟動目標。</value>
+  </data>
+  <data name="Import_Error_InvalidCharacters" xml:space="preserve">
+    <value>內容含有無效字元。</value>
+  </data>
+  <data name="Import_Error_InvalidUri" xml:space="preserve">
+    <value>Protocol URI 格式無效。</value>
+  </data>
+  <data name="Import_Error_InvalidExecutable" xml:space="preserve">
+    <value>執行檔路徑須以 .exe 結尾。</value>
+  </data>
+  <data name="Import_Error_PackageNotAllowed" xml:space="preserve">
+    <value>此套件無法作為平台使用（例如延伸模組、背景服務或執行時期元件）。</value>
+  </data>
+  <data name="ExportSuccessTeachingTip.Title" xml:space="preserve">
+    <value>已複製！</value>
+  </data>
+  <data name="ExportSuccessTeachingTip.Subtitle" xml:space="preserve">
+    <value>平台配置已複製到剪貼簿。</value>
+  </data>
+  <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
+    <value>⚠ 系統檔案選擇器不支援手把操作，請使用滑鼠、觸控或鍵盤瀏覽。</value>
   </data>
 </root>

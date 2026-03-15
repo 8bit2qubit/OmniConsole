@@ -1,0 +1,34 @@
+<ContentDialog
+    x:Class="OmniConsole.Dialogs.ImportPlatformDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    DefaultButton="Primary"
+    RequestedTheme="Dark">
+
+    <StackPanel Width="400">
+
+        <!-- 安全警告（與 PlatformEditDialog 的 ConfigWarning 風格一致） -->
+        <TextBlock x:Name="SecurityWarning"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="Orange"
+                   Margin="0,0,0,12"/>
+
+        <TextBox x:Name="JsonInputBox"
+                 AcceptsReturn="True"
+                 MaxLength="2000"
+                 Height="200"
+                 TextWrapping="Wrap"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 Margin="0,0,0,8"/>
+
+        <TextBlock x:Name="ErrorText"
+                   FontSize="12"
+                   Foreground="Red"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed"/>
+
+    </StackPanel>
+
+</ContentDialog>
