@@ -132,6 +132,9 @@
   <data name="LaunchSuccess" xml:space="preserve">
     <value>{0} launched</value>
   </data>
+  <data name="LaunchSlowWarningText.Text" xml:space="preserve">
+    <value>The platform is taking longer than expected and may still be loading. Please wait. If needed, press and hold the Xbox button to open Task View and check if the platform is running.</value>
+  </data>
   <data name="LaunchTimeout" xml:space="preserve">
     <value>Launch timed out. Please verify {0} is running normally.</value>
   </data>

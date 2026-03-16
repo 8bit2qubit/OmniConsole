@@ -17,6 +17,15 @@
                         <Setter Target="LaunchProgressRing.IsActive" Value="True"/>
                     </VisualState.Setters>
                 </VisualState>
+                <!-- LaunchingSlow：啟動超過 15 秒，顯示緩和提示 -->
+                <VisualState x:Name="LaunchingSlow">
+                    <VisualState.Setters>
+                        <Setter Target="LaunchIconBorder.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchProgressRing.Visibility" Value="Visible"/>
+                        <Setter Target="LaunchProgressRing.IsActive" Value="True"/>
+                        <Setter Target="LaunchSlowWarningText.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
                 <!-- LaunchError：涵蓋預檢失敗（PlatformNotAvailable）與啟動失敗（LaunchFailed/Timeout） -->
                 <VisualState x:Name="LaunchError">
                     <VisualState.Setters>
@@ -83,6 +92,16 @@
                           Width="32" Height="32"
                           HorizontalAlignment="Center"
                           Visibility="Collapsed"/>
+
+            <!-- 啟動時間過長時顯示的緩和提示（15 秒後才出現） -->
+            <TextBlock x:Name="LaunchSlowWarningText" x:Uid="LaunchSlowWarningText"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       MaxWidth="700"
+                       Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                       Visibility="Collapsed"/>
 
             <!-- 啟動失敗時才顯示 -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">

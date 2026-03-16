@@ -132,6 +132,9 @@
   <data name="LaunchSuccess" xml:space="preserve">
     <value>「{0}」已啟動</value>
   </data>
+  <data name="LaunchSlowWarningText.Text" xml:space="preserve">
+    <value>平台啟動時間比預期長，可能仍在初始化中，請耐心等候。如有需要，可長按 Xbox 鍵開啟工作檢視確認平台狀態。</value>
+  </data>
   <data name="LaunchTimeout" xml:space="preserve">
     <value>啟動等待逾時，請確認「{0}」運作正常</value>
   </data>

@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -23,8 +25,21 @@ namespace OmniConsole.Pages
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
+
+        /// <summary>
+        /// FSE 模式下會被最大化並搶走前景焦點的已知背景服務。
+        /// 輪詢時忽略這些行程，避免誤判平台已到前景。
+        /// </summary>
+        private static readonly HashSet<string> _ignoredProcessNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Nahimic3",
+            "RtkUWP",
+        };
 
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -121,18 +136,26 @@ namespace OmniConsole.Pages
                     SetWindowLong(Hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
                     // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
-                    // 最多等 15 秒 (30 * 0.5s)，避免平台啟動但未取得前景的極端情況
-                    bool platformToForeground = false;
-                    int maxRetries = 30;
+                    // 超過 slowWarningSeconds 顯示緩和提示，超過 timeoutSeconds 進入失敗流程
+                    const int pollIntervalMs = 500;
+                    const int slowWarningSeconds = 15;
+                    const int timeoutSeconds = 60;
 
-                    for (int i = 0; i < maxRetries; i++)
+                    bool platformToForeground = false;
+                    int elapsed = 0;
+
+                    while (elapsed < timeoutSeconds * 1000)
                     {
-                        await Task.Delay(500);
-                        if (GetForegroundWindow() != Hwnd)
+                        await Task.Delay(pollIntervalMs);
+                        elapsed += pollIntervalMs;
+                        IntPtr fg = GetForegroundWindow();
+                        if (fg != Hwnd && !IsIgnoredForegroundWindow(fg))
                         {
                             platformToForeground = true;
                             break;
                         }
+                        if (elapsed == slowWarningSeconds * 1000)
+                            VisualStateManager.GoToState(this, "LaunchingSlow", false);
                     }
 
                     if (platformToForeground)
@@ -244,6 +267,26 @@ namespace OmniConsole.Pages
         private void ExitHintButton_Click(object sender, RoutedEventArgs e)
         {
             ExitApplicationRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // ── 前景視窗判定 ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 判斷前景視窗是否屬於已知的干擾背景服務。
+        /// FSE 模式下這些 App 會被最大化並搶走焦點，需忽略以避免誤判平台已到前景。
+        /// </summary>
+        private static bool IsIgnoredForegroundWindow(IntPtr hwnd)
+        {
+            try
+            {
+                GetWindowThreadProcessId(hwnd, out uint pid);
+                var proc = Process.GetProcessById((int)pid);
+                return _ignoredProcessNames.Contains(proc.ProcessName);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         // ── 手把輸入處理 ──────────────────────────────────────────────────────
