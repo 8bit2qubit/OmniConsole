@@ -429,6 +429,11 @@ namespace OmniConsole.Pages
         /// </summary>
         private async void ImportPlatformButton_Click(object sender, RoutedEventArgs e)
         {
+            // 若匯出成功提示仍開著（含 light dismiss 動畫），先強制關閉再顯示 Dialog，
+            // 避免 TeachingTip light dismiss 與 ContentDialog.ShowAsync() 同時發生導致崩潰。
+            _exportTipTimer.Stop();
+            ExportSuccessTeachingTip.IsOpen = false;
+
             var dialog = new ImportPlatformDialog(this.XamlRoot, _resourceLoader);
             StopGamepadPolling();
             var result = await dialog.ShowAsync();
@@ -470,6 +475,9 @@ namespace OmniConsole.Pages
         /// </summary>
         private async Task ShowPlatformEditDialogAsync(UserPlatformEntry? existingEntry)
         {
+            _exportTipTimer.Stop();
+            ExportSuccessTeachingTip.IsOpen = false;
+
             bool isEdit = existingEntry != null;
             var dialog = new PlatformEditDialog(
                 this.XamlRoot, _resourceLoader,
