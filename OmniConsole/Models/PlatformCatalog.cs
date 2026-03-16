@@ -179,14 +179,12 @@ namespace OmniConsole.Models
                         RegistryValueName = "",
                         ParseCommandToDirectory = true,
                         ExecutableName = "Playnite.FullscreenApp.exe",
-                        Arguments = "--hidesplashscreen",
                     },
                     // 策略二：預設安裝路徑備援
                     new()
                     {
                         Type = LaunchStrategyType.Executable,
                         ExecutableName = "Playnite.FullscreenApp.exe",
-                        Arguments = "--hidesplashscreen",
                         SearchPaths = [ @"%LOCALAPPDATA%\Playnite" ],
                     },
                 ],
