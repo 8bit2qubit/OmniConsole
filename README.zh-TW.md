@@ -42,7 +42,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁 Shell，在您的 PC 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
 - **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
 - **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
-- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填啟動參數（僅執行檔路徑適用）與卡片封面圖。對自訂平台卡片按右鍵可將配置匯出為可分享的文字；透過匯入按鈕可從文字快速新增平台。
+- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填卡片封面圖。啟動參數僅在使用執行檔路徑類型時可用。對自訂平台卡片按右鍵或長按可將配置匯出為可分享的文字；透過匯入按鈕可從文字快速新增平台。
 - **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
 - **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：開啟 OmniConsole 設定、啟動遊戲平台，或直接導向 Xbox App 等平台。
 - **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
