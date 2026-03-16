@@ -571,6 +571,6 @@
         <TeachingTip x:Name="ExportSuccessTeachingTip"
                      x:Uid="ExportSuccessTeachingTip"
                      PreferredPlacement="Bottom"
-                     IsLightDismissEnabled="True"/>
+                     IsLightDismissEnabled="False"/>
     </Grid>
 </UserControl>
