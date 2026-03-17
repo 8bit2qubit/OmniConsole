@@ -47,6 +47,10 @@ namespace OmniConsole.Pages
         // 匯出成功提示的自動關閉計時器（2 秒後關閉 TeachingTip）
         private readonly DispatcherTimer _exportTipTimer = new() { Interval = TimeSpan.FromSeconds(2) };
 
+        // ContentDialog 重入防護：平板互動模式下 Dialog 關閉動畫較慢，
+        // 手把快速按 A 可能在前一個 Dialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
+        private bool _isDialogOpen;
+
         public SettingsPage()
         {
             InitializeComponent();
@@ -429,19 +433,29 @@ namespace OmniConsole.Pages
         /// </summary>
         private async void ImportPlatformButton_Click(object sender, RoutedEventArgs e)
         {
-            // 若匯出成功提示仍開著（含 light dismiss 動畫），先強制關閉再顯示 Dialog，
-            // 避免 TeachingTip light dismiss 與 ContentDialog.ShowAsync() 同時發生導致崩潰。
-            _exportTipTimer.Stop();
-            ExportSuccessTeachingTip.IsOpen = false;
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-            var dialog = new ImportPlatformDialog(this.XamlRoot, _resourceLoader);
-            StopGamepadPolling();
-            var result = await dialog.ShowAsync();
-            StartGamepadPolling();
-            if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
+            try
+            {
+                // 若匯出成功提示仍開著，先強制關閉再顯示 Dialog，
+                // 避免 TeachingTip 與 ContentDialog.ShowAsync() 同時存在導致崩潰。
+                _exportTipTimer.Stop();
+                ExportSuccessTeachingTip.IsOpen = false;
 
-            UserPlatformStore.Add(dialog.ResultEntry);
-            LoadPlatformCards();
+                var dialog = new ImportPlatformDialog(this.XamlRoot, _resourceLoader);
+                StopGamepadPolling();
+                var result = await dialog.ShowAsync();
+                StartGamepadPolling();
+                if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
+
+                UserPlatformStore.Add(dialog.ResultEntry);
+                LoadPlatformCards();
+            }
+            finally
+            {
+                _isDialogOpen = false;
+            }
         }
 
         // ── 平台編輯對話方塊 ──────────────────────────────────────────────────
@@ -475,56 +489,66 @@ namespace OmniConsole.Pages
         /// </summary>
         private async Task ShowPlatformEditDialogAsync(UserPlatformEntry? existingEntry)
         {
-            _exportTipTimer.Stop();
-            ExportSuccessTeachingTip.IsOpen = false;
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-            bool isEdit = existingEntry != null;
-            var dialog = new PlatformEditDialog(
-                this.XamlRoot, _resourceLoader,
-                Hwnd, existingEntry);
-
-            StopGamepadPolling();
-            var result = await dialog.ShowAsync();
-            StartGamepadPolling();
-
-            if (result == ContentDialogResult.Primary && dialog.ResultEntry != null)
+            try
             {
-                var entry = dialog.ResultEntry;
+                _exportTipTimer.Stop();
+                ExportSuccessTeachingTip.IsOpen = false;
 
-                // 匯入卡片背景圖（縮放至 800x560）
-                if (dialog.PendingIconFile != null)
+                bool isEdit = existingEntry != null;
+                var dialog = new PlatformEditDialog(
+                    this.XamlRoot, _resourceLoader,
+                    Hwnd, existingEntry);
+
+                StopGamepadPolling();
+                var result = await dialog.ShowAsync();
+                StartGamepadPolling();
+
+                if (result == ContentDialogResult.Primary && dialog.ResultEntry != null)
                 {
-                    if (!string.IsNullOrEmpty(entry.IconFileName))
-                        UserPlatformStore.DeleteIconFile(entry.IconFileName);
-                    entry.IconFileName = await UserPlatformStore.ImportIconAsync(dialog.PendingIconFile);
-                }
+                    var entry = dialog.ResultEntry;
 
-                if (isEdit)
-                    UserPlatformStore.Update(entry);
-                else
-                    UserPlatformStore.Add(entry);
+                    // 匯入卡片背景圖（縮放至 800x560）
+                    if (dialog.PendingIconFile != null)
+                    {
+                        if (!string.IsNullOrEmpty(entry.IconFileName))
+                            UserPlatformStore.DeleteIconFile(entry.IconFileName);
+                        entry.IconFileName = await UserPlatformStore.ImportIconAsync(dialog.PendingIconFile);
+                    }
 
-                LoadPlatformCards();
-            }
-            else if (result == ContentDialogResult.Secondary && isEdit && existingEntry != null)
-            {
-                // 刪除平台：從 Store 移除後，視剩餘數量決定留在使用者索引標籤或切回系統索引標籤
-                UserPlatformStore.Delete(existingEntry.Id);
+                    if (isEdit)
+                        UserPlatformStore.Update(entry);
+                    else
+                        UserPlatformStore.Add(entry);
 
-                var remainingUser = UserPlatformStore.GetAllDefinitions();
-                if (remainingUser.Count > 0)
-                {
-                    // 使用者索引標籤仍有其他平台，留在使用者索引標籤並選取第一個
-                    _selectedPlatformId = remainingUser[0].Id;
                     LoadPlatformCards();
                 }
-                else
+                else if (result == ContentDialogResult.Secondary && isEdit && existingEntry != null)
                 {
-                    // 使用者索引標籤已無平台，切換至系統索引標籤
-                    _selectedPlatformId = PlatformCatalog.All[0].Id;
-                    _currentCategoryTag = "";
-                    SwitchCategoryTab("System");
+                    // 刪除平台：從 Store 移除後，視剩餘數量決定留在使用者索引標籤或切回系統索引標籤
+                    UserPlatformStore.Delete(existingEntry.Id);
+
+                    var remainingUser = UserPlatformStore.GetAllDefinitions();
+                    if (remainingUser.Count > 0)
+                    {
+                        // 使用者索引標籤仍有其他平台，留在使用者索引標籤並選取第一個
+                        _selectedPlatformId = remainingUser[0].Id;
+                        LoadPlatformCards();
+                    }
+                    else
+                    {
+                        // 使用者索引標籤已無平台，切換至系統索引標籤
+                        _selectedPlatformId = PlatformCatalog.All[0].Id;
+                        _currentCategoryTag = "";
+                        SwitchCategoryTab("System");
+                    }
                 }
+            }
+            finally
+            {
+                _isDialogOpen = false;
             }
         }
 
