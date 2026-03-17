@@ -135,6 +135,10 @@ namespace OmniConsole.Pages
                     int exStyle = GetWindowLong(Hwnd, GWL_EXSTYLE);
                     SetWindowLong(Hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
+                    // FSE 模式下已知干擾應用程式可能被最大化並搶走焦點，
+                    // 在輪詢前先主動終止，避免視覺干擾與焦點搶奪
+                    KillIgnoredBackgroundServices();
+
                     // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
                     // 超過 slowWarningSeconds 顯示緩和提示，超過 timeoutSeconds 進入失敗流程
                     const int pollIntervalMs = 500;
@@ -149,8 +153,10 @@ namespace OmniConsole.Pages
                         await Task.Delay(pollIntervalMs);
                         elapsed += pollIntervalMs;
                         IntPtr fg = GetForegroundWindow();
-                        if (fg != Hwnd && !IsIgnoredForegroundWindow(fg))
+                        if (fg != Hwnd)
                         {
+                            if (IsIgnoredForegroundWindow(fg))
+                                continue;
                             platformToForeground = true;
                             break;
                         }
@@ -272,8 +278,9 @@ namespace OmniConsole.Pages
         // ── 前景視窗判定 ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// 判斷前景視窗是否屬於已知的干擾背景服務。
-        /// FSE 模式下這些 App 會被最大化並搶走焦點，需忽略以避免誤判平台已到前景。
+        /// 判斷前景視窗是否屬於已知的干擾應用程式，若是則忽略並繼續輪詢。
+        /// 這些行程已由 KillIgnoredBackgroundServices() 在輪詢前主動終止，
+        /// 此方法僅作為防禦性檢查，避免殘留行程干擾前景判定。
         /// </summary>
         private static bool IsIgnoredForegroundWindow(IntPtr hwnd)
         {
@@ -286,6 +293,33 @@ namespace OmniConsole.Pages
             catch
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 主動終止所有已知干擾應用程式的行程。
+        /// 這些 App 僅是前端 UI，終止後不影響底層音訊驅動服務。
+        /// </summary>
+        private static void KillIgnoredBackgroundServices()
+        {
+            foreach (var name in _ignoredProcessNames)
+            {
+                try
+                {
+                    foreach (var proc in Process.GetProcessesByName(name))
+                    {
+                        try
+                        {
+                            DebugLogger.Log($"[KillBgService] Killing {proc.ProcessName} PID={proc.Id}");
+                            proc.Kill();
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugLogger.Log($"[KillBgService] Kill failed: {ex.Message}");
+                        }
+                    }
+                }
+                catch { }
             }
         }
 
