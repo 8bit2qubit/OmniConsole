@@ -92,6 +92,10 @@ namespace OmniConsole.Services
             int lastUnderscore = trimmed.LastIndexOf('_');
             string pkgName = lastUnderscore > 0 ? trimmed[..lastUnderscore] : trimmed;
 
+            // 排除 FSE 干擾應用程式（啟動前會被 KillIgnoredBackgroundServices 終止，設為目標會導致循環啟動）
+            if (pkgName.Contains("Nahimic", StringComparison.OrdinalIgnoreCase)) return false;
+            if (pkgName.Contains("RealtekAudioControl", StringComparison.OrdinalIgnoreCase)) return false;
+
             // 排除延伸模組、解碼器 OEM、裝置廠商背景服務、系統功能負載
             if (pkgName.Contains("Extension", StringComparison.OrdinalIgnoreCase)) return false;
             if (pkgName.Contains("DecoderOEM", StringComparison.OrdinalIgnoreCase)) return false;
