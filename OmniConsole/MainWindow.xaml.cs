@@ -52,6 +52,7 @@ namespace OmniConsole
             LaunchPageControl.NavigateToSettingsRequested += (_, _) => ShowSettings();
             LaunchPageControl.ExitApplicationRequested += (_, _) => RequestExitApplication();
             SettingsPageControl.ExitApplicationRequested += (_, _) => RequestExitApplication();
+            SettingsPageControl.LaunchPlatformDirectlyRequested += (_, _) => LaunchPlatformDirectly();
 
             this.Activated += MainWindow_Activated;
         }
@@ -116,6 +117,20 @@ namespace OmniConsole
             this.Activate();
 
             SettingsPageControl.ShowSettings();
+        }
+
+        // ── 平台啟動 ─────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 手把 Menu 鍵觸發：直接啟動設定頁中已選取的平台，跳過手動 FSE 切換流程。
+        /// 切換回 LaunchPage 並重新執行啟動流程。
+        /// </summary>
+        private void LaunchPlatformDirectly()
+        {
+            SettingsPageControl.StopGamepadPolling();
+            SettingsPageControl.Visibility = Visibility.Collapsed;
+            LaunchPageControl.Visibility = Visibility.Visible;
+            LaunchPageControl.Reactivate();
         }
 
         // ── 全域退出 ─────────────────────────────────────────────────────────

@@ -24,6 +24,9 @@ namespace OmniConsole.Pages
         /// <summary>手把 B 鍵（導覽未展開時）或「退出」按鈕點選時，通知 MainWindow 執行退出流程。</summary>
         public event EventHandler? ExitApplicationRequested;
 
+        /// <summary>手把 Menu 鍵觸發，通知 MainWindow 直接啟動目前選取的平台（跳過手動 FSE 切換流程）。</summary>
+        public event EventHandler? LaunchPlatformDirectlyRequested;
+
         // ── 對外屬性 ──────────────────────────────────────────────────────────
 
         /// <summary>由 MainWindow 在 Activated 事件後注入，供 PlatformEditDialog 使用。</summary>
@@ -127,6 +130,10 @@ namespace OmniConsole.Pages
                 : _currentCategoryTag == "User" ? "UserTabNoConsent"
                 : "SystemTab";
             VisualStateManager.GoToState(this, state, false);
+
+            // Menu 提示不依賴 VSM 結果，直接根據條件計算：非 UserTabNoConsent 且在 FSE 中才顯示
+            GamepadHintMenu.Visibility = (state != "UserTabNoConsent" && FseService.IsActive())
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
 
@@ -571,7 +578,8 @@ namespace OmniConsole.Pages
                     OnGamepadLBPressed,
                     OnGamepadRBPressed,
                     OnGamepadXButtonPressed,
-                    OnGamepadYButtonPressed
+                    OnGamepadYButtonPressed,
+                    OnGamepadMenuButtonPressed
                 );
             }
             _gamepadNavigationService.Start();
@@ -712,6 +720,38 @@ namespace OmniConsole.Pages
                 if (entry != null)
                     _ = ShowPlatformEditDialogAsync(entry);
             }
+        }
+
+        /// <summary>
+        /// 底部提示列「Menu 啟動」按鈕的滑鼠點選處理。
+        /// </summary>
+        private void LaunchPlatformHintButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnGamepadMenuButtonPressed();
+        }
+
+        /// <summary>
+        /// 手把 Menu（☰）鍵：直接啟動目前聚焦（或已選取）的平台，跳過手動 FSE 切換流程。
+        /// 僅在 FSE 模式中有效；自訂平台索引標籤需已接受同意聲明。
+        /// 若焦點在可用的平台卡片上，先將其設為選取（同 A 鍵），再通知 MainWindow 啟動。
+        /// </summary>
+        private void OnGamepadMenuButtonPressed()
+        {
+            if (_currentNavTag != "General") return;
+            if (!FseService.IsActive()) return;
+            if (_currentCategoryTag == "User" && !SettingsService.GetCustomPlatformConsentAccepted()) return;
+
+            // 若焦點在可用卡片上，先確認選取（更新預設平台）
+            var focused = FocusManager.GetFocusedElement(this.XamlRoot);
+            if (focused is GridViewItem { Content: PlatformCardItem { IsAvailable: true } card })
+            {
+                PlatformGridView.SelectedItem = card;
+                _selectedPlatformId = card.Id;
+            }
+
+            if (string.IsNullOrEmpty(_selectedPlatformId)) return;
+
+            LaunchPlatformDirectlyRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

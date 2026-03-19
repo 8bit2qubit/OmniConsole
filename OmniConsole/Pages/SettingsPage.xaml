@@ -41,19 +41,21 @@
             <VisualStateGroup x:Name="GamepadHints">
                 <!-- NonGeneralPage：預設狀態，LBRB/Y/X 提示預設均 Collapsed -->
                 <VisualState x:Name="NonGeneralPage"/>
-                <!-- SystemTab：General 頁 + 系統索引標籤，只顯示 LB/RB 切換提示 -->
+                <!-- SystemTab：General 頁 + 系統索引標籤，顯示 LB/RB 切換提示 -->
+                <!-- GamepadHintMenu 由 code-behind 根據 FseService.IsActive() 動態控制，不在此設定 -->
                 <VisualState x:Name="SystemTab">
                     <VisualState.Setters>
                         <Setter Target="GamepadHintLBRB.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
-                <!-- UserTabNoConsent：General 頁 + 使用者索引標籤 + 未接受免責聲明，顯示 LB/RB 但無 Y/X -->
+                <!-- UserTabNoConsent：General 頁 + 使用者索引標籤 + 未接受免責聲明，顯示 LB/RB 但無 Y/X/Menu -->
                 <VisualState x:Name="UserTabNoConsent">
                     <VisualState.Setters>
                         <Setter Target="GamepadHintLBRB.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
                 <!-- UserTabWithConsent：General 頁 + 使用者索引標籤 + 已接受，顯示 LB/RB + Y（新增）+ X（編輯）-->
+                <!-- GamepadHintMenu 由 code-behind 根據 FseService.IsActive() 動態控制，不在此設定 -->
                 <VisualState x:Name="UserTabWithConsent">
                     <VisualState.Setters>
                         <Setter Target="GamepadHintLBRB.Visibility" Value="Visible"/>
@@ -493,7 +495,7 @@
             <!-- LB/RB 索引標籤切換提示 -->
             <StackPanel x:Name="GamepadHintLBRB" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
                 <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
-                        Padding="6,2">
+                        Height="28" Padding="6,0">
                     <TextBlock Text="LB / RB" FontSize="12" FontWeight="SemiBold"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
@@ -545,6 +547,24 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </Border>
                     <TextBlock x:Uid="GamepadHint_Edit" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <!-- Menu 鍵直接啟動提示（FSE 模式中 + 系統索引標籤或已接受自訂平台同意才顯示，滑鼠可點選） -->
+            <Button x:Name="GamepadHintMenu" Visibility="Collapsed"
+                    Click="LaunchPlatformHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
+                            Width="28" Height="28">
+                        <TextBlock Text="☰" FontSize="12" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Border>
+                    <TextBlock x:Uid="GamepadHint_Launch" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>

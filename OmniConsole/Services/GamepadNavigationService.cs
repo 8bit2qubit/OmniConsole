@@ -260,6 +260,7 @@ namespace OmniConsole.Services
         private readonly Action? _onRBPressed;
         private readonly Action? _onXButtonPressed;
         private readonly Action? _onYButtonPressed;
+        private readonly Action? _onMenuButtonPressed;
 
         /// <summary>
         /// 初始化 <see cref="GamepadNavigationService"/> 類別的新執行個體。
@@ -272,7 +273,8 @@ namespace OmniConsole.Services
         /// <param name="onRBPressed">當按下手把 'RB' 肩鍵時觸發的委派動作（可選）。</param>
         /// <param name="onXButtonPressed">當按下手把 'X' 鍵時觸發的委派動作（可選）。</param>
         /// <param name="onYButtonPressed">當按下手把 'Y' 鍵時觸發的委派動作（可選）。</param>
-        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed, Action? onBButtonPressed = null, Action? onLBPressed = null, Action? onRBPressed = null, Action? onXButtonPressed = null, Action? onYButtonPressed = null)
+        /// <param name="onMenuButtonPressed">當按下手把 'Menu（☰）' 鍵時觸發的委派動作（可選）。</param>
+        public GamepadNavigationService(UIElement searchRoot, DispatcherQueue dispatcherQueue, Action onAButtonPressed, Action? onBButtonPressed = null, Action? onLBPressed = null, Action? onRBPressed = null, Action? onXButtonPressed = null, Action? onYButtonPressed = null, Action? onMenuButtonPressed = null)
         {
             _searchRoot = searchRoot;
             _onAButtonPressed = onAButtonPressed;
@@ -281,6 +283,7 @@ namespace OmniConsole.Services
             _onRBPressed = onRBPressed;
             _onXButtonPressed = onXButtonPressed;
             _onYButtonPressed = onYButtonPressed;
+            _onMenuButtonPressed = onMenuButtonPressed;
 
             _gamepadTimer = dispatcherQueue.CreateTimer();
             _gamepadTimer.Interval = TimeSpan.FromMilliseconds(50); // 20 FPS
@@ -430,6 +433,8 @@ namespace OmniConsole.Services
                             _onXButtonPressed?.Invoke();
                         else if (IsButtonPressed(reading, prev, GamepadButtons.Y))
                             _onYButtonPressed?.Invoke();
+                        else if (IsButtonPressed(reading, prev, GamepadButtons.Menu))
+                            _onMenuButtonPressed?.Invoke();
                     }
 
                     // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）

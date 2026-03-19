@@ -276,6 +276,9 @@
   <data name="GamepadHint_Edit.Text" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="GamepadHint_Launch.Text" xml:space="preserve">
+    <value>Set &amp; Launch</value>
+  </data>
   <data name="PlatformDialog_AddTitle" xml:space="preserve">
     <value>Add Platform</value>
   </data>

@@ -276,6 +276,9 @@
   <data name="GamepadHint_Edit.Text" xml:space="preserve">
     <value>編輯</value>
   </data>
+  <data name="GamepadHint_Launch.Text" xml:space="preserve">
+    <value>設為預設並啟動</value>
+  </data>
   <data name="PlatformDialog_AddTitle" xml:space="preserve">
     <value>新增平台</value>
   </data>
