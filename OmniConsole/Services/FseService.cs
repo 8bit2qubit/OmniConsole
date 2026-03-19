@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -36,6 +37,19 @@ namespace OmniConsole.Services
 
         [DllImport("user32.dll")]
         private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        /// <summary>
+        /// FSE 模式下會被最大化並搶走前景焦點的已知背景服務。
+        /// 輪詢時忽略這些行程，避免誤判平台已到前景。
+        /// </summary>
+        private static readonly HashSet<string> _ignoredProcessNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Nahimic3",
+            "RtkUWP",
+        };
 
         /// <summary>
         /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
@@ -171,22 +185,68 @@ namespace OmniConsole.Services
         /// </summary>
         public static void KillGameBar()
         {
-            string[] processNames = ["GameBar", "GameBarFTServer"];
-            foreach (var name in processNames)
+            string[] names = ["GameBar", "GameBarFTServer"];
+            foreach (var name in names)
             {
-                try
-                {
-                    var processes = Process.GetProcessesByName(name);
-                    foreach (var process in processes)
+                var processes = Process.GetProcessesByName(name);
+                foreach (var process in processes)
+                    using (process)
                     {
-                        Debug.WriteLine($"[FseService] Killing {name}.exe (PID: {process.Id})");
-                        process.Kill();
+                        try
+                        {
+                            Debug.WriteLine($"[FseService] Killing {name}.exe (PID: {process.Id})");
+                            process.Kill();
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[FseService] Kill {name} failed: {ex.Message}");
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"[FseService] Kill {name} failed: {ex.Message}");
-                }
+            }
+        }
+
+        /// <summary>
+        /// 主動終止所有已知干擾應用程式的行程。
+        /// 這些 App 僅是前端 UI，終止後不影響底層音訊驅動服務。
+        /// </summary>
+        public static void KillIgnoredBackgroundServices()
+        {
+            foreach (var name in _ignoredProcessNames)
+            {
+                var processes = Process.GetProcessesByName(name);
+                foreach (var process in processes)
+                    using (process)
+                    {
+                        try
+                        {
+                            Debug.WriteLine($"[FseService] Killing {process.ProcessName} PID={process.Id}");
+                            process.Kill();
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[FseService] Kill {process.ProcessName} failed: {ex.Message}");
+                        }
+                    }
+            }
+        }
+
+        /// <summary>
+        /// 判斷前景視窗是否屬於已知的干擾應用程式，若是則忽略並繼續輪詢。
+        /// 這些行程已由 KillIgnoredBackgroundServices() 在輪詢前主動終止，
+        /// 此方法僅作為防禦性檢查，避免殘留行程干擾前景判定。
+        /// </summary>
+        public static bool IsIgnoredForegroundWindow(IntPtr hwnd)
+        {
+            try
+            {
+                GetWindowThreadProcessId(hwnd, out uint pid);
+                using var proc = Process.GetProcessById((int)pid);
+                return _ignoredProcessNames.Contains(proc.ProcessName);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FseService] IsIgnoredForegroundWindow failed: {ex.Message}");
+                return false;
             }
         }
     }

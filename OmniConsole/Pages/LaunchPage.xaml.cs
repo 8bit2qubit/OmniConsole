@@ -3,8 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -30,16 +28,6 @@ namespace OmniConsole.Pages
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
-
-        /// <summary>
-        /// FSE 模式下會被最大化並搶走前景焦點的已知背景服務。
-        /// 輪詢時忽略這些行程，避免誤判平台已到前景。
-        /// </summary>
-        private static readonly HashSet<string> _ignoredProcessNames = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "Nahimic3",
-            "RtkUWP",
-        };
 
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -137,7 +125,7 @@ namespace OmniConsole.Pages
 
                     // FSE 模式下已知干擾應用程式可能被最大化並搶走焦點，
                     // 在輪詢前先主動終止，避免視覺干擾與焦點搶奪
-                    KillIgnoredBackgroundServices();
+                    FseService.KillIgnoredBackgroundServices();
 
                     // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
                     // 超過 slowWarningSeconds 顯示緩和提示，超過 timeoutSeconds 進入失敗流程
@@ -155,7 +143,7 @@ namespace OmniConsole.Pages
                         IntPtr fg = GetForegroundWindow();
                         if (fg != Hwnd)
                         {
-                            if (IsIgnoredForegroundWindow(fg))
+                            if (FseService.IsIgnoredForegroundWindow(fg))
                                 continue;
                             platformToForeground = true;
                             break;
@@ -273,54 +261,6 @@ namespace OmniConsole.Pages
         private void ExitHintButton_Click(object sender, RoutedEventArgs e)
         {
             ExitApplicationRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        // ── 前景視窗判定 ──────────────────────────────────────────────────────
-
-        /// <summary>
-        /// 判斷前景視窗是否屬於已知的干擾應用程式，若是則忽略並繼續輪詢。
-        /// 這些行程已由 KillIgnoredBackgroundServices() 在輪詢前主動終止，
-        /// 此方法僅作為防禦性檢查，避免殘留行程干擾前景判定。
-        /// </summary>
-        private static bool IsIgnoredForegroundWindow(IntPtr hwnd)
-        {
-            try
-            {
-                GetWindowThreadProcessId(hwnd, out uint pid);
-                var proc = Process.GetProcessById((int)pid);
-                return _ignoredProcessNames.Contains(proc.ProcessName);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 主動終止所有已知干擾應用程式的行程。
-        /// 這些 App 僅是前端 UI，終止後不影響底層音訊驅動服務。
-        /// </summary>
-        private static void KillIgnoredBackgroundServices()
-        {
-            foreach (var name in _ignoredProcessNames)
-            {
-                try
-                {
-                    foreach (var proc in Process.GetProcessesByName(name))
-                    {
-                        try
-                        {
-                            DebugLogger.Log($"[KillBgService] Killing {proc.ProcessName} PID={proc.Id}");
-                            proc.Kill();
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.Log($"[KillBgService] Kill failed: {ex.Message}");
-                        }
-                    }
-                }
-                catch { }
-            }
         }
 
         // ── 手把輸入處理 ──────────────────────────────────────────────────────
