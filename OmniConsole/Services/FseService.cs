@@ -59,12 +59,12 @@ namespace OmniConsole.Services
             try
             {
                 bool result = IsGamingFullScreenExperienceActive();
-                Debug.WriteLine($"[FseService] IsActive = {result}");
+                DebugLogger.Log($"[FseService] IsActive = {result}");
                 return result;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] IsActive failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsActive failed: {ex.Message}");
                 return false;
             }
         }
@@ -77,12 +77,12 @@ namespace OmniConsole.Services
             try
             {
                 bool result = CanSetGamingFullScreenExperience();
-                Debug.WriteLine($"[FseService] CanActivate = {result}");
+                DebugLogger.Log($"[FseService] CanActivate = {result}");
                 return result;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] CanActivate failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] CanActivate failed: {ex.Message}");
                 return false;
             }
         }
@@ -98,11 +98,11 @@ namespace OmniConsole.Services
                 keybd_event(VK.F11, 0, 0, 0);
                 keybd_event(VK.F11, 0, KEYEVENTF.KEYUP, 0);
                 keybd_event(VK.LWIN, 0, KEYEVENTF.KEYUP, 0);
-                Debug.WriteLine("[FseService] TryExitToDesktop: Win+F11 sent");
+                DebugLogger.Log("[FseService] TryExitToDesktop: Win+F11 sent");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] TryExitToDesktop failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] TryExitToDesktop failed: {ex.Message}");
             }
         }
 
@@ -116,12 +116,12 @@ namespace OmniConsole.Services
             try
             {
                 int hr = SetGamingFullScreenExperience();
-                Debug.WriteLine($"[FseService] SetGamingFullScreenExperience HRESULT: 0x{hr:X8}");
+                DebugLogger.Log($"[FseService] SetGamingFullScreenExperience HRESULT: 0x{hr:X8}");
                 return hr >= 0;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] TryActivate failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] TryActivate failed: {ex.Message}");
                 return false;
             }
         }
@@ -143,7 +143,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] IsOmniConsoleSetAsHomeApp failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsOmniConsoleSetAsHomeApp failed: {ex.Message}");
                 return false;
             }
         }
@@ -171,12 +171,12 @@ namespace OmniConsole.Services
                 elapsed += interval;
                 if (Process.GetProcessesByName("GameBarFTServer").Length > 0)
                 {
-                    Debug.WriteLine($"[FseService] GameBar ready after {elapsed}ms");
+                    DebugLogger.Log($"[FseService] GameBar ready after {elapsed}ms");
                     return;
                 }
             }
 
-            Debug.WriteLine($"[FseService] EnsureGameBarRunning timed out after {timeoutMs}ms");
+            DebugLogger.Log($"[FseService] EnsureGameBarRunning timed out after {timeoutMs}ms");
         }
 
         /// <summary>
@@ -194,12 +194,12 @@ namespace OmniConsole.Services
                     {
                         try
                         {
-                            Debug.WriteLine($"[FseService] Killing {name}.exe (PID: {process.Id})");
+                            DebugLogger.Log($"[FseService] Killing {name}.exe (PID: {process.Id})");
                             process.Kill();
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"[FseService] Kill {name} failed: {ex.Message}");
+                            DebugLogger.Log($"[FseService] Kill {name} failed: {ex.Message}");
                         }
                     }
             }
@@ -219,12 +219,12 @@ namespace OmniConsole.Services
                     {
                         try
                         {
-                            Debug.WriteLine($"[FseService] Killing {process.ProcessName} PID={process.Id}");
+                            DebugLogger.Log($"[FseService] Killing {process.ProcessName} PID={process.Id}");
                             process.Kill();
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"[FseService] Kill {process.ProcessName} failed: {ex.Message}");
+                            DebugLogger.Log($"[FseService] Kill {process.ProcessName} failed: {ex.Message}");
                         }
                     }
             }
@@ -245,7 +245,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[FseService] IsIgnoredForegroundWindow failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsIgnoredForegroundWindow failed: {ex.Message}");
                 return false;
             }
         }

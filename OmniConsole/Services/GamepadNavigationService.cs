@@ -462,7 +462,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Gamepad Error: {ex}");
+                DebugLogger.Log($"[GamepadNavigationService] Gamepad error: {ex.Message}");
             }
         }
 

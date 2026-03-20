@@ -1,7 +1,6 @@
 using OmniConsole.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -153,7 +152,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[UserPlatformStore] Delete icon failed: {ex.Message}");
+                DebugLogger.Log($"[UserPlatformStore] Delete icon failed: {ex.Message}");
             }
         }
 
@@ -177,7 +176,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[UserPlatformStore] Load failed: {ex.Message}");
+                DebugLogger.Log($"[UserPlatformStore] Load failed: {ex.Message}");
                 _entries = [];
             }
         }
@@ -194,7 +193,7 @@ namespace OmniConsole.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[UserPlatformStore] Save failed: {ex.Message}");
+                DebugLogger.Log($"[UserPlatformStore] Save failed: {ex.Message}");
             }
         }
     }

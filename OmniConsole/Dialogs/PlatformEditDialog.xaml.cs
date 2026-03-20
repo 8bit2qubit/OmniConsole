@@ -5,7 +5,6 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -302,7 +301,7 @@ namespace OmniConsole.Dialogs
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PackagedApp] Package enumeration failed: {ex.Message}");
+                DebugLogger.Log($"[PackagedApp] Package enumeration failed: {ex.Message}");
             }
             return _packagedAppCache;
         }
