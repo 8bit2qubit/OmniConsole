@@ -3,7 +3,7 @@
 > 🌐 **English** | [繁體中文](README.zh-TW.md)
 
 <p align="center">
-<img src="OmniConsole/Assets/Square150x150Logo.scale-200.png" alt="OmniConsole Icon" style="width: 150px; object-fit: contain; display: block; margin: 0 auto;">
+<img src="OmniConsole/Assets/SplashScreen.scale-200.png" alt="OmniConsole" style="height: 80px; object-fit: contain; display: block; margin: 0 auto;">
 </p>
 
 <p align="center">
@@ -42,10 +42,10 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
-- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with card cover image. Launch arguments are available when using the executable path type. Right-click or long-press a custom platform card to export its configuration as shareable text; import shared configurations with the Import button.
+- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with a card cover image. Launch arguments are available when using the executable path type. Right-click or long-press a custom platform card to export its configuration as shareable text; import shared configurations with the Import button.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
-- **Troubleshoot Page** – A dedicated page for emergency FSE recovery: kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
+- **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -73,10 +73,10 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 2. Configure Your Default Platform
 
-OmniConsole will present the Settings UI on **first launch** or **after an app update**. You can also open it manually anytime from the Start Menu:
+OmniConsole will present the Settings UI on **first launch** or **after app updates**. You can also open it manually anytime from the Start Menu:
 
 1.  Open **"OmniConsole Settings"** from the Start Menu (All Apps).
-2.  Select your preferred gaming platform from the card grid using a **Mouse**, **Touch**, or **Xbox Controller** (**D-Pad/Left Stick** to navigate in all four directions, **A** to confirm):
+2.  Select your preferred gaming platform from the card grid using a **mouse**, **touch**, or **Xbox controller** (**D-Pad/Left Stick** to navigate in all four directions, **A** to confirm):
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Launcher**
@@ -88,7 +88,7 @@ OmniConsole will present the Settings UI on **first launch** or **after an app u
 ### 3. [Critical] Set as FSE Home App
 
 <p>
-  <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="220">
+  <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="221">
 </p>
 
 1.  Go to **Settings → Gaming → Full Screen Experience**.
@@ -115,7 +115,7 @@ Your gaming platform now launches via any of these entry points:
 
 ---
 
-## 🛠️ Troubleshoot
+## 🛠️ Troubleshooting
 
 If you experience an issue where the Windows Full Screen Experience (FSE) entry dialog ("Restart for better performance") fails to appear due to a Windows bug:
 

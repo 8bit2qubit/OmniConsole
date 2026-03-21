@@ -3,7 +3,7 @@
 > 🌐 [English](README.md) | **繁體中文**
 
 <p align="center">
-<img src="OmniConsole/Assets/Square150x150Logo.scale-200.png" alt="OmniConsole 圖示" style="width: 150px; object-fit: contain; display: block; margin: 0 auto;">
+<img src="OmniConsole/Assets/SplashScreen.scale-200.png" alt="OmniConsole" style="height: 80px; object-fit: contain; display: block; margin: 0 auto;">
 </p>
 
 <p align="center">
@@ -88,7 +88,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 ### 3. [重要] 設為 FSE 首頁應用程式
 
 <p>
-  <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="220">
+  <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="221">
 </p>
 
 1.  前往**設定 → 遊戲 → 全螢幕體驗**。
