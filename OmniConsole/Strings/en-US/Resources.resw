@@ -472,4 +472,55 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
     <value>⚠ The system file picker does not support gamepad. Use a mouse, touch, or keyboard to browse.</value>
   </data>
+  <data name="AdvancedSection_Updates.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="AutoUpdateCheck_Title.Text" xml:space="preserve">
+    <value>Automatic update check</value>
+  </data>
+  <data name="AutoUpdateCheck_Description.Text" xml:space="preserve">
+    <value>Check for new versions when opening settings.</value>
+  </data>
+  <data name="VersionInfo_Title.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="CheckForUpdatesButton.Content" xml:space="preserve">
+    <value>Check for Updates</value>
+  </data>
+  <data name="ViewReleaseNotesButton.Content" xml:space="preserve">
+    <value>Download &amp; Install</value>
+  </data>
+  <data name="UpdateCheck_NewVersion_Subtitle" xml:space="preserve">
+    <value>OmniConsole v{0} is available.</value>
+  </data>
+  <data name="UpdateCheck_UpToDate_Subtitle" xml:space="preserve">
+    <value>OmniConsole is on the latest version.</value>
+  </data>
+  <data name="UpdateCheck_Failed_Subtitle" xml:space="preserve">
+    <value>Please check your internet connection and try again.</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar" xml:space="preserve">
+    <value>OmniConsole v{0} is available.</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Launch_GameBar" xml:space="preserve">
+    <value>OmniConsole v{0} is available. Open OmniConsole Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Launch_StartMenu" xml:space="preserve">
+    <value>OmniConsole v{0} is available. Open OmniConsole Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
+    <value>OmniConsole v{0} is available. Go to ☰ &gt; Advanced to download and install.</value>
+  </data>
+  <data name="UpdateCheck_Checking" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="UpdateDownload_InProgress" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="UpdateDownload_Installing" xml:space="preserve">
+    <value>Download complete. Installing...</value>
+  </data>
+  <data name="UpdateDownload_Failed" xml:space="preserve">
+    <value>Download failed. Please try again.</value>
+  </data>
 </root>

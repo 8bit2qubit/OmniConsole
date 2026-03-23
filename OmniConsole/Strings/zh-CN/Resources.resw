@@ -472,4 +472,55 @@
   <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
     <value>⚠ 系统文件选择器不支持手柄操作，请使用鼠标、触控或键盘浏览。</value>
   </data>
+  <data name="AdvancedSection_Updates.Text" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="AutoUpdateCheck_Title.Text" xml:space="preserve">
+    <value>自动检查更新</value>
+  </data>
+  <data name="AutoUpdateCheck_Description.Text" xml:space="preserve">
+    <value>打开设置时自动检查新版本。</value>
+  </data>
+  <data name="VersionInfo_Title.Text" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="CheckForUpdatesButton.Content" xml:space="preserve">
+    <value>检查更新</value>
+  </data>
+  <data name="ViewReleaseNotesButton.Content" xml:space="preserve">
+    <value>下载并安装</value>
+  </data>
+  <data name="UpdateCheck_NewVersion_Subtitle" xml:space="preserve">
+    <value>OmniConsole v{0} 已可下载。</value>
+  </data>
+  <data name="UpdateCheck_UpToDate_Subtitle" xml:space="preserve">
+    <value>OmniConsole 当前为最新版本。</value>
+  </data>
+  <data name="UpdateCheck_Failed_Subtitle" xml:space="preserve">
+    <value>请检查网络连接后重试。</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar" xml:space="preserve">
+    <value>OmniConsole v{0} 已可下载。</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Launch_GameBar" xml:space="preserve">
+    <value>OmniConsole v{0} 已可下载。从「Game Bar &gt; 库」打开 OmniConsole 设置，前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Launch_StartMenu" xml:space="preserve">
+    <value>OmniConsole v{0} 已可下载。从「开始 &gt; 所有应用」打开 OmniConsole 设置，前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
+  <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
+    <value>OmniConsole v{0} 已可下载。前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
+  <data name="UpdateCheck_Checking" xml:space="preserve">
+    <value>检查中...</value>
+  </data>
+  <data name="UpdateDownload_InProgress" xml:space="preserve">
+    <value>下载中...</value>
+  </data>
+  <data name="UpdateDownload_Installing" xml:space="preserve">
+    <value>下载完成，正在安装...</value>
+  </data>
+  <data name="UpdateDownload_Failed" xml:space="preserve">
+    <value>下载失败，请重试。</value>
+  </data>
 </root>

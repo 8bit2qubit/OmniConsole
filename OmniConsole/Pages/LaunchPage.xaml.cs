@@ -84,6 +84,9 @@ namespace OmniConsole.Pages
                 // 注意：SettingsPage 的可見性由呼叫方 MainWindow 在進入此方法前已處理
                 VisualStateManager.GoToState(this, "Idle", false);
 
+                // 讀取快取的更新資訊，有新版時顯示 InfoBar
+                ShowUpdateInfoBarIfNeeded();
+
                 StartGamepadPolling();
 
                 var platform = SettingsService.GetDefaultPlatform();
@@ -191,6 +194,7 @@ namespace OmniConsole.Pages
         public void ShowFseNotAvailable()
         {
             Services.DebugLogger.Log("ShowFseNotAvailable: FSE not available.");
+            ShowUpdateInfoBarIfNeeded();
             StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
             VisualStateManager.GoToState(this, "FseNotAvailable", false);
             EnableFseButton.Focus(FocusState.Programmatic);
@@ -203,6 +207,7 @@ namespace OmniConsole.Pages
         public void ShowFseHomeAppNotSet()
         {
             Services.DebugLogger.Log("ShowFseHomeAppNotSet: FSE Home App not set to OmniConsole.");
+            ShowUpdateInfoBarIfNeeded();
             StatusText.Text = _resourceLoader.GetString("FseHomeAppNotSet");
             VisualStateManager.GoToState(this, "FseHomeAppNotSet", false);
             OpenFseSettingsButton.Focus(FocusState.Programmatic);
@@ -306,6 +311,29 @@ namespace OmniConsole.Pages
         private void OnGamepadBButtonPressed()
         {
             ExitApplicationRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // ── 更新通知 ───────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 讀取快取的新版本資訊，有新版時顯示 InfoBar。
+        /// </summary>
+        public void ShowUpdateInfoBarIfNeeded()
+        {
+            var cached = SettingsService.GetCachedNewVersion();
+            if (!string.IsNullOrEmpty(cached) && SettingsService.GetAutoUpdateCheckEnabled())
+            {
+                var key = SettingsService.GetUseGameBarLibraryForSettings()
+                    ? "UpdateAvailable_InfoBar_Launch_GameBar"
+                    : "UpdateAvailable_InfoBar_Launch_StartMenu";
+                UpdateInfoBar.Message = string.Format(
+                    _resourceLoader.GetString(key), cached);
+                UpdateInfoBar.IsOpen = true;
+            }
+            else
+            {
+                UpdateInfoBar.IsOpen = false;
+            }
         }
     }
 }

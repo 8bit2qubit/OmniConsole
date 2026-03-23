@@ -55,6 +55,15 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
+        <!-- 更新通知 InfoBar（佔版面固定區塊） -->
+        <InfoBar x:Name="UpdateInfoBar"
+                 IsOpen="False" IsClosable="False"
+                 Severity="Informational"
+                 VerticalAlignment="Top"
+                 HorizontalAlignment="Center"
+                 MaxWidth="800"
+                 Margin="0,16,0,0"/>
+
         <!-- 浮水印：啟動畫面底部顯示 -->
         <TextBlock x:Name="BrandingText" Text="OmniConsole"
                    FontSize="16" FontWeight="Light"

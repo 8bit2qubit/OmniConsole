@@ -162,8 +162,22 @@
 
             <NavigationView.Content>
                 <Grid Margin="64,24,64,80">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 更新通知 InfoBar（佔版面固定區塊） -->
+                    <InfoBar x:Name="SettingsUpdateInfoBar"
+                             Grid.Row="0"
+                             IsOpen="False" IsClosable="False"
+                             Severity="Informational"
+                             HorizontalAlignment="Center"
+                             MaxWidth="800"
+                             Margin="0,0,0,16"/>
+
                     <!-- 一般設定頁面 -->
-                    <Grid x:Name="GeneralPage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid x:Name="GeneralPage" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -360,11 +374,14 @@
                             </ScrollViewer>
                             </Grid>
                         </NavigationView>
-
                     </Grid>
 
                     <!-- 進階設定頁面 -->
-                    <StackPanel x:Name="AdvancedPage" Visibility="Collapsed" Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
+                    <ScrollViewer x:Name="AdvancedPage" Grid.Row="1" Visibility="Collapsed"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Padding="0,0,0,40">
+                    <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
                         <TextBlock x:Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock x:Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
@@ -429,10 +446,99 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- 更新分類標題 -->
+                        <TextBlock x:Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="2,0,0,0"/>
+
+                        <!-- 更新群組卡片 -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="400">
+                            <StackPanel>
+                                <!-- 自動檢查更新 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE895;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="AutoUpdateCheck_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="AutoUpdateCheck_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="AutoUpdateCheckSwitch"
+                                                  Toggled="AutoUpdateCheckSwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+
+                                <!-- 分隔線 -->
+                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                <!-- 版本號與檢查更新 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE946;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock x:Uid="VersionInfo_Title" FontWeight="SemiBold" FontSize="16" />
+                                            <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ViewReleaseNotesButton" x:Uid="ViewReleaseNotesButton"
+                                                Click="ViewReleaseNotesButton_Click"
+                                                Visibility="Collapsed"
+                                                FontSize="14" Padding="24,8"/>
+                                        <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton"
+                                                Click="CheckForUpdatesButton_Click"
+                                                FontSize="14" Padding="24,8"/>
+                                        <ProgressRing x:Name="CheckUpdateProgressRing"
+                                                      IsActive="False" Visibility="Collapsed"
+                                                      Width="20" Height="20"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 下載進度 -->
+                                <Grid x:Name="DownloadProgressPanel" Visibility="Collapsed" Padding="16,0,16,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressBar x:Name="DownloadProgressBar" Minimum="0" Maximum="100" Value="0"
+                                                 VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="DownloadProgressText" Grid.Column="1"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
+                    </ScrollViewer>
 
                     <!-- 疑難排解頁面 -->
-                    <StackPanel x:Name="TroubleshootPage" Visibility="Collapsed" Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
+                    <ScrollViewer x:Name="TroubleshootPage" Grid.Row="1" Visibility="Collapsed"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Padding="0,0,0,40">
+                    <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
                         <TextBlock x:Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock x:Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
@@ -469,6 +575,7 @@
                             </Grid>
                         </Border>
                     </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </NavigationView.Content>
 

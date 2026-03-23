@@ -146,5 +146,108 @@ namespace OmniConsole.Services
         {
             ApplicationData.Current.LocalSettings.Values["CustomPlatformConsentAccepted"] = accepted;
         }
+
+        /// <summary>
+        /// 取得是否啟用自動檢查更新。
+        /// 預設為 true。
+        /// </summary>
+        public static bool GetAutoUpdateCheckEnabled()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("AutoUpdateCheckEnabled", out object? value) && value is bool enabled)
+            {
+                return enabled;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用自動檢查更新。
+        /// </summary>
+        public static void SetAutoUpdateCheckEnabled(bool enabled)
+        {
+            ApplicationData.Current.LocalSettings.Values["AutoUpdateCheckEnabled"] = enabled;
+        }
+
+        /// <summary>
+        /// 取得上次檢查更新的日期（"yyyy-MM-dd" 格式）。
+        /// </summary>
+        public static string GetLastUpdateCheckDate()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("LastUpdateCheckDate", out object? value) && value is string date)
+            {
+                return date;
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 儲存上次檢查更新的日期。
+        /// </summary>
+        public static void SetLastUpdateCheckDate(string date)
+        {
+            ApplicationData.Current.LocalSettings.Values["LastUpdateCheckDate"] = date;
+        }
+
+        /// <summary>
+        /// 取得快取的最新可用版本號（如 "1.3.0.0"）。
+        /// 空字串表示無新版或尚未檢查。
+        /// </summary>
+        public static string GetCachedNewVersion()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CachedNewVersion", out object? value) && value is string version)
+            {
+                return version;
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 儲存快取的最新可用版本號。
+        /// </summary>
+        public static void SetCachedNewVersion(string version)
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedNewVersion"] = version;
+        }
+
+        /// <summary>
+        /// 清除快取的最新可用版本號（表示已是最新版）。
+        /// </summary>
+        public static void ClearCachedNewVersion()
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedNewVersion"] = "";
+        }
+
+        /// <summary>
+        /// 取得快取的 .msix 下載 URL。
+        /// 空字串表示無可用下載連結。
+        /// </summary>
+        public static string GetCachedDownloadUrl()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CachedDownloadUrl", out object? value) && value is string url)
+            {
+                return url;
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 儲存快取的 .msix 下載 URL。
+        /// </summary>
+        public static void SetCachedDownloadUrl(string url)
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedDownloadUrl"] = url;
+        }
+
+        /// <summary>
+        /// 清除快取的下載 URL。
+        /// </summary>
+        public static void ClearCachedDownloadUrl()
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedDownloadUrl"] = "";
+        }
     }
 }

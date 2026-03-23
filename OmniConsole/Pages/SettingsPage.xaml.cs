@@ -7,9 +7,12 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace OmniConsole.Pages
 {
@@ -53,6 +56,14 @@ namespace OmniConsole.Pages
         // ContentDialog 重入防護：平板互動模式下 Dialog 關閉動畫較慢，
         // 手把快速按 A 可能在前一個 Dialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
         private bool _isDialogOpen;
+
+        // 下載更新的取消 token
+        private CancellationTokenSource? _downloadCts;
+
+        // ── Win32 API ───────────────────────────────────────────────────────────
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern int RegisterApplicationRestart(string commandLine, int flags);
 
         public SettingsPage()
         {
@@ -109,6 +120,18 @@ namespace OmniConsole.Pages
             // 還原 Passthrough 開關狀態
             EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
 
+            // 還原自動檢查更新開關狀態，並顯示進階區版本號
+            AutoUpdateCheckSwitch.IsOn = SettingsService.GetAutoUpdateCheckEnabled();
+            AdvancedVersionText.Text = SettingsService.GetAppVersion();
+
+            // 讀取快取的更新資訊
+            ShowSettingsUpdateInfoBar();
+            ShowCachedUpdateStatus();
+
+            // 自動檢查更新（跨日 + 開關啟用時）
+            if (UpdateCheckService.ShouldAutoCheck())
+                _ = AutoCheckForUpdatesAsync();
+
             StartGamepadPolling();
         }
 
@@ -123,6 +146,7 @@ namespace OmniConsole.Pages
             if (_currentNavTag != "General")
             {
                 VisualStateManager.GoToState(this, "NonGeneralPage", false);
+                GamepadHintMenu.Visibility = Visibility.Collapsed;
                 return;
             }
             bool showYX = _currentCategoryTag == "User" && SettingsService.GetCustomPlatformConsentAccepted();
@@ -445,7 +469,7 @@ namespace OmniConsole.Pages
 
             try
             {
-                // 若匯出成功提示仍開著，先強制關閉再顯示 Dialog，
+                // 若提示仍開著，先強制關閉再顯示 Dialog，
                 // 避免 TeachingTip 與 ContentDialog.ShowAsync() 同時存在導致崩潰。
                 _exportTipTimer.Stop();
                 ExportSuccessTeachingTip.IsOpen = false;
@@ -655,6 +679,21 @@ namespace OmniConsole.Pages
                 case ToggleSwitch sw when ReferenceEquals(sw, EnablePassthroughSwitch):
                     EnablePassthroughSwitch.IsOn = !sw.IsOn;
                     break;
+
+                // 自動檢查更新開關
+                case ToggleSwitch sw when ReferenceEquals(sw, AutoUpdateCheckSwitch):
+                    AutoUpdateCheckSwitch.IsOn = !sw.IsOn;
+                    break;
+
+                // 檢查更新按鈕
+                case Button btn when ReferenceEquals(btn, CheckForUpdatesButton):
+                    CheckForUpdatesButton_Click(this, new RoutedEventArgs());
+                    break;
+
+                // 查看更新說明按鈕
+                case Button btn when ReferenceEquals(btn, ViewReleaseNotesButton):
+                    ViewReleaseNotesButton_Click(this, new RoutedEventArgs());
+                    break;
             }
         }
 
@@ -752,6 +791,189 @@ namespace OmniConsole.Pages
             if (string.IsNullOrEmpty(_selectedPlatformId)) return;
 
             LaunchPlatformDirectlyRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // ── 更新檢查 ───────────────────────────────────────────────────────────
+
+        /// <summary>自動更新檢查開關切換。</summary>
+        private void AutoUpdateCheckSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetAutoUpdateCheckEnabled(AutoUpdateCheckSwitch.IsOn);
+            ShowSettingsUpdateInfoBar();
+        }
+
+        /// <summary>手動檢查更新按鈕，強制抓取 GitHub API 並更新快取。</summary>
+        private async void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e)
+        {
+            CheckForUpdatesButton.IsEnabled = false;
+            UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Checking");
+            UpdateCheckStatusText.Visibility = Visibility.Visible;
+            CheckUpdateProgressRing.Visibility = Visibility.Visible;
+            CheckUpdateProgressRing.IsActive = true;
+
+            var delayTask = Task.Delay(500);
+            var (result, version) = await UpdateCheckService.CheckForUpdateAsync();
+            UpdateCheckService.RecordCheckDate();
+            await delayTask;
+
+            CheckUpdateProgressRing.IsActive = false;
+            CheckUpdateProgressRing.Visibility = Visibility.Collapsed;
+            CheckForUpdatesButton.IsEnabled = true;
+
+            switch (result)
+            {
+                case UpdateCheckService.CheckResult.NewVersionAvailable:
+                    UpdateCheckStatusText.Text = string.Format(
+                        _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), version);
+                    UpdateCheckStatusText.Visibility = Visibility.Visible;
+                    ViewReleaseNotesButton.Visibility = Visibility.Visible;
+                    ShowSettingsUpdateInfoBar();
+                    break;
+
+                case UpdateCheckService.CheckResult.UpToDate:
+                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_UpToDate_Subtitle");
+                    UpdateCheckStatusText.Visibility = Visibility.Visible;
+                    ViewReleaseNotesButton.Visibility = Visibility.Collapsed;
+                    SettingsUpdateInfoBar.IsOpen = false;
+                    break;
+
+                case UpdateCheckService.CheckResult.Failed:
+                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Failed_Subtitle");
+                    UpdateCheckStatusText.Visibility = Visibility.Visible;
+                    break;
+            }
+        }
+
+        /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
+        private async void ViewReleaseNotesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var downloadUrl = SettingsService.GetCachedDownloadUrl();
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                // 無快取下載連結時 fallback 開瀏覽器
+                await Windows.System.Launcher.LaunchUriAsync(
+                    new Uri(UpdateCheckService.ReleaseNotesUrl));
+                return;
+            }
+
+            ViewReleaseNotesButton.IsEnabled = false;
+            CheckForUpdatesButton.IsEnabled = false;
+
+            DownloadProgressPanel.Visibility = Visibility.Visible;
+            DownloadProgressBar.IsIndeterminate = false;
+            DownloadProgressBar.Value = 0;
+            DownloadProgressText.Text = "0%";
+            UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_InProgress");
+            UpdateCheckStatusText.Visibility = Visibility.Visible;
+
+            var localFolder = ApplicationData.Current.LocalFolder.Path;
+            var cachedVersion = SettingsService.GetCachedNewVersion();
+            var fileName = $"OmniConsole_{cachedVersion}_x64.msix";
+            var destPath = Path.Combine(localFolder, fileName);
+
+            try
+            {
+                UpdateCheckService.CleanUpOldMsixFiles(localFolder);
+
+                _downloadCts = new CancellationTokenSource();
+                var progress = new Progress<double>(pct =>
+                {
+                    if (pct < 0)
+                    {
+                        DownloadProgressBar.IsIndeterminate = true;
+                        DownloadProgressText.Text = "";
+                    }
+                    else
+                    {
+                        DownloadProgressBar.IsIndeterminate = false;
+                        DownloadProgressBar.Value = pct;
+                        DownloadProgressText.Text = $"{pct:F0}%";
+                    }
+                });
+
+                await UpdateCheckService.DownloadMsixAsync(
+                    downloadUrl, destPath, progress, _downloadCts.Token);
+
+                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Installing");
+                DownloadProgressBar.Value = 100;
+                DownloadProgressText.Text = "100%";
+
+                // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
+                RegisterApplicationRestart("", 0);
+
+                var packageManager = new Windows.Management.Deployment.PackageManager();
+                await packageManager.AddPackageAsync(
+                    new Uri(destPath),
+                    null,
+                    Windows.Management.Deployment.DeploymentOptions.ForceApplicationShutdown);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                DebugLogger.Log($"[SettingsPage] Download failed: {ex.Message}");
+                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
+                UpdateCheckStatusText.Visibility = Visibility.Visible;
+                DownloadProgressPanel.Visibility = Visibility.Collapsed;
+                ViewReleaseNotesButton.IsEnabled = true;
+                CheckForUpdatesButton.IsEnabled = true;
+            }
+            finally
+            {
+                _downloadCts?.Dispose();
+                _downloadCts = null;
+            }
+        }
+
+        /// <summary>
+        /// 自動檢查更新（靜默，僅新版時顯示 InfoBar）。
+        /// </summary>
+        private async Task AutoCheckForUpdatesAsync()
+        {
+            var (result, _) = await UpdateCheckService.CheckForUpdateAsync();
+            UpdateCheckService.RecordCheckDate();
+
+            if (result == UpdateCheckService.CheckResult.NewVersionAvailable)
+            {
+                ShowSettingsUpdateInfoBar();
+                ShowCachedUpdateStatus();
+            }
+        }
+
+        /// <summary>
+        /// 依快取的新版本資訊顯示或隱藏設定頁 InfoBar。
+        /// </summary>
+        private void ShowSettingsUpdateInfoBar()
+        {
+            var cached = SettingsService.GetCachedNewVersion();
+            if (!string.IsNullOrEmpty(cached) && SettingsService.GetAutoUpdateCheckEnabled())
+            {
+                SettingsUpdateInfoBar.Message = string.Format(
+                    _resourceLoader.GetString("UpdateAvailable_InfoBar_Settings"), cached);
+                SettingsUpdateInfoBar.IsOpen = true;
+            }
+            else
+            {
+                SettingsUpdateInfoBar.IsOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// 依快取的新版本資訊，在版本號下方顯示狀態文字與「下載並安裝」按鈕。
+        /// </summary>
+        private void ShowCachedUpdateStatus()
+        {
+            var cached = SettingsService.GetCachedNewVersion();
+            if (!string.IsNullOrEmpty(cached))
+            {
+                UpdateCheckStatusText.Text = string.Format(
+                    _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), cached);
+                UpdateCheckStatusText.Visibility = Visibility.Visible;
+                ViewReleaseNotesButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                UpdateCheckStatusText.Visibility = Visibility.Collapsed;
+                ViewReleaseNotesButton.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

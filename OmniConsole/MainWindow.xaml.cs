@@ -29,6 +29,10 @@ namespace OmniConsole
         {
             InitializeComponent();
 
+            // MSIX 更新後 LocalSettings 保留，若快取的新版本不再大於目前版本則清除，
+            // 避免 InfoBar 誤顯示「有新版可下載」
+            UpdateCheckService.InvalidateCacheIfCurrentVersion();
+
             // 移除標題列與邊框，避免全螢幕時出現最小化/最大化/關閉按鈕
             if (this.AppWindow.Presenter is OverlappedPresenter presenter)
             {
