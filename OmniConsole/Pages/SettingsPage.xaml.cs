@@ -270,9 +270,14 @@ namespace OmniConsole.Pages
             if (PlatformGridView.ItemsPanelRoot is ItemsWrapGrid wrapGrid)
             {
                 double availableWidth = e.NewSize.Width;
-                // 根據可用寬度決定欄數：寬螢幕 4 欄，中等 3 欄，窄螢幕 2 欄
+                // 根據可用寬度決定欄數
+                // ≥1100px → 4 欄, ≥700px → 3 欄, <700px → 2 欄
                 int columns = availableWidth >= 1100 ? 4 : availableWidth >= 700 ? 3 : 2;
                 double itemWidth = Math.Floor(availableWidth / columns);
+                double remainder = availableWidth - itemWidth * columns;
+                // 非整除且餘數極小時 ItemsWrapGrid 因精度問題換行，減 1 迴避
+                if (remainder > 0 && remainder < 1)
+                    itemWidth -= 1;
                 wrapGrid.ItemWidth = itemWidth;
                 wrapGrid.ItemHeight = Math.Floor(itemWidth * 0.7); // 維持約 7:10 的高寬比
             }
