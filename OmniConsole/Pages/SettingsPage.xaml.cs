@@ -88,8 +88,7 @@ namespace OmniConsole.Pages
         /// </summary>
         public void ShowSettings()
         {
-            // 初始化 NavigationView，預設選取第一個「一般」項目
-            SettingsNav.SelectedItem = SettingsNav.MenuItems[0];
+            // 先設好狀態，再賦值 SelectedItem（賦值會觸發 SelectionChanged → UpdateGamepadHints）
             _currentNavTag = "General";
             VisualStateManager.GoToState(this, "General", false);
 
@@ -98,6 +97,10 @@ namespace OmniConsole.Pages
             bool isUserPlatform = PlatformCatalog.FindById(currentPlatform.Id) == null
                 && UserPlatformStore.FindById(currentPlatform.Id) != null;
             _currentCategoryTag = isUserPlatform ? "User" : "System";
+
+            // 初始化 NavigationView，預設選取第一個「一般」項目
+            // 賦值觸發 SettingsNav_SelectionChanged → UpdateGamepadHints()，此時狀態已正確
+            SettingsNav.SelectedItem = SettingsNav.MenuItems[0];
             PlatformCategoryNav.SelectedItem = isUserPlatform
                 ? PlatformCategoryNav.MenuItems[1]
                 : PlatformCategoryNav.MenuItems[0];
@@ -357,6 +360,7 @@ namespace OmniConsole.Pages
         {
             SettingsService.SetCustomPlatformConsentAccepted(true);
             LoadPlatformCards();
+            UpdateGamepadHints();
         }
 
         // ── 平台分類索引標籤切換 ──────────────────────────────────────────────
