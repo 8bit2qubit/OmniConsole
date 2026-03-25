@@ -297,6 +297,8 @@ namespace OmniConsole.Pages
         private async void ResetGameBarButton_Click(object sender, RoutedEventArgs e)
         {
             ResetGameBarButton.IsEnabled = false;
+            ResetGameBarProgressRing.IsActive = true;
+            ResetGameBarProgressRing.Visibility = Visibility.Visible;
 
             // 1. 殺掉 GameBar（先 GameBar 再 GameBarFTServer），稍待讓行程完全終止
             FseService.KillGameBar();
@@ -317,6 +319,8 @@ namespace OmniConsole.Pages
                 Application.Current.Exit();
             }
 
+            ResetGameBarProgressRing.IsActive = false;
+            ResetGameBarProgressRing.Visibility = Visibility.Collapsed;
             ResetGameBarButton.IsEnabled = true;
         }
 

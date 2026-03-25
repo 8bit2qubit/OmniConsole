@@ -568,10 +568,14 @@
                                     <TextBlock x:Uid="ResetGameBarSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                 </StackPanel>
 
-                                <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton"
-                                        Click="ResetGameBarButton_Click"
-                                        Grid.Column="2" VerticalAlignment="Center"
-                                        FontSize="14" Padding="24,8"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton"
+                                            Click="ResetGameBarButton_Click"
+                                            FontSize="14" Padding="24,8"/>
+                                    <ProgressRing x:Name="ResetGameBarProgressRing"
+                                                  IsActive="False" Visibility="Collapsed"
+                                                  Width="20" Height="20"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>
