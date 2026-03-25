@@ -54,17 +54,17 @@ namespace OmniConsole.Services
         /// <summary>
         /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
         /// </summary>
-        public static bool IsActive()
+        public static bool IsActive([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
         {
             try
             {
                 bool result = IsGamingFullScreenExperienceActive();
-                DebugLogger.Log($"[FseService] IsActive = {result}");
+                DebugLogger.Log($"[FseService] IsActive = {result} (caller: {caller})");
                 return result;
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"[FseService] IsActive failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsActive failed: {ex.Message} (caller: {caller})");
                 return false;
             }
         }
