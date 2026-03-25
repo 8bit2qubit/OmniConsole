@@ -701,9 +701,9 @@ namespace OmniConsole.Pages
                     CheckForUpdatesButton_Click(this, new RoutedEventArgs());
                     break;
 
-                // 查看更新說明按鈕
-                case Button btn when ReferenceEquals(btn, ViewReleaseNotesButton):
-                    ViewReleaseNotesButton_Click(this, new RoutedEventArgs());
+                // 下載並安裝按鈕
+                case Button btn when ReferenceEquals(btn, DownloadInstallButton):
+                    DownloadInstallButton_Click(this, new RoutedEventArgs());
                     break;
             }
         }
@@ -837,14 +837,14 @@ namespace OmniConsole.Pages
                     UpdateCheckStatusText.Text = string.Format(
                         _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), version);
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
-                    ViewReleaseNotesButton.Visibility = Visibility.Visible;
+                    DownloadInstallButton.Visibility = Visibility.Visible;
                     ShowSettingsUpdateInfoBar();
                     break;
 
                 case UpdateCheckService.CheckResult.UpToDate:
                     UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_UpToDate_Subtitle");
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
-                    ViewReleaseNotesButton.Visibility = Visibility.Collapsed;
+                    DownloadInstallButton.Visibility = Visibility.Collapsed;
                     SettingsUpdateInfoBar.IsOpen = false;
                     break;
 
@@ -856,7 +856,7 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
-        private async void ViewReleaseNotesButton_Click(object sender, RoutedEventArgs e)
+        private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
             var downloadUrl = SettingsService.GetCachedDownloadUrl();
             if (string.IsNullOrEmpty(downloadUrl))
@@ -867,7 +867,7 @@ namespace OmniConsole.Pages
                 return;
             }
 
-            ViewReleaseNotesButton.IsEnabled = false;
+            DownloadInstallButton.IsEnabled = false;
             CheckForUpdatesButton.IsEnabled = false;
 
             DownloadProgressPanel.Visibility = Visibility.Visible;
@@ -924,7 +924,7 @@ namespace OmniConsole.Pages
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
                 DownloadProgressPanel.Visibility = Visibility.Collapsed;
-                ViewReleaseNotesButton.IsEnabled = true;
+                DownloadInstallButton.IsEnabled = true;
                 CheckForUpdatesButton.IsEnabled = true;
             }
             finally
@@ -978,12 +978,12 @@ namespace OmniConsole.Pages
                 UpdateCheckStatusText.Text = string.Format(
                     _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), cached);
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
-                ViewReleaseNotesButton.Visibility = Visibility.Visible;
+                DownloadInstallButton.Visibility = Visibility.Visible;
             }
             else
             {
                 UpdateCheckStatusText.Visibility = Visibility.Collapsed;
-                ViewReleaseNotesButton.Visibility = Visibility.Collapsed;
+                DownloadInstallButton.Visibility = Visibility.Collapsed;
             }
         }
     }

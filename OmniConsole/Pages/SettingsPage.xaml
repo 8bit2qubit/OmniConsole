@@ -502,8 +502,8 @@
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Button x:Name="ViewReleaseNotesButton" x:Uid="ViewReleaseNotesButton"
-                                                Click="ViewReleaseNotesButton_Click"
+                                        <Button x:Name="DownloadInstallButton" x:Uid="DownloadInstallButton"
+                                                Click="DownloadInstallButton_Click"
                                                 Visibility="Collapsed"
                                                 FontSize="14" Padding="24,8"/>
                                         <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton"
