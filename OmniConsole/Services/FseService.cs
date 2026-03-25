@@ -2,6 +2,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // keybd_event 虛擬按鍵碼
@@ -54,7 +55,7 @@ namespace OmniConsole.Services
         /// <summary>
         /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
         /// </summary>
-        public static bool IsActive([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
+        public static bool IsActive([CallerMemberName] string caller = "")
         {
             try
             {
