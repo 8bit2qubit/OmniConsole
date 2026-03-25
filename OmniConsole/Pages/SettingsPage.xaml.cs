@@ -381,6 +381,7 @@ namespace OmniConsole.Pages
             }
 
             LoadPlatformCards();
+            UpdateGamepadHints();
         }
 
         /// <summary>
@@ -394,7 +395,6 @@ namespace OmniConsole.Pages
 
             // 使用者索引標籤未同意時：顯示免責聲明，隱藏卡片和手把提示
             VisualStateManager.GoToState(this, (isUserTab && !isConsented) ? "ConsentVisible" : "GridViewVisible", false);
-            UpdateGamepadHints();
 
             if (isUserTab)
             {
