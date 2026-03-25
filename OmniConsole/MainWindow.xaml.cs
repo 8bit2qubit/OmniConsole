@@ -14,8 +14,12 @@ namespace OmniConsole
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
         private const int DWMWCP_DONOTROUND = 1;
+        private const int SW_HIDE = 0;
 
         private bool _isMaximized = false;
         private bool _isSettingsMode = false;
@@ -150,6 +154,7 @@ namespace OmniConsole
             if (_isShowingSettings)
             {
                 SettingsPageControl.StopGamepadPolling();
+                ShowWindow(_hwnd, SW_HIDE); // 先隱藏視窗，避免 FullScreen presenter 卸載時閃白
                 Application.Current.Exit();
                 return;
             }
@@ -178,6 +183,7 @@ namespace OmniConsole
                         if (!FseService.IsActive())
                         {
                             LaunchPageControl.StopGamepadPolling();
+                            ShowWindow(_hwnd, SW_HIDE);
                             Application.Current.Exit();
                             return;
                         }
@@ -189,6 +195,7 @@ namespace OmniConsole
             else
             {
                 LaunchPageControl.StopGamepadPolling();
+                ShowWindow(_hwnd, SW_HIDE);
                 Application.Current.Exit();
             }
         }

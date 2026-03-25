@@ -23,8 +23,12 @@ namespace OmniConsole.Pages
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int SW_HIDE = 0;
 
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -154,6 +158,7 @@ namespace OmniConsole.Pages
 
                     if (platformToForeground)
                     {
+                        ShowWindow(Hwnd, SW_HIDE);
                         Application.Current.Exit();
                         return;
                     }

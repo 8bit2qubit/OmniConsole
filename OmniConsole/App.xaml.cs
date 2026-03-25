@@ -114,11 +114,17 @@ namespace OmniConsole
         /// <summary>
         /// 從 Game Bar 重導時呼叫，直接啟動平台專屬 URI (Passthrough) 後退出應用程式。
         /// </summary>
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
+
         public static void PassthroughFromRedirect(string uri)
         {
             _dispatcherQueue?.TryEnqueue(() =>
             {
                 _ = Windows.System.Launcher.LaunchUriAsync(new System.Uri(uri));
+                // 先隱藏視窗，避免退出時閃白
+                if (_window is not null)
+                    ShowWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window), 0);
                 Application.Current.Exit();
             });
         }

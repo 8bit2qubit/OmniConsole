@@ -65,6 +65,11 @@ namespace OmniConsole.Pages
         [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
         private static extern int RegisterApplicationRestart(string commandLine, int flags);
 
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_HIDE = 0;
+
         public SettingsPage()
         {
             InitializeComponent();
@@ -308,6 +313,7 @@ namespace OmniConsole.Pages
             if (FseService.TryActivate())
             {
                 // 此應用程式會被重新啟動在 FSE 環境
+                ShowWindow(Hwnd, SW_HIDE);
                 Application.Current.Exit();
             }
 
