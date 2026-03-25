@@ -1,6 +1,8 @@
 ﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using OmniConsole.Services;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OmniConsole
 {
@@ -114,8 +116,8 @@ namespace OmniConsole
         /// <summary>
         /// 從 Game Bar 重導時呼叫，直接啟動平台專屬 URI (Passthrough) 後退出應用程式。
         /// </summary>
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         public static void PassthroughFromRedirect(string uri)
         {
