@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace OmniConsole.Pages
 {
@@ -538,12 +539,12 @@ namespace OmniConsole.Pages
         {
             try
             {
-                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                var picker = new FileOpenPicker();
                 WinRT.Interop.InitializeWithWindow.Initialize(picker, Hwnd);
-                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.List;
+                picker.ViewMode = PickerViewMode.List;
                 picker.SuggestedStartLocation = options.ShowImagePreview
-                    ? Windows.Storage.Pickers.PickerLocationId.PicturesLibrary
-                    : Windows.Storage.Pickers.PickerLocationId.ComputerFolder;
+                    ? PickerLocationId.PicturesLibrary
+                    : PickerLocationId.ComputerFolder;
                 foreach (var filter in options.FileTypeFilters)
                     picker.FileTypeFilter.Add(filter);
 

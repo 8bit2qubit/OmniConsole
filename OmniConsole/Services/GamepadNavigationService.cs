@@ -487,11 +487,11 @@ namespace OmniConsole.Services
                 var focusedElement = FocusManager.GetFocusedElement(_searchRoot.XamlRoot);
 
                 // 只要有任何 Control 持有焦點（含 Popup/下拉選單內的項目），便不干預
-                if (focusedElement is Microsoft.UI.Xaml.Controls.Control) return;
+                if (focusedElement is Control) return;
 
                 // 焦點遺失或落在非互動元件 → 還原至 SearchRoot 第一個可聚焦項目
                 var firstElement = FocusManager.FindFirstFocusableElement(_searchRoot);
-                if (firstElement is Microsoft.UI.Xaml.Controls.Control firstControl)
+                if (firstElement is Control firstControl)
                     firstControl.Focus(FocusState.Keyboard);
             }
             catch { }

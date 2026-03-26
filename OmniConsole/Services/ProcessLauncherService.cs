@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.System;
 
 namespace OmniConsole.Services
 {
@@ -105,16 +106,16 @@ namespace OmniConsole.Services
                 var uri = new Uri(uriString);
 
                 // 確認 URI handler 已安裝，避免跳出「在 Store 中尋找應用程式」對話方塊
-                var status = await Windows.System.Launcher.QueryUriSupportAsync(
-                    uri, Windows.System.LaunchQuerySupportType.Uri);
+                var status = await Launcher.QueryUriSupportAsync(
+                    uri, LaunchQuerySupportType.Uri);
 
-                if (status != Windows.System.LaunchQuerySupportStatus.Available)
+                if (status != LaunchQuerySupportStatus.Available)
                 {
                     DebugLogger.Log($"[ProcessLauncher]   URI not supported: {status}");
                     return false;
                 }
 
-                bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
+                bool success = await Launcher.LaunchUriAsync(uri);
                 if (success)
                     DebugLogger.Log($"[ProcessLauncher]   LaunchUriAsync call succeeded.");
                 return success;
@@ -278,10 +279,10 @@ namespace OmniConsole.Services
             try
             {
                 var uri = new Uri(uriString);
-                var status = await Windows.System.Launcher.QueryUriSupportAsync(
-                    uri, Windows.System.LaunchQuerySupportType.Uri);
+                var status = await Launcher.QueryUriSupportAsync(
+                    uri, LaunchQuerySupportType.Uri);
 
-                if (status != Windows.System.LaunchQuerySupportStatus.Available)
+                if (status != LaunchQuerySupportStatus.Available)
                     return false;
 
                 // 若作業系統回報 Available，進一步檢查登錄檔中的執行檔是否存在，避免解除安裝後殘留的假象

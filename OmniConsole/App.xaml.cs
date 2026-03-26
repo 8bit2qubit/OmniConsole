@@ -75,7 +75,7 @@ namespace OmniConsole
         /// 建立引導視窗並顯示指定的引導畫面。
         /// 用於 FSE 不可用、Home App 未設定等需要顯示說明但不執行平台啟動的情境。
         /// </summary>
-        private void ShowGuidanceWindow(System.Action<MainWindow> show)
+        private void ShowGuidanceWindow(Action<MainWindow> show)
         {
             var win = new MainWindow();
             _window = win;
@@ -123,7 +123,7 @@ namespace OmniConsole
         {
             _dispatcherQueue?.TryEnqueue(() =>
             {
-                _ = Windows.System.Launcher.LaunchUriAsync(new System.Uri(uri));
+                _ = Windows.System.Launcher.LaunchUriAsync(new Uri(uri));
                 // 先隱藏視窗，避免退出時閃白
                 if (_window is not null)
                     ShowWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window), 0);
