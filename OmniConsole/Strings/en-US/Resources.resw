@@ -515,7 +515,7 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
     <value>Updates</value>
   </data>
   <data name="AutoUpdateCheck_Title.Text" xml:space="preserve">
-    <value>Automatic update check</value>
+    <value>Automatic Update Check</value>
   </data>
   <data name="AutoUpdateCheck_Description.Text" xml:space="preserve">
     <value>Check for new versions when opening settings.</value>
