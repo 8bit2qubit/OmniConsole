@@ -29,8 +29,6 @@
             <Button x:Name="BrowseExeButton" Grid.Column="1" Content="..."
                     Padding="12,6,12,6" VerticalAlignment="Center" Visibility="Collapsed"/>
         </Grid>
-        <TextBlock x:Name="BrowseExeGamepadWarning" FontSize="12" TextWrapping="Wrap"
-                   Foreground="Orange" Margin="0,2,0,4" Visibility="Collapsed"/>
         <TextBlock x:Name="TargetError" FontSize="12" Foreground="Red"
                    Visibility="Collapsed" Margin="0,0,0,8"/>
 
@@ -61,8 +59,6 @@
             <Button x:Name="BrowseIconButton" Grid.Column="1" Content="..."
                     Padding="12,6,12,6" VerticalAlignment="Center"/>
         </Grid>
-        <TextBlock x:Name="BrowseIconGamepadWarning" FontSize="12" TextWrapping="Wrap"
-                   Foreground="Orange" Margin="0,2,0,4"/>
 
         <!-- 實驗性功能警告 -->
         <TextBlock x:Name="ConfigWarning" FontSize="12" TextWrapping="Wrap"

@@ -1,0 +1,147 @@
+<ContentDialog
+    x:Class="OmniConsole.Dialogs.FilePickerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    DefaultButton="None"
+    RequestedTheme="Dark">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
+    </ContentDialog.Resources>
+
+    <Grid x:Name="RootGrid" MinHeight="400">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 頂部：上層按鈕 + 目前路徑 -->
+        <Grid Grid.Row="0" Margin="0,0,0,8" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="NavigateUpButton" Grid.Column="0"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    Content="&#xE74A;" Padding="10,6"/>
+            <TextBlock x:Name="CurrentPathText" Grid.Column="1"
+                       VerticalAlignment="Center" FontSize="13"
+                       TextTrimming="CharacterEllipsis"
+                       IsTextSelectionEnabled="True"/>
+        </Grid>
+
+        <!-- 主要內容：側邊欄 + 檔案清單 + 圖片預覽 -->
+        <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="PreviewColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左側導覽列 -->
+            <ListView x:Name="SidebarListView" Grid.Column="0"
+                      SelectionMode="Single"
+                      SingleSelectionFollowsFocus="False"
+                      IsItemClickEnabled="True"
+                      BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                      BorderThickness="0,0,1,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Padding="2,4">
+                            <FontIcon Glyph="{Binding Glyph}" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14"/>
+                            <TextBlock Text="{Binding DisplayName}" FontSize="13"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- 檔案清單 -->
+            <ListView x:Name="FileListView" Grid.Column="1"
+                      SelectionMode="Single"
+                      SingleSelectionFollowsFocus="True"
+                      IsItemClickEnabled="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnSpacing="12" Padding="2,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="{Binding Glyph}"
+                                      FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Size}" FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Right" MinWidth="55"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Date}" FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- 圖片預覽面板（選圖模式才顯示） -->
+            <StackPanel x:Name="PreviewPanel" Grid.Column="2"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8" Padding="8,0,0,0">
+                <Border CornerRadius="4"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        Width="160" Height="112"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                    <Image x:Name="PreviewImage" Stretch="Uniform"/>
+                </Border>
+                <TextBlock x:Name="PreviewFileName" FontSize="12"
+                           HorizontalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" MaxWidth="160"/>
+                <TextBlock x:Name="PreviewDimensions" FontSize="11"
+                           HorizontalAlignment="Center"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- 空資料夾提示 -->
+            <TextBlock x:Name="EmptyFolderText" Grid.Column="1"
+                       Visibility="Collapsed"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <!-- 存取被拒提示 -->
+            <TextBlock x:Name="AccessDeniedText" Grid.Column="1"
+                       Visibility="Collapsed"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="13" Foreground="Orange"/>
+        </Grid>
+
+        <!-- 底部：選取的檔名 + 系統瀏覽按鈕 + 檔案類型 -->
+        <Grid Grid.Row="2" Margin="0,8,0,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="SelectedFileText" Grid.Column="0"
+                       VerticalAlignment="Center" FontSize="12"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       TextTrimming="CharacterEllipsis"/>
+            <Button x:Name="LegacyPickerButton" Grid.Column="1"
+                    IsTabStop="False"
+                    Padding="8,4" FontSize="12">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xED25;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12"/>
+                    <TextBlock x:Name="LegacyPickerButtonText" FontSize="12"/>
+                </StackPanel>
+            </Button>
+            <TextBlock x:Name="FileTypeFilterText" Grid.Column="2"
+                       VerticalAlignment="Center" FontSize="12"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Grid>
+    </Grid>
+
+</ContentDialog>

@@ -469,8 +469,47 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="ExportSuccessTeachingTip.Subtitle" xml:space="preserve">
     <value>Platform configuration copied to clipboard.</value>
   </data>
-  <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
-    <value>⚠ The system file picker does not support gamepad. Use a mouse, touch, or keyboard to browse.</value>
+  <data name="FilePickerDialog_Title" xml:space="preserve">
+    <value>Select a file</value>
+  </data>
+  <data name="FilePickerDialog_Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="FilePickerDialog_EmptyFolder" xml:space="preserve">
+    <value>This folder is empty</value>
+  </data>
+  <data name="FilePickerDialog_AccessDenied" xml:space="preserve">
+    <value>Access denied</value>
+  </data>
+  <data name="FilePickerDialog_Desktop" xml:space="preserve">
+    <value>Desktop</value>
+  </data>
+  <data name="FilePickerDialog_Downloads" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="FilePickerDialog_Documents" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="FilePickerDialog_Pictures" xml:space="preserve">
+    <value>Pictures</value>
+  </data>
+  <data name="FilePickerDialog_Music" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="FilePickerDialog_Videos" xml:space="preserve">
+    <value>Videos</value>
+  </data>
+  <data name="FilePickerDialog_FilterExe" xml:space="preserve">
+    <value>Executables (*.exe)</value>
+  </data>
+  <data name="FilePickerDialog_FilterImage" xml:space="preserve">
+    <value>Images (*.png, *.jpg, *.jpeg, *.bmp)</value>
+  </data>
+  <data name="FilePickerDialog_NavigateUp" xml:space="preserve">
+    <value>Up one level</value>
+  </data>
+  <data name="FilePickerDialog_LegacyPicker" xml:space="preserve">
+    <value>Browse (Windows)</value>
   </data>
   <data name="AdvancedSection_Updates.Text" xml:space="preserve">
     <value>Updates</value>

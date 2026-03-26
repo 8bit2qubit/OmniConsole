@@ -469,8 +469,47 @@
   <data name="ExportSuccessTeachingTip.Subtitle" xml:space="preserve">
     <value>平台配置已複製到剪貼簿。</value>
   </data>
-  <data name="PlatformDialog_BrowseGamepadWarning" xml:space="preserve">
-    <value>⚠ 系統檔案選擇器不支援手把操作，請使用滑鼠、觸控或鍵盤瀏覽。</value>
+  <data name="FilePickerDialog_Title" xml:space="preserve">
+    <value>選取檔案</value>
+  </data>
+  <data name="FilePickerDialog_Select" xml:space="preserve">
+    <value>選取</value>
+  </data>
+  <data name="FilePickerDialog_EmptyFolder" xml:space="preserve">
+    <value>此資料夾是空的</value>
+  </data>
+  <data name="FilePickerDialog_AccessDenied" xml:space="preserve">
+    <value>存取被拒</value>
+  </data>
+  <data name="FilePickerDialog_Desktop" xml:space="preserve">
+    <value>桌面</value>
+  </data>
+  <data name="FilePickerDialog_Downloads" xml:space="preserve">
+    <value>下載</value>
+  </data>
+  <data name="FilePickerDialog_Documents" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="FilePickerDialog_Pictures" xml:space="preserve">
+    <value>圖片</value>
+  </data>
+  <data name="FilePickerDialog_Music" xml:space="preserve">
+    <value>音樂</value>
+  </data>
+  <data name="FilePickerDialog_Videos" xml:space="preserve">
+    <value>影片</value>
+  </data>
+  <data name="FilePickerDialog_FilterExe" xml:space="preserve">
+    <value>可執行檔 (*.exe)</value>
+  </data>
+  <data name="FilePickerDialog_FilterImage" xml:space="preserve">
+    <value>圖片 (*.png, *.jpg, *.jpeg, *.bmp)</value>
+  </data>
+  <data name="FilePickerDialog_NavigateUp" xml:space="preserve">
+    <value>上一層</value>
+  </data>
+  <data name="FilePickerDialog_LegacyPicker" xml:space="preserve">
+    <value>瀏覽 (Windows)</value>
   </data>
   <data name="AdvancedSection_Updates.Text" xml:space="preserve">
     <value>更新</value>

@@ -32,7 +32,7 @@ namespace OmniConsole.Pages
 
         // ── 對外屬性 ──────────────────────────────────────────────────────────
 
-        /// <summary>由 MainWindow 在 Activated 事件後注入，供 PlatformEditDialog 使用。</summary>
+        /// <summary>由 MainWindow 在 Activated 事件後注入，供 ShowWindow (退出隱藏) 使用。</summary>
         public IntPtr Hwnd { get; set; }
 
         // ── 內部狀態 ──────────────────────────────────────────────────────────
@@ -533,6 +533,29 @@ namespace OmniConsole.Pages
             }
         }
 
+        /// <summary>開啟系統 FileOpenPicker 作為舊式後備，回傳選取的檔案路徑或 null。</summary>
+        private async Task<string?> ShowLegacyFilePickerAsync(FilePickerOptions options)
+        {
+            try
+            {
+                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                WinRT.Interop.InitializeWithWindow.Initialize(picker, Hwnd);
+                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.List;
+                picker.SuggestedStartLocation = options.ShowImagePreview
+                    ? Windows.Storage.Pickers.PickerLocationId.PicturesLibrary
+                    : Windows.Storage.Pickers.PickerLocationId.ComputerFolder;
+                foreach (var filter in options.FileTypeFilters)
+                    picker.FileTypeFilter.Add(filter);
+
+                var file = await picker.PickSingleFileAsync();
+                return file?.Path;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// 顯示新增/編輯使用者平台的 PlatformEditDialog。
         /// 傳入 null 表示新增模式，傳入既有 entry 表示編輯模式。
@@ -549,23 +572,52 @@ namespace OmniConsole.Pages
 
                 bool isEdit = existingEntry != null;
                 var dialog = new PlatformEditDialog(
-                    this.XamlRoot, _resourceLoader,
-                    Hwnd, existingEntry);
+                    this.XamlRoot, _resourceLoader, existingEntry);
 
-                StopGamepadPolling();
-                var result = await dialog.ShowAsync();
-                StartGamepadPolling();
+                ContentDialogResult result;
+
+                // Hide/reopen 迴圈：PlatformEditDialog 的瀏覽按鈕會 Hide() 自己，
+                // 由此處協調顯示 FilePickerDialog 後重新開啟 PlatformEditDialog。
+                while (true)
+                {
+                    StopGamepadPolling();
+                    result = await dialog.ShowAsync();
+                    StartGamepadPolling();
+
+                    if (!dialog.RequestFilePicker) break;
+
+                    // 顯示自製檔案選擇器
+                    var pickerDialog = new FilePickerDialog(
+                        this.XamlRoot, _resourceLoader, dialog.FilePickerRequest!);
+                    StopGamepadPolling();
+                    var pickerResult = await pickerDialog.ShowAsync();
+                    StartGamepadPolling();
+
+                    string? selectedPath = null;
+                    if (pickerResult == ContentDialogResult.Primary)
+                    {
+                        selectedPath = pickerDialog.SelectedFilePath;
+                    }
+                    else if (pickerDialog.RequestLegacyPicker)
+                    {
+                        // 使用者要求系統 FileOpenPicker
+                        selectedPath = await ShowLegacyFilePickerAsync(dialog.FilePickerRequest!);
+                    }
+                    dialog.ApplyFilePickerResult(selectedPath);
+                    // 迴圈回去重新開啟 PlatformEditDialog
+                }
 
                 if (result == ContentDialogResult.Primary && dialog.ResultEntry != null)
                 {
                     var entry = dialog.ResultEntry;
 
                     // 匯入卡片背景圖（縮放至 800x560）
-                    if (dialog.PendingIconFile != null)
+                    if (dialog.PendingIconPath != null)
                     {
                         if (!string.IsNullOrEmpty(entry.IconFileName))
                             UserPlatformStore.DeleteIconFile(entry.IconFileName);
-                        entry.IconFileName = await UserPlatformStore.ImportIconAsync(dialog.PendingIconFile);
+                        var storageFile = await StorageFile.GetFileFromPathAsync(dialog.PendingIconPath);
+                        entry.IconFileName = await UserPlatformStore.ImportIconAsync(storageFile);
                     }
 
                     if (isEdit)

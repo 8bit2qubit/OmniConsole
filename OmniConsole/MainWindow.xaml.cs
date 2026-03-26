@@ -81,7 +81,7 @@ namespace OmniConsole
             // 僅在視窗取得前景焦點時啟動，且防止重入
             if (args.WindowActivationState == WindowActivationState.Deactivated) return;
 
-            // 注入 HWND 至兩個 Page（LaunchPage 供 WS_EX_TOOLWINDOW 設定，SettingsPage 供 PlatformEditDialog FileOpenPicker 使用）
+            // 注入 HWND 至兩個 Page（LaunchPage 供 WS_EX_TOOLWINDOW 設定，SettingsPage 供 ShowWindow 退出隱藏使用）
             _hwnd = WindowNative.GetWindowHandle(this);
             LaunchPageControl.Hwnd = _hwnd;
             SettingsPageControl.Hwnd = _hwnd;

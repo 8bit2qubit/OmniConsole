@@ -5,9 +5,8 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Windows.Storage.Pickers;
-using WinRT.Interop;
 
 namespace OmniConsole.Dialogs
 {
@@ -20,11 +19,10 @@ namespace OmniConsole.Dialogs
     public sealed partial class PlatformEditDialog : ContentDialog
     {
         private readonly ResourceLoader _resourceLoader;
-        private readonly IntPtr _hwnd;
         private readonly string _ownFamilyName;
         private readonly UserPlatformEntry? _existingEntry;
 
-        private Windows.Storage.StorageFile? _pendingIconFile;
+        private string? _pendingIconPath;
         private List<(string DisplayName, string PackageFamilyName)>? _packagedAppCache;
         private string _selectedPackageFamilyName;
         private GamepadNavigationService? _gamepadNav;
@@ -33,8 +31,20 @@ namespace OmniConsole.Dialogs
         /// <summary>驗證通過後由對話方塊建立的平台項目，由呼叫端在 ShowAsync 返回後呼叫 <c>UserPlatformStore.Add</c> 儲存。</summary>
         public UserPlatformEntry? ResultEntry { get; private set; }
 
-        /// <summary>使用者選取的圖示檔案，由 MainWindow 呼叫 UserPlatformStore.ImportIconAsync 匯入。</summary>
-        public Windows.Storage.StorageFile? PendingIconFile => _pendingIconFile;
+        /// <summary>使用者透過檔案選擇器選取的圖示路徑，由呼叫端轉換為 StorageFile 後匯入。</summary>
+        public string? PendingIconPath => _pendingIconPath;
+
+        /// <summary>瀏覽按鈕的目標類型。</summary>
+        public enum BrowseTarget { None, Exe, Icon }
+
+        /// <summary>是否需要開啟檔案選擇器（Browse 按鈕觸發 Hide 時設為 true）。</summary>
+        public bool RequestFilePicker { get; private set; }
+
+        /// <summary>檔案選擇器的設定選項。</summary>
+        public FilePickerOptions? FilePickerRequest { get; private set; }
+
+        /// <summary>目前的瀏覽目標（exe 或圖示）。</summary>
+        public BrowseTarget ActiveBrowseTarget { get; private set; }
 
         /// <summary>
         /// 建立平台編輯對話方塊。
@@ -42,15 +52,13 @@ namespace OmniConsole.Dialogs
         /// </summary>
         /// <param name="xamlRoot">呼叫端視窗的 XamlRoot，ContentDialog 顯示所需。</param>
         /// <param name="resourceLoader">在地化字串載入器。</param>
-        /// <param name="hwnd">呼叫端視窗的 Win32 控制代碼，FileOpenPicker 初始化所需。</param>
         /// <param name="existingEntry">既有平台項目（編輯模式）；null 為新增模式。</param>
         public PlatformEditDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader,
-                                  IntPtr hwnd, UserPlatformEntry? existingEntry = null)
+                                  UserPlatformEntry? existingEntry = null)
         {
             InitializeComponent();
             XamlRoot = xamlRoot;
             _resourceLoader = resourceLoader;
-            _hwnd = hwnd;
             _existingEntry = existingEntry;
             _ownFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 
@@ -76,9 +84,6 @@ namespace OmniConsole.Dialogs
             IconLabel.Text = resourceLoader.GetString("PlatformDialog_IconLabel");
             IconHint.Text = resourceLoader.GetString("PlatformDialog_IconHint");
             ConfigWarning.Text = resourceLoader.GetString("PlatformDialog_ConfigWarning");
-            var browseGamepadWarning = resourceLoader.GetString("PlatformDialog_BrowseGamepadWarning");
-            BrowseExeGamepadWarning.Text = browseGamepadWarning;
-            BrowseIconGamepadWarning.Text = browseGamepadWarning;
 
             // ComboBox 選項（Protocol URI 不需在地化）
             LaunchTypeCombo.Items.Add("Protocol URI");
@@ -110,6 +115,7 @@ namespace OmniConsole.Dialogs
             Closed += PlatformEditDialog_Closed;
         }
 
+        /// <summary>對話方塊開啟時設定 XYFocus、啟動手把輪詢與螢幕鍵盤閃避。</summary>
         private void PlatformEditDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             // D-pad 向下離開內容區時，優先跳到「儲存」(Primary) 而非「取消」(Close)
@@ -131,6 +137,7 @@ namespace OmniConsole.Dialogs
                 GetTemplateChild("BackgroundElement") as FrameworkElement, XamlRoot);
         }
 
+        /// <summary>對話方塊關閉時停止手把輪詢並清除鍵盤閃避。</summary>
         private void PlatformEditDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
             _gamepadNav?.Stop();
@@ -159,7 +166,6 @@ namespace OmniConsole.Dialogs
             ArgsLabel.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
             ArgsBox.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
             BrowseExeButton.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
-            BrowseExeGamepadWarning.Visibility = isExe ? Visibility.Visible : Visibility.Collapsed;
             PackagedAppWarning.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
             PackagedAppLabel.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
             PackagedAppSuggestBox.Visibility = isPackagedAppMode ? Visibility.Visible : Visibility.Collapsed;
@@ -183,38 +189,72 @@ namespace OmniConsole.Dialogs
         // ── 瀏覽按鈕 ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 開啟 .exe 檔案選擇器，將所選路徑填入目標路徑欄位。
+        /// 請求開啟 .exe 檔案選擇器。Hide 對話方塊，由 SettingsPage 協調顯示 FilePickerDialog。
         /// </summary>
-        private async void BrowseExeButton_Click(object sender, RoutedEventArgs e)
+        private void BrowseExeButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileOpenPicker();
-            picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-            picker.FileTypeFilter.Add(".exe");
-            InitializeWithWindow.Initialize(picker, _hwnd);
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
-                TargetBox.Text = file.Path;
+            FilePickerRequest = new FilePickerOptions
+            {
+                FileTypeFilters = [".exe"],
+                InitialDirectory = GetDirectoryFromPath(TargetBox.Text),
+                ShowImagePreview = false,
+                FilterDisplayName = _resourceLoader.GetString("FilePickerDialog_FilterExe")
+            };
+            ActiveBrowseTarget = BrowseTarget.Exe;
+            RequestFilePicker = true;
+            Hide();
         }
 
         /// <summary>
-        /// 開啟圖片檔案選擇器，暫存所選圖示檔案並顯示檔名。
-        /// 實際匯入（縮放至 800x560）由 MainWindow 在 ShowAsync 返回後執行。
+        /// 請求開啟圖片檔案選擇器。Hide 對話方塊，由 SettingsPage 協調顯示 FilePickerDialog。
         /// </summary>
-        private async void BrowseIconButton_Click(object sender, RoutedEventArgs e)
+        private void BrowseIconButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileOpenPicker();
-            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".png");
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".bmp");
-            InitializeWithWindow.Initialize(picker, _hwnd);
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
+            FilePickerRequest = new FilePickerOptions
             {
-                _pendingIconFile = file;
-                IconFileNameText.Text = file.Name;
+                FileTypeFilters = [".png", ".jpg", ".jpeg", ".bmp"],
+                InitialDirectory = null,
+                ShowImagePreview = true,
+                FilterDisplayName = _resourceLoader.GetString("FilePickerDialog_FilterImage")
+            };
+            ActiveBrowseTarget = BrowseTarget.Icon;
+            RequestFilePicker = true;
+            Hide();
+        }
+
+        /// <summary>
+        /// 接收檔案選擇器的結果，將檔案路徑填入對應欄位。
+        /// </summary>
+        public void ApplyFilePickerResult(string? filePath)
+        {
+            if (filePath != null)
+            {
+                if (ActiveBrowseTarget == BrowseTarget.Exe)
+                {
+                    TargetBox.Text = filePath;
+                }
+                else if (ActiveBrowseTarget == BrowseTarget.Icon)
+                {
+                    _pendingIconPath = filePath;
+                    IconFileNameText.Text = Path.GetFileName(filePath);
+                }
             }
+
+            RequestFilePicker = false;
+            FilePickerRequest = null;
+            ActiveBrowseTarget = BrowseTarget.None;
+        }
+
+        /// <summary>從檔案路徑取得目錄，用於設定檔案選擇器的初始目錄。</summary>
+        private static string? GetDirectoryFromPath(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(path) && Path.IsPathRooted(path))
+                    return Path.GetDirectoryName(path);
+            }
+            catch { }
+            return null;
         }
 
         // ── 封裝應用程式 AutoSuggestBox ─────────────────────────────────────
