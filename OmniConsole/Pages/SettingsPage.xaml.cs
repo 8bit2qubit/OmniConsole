@@ -866,6 +866,9 @@ namespace OmniConsole.Pages
         /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
         private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
+            // 重新檢查最新版本，確保下載的是最新的而非過期快取
+            await UpdateCheckService.CheckForUpdateAsync();
+
             var downloadUrl = SettingsService.GetCachedDownloadUrl();
             if (string.IsNullOrEmpty(downloadUrl))
             {
