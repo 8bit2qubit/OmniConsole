@@ -253,6 +253,13 @@ namespace OmniConsole.Services
         private readonly Dictionary<Gamepad, GamepadReading> _previousReadings = new();
         private ComboBox? _activeComboBox;
         private InputInjector? _inputInjector;
+
+        // ── D-pad / 搖桿長按連續移動（Key Repeat） ────────────────────────────
+        private const int RepeatInitialDelayMs = 400;  // 長按後開始重複前的等待時間
+        private const int RepeatIntervalMs = 80;       // 重複移動的間隔
+        private FocusNavigationDirection? _heldDirection;
+        private long _heldSinceTick;
+        private long _lastRepeatTick;
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
         private readonly Action? _onBButtonPressed;
@@ -451,6 +458,39 @@ namespace OmniConsole.Services
                             TryMoveGamepadFocus(FocusNavigationDirection.Right);
                     }
 
+                    // ── D-pad / 搖桿長按連續移動 ─────────────────────────────────
+                    if (!inputHandled)
+                    {
+                        var currentDir = GetHeldDirection(reading);
+                        long now = Environment.TickCount64;
+
+                        if (currentDir == null)
+                        {
+                            // 方向鬆開，清除狀態
+                            _heldDirection = null;
+                        }
+                        else if (currentDir != _heldDirection)
+                        {
+                            // 新方向（含邊緣觸發已處理的首次），記錄起始時間
+                            _heldDirection = currentDir;
+                            _heldSinceTick = now;
+                            _lastRepeatTick = 0;
+                        }
+                        else if (now - _heldSinceTick >= RepeatInitialDelayMs)
+                        {
+                            // 超過初始延遲，按重複間隔觸發
+                            if (now - _lastRepeatTick >= RepeatIntervalMs)
+                            {
+                                _lastRepeatTick = now;
+                                TryMoveGamepadFocus(currentDir.Value);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _heldDirection = null;
+                    }
+
                     _previousReadings[gamepad] = reading;
                 }
 
@@ -619,6 +659,30 @@ namespace OmniConsole.Services
         private bool IsButtonPressed(GamepadReading current, GamepadReading previous, GamepadButtons button)
         {
             return (current.Buttons & button) == button && (previous.Buttons & button) != button;
+        }
+
+        /// <summary>
+        /// 偵測 D-pad 或左搖桿目前持續按住的方向。無方向輸入時回傳 null。
+        /// </summary>
+        private static FocusNavigationDirection? GetHeldDirection(GamepadReading reading)
+        {
+            // D-pad 優先
+            if ((reading.Buttons & GamepadButtons.DPadDown) == GamepadButtons.DPadDown)
+                return FocusNavigationDirection.Down;
+            if ((reading.Buttons & GamepadButtons.DPadUp) == GamepadButtons.DPadUp)
+                return FocusNavigationDirection.Up;
+            if ((reading.Buttons & GamepadButtons.DPadLeft) == GamepadButtons.DPadLeft)
+                return FocusNavigationDirection.Left;
+            if ((reading.Buttons & GamepadButtons.DPadRight) == GamepadButtons.DPadRight)
+                return FocusNavigationDirection.Right;
+
+            // 左搖桿
+            if (reading.LeftThumbstickY < -0.5) return FocusNavigationDirection.Down;
+            if (reading.LeftThumbstickY > 0.5) return FocusNavigationDirection.Up;
+            if (reading.LeftThumbstickX < -0.5) return FocusNavigationDirection.Left;
+            if (reading.LeftThumbstickX > 0.5) return FocusNavigationDirection.Right;
+
+            return null;
         }
     }
 }
