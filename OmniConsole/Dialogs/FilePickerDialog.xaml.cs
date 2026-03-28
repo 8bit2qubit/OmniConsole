@@ -373,18 +373,6 @@ namespace OmniConsole.Dialogs
         /// <summary>對話方塊開啟時：設定 XY 焦點導覽、啟動手把輪詢、螢幕鍵盤閃避，並導覽至初始目錄。</summary>
         private void FilePickerDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            // D-pad 向下離開清單時，跳到按鈕區
-            if (GetTemplateChild("PrimaryButton") is Button primaryButton)
-            {
-                FileListView.XYFocusDown = primaryButton;
-                SidebarListView.XYFocusDown = primaryButton;
-
-                // 從按鈕區 D-pad 向上回到檔案清單
-                primaryButton.XYFocusUp = FileListView;
-                if (GetTemplateChild("CloseButton") is Button closeButton)
-                    closeButton.XYFocusUp = FileListView;
-            }
-
             _gamepadNav = new GamepadNavigationService(
                 searchRoot: this,
                 dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
