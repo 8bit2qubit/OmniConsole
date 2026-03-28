@@ -112,6 +112,22 @@ namespace OmniConsole.Services
             ScrollBarVisibility originalScrollBarVisibility = ScrollBarVisibility.Disabled;
             ScrollMode originalScrollMode = ScrollMode.Disabled;
 
+            // 壓縮時自動將聚焦元素捲動到可視範圍
+            void OnGotFocus(object sender, RoutedEventArgs e)
+            {
+                if (contentScrollViewer == null) return;
+                // 等 ScrollViewer layout 完成後再捲動，避免快速開關鍵盤時 layout 尚未穩定
+                void OnLayoutUpdated(object? s, object a)
+                {
+                    contentScrollViewer.LayoutUpdated -= OnLayoutUpdated;
+                    if (FocusManager.GetFocusedElement(xamlRoot) is FrameworkElement fe)
+                        fe.StartBringIntoView();
+                }
+                contentScrollViewer.LayoutUpdated += OnLayoutUpdated;
+                contentScrollViewer.InvalidateArrange();
+            }
+            bool gotFocusAttached = false;
+
             var timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
             timer.Interval = TimeSpan.FromMilliseconds(100);
             timer.Tick += (s, e) =>
@@ -133,6 +149,11 @@ namespace OmniConsole.Services
                             {
                                 contentScrollViewer.VerticalScrollMode = originalScrollMode;
                                 contentScrollViewer.VerticalScrollBarVisibility = originalScrollBarVisibility;
+                            }
+                            if (gotFocusAttached)
+                            {
+                                dialogContainer.GotFocus -= OnGotFocus;
+                                gotFocusAttached = false;
                             }
                         }
                         wasVisible = false;
@@ -189,6 +210,20 @@ namespace OmniConsole.Services
                         contentScrollViewer.VerticalScrollBarVisibility = needsCompression ? ScrollBarVisibility.Auto : originalScrollBarVisibility;
                     }
 
+                    // 壓縮時自動將聚焦元素捲動到可視範圍（掛 GotFocus + 首次立即觸發）
+                    if (needsCompression && !gotFocusAttached)
+                    {
+                        dialogContainer.GotFocus += OnGotFocus;
+                        gotFocusAttached = true;
+                        // 鍵盤剛彈出時，觸發一次自動捲動
+                        OnGotFocus(dialogContainer, null!);
+                    }
+                    else if (!needsCompression && gotFocusAttached)
+                    {
+                        dialogContainer.GotFocus -= OnGotFocus;
+                        gotFocusAttached = false;
+                    }
+
                     if (!wasVisible)
                         DebugLogger.Log($"[KeyboardAvoidance] Keyboard shown: scale={scale} screenH={screenHeight} kbTop={keyboardTopDip} naturalH={naturalDialogHeight} targetTop={targetTop} availH={availableHeight} MaxH={dialogContainer.MaxHeight}");
                     wasVisible = true;
@@ -206,6 +241,7 @@ namespace OmniConsole.Services
             return () =>
             {
                 timer.Stop();
+                if (gotFocusAttached) dialogContainer.GotFocus -= OnGotFocus;
                 dialogContainer.VerticalAlignment = originalVAlignment;
                 dialogContainer.Margin = originalMargin;
                 dialogContainer.MaxHeight = double.PositiveInfinity;
