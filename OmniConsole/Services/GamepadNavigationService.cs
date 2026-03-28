@@ -527,8 +527,14 @@ namespace OmniConsole.Services
                 var focused = FocusManager.GetFocusedElement(_searchRoot.XamlRoot);
                 if (focused is DependencyObject dep && IsDescendantOf(_searchRoot, dep))
                 {
-                    // 焦點在 SearchRoot 內 → 使用限定範圍導航
+                    // 焦點在 SearchRoot 內 → 先預查候選目標
                     var options = new FindNextElementOptions { SearchRoot = _searchRoot };
+                    var candidate = FocusManager.FindNextElement(direction, options);
+
+                    // 撞牆防護：候選目標不是可互動控制項時，不移動焦點
+                    if (candidate is Control c && !c.IsTabStop) return;
+                    if (candidate == null) return;
+
                     _ = FocusManager.TryMoveFocusAsync(direction, options);
                 }
                 else

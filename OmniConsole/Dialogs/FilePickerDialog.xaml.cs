@@ -408,7 +408,7 @@ namespace OmniConsole.Dialogs
             FileListView.Focus(FocusState.Programmatic);
         }
 
-        /// <summary>對話方塊關閉時：停止手把輪詢、清理螢幕鍵盤閃避與預覽取消令牌。</summary>
+        /// <summary>對話方塊關閉時：停止手把輪詢、清理螢幕鍵盤閃避與預覽取消 token。</summary>
         private void FilePickerDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
             _gamepadNav?.Stop();
