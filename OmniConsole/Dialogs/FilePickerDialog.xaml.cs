@@ -157,6 +157,7 @@ namespace OmniConsole.Dialogs
         /// </summary>
         private void NavigateTo(string path, string? focusItemName = null)
         {
+            DebugLogger.Log($"[NavigateTo] path={path}, focusItemName={focusItemName}");
             _currentPath = path;
             CurrentPathText.Text = path;
             _selectedFile = null;
@@ -193,7 +194,13 @@ namespace OmniConsole.Dialogs
                     EmptyFolderText.Text = _resourceLoader.GetString("FilePickerDialog_EmptyFolder");
 
                 // 強制版面配置後把焦點設到目標項目（返回上層時定位到剛才的資料夾）
-                if (items.Count > 0)
+                if (items.Count == 0)
+                {
+                    // 延遲一幀再設焦點，避免 ItemClick 事件處理尚未結束時焦點被搶回
+                    DispatcherQueue.TryEnqueue(() =>
+                        NavigateUpButton.Focus(FocusState.Programmatic));
+                }
+                else
                 {
                     var targetIndex = 0;
                     if (focusItemName != null)
@@ -205,8 +212,9 @@ namespace OmniConsole.Dialogs
                     FocusFileListItem(targetIndex);
                 }
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                DebugLogger.Log($"[NavigateTo] UnauthorizedAccessException: {ex.Message}");
                 FileListView.ItemsSource = null;
                 FileListView.Visibility = Visibility.Collapsed;
                 EmptyFolderText.Visibility = Visibility.Collapsed;
@@ -230,25 +238,35 @@ namespace OmniConsole.Dialogs
             };
         }
 
-        /// <summary>強制版面配置後將焦點設到指定索引的檔案清單項目。容器尚未生成時掛 Loaded 事件延遲設定。</summary>
+        /// <summary>強制版面配置後將焦點設到指定索引的檔案清單項目。容器尚未生成時透過 ContainerContentChanging 等待生成。</summary>
         private void FocusFileListItem(int index)
         {
+            var items = FileListView.ItemsSource as List<FileListItem>;
+            if (items == null || index >= items.Count) return;
+
+            // 先捲動到目標項目，確保虛擬化容器被生成
+            FileListView.ScrollIntoView(items[index]);
             FileListView.UpdateLayout();
-            if (FileListView.ContainerFromIndex(index) is ListViewItem container)
+
+            var c1 = FileListView.ContainerFromIndex(index);
+            DebugLogger.Log($"[FocusFile] after ScrollIntoView+UpdateLayout: index={index}, container={c1?.GetType().Name}");
+
+            if (c1 is ListViewItem container)
             {
                 container.Focus(FocusState.Programmatic);
+                return;
             }
-            else
+
+            // 容器尚未生成：等 ContainerContentChanging 觸發
+            void OnContainerReady(ListViewBase sender, ContainerContentChangingEventArgs args)
             {
-                void OnLoaded(object s, RoutedEventArgs e)
+                if (args.ItemIndex == index)
                 {
-                    FileListView.Loaded -= OnLoaded;
-                    FileListView.UpdateLayout();
-                    if (FileListView.ContainerFromIndex(index) is ListViewItem c)
-                        c.Focus(FocusState.Programmatic);
+                    FileListView.ContainerContentChanging -= OnContainerReady;
+                    args.ItemContainer.Focus(FocusState.Programmatic);
                 }
-                FileListView.Loaded += OnLoaded;
             }
+            FileListView.ContainerContentChanging += OnContainerReady;
         }
 
         /// <summary>上層按鈕點選：返回上層目錄。</summary>
@@ -414,6 +432,7 @@ namespace OmniConsole.Dialogs
         private void NavigateUp()
         {
             var parent = FileSystemBrowserService.GetParentDirectory(_currentPath);
+            DebugLogger.Log($"[NavigateUp] currentPath={_currentPath}, parent={parent}");
             if (parent != null)
             {
                 // 記住目前資料夾名稱，返回上層後焦點定位到它
