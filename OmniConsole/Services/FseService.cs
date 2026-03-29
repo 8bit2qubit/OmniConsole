@@ -50,6 +50,7 @@ namespace OmniConsole.Services
         {
             "Nahimic3",
             "RtkUWP",
+            "SystemSettings",
         };
 
         /// <summary>
@@ -207,8 +208,8 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 主動終止所有已知干擾應用程式的行程。
-        /// 這些 App 僅是前端 UI，終止後不影響底層音訊驅動服務。
+        /// 主動終止所有已知會搶前景焦點的干擾應用程式行程。
+        /// 音訊面板僅是前端 UI，終止後不影響底層驅動服務；Windows 設定終止後可由使用者隨時重新開啟。
         /// </summary>
         public static void KillIgnoredBackgroundServices()
         {
