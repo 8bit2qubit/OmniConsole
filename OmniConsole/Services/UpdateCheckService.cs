@@ -178,6 +178,23 @@ namespace OmniConsole.Services
             }
         }
 
+        /// <summary>
+        /// 檢查系統是否已啟用開發人員模式。
+        /// OmniConsole 的 MSIX 安裝需要開發人員模式（因 SCCD CustomCapability），
+        /// 未啟用時下載的 .msix 將無法安裝。
+        /// </summary>
+        public static bool IsDeveloperModeEnabled()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock");
+                var value = key?.GetValue("AllowDevelopmentWithoutDevLicense");
+                return value is int intVal && intVal != 0;
+            }
+            catch { return false; }
+        }
+
         /// <summary>從 GitHub Releases API 取得最新版本的 JSON。</summary>
         private static async Task<string> FetchGitHubReleaseJsonAsync()
         {

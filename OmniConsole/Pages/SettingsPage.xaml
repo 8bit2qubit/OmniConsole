@@ -499,6 +499,10 @@
                                             <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
+                                        <StackPanel x:Name="DeveloperModeWarningPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
+                                            <TextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                            <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
+                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">

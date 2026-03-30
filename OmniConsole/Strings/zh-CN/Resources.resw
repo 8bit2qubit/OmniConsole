@@ -562,4 +562,10 @@
   <data name="UpdateDownload_Failed" xml:space="preserve">
     <value>下载失败，请重试。</value>
   </data>
+  <data name="DeveloperMode_Warning" xml:space="preserve">
+    <value>开发人员模式未启用，更新前请先开启。</value>
+  </data>
+  <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
+    <value>打开设置</value>
+  </data>
 </root>

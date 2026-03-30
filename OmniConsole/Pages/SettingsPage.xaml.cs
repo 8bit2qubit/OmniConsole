@@ -136,6 +136,7 @@ namespace OmniConsole.Pages
             // 讀取快取的更新資訊
             ShowSettingsUpdateInfoBar();
             ShowCachedUpdateStatus();
+            CheckDeveloperMode(); // 未啟用開發人員模式時顯示警告並停用下載按鈕
 
             // 自動檢查更新（跨日 + 開關啟用時）
             if (UpdateCheckService.ShouldAutoCheck())
@@ -766,6 +767,11 @@ namespace OmniConsole.Pages
                 case Button btn when ReferenceEquals(btn, DownloadInstallButton):
                     DownloadInstallButton_Click(this, new RoutedEventArgs());
                     break;
+
+                // 開發人員模式設定按鈕
+                case HyperlinkButton btn when ReferenceEquals(btn, DeveloperModeOpenSettingsButton):
+                    DeveloperModeOpenSettings_Click(this, new RoutedEventArgs());
+                    break;
             }
         }
 
@@ -877,6 +883,7 @@ namespace OmniConsole.Pages
         /// <summary>手動檢查更新按鈕，強制抓取 GitHub API 並更新快取。</summary>
         private async void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e)
         {
+            CheckDeveloperMode(); // 使用者可能從設定頁回來後狀態已變更
             CheckForUpdatesButton.IsEnabled = false;
             UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Checking");
             UpdateCheckStatusText.Visibility = Visibility.Visible;
@@ -919,6 +926,10 @@ namespace OmniConsole.Pages
         /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
         private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
+            // 點選時再次確認開發人員模式，防止使用者中途關閉
+            CheckDeveloperMode();
+            if (!UpdateCheckService.IsDeveloperModeEnabled()) return;
+
             // 重新檢查最新版本，確保下載的是最新的而非過期快取
             await UpdateCheckService.CheckForUpdateAsync();
 
@@ -1049,6 +1060,24 @@ namespace OmniConsole.Pages
                 UpdateCheckStatusText.Visibility = Visibility.Collapsed;
                 DownloadInstallButton.Visibility = Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// 檢查開發人員模式是否啟用，未啟用時顯示黃色警告並停用下載按鈕。
+        /// </summary>
+        private void CheckDeveloperMode()
+        {
+            bool enabled = UpdateCheckService.IsDeveloperModeEnabled();
+            DeveloperModeWarningPanel.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
+            if (!enabled)
+                DeveloperModeWarningText.Text = _resourceLoader.GetString("DeveloperMode_Warning");
+            DownloadInstallButton.IsEnabled = enabled;
+        }
+
+        /// <summary>開啟 Windows 開發人員模式設定頁面。</summary>
+        private async void DeveloperModeOpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:developers"));
         }
     }
 }

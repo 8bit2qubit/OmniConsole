@@ -562,4 +562,10 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="UpdateDownload_Failed" xml:space="preserve">
     <value>Download failed. Please try again.</value>
   </data>
+  <data name="DeveloperMode_Warning" xml:space="preserve">
+    <value>Developer Mode is off. Enable it before updating.</value>
+  </data>
+  <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
+    <value>Open Settings</value>
+  </data>
 </root>
