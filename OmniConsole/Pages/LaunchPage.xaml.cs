@@ -199,7 +199,6 @@ namespace OmniConsole.Pages
         public void ShowFseNotAvailable()
         {
             DebugLogger.Log("ShowFseNotAvailable: FSE not available.");
-            ShowUpdateInfoBarIfNeeded();
             StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
             VisualStateManager.GoToState(this, "FseNotAvailable", false);
             EnableFseButton.Focus(FocusState.Programmatic);
@@ -212,7 +211,6 @@ namespace OmniConsole.Pages
         public void ShowFseHomeAppNotSet()
         {
             DebugLogger.Log("ShowFseHomeAppNotSet: FSE Home App not set to OmniConsole.");
-            ShowUpdateInfoBarIfNeeded();
             StatusText.Text = _resourceLoader.GetString("FseHomeAppNotSet");
             VisualStateManager.GoToState(this, "FseHomeAppNotSet", false);
             OpenFseSettingsButton.Focus(FocusState.Programmatic);
