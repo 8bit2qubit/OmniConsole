@@ -58,6 +58,9 @@ namespace OmniConsole.Pages
         // 手把快速按 A 可能在前一個 Dialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
         private bool _isDialogOpen;
 
+        // 防止檢查更新重複觸發
+        private bool _isCheckingUpdate;
+
         // 下載更新的取消 token
         private CancellationTokenSource? _downloadCts;
 
@@ -883,8 +886,10 @@ namespace OmniConsole.Pages
         /// <summary>手動檢查更新按鈕，強制抓取 GitHub API 並更新快取。</summary>
         private async void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isCheckingUpdate) return;
+            _isCheckingUpdate = true;
+
             CheckDeveloperMode(); // 使用者可能從設定頁回來後狀態已變更
-            CheckForUpdatesButton.IsEnabled = false;
             UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Checking");
             UpdateCheckStatusText.Visibility = Visibility.Visible;
             CheckUpdateProgressRing.Visibility = Visibility.Visible;
@@ -897,7 +902,7 @@ namespace OmniConsole.Pages
 
             CheckUpdateProgressRing.IsActive = false;
             CheckUpdateProgressRing.Visibility = Visibility.Collapsed;
-            CheckForUpdatesButton.IsEnabled = true;
+            _isCheckingUpdate = false;
 
             switch (result)
             {
@@ -926,6 +931,8 @@ namespace OmniConsole.Pages
         /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
         private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_downloadCts != null) return; // 下載中，防止重複觸發
+
             // 點選時再次確認開發人員模式，防止使用者中途關閉
             CheckDeveloperMode();
             if (!UpdateCheckService.IsDeveloperModeEnabled()) return;
@@ -941,9 +948,6 @@ namespace OmniConsole.Pages
                     new Uri(UpdateCheckService.ReleaseNotesUrl));
                 return;
             }
-
-            DownloadInstallButton.IsEnabled = false;
-            CheckForUpdatesButton.IsEnabled = false;
 
             DownloadProgressPanel.Visibility = Visibility.Visible;
             DownloadProgressBar.IsIndeterminate = false;
@@ -999,8 +1003,6 @@ namespace OmniConsole.Pages
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
                 DownloadProgressPanel.Visibility = Visibility.Collapsed;
-                DownloadInstallButton.IsEnabled = true;
-                CheckForUpdatesButton.IsEnabled = true;
             }
             finally
             {

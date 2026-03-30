@@ -385,6 +385,94 @@
                         <TextBlock x:Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock x:Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
+                        <!-- 更新分類標題 -->
+                        <TextBlock x:Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="2,0,0,0"/>
+
+                        <!-- 更新群組卡片 -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="400">
+                            <StackPanel>
+                                <!-- 版本號與檢查更新 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE946;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock x:Uid="VersionInfo_Title" FontWeight="SemiBold" FontSize="16" />
+                                            <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
+                                        <StackPanel x:Name="DeveloperModeWarningPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
+                                            <TextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                            <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="DownloadInstallButton" x:Uid="DownloadInstallButton"
+                                                Click="DownloadInstallButton_Click"
+                                                Visibility="Collapsed"
+                                                FontSize="14" Padding="24,8"/>
+                                        <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton"
+                                                Click="CheckForUpdatesButton_Click"
+                                                FontSize="14" Padding="24,8"/>
+                                        <ProgressRing x:Name="CheckUpdateProgressRing"
+                                                      IsActive="False" Visibility="Collapsed"
+                                                      Width="20" Height="20"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 下載進度 -->
+                                <Grid x:Name="DownloadProgressPanel" Visibility="Collapsed" Padding="16,0,16,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressBar x:Name="DownloadProgressBar" Minimum="0" Maximum="100" Value="0"
+                                                 VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="DownloadProgressText" Grid.Column="1"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                </Grid>
+
+                                <!-- 分隔線 -->
+                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                <!-- 自動檢查更新 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE895;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="AutoUpdateCheck_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="AutoUpdateCheck_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="AutoUpdateCheckSwitch"
+                                                  Toggled="AutoUpdateCheckSwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Game Bar 分類標題 -->
                         <TextBlock x:Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -442,94 +530,6 @@
                                                   Toggled="EnablePassthroughSwitch_Toggled"
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 更新分類標題 -->
-                        <TextBlock x:Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   Margin="2,0,0,0"/>
-
-                        <!-- 更新群組卡片 -->
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                HorizontalAlignment="Stretch"
-                                MinWidth="400">
-                            <StackPanel>
-                                <!-- 自動檢查更新 -->
-                                <Grid Padding="16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <FontIcon Glyph="&#xE895;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="AutoUpdateCheck_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="AutoUpdateCheck_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                    </StackPanel>
-
-                                    <ToggleSwitch x:Name="AutoUpdateCheckSwitch"
-                                                  Toggled="AutoUpdateCheckSwitch_Toggled"
-                                                  FlowDirection="RightToLeft"
-                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
-                                </Grid>
-
-                                <!-- 分隔線 -->
-                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
-
-                                <!-- 版本號與檢查更新 -->
-                                <Grid Padding="16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <FontIcon Glyph="&#xE946;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock x:Uid="VersionInfo_Title" FontWeight="SemiBold" FontSize="16" />
-                                            <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                        <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
-                                        <StackPanel x:Name="DeveloperModeWarningPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
-                                            <TextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                            <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Button x:Name="DownloadInstallButton" x:Uid="DownloadInstallButton"
-                                                Click="DownloadInstallButton_Click"
-                                                Visibility="Collapsed"
-                                                FontSize="14" Padding="24,8"/>
-                                        <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton"
-                                                Click="CheckForUpdatesButton_Click"
-                                                FontSize="14" Padding="24,8"/>
-                                        <ProgressRing x:Name="CheckUpdateProgressRing"
-                                                      IsActive="False" Visibility="Collapsed"
-                                                      Width="20" Height="20"/>
-                                    </StackPanel>
-                                </Grid>
-
-                                <!-- 下載進度 -->
-                                <Grid x:Name="DownloadProgressPanel" Visibility="Collapsed" Padding="16,0,16,16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <ProgressBar x:Name="DownloadProgressBar" Minimum="0" Maximum="100" Value="0"
-                                                 VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="DownloadProgressText" Grid.Column="1"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14" VerticalAlignment="Center" Margin="12,0,0,0"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
