@@ -293,9 +293,16 @@ namespace OmniConsole.Services
         // ── D-pad / 搖桿長按連續移動（Key Repeat） ────────────────────────────
         private const int RepeatInitialDelayMs = 400;  // 長按後開始重複前的等待時間
         private const int RepeatIntervalMs = 80;       // 重複移動的間隔
-        private FocusNavigationDirection? _heldDirection;
-        private long _heldSinceTick;
-        private long _lastRepeatTick;
+
+        /// <summary>各手把獨立的長按重複狀態，避免多手把間互相覆蓋。</summary>
+        private readonly Dictionary<Gamepad, HeldState> _heldStates = new();
+        private struct HeldState
+        {
+            public FocusNavigationDirection? Direction;
+            public long SinceTick;
+            public long LastRepeatTick;
+        }
+
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
         private readonly Action? _onBButtonPressed;
@@ -494,7 +501,8 @@ namespace OmniConsole.Services
                             TryMoveGamepadFocus(FocusNavigationDirection.Right);
                     }
 
-                    // ── D-pad / 搖桿長按連續移動 ─────────────────────────────────
+                    // ── D-pad / 搖桿長按連續移動（每支手把獨立追蹤） ──────────────
+                    _heldStates.TryGetValue(gamepad, out var held);
                     if (!inputHandled)
                     {
                         var currentDir = GetHeldDirection(reading);
@@ -503,29 +511,30 @@ namespace OmniConsole.Services
                         if (currentDir == null)
                         {
                             // 方向鬆開，清除狀態
-                            _heldDirection = null;
+                            held.Direction = null;
                         }
-                        else if (currentDir != _heldDirection)
+                        else if (currentDir != held.Direction)
                         {
                             // 新方向（含邊緣觸發已處理的首次），記錄起始時間
-                            _heldDirection = currentDir;
-                            _heldSinceTick = now;
-                            _lastRepeatTick = 0;
+                            held.Direction = currentDir;
+                            held.SinceTick = now;
+                            held.LastRepeatTick = 0;
                         }
-                        else if (now - _heldSinceTick >= RepeatInitialDelayMs)
+                        else if (now - held.SinceTick >= RepeatInitialDelayMs)
                         {
                             // 超過初始延遲，按重複間隔觸發
-                            if (now - _lastRepeatTick >= RepeatIntervalMs)
+                            if (now - held.LastRepeatTick >= RepeatIntervalMs)
                             {
-                                _lastRepeatTick = now;
+                                held.LastRepeatTick = now;
                                 TryMoveGamepadFocus(currentDir.Value);
                             }
                         }
                     }
                     else
                     {
-                        _heldDirection = null;
+                        held.Direction = null;
                     }
+                    _heldStates[gamepad] = held;
 
                     _previousReadings[gamepad] = reading;
                 }
@@ -534,7 +543,10 @@ namespace OmniConsole.Services
                 var connected = new HashSet<Gamepad>(gamepads);
                 foreach (var key in _previousReadings.Keys.ToList())
                     if (!connected.Contains(key))
+                    {
                         _previousReadings.Remove(key);
+                        _heldStates.Remove(key);
+                    }
             }
             catch (Exception ex)
             {
