@@ -23,19 +23,23 @@ namespace OmniConsole
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // 註冊 FSE 狀態變化通知（取代輪詢），記錄啟動時的 FSE 狀態供診斷
+            FseService.StartListening();
+            DebugLogger.Log($"[App] IsSupported={FseService.IsSupported()}, CanActivate={FseService.CanActivate()}, IsActive={FseService.IsActive()}");
+
             // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
             if (!_startWithSettings && !FseService.IsActive())
             {
-                if (!FseService.CanActivate())
+                if (!FseService.IsSupported())
                 {
-                    // 系統未啟用 FSE，顯示提示引導使用者先啟用
+                    // 系統未啟用 FSE（未使用 Xbox Full Screen Experience Tool 或非原生 FSE 掌機），引導使用者先啟用
                     ShowGuidanceWindow(w => w.ShowFseNotAvailable());
                     return;
                 }
 
-                if (!FseService.IsOmniConsoleSetAsHomeApp())
+                if (!FseService.CanActivate() || !FseService.IsOmniConsoleSetAsHomeApp())
                 {
-                    // FSE 可用，但 Home App 未設為 OmniConsole，引導使用者至設定頁面
+                    // FSE 已啟用但 Home App 未設為 OmniConsole（設為「無」、其他 App、或尚未設定）
                     ShowGuidanceWindow(w => w.ShowFseHomeAppNotSet());
                     return;
                 }

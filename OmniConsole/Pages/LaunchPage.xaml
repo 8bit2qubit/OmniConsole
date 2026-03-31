@@ -35,12 +35,11 @@
                         <Setter Target="LaunchHintBar.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
-                <!-- FseNotAvailable：FSE 功能未啟用，引導使用者透過工具啟用 -->
+                <!-- FseNotAvailable：FSE 功能未啟用，只引導使用者透過工具啟用 -->
                 <VisualState x:Name="FseNotAvailable">
                     <VisualState.Setters>
                         <Setter Target="BrandingText.Visibility" Value="Collapsed"/>
                         <Setter Target="EnableFseButton.Visibility" Value="Visible"/>
-                        <Setter Target="OpenFseSettingsButton.Visibility" Value="Visible"/>
                         <Setter Target="LaunchHintBar.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>

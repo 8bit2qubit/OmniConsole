@@ -159,37 +159,42 @@ namespace OmniConsole
                 return;
             }
 
-            // 啟動失敗等其他介面時，若系統啟用了 FSE 機制，必須透過模擬 Win+F11 叫出退回桌面對話方塊
-            // 例如：啟動失敗後，點選「返回桌面」按鈕時呼叫，觸發 FSE 退出流程
-            // FSE 退出對話方塊顯示期間使用者無法點選 OmniConsole 的按鈕，
-            // 因此不需要停用按鈕；只需在背景輪詢 IsActive() 等待繼續
-            //   - 對話方塊繼續 → IsActive() 變 false → Exit()
-            //   - 對話方塊取消 → FSE 退出對話方塊消失，OmniConsole 按鈕可以點選
-            //   - 再次點選「返回桌面」按鈕 → 取消上一輪背景輪詢，重新送 Win+F11
+            // FSE 模式下透過 API 觸發「切換到 Windows 桌面」確認對話方塊
+            // 對話方塊期間使用者無法點選 OmniConsole 的按鈕，無需停用
+            //   - 確認退出 → StateChanged callback 觸發，IsActive() 變 false → Exit()
+            //   - 取消 → FSE 退出對話方塊消失，OmniConsole 按鈕可正常點選
+            //   - 再次點選「返回桌面」按鈕 → 取消前一輪等待，重新觸發
             if (FseService.IsActive())
             {
                 _fseExitCts?.Cancel();
                 _fseExitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                 var token = _fseExitCts.Token;
+                var tcs = new TaskCompletionSource();
 
-                FseService.TryExitToDesktop();
+                void OnStateChanged()
+                {
+                    if (!FseService.IsActive())
+                        tcs.TrySetResult();
+                }
+
+                FseService.StateChanged += OnStateChanged;
+                token.Register(() => tcs.TrySetCanceled());
+
+                FseService.TryDeactivate();
 
                 try
                 {
-                    // 一旦 IsActive() 變成 false，代表對話方塊通過且準備退回桌面，此時可安全結束此應用程式。
-                    while (!token.IsCancellationRequested)
-                    {
-                        await Task.Delay(200, token);
-                        if (!FseService.IsActive())
-                        {
-                            LaunchPageControl.StopGamepadPolling();
-                            ShowWindow(_hwnd, SW_HIDE);
-                            Application.Current.Exit();
-                            return;
-                        }
-                    }
+                    await tcs.Task;
+                    FseService.StateChanged -= OnStateChanged;
+                    LaunchPageControl.StopGamepadPolling();
+                    ShowWindow(_hwnd, SW_HIDE);
+                    Application.Current.Exit();
+                    return;
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                    FseService.StateChanged -= OnStateChanged;
+                }
             }
             // 若為一般視窗模式、或是尚未進入 FSE 環境時，一律直接退出應用程式
             else

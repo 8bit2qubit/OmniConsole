@@ -148,7 +148,7 @@
     <value>返回桌面</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>请完成以下步骤后手动重启 OmniConsole：</value>
+    <value>全屏体验尚未启用，请先启用后手动重启 OmniConsole。</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
     <value>请前往 Windows 设置 → 游戏 → 全屏体验，在「选择主应用」中指定 OmniConsole，完成后手动重启 OmniConsole。</value>

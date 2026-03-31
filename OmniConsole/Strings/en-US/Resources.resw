@@ -148,7 +148,7 @@
     <value>Return to Desktop</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Please complete the following steps, then manually restart OmniConsole:</value>
+    <value>Full Screen Experience is not enabled. Please enable it first, then manually restart OmniConsole.</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
     <value>Please go to Windows Settings → Gaming → Full Screen Experience and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>

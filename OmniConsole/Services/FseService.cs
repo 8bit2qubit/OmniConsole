@@ -5,18 +5,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// keybd_event 虛擬按鍵碼
-file static class VK
-{
-    public const byte LWIN = 0x5B;
-    public const byte F11 = 0x7A;
-}
-
-file static class KEYEVENTF
-{
-    public const uint KEYUP = 0x0002;
-}
-
 namespace OmniConsole.Services
 {
     /// <summary>
@@ -34,10 +22,30 @@ namespace OmniConsole.Services
         private static extern bool CanSetGamingFullScreenExperience();
 
         [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
-        private static extern int SetGamingFullScreenExperience();
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsGamingFullScreenExperienceSupported();
 
-        [DllImport("user32.dll")]
-        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        private static extern int SetGamingFullScreenExperience([MarshalAs(UnmanagedType.Bool)] bool active);
+
+        private delegate void GamingFullScreenExperienceChangeRoutine(IntPtr context);
+
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        private static extern int RegisterGamingFullScreenExperienceChangeNotification(
+            GamingFullScreenExperienceChangeRoutine routine,
+            IntPtr context,
+            out IntPtr registration);
+
+        [DllImport("api-ms-win-gaming-experience-l1-1-0.dll", ExactSpelling = true)]
+        private static extern void UnregisterGamingFullScreenExperienceChangeNotification(
+            IntPtr registration);
+
+        /// <summary>callback delegate 必須以欄位持有參照，防止 GC 回收導致 callback 失效。</summary>
+        private static GamingFullScreenExperienceChangeRoutine? _changeCallback;
+        private static IntPtr _changeRegistration;
+
+        /// <summary>FSE 狀態變化時觸發（可能在背景執行緒）。訂閱者需自行 Dispatch 回 UI 執行緒。</summary>
+        public static event Action? StateChanged;
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -52,6 +60,59 @@ namespace OmniConsole.Services
             "RtkUWP",
             "SystemSettings",
         };
+
+        /// <summary>
+        /// 註冊 FSE 狀態變化通知。呼叫後 StateChanged 事件會在 FSE 進入/退出時觸發。
+        /// </summary>
+        public static void StartListening()
+        {
+            if (_changeRegistration != IntPtr.Zero) return;
+
+            _changeCallback = OnFseStateChanged;
+            int hr = RegisterGamingFullScreenExperienceChangeNotification(
+                _changeCallback, IntPtr.Zero, out _changeRegistration);
+            DebugLogger.Log($"[FseService] RegisterChangeNotification HRESULT: 0x{hr:X8}");
+        }
+
+        /// <summary>
+        /// 取消 FSE 狀態變化通知。
+        /// </summary>
+        public static void StopListening()
+        {
+            if (_changeRegistration == IntPtr.Zero) return;
+
+            UnregisterGamingFullScreenExperienceChangeNotification(_changeRegistration);
+            DebugLogger.Log("[FseService] UnregisterChangeNotification");
+            _changeRegistration = IntPtr.Zero;
+            _changeCallback = null;
+        }
+
+        /// <summary>FSE 狀態變化時由系統從背景執行緒回呼，轉發為 StateChanged 事件。</summary>
+        private static void OnFseStateChanged(IntPtr context)
+        {
+            bool active = IsGamingFullScreenExperienceActive();
+            DebugLogger.Log($"[FseService] StateChanged callback: IsActive = {active}");
+            StateChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 回傳系統是否支援 FSE（需透過 Xbox Full Screen Experience Tool 啟用或原生 FSE 掌機）。
+        /// 與 CanActivate() 的差異：IsSupported() 不受 Home App 設定影響。
+        /// </summary>
+        public static bool IsSupported()
+        {
+            try
+            {
+                bool result = IsGamingFullScreenExperienceSupported();
+                DebugLogger.Log($"[FseService] IsSupported = {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[FseService] IsSupported failed: {ex.Message}");
+                return false;
+            }
+        }
 
         /// <summary>
         /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
@@ -72,7 +133,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 回傳目前是否可以觸發 FSE（例如系統不支援時為 false）。
+        /// 回傳目前是否可以觸發 FSE。需要 IsSupported()=true 且 Home App 已設定（非「無」）。
         /// </summary>
         public static bool CanActivate()
         {
@@ -90,25 +151,6 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 模擬 Win+F11，從 FSE 模式觸發「切換回桌面」確認對話方塊。
-        /// </summary>
-        public static void TryExitToDesktop()
-        {
-            try
-            {
-                keybd_event(VK.LWIN, 0, 0, 0);
-                keybd_event(VK.F11, 0, 0, 0);
-                keybd_event(VK.F11, 0, KEYEVENTF.KEYUP, 0);
-                keybd_event(VK.LWIN, 0, KEYEVENTF.KEYUP, 0);
-                DebugLogger.Log("[FseService] TryExitToDesktop: Win+F11 sent");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.Log($"[FseService] TryExitToDesktop failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// 觸發進入 FSE 模式（等同於按 Win+F11 或 Game Bar 的進入 FSE 按鈕）。
         /// 成功後 Windows 會顯示確認對話方塊，使用者確認後重新啟動本應用程式於 FSE 環境。
         /// </summary>
@@ -117,13 +159,32 @@ namespace OmniConsole.Services
         {
             try
             {
-                int hr = SetGamingFullScreenExperience();
-                DebugLogger.Log($"[FseService] SetGamingFullScreenExperience HRESULT: 0x{hr:X8}");
+                int hr = SetGamingFullScreenExperience(true);
+                DebugLogger.Log($"[FseService] SetGamingFullScreenExperience(true) HRESULT: 0x{hr:X8}");
                 return hr >= 0;
             }
             catch (Exception ex)
             {
                 DebugLogger.Log($"[FseService] TryActivate failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 觸發退出 FSE 模式，Windows 會顯示「切換到 Windows 桌面」確認對話方塊。
+        /// 使用者確認後 IsActive() 會變為 false。
+        /// </summary>
+        public static bool TryDeactivate()
+        {
+            try
+            {
+                int hr = SetGamingFullScreenExperience(false);
+                DebugLogger.Log($"[FseService] SetGamingFullScreenExperience(false) HRESULT: 0x{hr:X8}");
+                return hr >= 0;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[FseService] TryDeactivate failed: {ex.Message}");
                 return false;
             }
         }
