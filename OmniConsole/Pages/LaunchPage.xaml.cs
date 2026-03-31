@@ -127,8 +127,10 @@ namespace OmniConsole.Pages
                     int exStyle = GetWindowLong(Hwnd, GWL_EXSTYLE);
                     SetWindowLong(Hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
 
-                    // FSE 模式下已知干擾應用程式可能被最大化並搶走焦點，
-                    // 在輪詢前先主動終止，避免視覺干擾與焦點搶奪
+                    // [Windows Bug] 部分應用程式在 FSE 中會被最大化並搶走前景焦點，
+                    // 在輪詢前先終止，避免干擾前景判定。
+                    // 從 OmniConsole 進入 FSE 時已在 App.xaml.cs 預先清理，
+                    // 但 Win+F11、工作檢視、開機自動進入等路徑不經過該清理，仍需此防禦。
                     FseService.KillIgnoredBackgroundServices();
 
                     // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出

@@ -320,6 +320,10 @@ namespace OmniConsole.Pages
             FseService.KillGameBar();
             await Task.Delay(500);
 
+            // [Windows Bug] 從桌面進入 FSE 時，部分應用程式會被最大化並搶走前景焦點
+            if (!FseService.IsActive())
+                FseService.KillIgnoredBackgroundServices();
+
             if (FseService.TryActivate())
             {
                 // 此應用程式會被重新啟動在 FSE 環境

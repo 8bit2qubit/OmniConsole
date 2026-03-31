@@ -50,6 +50,10 @@ namespace OmniConsole
                 if (!FseService.IsGameBarRunning())
                     await FseService.EnsureGameBarRunningAsync();
 
+                // [Windows Bug] 部分應用程式（音訊面板、Windows 設定等）在進入 FSE 後會被最大化並搶
+                // 走前景焦點，在進入前先終止以避免干擾。
+                FseService.KillIgnoredBackgroundServices();
+
                 if (FseService.TryActivate())
                 {
                     // FSE 已觸發，Windows 會重新以 FSE 環境啟動本應用程式
