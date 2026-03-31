@@ -123,8 +123,8 @@
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>OmniConsole 設定</value>
   </data>
-  <data name="SettingsDescription.Text" xml:space="preserve">
-    <value>選擇預設啟動的遊戲平台：</value>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>預設平台：{0}</value>
   </data>
   <data name="Launching" xml:space="preserve">
     <value>正在啟動「{0}」...</value>

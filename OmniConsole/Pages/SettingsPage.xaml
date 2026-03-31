@@ -185,7 +185,7 @@
 
                         <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,16">
                             <TextBlock x:Uid="SettingsTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock x:Uid="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center"/>
+                            <TextBlock x:Name="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center"/>
                         </StackPanel>
 
                         <!-- 分類索引標籤 + 平台卡片 -->

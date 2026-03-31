@@ -126,6 +126,8 @@ namespace OmniConsole.Pages
                 PlatformGridView.SelectedItem = selectedCard;
             }
 
+            UpdateSettingsDescription();
+
             // 還原 Game Bar 媒體櫃的開關狀態
             UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
 
@@ -272,7 +274,18 @@ namespace OmniConsole.Pages
                     ?? PlatformCatalog.All[0];
                 SettingsService.SetDefaultPlatform(platform);
                 SettingsService.SaveCurrentVersion();
+                UpdateSettingsDescription();
             }
+        }
+
+        /// <summary>
+        /// 更新標題下方的描述文字，顯示目前預設平台名稱。
+        /// </summary>
+        private void UpdateSettingsDescription()
+        {
+            var platform = SettingsService.GetDefaultPlatform();
+            var name = ProcessLauncherService.GetPlatformDisplayName(platform);
+            SettingsDescription.Text = string.Format(_resourceLoader.GetString("SettingsDescription"), name);
         }
 
         /// <summary>
