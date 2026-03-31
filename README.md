@@ -123,7 +123,7 @@ If you experience an issue where the Windows Full Screen Experience (FSE) entry 
 
 1. Open **OmniConsole Settings** from the Start Menu.
 2. Navigate to the **Troubleshoot** tab using the left menu.
-3. Click the **"Run"** button next to **"Kill Game Bar & Enter FSE"**. This will force-close Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.
+3. Click the **"Run"** button next to **"Terminate Game Bar & Enter FSE"**. This will force-close Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.
 
 ---
 

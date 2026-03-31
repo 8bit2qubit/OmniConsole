@@ -208,10 +208,10 @@
     <value>Full Screen Experience (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>Kill Game Bar &amp; Enter FSE</value>
+    <value>Terminate Game Bar &amp; Enter FSE</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>Kills Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.</value>
+    <value>Terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.</value>
   </data>
   <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
     <value>Platform</value>
