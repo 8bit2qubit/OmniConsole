@@ -365,6 +365,9 @@ namespace OmniConsole.Services
         {
             try
             {
+                // 視窗隱藏或 XamlRoot 失效時跳過，避免無效的焦點操作
+                if (_searchRoot.XamlRoot == null) return;
+
                 var gamepads = Gamepad.Gamepads;
                 if (gamepads.Count == 0) return;
 
