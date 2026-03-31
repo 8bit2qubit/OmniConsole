@@ -26,7 +26,7 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
-- **During use**: Press the **Xbox button**, then select **"Home"** or **"Library"** in Game Bar to launch your gaming platform. ("Library" opens OmniConsole settings by default.)
+- **During use**: Press the **Xbox button**, then select **"Home"** in Game Bar to launch your gaming platform, or **"Library"** to open OmniConsole settings by default.
 
 ### How It Works
 
@@ -42,14 +42,15 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
 - **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
-- **Custom Platform Support (Experimental)** – Add your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with a card cover image. Launch arguments are available when using the executable path type. Right-click or long-press a custom platform card to export its configuration as shareable text; import shared configurations with the Import button.
-- **Gamepad-Compatible File Picker** – A custom-built file picker that replaces the system FileOpenPicker (which does not support gamepad input). Browse for executables and cover images with a controller (D-pad to navigate, A to select, B to go back). A "Browse (Windows)" button is also available for users who prefer the legacy system file picker.
+- **Custom Platform Support (Experimental)** – Supports adding your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with a card cover image. Launch arguments are available when using the executable path type.
+- **Platform Import & Export** – Supports sharing custom platform configurations as JSON. Right-click or long-press a card to export; use the Import button to import shared configurations.
+- **Gamepad-Compatible File Picker** – A custom-built file picker that replaces the system FileOpenPicker (which does not support gamepad input). Browse for executables and cover images entirely with a controller. A "Browse (Windows)" button is also available for users who prefer the legacy system file picker.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
-- **Game Bar Integration** – Configure how Game Bar's **"Home"** and **"Library"** buttons behave: open OmniConsole settings, launch your gaming platform, or pass through directly to a platform like Xbox App.
+- **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole settings by default, or passes through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
-- **Native FSE Integration** – Registered as a Windows 11 Full Screen Experience Home App through the official FSE API.
+- **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 - **In-App Updates** – Automatically checks for the latest GitHub releases, with built-in downloading and installation available directly from the Advanced settings page.
 - **Multilingual UI** – Supports English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文).
 
@@ -101,7 +102,7 @@ OmniConsole will present the Settings UI on **first launch** or **after app upda
 
 Your gaming platform now launches via any of these entry points:
 
-- **Game Bar**: Press the **Xbox button**, then select **"Home"** or **"Library"**. ("Library" opens OmniConsole settings by default.)
+- **Game Bar**: Press the **Xbox button**, then select **"Home"** to launch your gaming platform, or **"Library"** to open OmniConsole settings by default.
 - **Boot**: Enable **"Enter full screen experience on startup"** for automatic launch at boot.
 - **Start Menu**: Launch OmniConsole directly to automatically activate the Full Screen Experience (FSE).
 
