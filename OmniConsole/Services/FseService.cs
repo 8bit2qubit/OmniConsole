@@ -212,16 +212,15 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 回傳 Game Bar 是否已就緒（以 GameBarFTServer.exe 為準）。
-        /// 休眠回復後 GameBar.exe 可能存在但 GameBarFTServer.exe 尚未啟動，
-        /// 此時 FSE 觸發會靜默失敗。
+        /// 回傳 Game Bar 是否已就緒（GameBar.exe 與 GameBarFTServer.exe 皆須存在）。
+        /// 任一行程缺失時 FSE 觸發會靜默失敗（繞過進入對話方塊）。
         /// </summary>
         public static bool IsGameBarReady()
         {
-            bool ftServerRunning = Process.GetProcessesByName("GameBarFTServer").Length > 0;
             bool gameBarRunning = Process.GetProcessesByName("GameBar").Length > 0;
+            bool ftServerRunning = Process.GetProcessesByName("GameBarFTServer").Length > 0;
             DebugLogger.Log($"[FseService] IsGameBarReady: GameBar={gameBarRunning}, GameBarFTServer={ftServerRunning}");
-            return ftServerRunning;
+            return gameBarRunning && ftServerRunning;
         }
 
         /// <summary>
