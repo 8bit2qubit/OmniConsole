@@ -312,8 +312,8 @@ namespace OmniConsole.Pages
         // ── 設定控制項事件 ────────────────────────────────────────────────────
 
         /// <summary>
-        /// 強制結束 GameBar.exe，透過 URI 重新啟動後再觸發 FSE。
-        /// 當 FSE 進入對話方塊卡住時，透過此方法可重置環境並達成「殺死後重發」的備援路徑。
+        /// 重置 Game Bar 並觸發 FSE。先透過 <see cref="FseService.EnsureGameBarReadyAsync"/>
+        /// 確保 Game Bar 完全就緒，再以「殺死後重發」機制繞過可能卡住的 FSE 進入對話方塊。
         /// </summary>
         private async void ResetGameBarButton_Click(object sender, RoutedEventArgs e)
         {
@@ -321,15 +321,11 @@ namespace OmniConsole.Pages
             ResetGameBarProgressRing.IsActive = true;
             ResetGameBarProgressRing.Visibility = Visibility.Visible;
 
-            // 1. 殺掉 GameBar（先 GameBar 再 GameBarFTServer），稍待讓行程完全終止
-            FseService.KillGameBar();
-            await Task.Delay(500);
+            // 1. 強制重啟 Game Bar 並輪詢等待 GameBarFTServer 就緒
+            //    （內部會先終止 GameBar.exe 再透過 ms-gamebar:// 重啟）
+            await FseService.EnsureGameBarReadyAsync();
 
-            // 2. 透過 URI 重新啟動 GameBar，固定等待讓其穩定初始化
-            _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-gamebar://"));
-            await Task.Delay(500);
-
-            // 3. 再次殺掉以繞過 FSE 進入對話方塊（「殺死後重發」機制），稍待讓系統狀態穩定
+            // 2. 再次殺掉以繞過 FSE 進入對話方塊（「殺死後重發」機制），稍待讓系統狀態穩定
             FseService.KillGameBar();
             await Task.Delay(500);
 
