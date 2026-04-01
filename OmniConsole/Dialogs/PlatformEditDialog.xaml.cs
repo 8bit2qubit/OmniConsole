@@ -485,6 +485,8 @@ namespace OmniConsole.Dialogs
                 return _resourceLoader.GetString("PlatformDialog_ValidationPathNotExe");
             if (!PlatformFieldValidator.IsValidExecutablePath(path))
                 return _resourceLoader.GetString("PlatformDialog_ValidationPathInvalid");
+            if (PlatformFieldValidator.IsConsoleApplication(path))
+                return _resourceLoader.GetString("PlatformDialog_ValidationPathConsoleApp");
             return null;
         }
 

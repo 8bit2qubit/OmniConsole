@@ -138,6 +138,8 @@ namespace OmniConsole.Services
                             return (null, "Import_Error_MissingTarget");
                         if (!PlatformFieldValidator.IsValidExecutablePath(t))
                             return (null, "Import_Error_InvalidExecutable");
+                        if (PlatformFieldValidator.IsConsoleApplication(t))
+                            return (null, "Import_Error_ConsoleApp");
                         launchTarget = t;
                         string a = payload.Arguments?.Trim() ?? "";
                         if (!PlatformFieldValidator.IsValidArguments(a))

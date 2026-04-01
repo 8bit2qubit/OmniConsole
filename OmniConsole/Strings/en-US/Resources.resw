@@ -339,6 +339,9 @@
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>Invalid file path. Example: C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
+  <data name="PlatformDialog_ValidationPathConsoleApp" xml:space="preserve">
+    <value>Console applications are not supported. They may cause FSE to restart in a loop.</value>
+  </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>Arguments contain potentially unsafe characters.</value>
   </data>
@@ -459,6 +462,9 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>Executable path must end with .exe.</value>
+  </data>
+  <data name="Import_Error_ConsoleApp" xml:space="preserve">
+    <value>Console applications are not supported.</value>
   </data>
   <data name="Import_Error_PackageNotAllowed" xml:space="preserve">
     <value>This package cannot be used as a platform (e.g., it may be an extension, service, or runtime component).</value>

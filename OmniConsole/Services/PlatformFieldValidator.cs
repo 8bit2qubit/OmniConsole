@@ -47,6 +47,58 @@ namespace OmniConsole.Services
             && path.IndexOfAny(Path.GetInvalidPathChars()) < 0
             && path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// 檢查執行檔是否為 Console 應用程式（IMAGE_SUBSYSTEM_WINDOWS_CUI）。
+        /// 讀取 PE Header 的 Subsystem 欄位，僅需讀取前幾百 bytes，不執行檔案。
+        /// </summary>
+        /// <returns>Console app 回傳 <see langword="true"/>；GUI app、檔案不存在或讀取失敗回傳 <see langword="false"/>。</returns>
+        public static bool IsConsoleApplication(string path)
+        {
+            try
+            {
+                // FileShare.ReadWrite：避免其他程式正在寫入此檔時發生鎖定衝突
+                using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                // 基本長度檢查（DOS Header 至少需要 0x40 bytes）
+                if (fs.Length < 0x40) return false;
+
+                using var reader = new BinaryReader(fs);
+
+                // DOS Header: 前 2 bytes 必須是 "MZ"
+                if (reader.ReadUInt16() != 0x5A4D) return false;
+
+                // e_lfanew: offset 0x3C，指向 PE Header 位置
+                fs.Seek(0x3C, SeekOrigin.Begin);
+                int peOffset = reader.ReadInt32();
+
+                // 安全性檢查：確保 peOffset 合理，且檔案夠大能容納
+                // PE Signature(4) + COFF Header(20) + Optional Header 到 Subsystem(0x44) + Subsystem(2) = 0x5E
+                if (peOffset < 0 || peOffset > fs.Length - 0x5E) return false;
+
+                // PE Signature: 必須是 "PE\0\0" (0x00004550)
+                fs.Seek(peOffset, SeekOrigin.Begin);
+                if (reader.ReadUInt32() != 0x00004550) return false;
+
+                // COFF Header: 20 bytes，跳過
+                fs.Seek(20, SeekOrigin.Current);
+
+                // Optional Header: Subsystem 在 offset 0x44（PE32 與 PE32+ 相同，
+                // 因為 PE32 的 BaseOfData(4)+ImageBase(4) = PE32+ 的 ImageBase(8)）
+                fs.Seek(0x44, SeekOrigin.Current);
+                ushort subsystem = reader.ReadUInt16();
+
+                // IMAGE_SUBSYSTEM_WINDOWS_CUI = 3
+                bool isCui = subsystem == 3;
+                DebugLogger.Log($"[PlatformFieldValidator] IsConsoleApplication '{path}': subsystem={subsystem}, isCUI={isCui}");
+                return isCui;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[PlatformFieldValidator] IsConsoleApplication failed for '{path}': {ex.Message}");
+                return false;
+            }
+        }
+
         // ── 啟動參數 ──────────────────────────────────────────────────────────
 
         /// <summary>

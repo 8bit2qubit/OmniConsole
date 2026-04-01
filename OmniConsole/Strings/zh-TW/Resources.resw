@@ -339,6 +339,9 @@
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>路徑格式無效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
+  <data name="PlatformDialog_ValidationPathConsoleApp" xml:space="preserve">
+    <value>不支援主控台應用程式，可能導致 FSE 循環重新啟動。</value>
+  </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>啟動參數包含不安全的字元。</value>
   </data>
@@ -459,6 +462,9 @@
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>執行檔路徑須以 .exe 結尾。</value>
+  </data>
+  <data name="Import_Error_ConsoleApp" xml:space="preserve">
+    <value>不支援主控台應用程式。</value>
   </data>
   <data name="Import_Error_PackageNotAllowed" xml:space="preserve">
     <value>此套件無法作為平台使用（例如延伸模組、背景服務或執行時期元件）。</value>
