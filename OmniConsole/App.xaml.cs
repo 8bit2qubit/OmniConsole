@@ -47,8 +47,8 @@ namespace OmniConsole
                 // [Windows Bug] Game Bar 未執行時（常見於系統從休眠回復後尚未就緒），FSE 觸發雖會回
                 // 傳成功，但 FSE 進入對話方塊不會出現，導致靜默退出後無任何視窗。此為 Windows 本身
                 // 的缺陷，非 OmniConsole 可控範圍；先確保 Game Bar 就緒再觸發以避免 FSE 啟動失敗。
-                if (!FseService.IsGameBarRunning())
-                    await FseService.EnsureGameBarRunningAsync();
+                if (!FseService.IsGameBarReady())
+                    await FseService.EnsureGameBarReadyAsync();
 
                 // [Windows Bug] 部分應用程式（音訊面板、Windows 設定等）在進入 FSE 後會被最大化並搶
                 // 走前景焦點，在進入前先終止以避免干擾。

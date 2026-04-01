@@ -212,18 +212,35 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 回傳 GameBar.exe 是否正在執行。
+        /// 回傳 Game Bar 是否已就緒（以 GameBarFTServer.exe 為準）。
+        /// 休眠回復後 GameBar.exe 可能存在但 GameBarFTServer.exe 尚未啟動，
+        /// 此時 FSE 觸發會靜默失敗。
         /// </summary>
-        public static bool IsGameBarRunning()
-            => Process.GetProcessesByName("GameBar").Length > 0;
+        public static bool IsGameBarReady()
+        {
+            bool ftServerRunning = Process.GetProcessesByName("GameBarFTServer").Length > 0;
+            bool gameBarRunning = Process.GetProcessesByName("GameBar").Length > 0;
+            DebugLogger.Log($"[FseService] IsGameBarReady: GameBar={gameBarRunning}, GameBarFTServer={ftServerRunning}");
+            return ftServerRunning;
+        }
 
         /// <summary>
-        /// 透過 ms-gamebar:// URI 啟動 GameBar，輪詢直到 GameBarFTServer.exe 出現或逾時。
+        /// 確保 Game Bar 完全就緒。若 GameBar.exe 已存在（如休眠回復後的殭屍狀態），
+        /// 先終止再透過 ms-gamebar:// URI 重新啟動，輪詢直到 GameBarFTServer.exe 出現或逾時。
         /// GameBarFTServer 是 GameBar 的服務端元件，出現時代表 GameBar 已完成初始化。
         /// </summary>
         /// <param name="timeoutMs">最長等待毫秒數，預設 5000ms。</param>
-        public static async System.Threading.Tasks.Task EnsureGameBarRunningAsync(int timeoutMs = 5000)
+        public static async System.Threading.Tasks.Task EnsureGameBarReadyAsync(int timeoutMs = 5000)
         {
+            // 休眠回復後 GameBar.exe 可能以殭屍狀態殘留，阻止 ms-gamebar:// 正常重啟。
+            // 先終止殘留行程，再重新啟動以確保 GameBarFTServer 一併帶起。
+            if (Process.GetProcessesByName("GameBar").Length > 0)
+            {
+                DebugLogger.Log("[FseService] Killing zombie GameBar.exe before restart");
+                KillGameBar();
+                await System.Threading.Tasks.Task.Delay(500);
+            }
+
             _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-gamebar://"));
 
             int elapsed = 0;
