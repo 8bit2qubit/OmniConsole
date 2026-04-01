@@ -237,7 +237,6 @@ namespace OmniConsole.Services
             {
                 DebugLogger.Log("[FseService] Killing zombie GameBar.exe before restart");
                 KillGameBar();
-                await System.Threading.Tasks.Task.Delay(500);
             }
 
             _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-gamebar://"));
@@ -255,7 +254,7 @@ namespace OmniConsole.Services
                 }
             }
 
-            DebugLogger.Log($"[FseService] EnsureGameBarRunning timed out after {timeoutMs}ms");
+            DebugLogger.Log($"[FseService] EnsureGameBarReady timed out after {timeoutMs}ms");
         }
 
         /// <summary>

@@ -324,6 +324,7 @@ namespace OmniConsole.Pages
             // 1. 強制重啟 Game Bar 並輪詢等待 GameBarFTServer 就緒
             //    （內部會先終止 GameBar.exe 再透過 ms-gamebar:// 重啟）
             await FseService.EnsureGameBarReadyAsync();
+            await Task.Delay(500);
 
             // 2. 再次殺掉以繞過 FSE 進入對話方塊（「殺死後重發」機制），稍待讓系統狀態穩定
             FseService.KillGameBar();
