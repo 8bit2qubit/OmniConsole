@@ -577,11 +577,24 @@ namespace OmniConsole.Services
             {
                 var focusedElement = FocusManager.GetFocusedElement(_searchRoot.XamlRoot);
 
-                // 只要有任何 Control 持有焦點（含 Popup/下拉選單內的項目），便不干預
-                if (focusedElement is Control) return;
+                bool isDescendant = focusedElement is DependencyObject d && IsDescendantOf(_searchRoot, d);
+                DebugLogger.Log($"[GamepadNav] EnsureFocus: focusedElement={focusedElement?.GetType().Name ?? "null"}, isDescendant={isDescendant}, activeComboBox={_activeComboBox != null}");
+
+                // ComboBox 下拉選單開啟中 → 不干預（ComboBoxItem 在 Popup 獨立視覺樹，不在 _searchRoot 內）
+                if (_activeComboBox != null)
+                    return;
+
+                // 焦點在 _searchRoot 內 → 不干預
+                if (isDescendant)
+                    return;
+
+                // 孤立的 GridViewItem（ItemsSource 重設後殘留）→ 不干預，由頁面自行恢復
+                if (focusedElement is GridViewItem)
+                    return;
 
                 // 焦點遺失或落在非互動元件 → 還原至 SearchRoot 第一個可聚焦項目
                 var firstElement = FocusManager.FindFirstFocusableElement(_searchRoot);
+                DebugLogger.Log($"[GamepadNav] EnsureFocus: restoring to {firstElement?.GetType().Name ?? "null"}");
                 if (firstElement is Control firstControl)
                     firstControl.Focus(FocusState.Keyboard);
             }
