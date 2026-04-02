@@ -35,6 +35,20 @@ namespace OmniConsole.Services
             && UriRegex.IsMatch(uri)
             && uri.IndexOfAny(DangerousChars) < 0;
 
+        /// <summary>OmniConsole 自身登錄的 protocol scheme。</summary>
+        internal const string OwnProtocolScheme = "omniconsole";
+
+        /// <summary>
+        /// 檢查 URI 的 scheme 是否為 OmniConsole 自身登錄的 protocol。
+        /// 啟動自身會導致 FSE 循環重啟。
+        /// </summary>
+        public static bool IsSelfProtocolUri(string uri)
+        {
+            int schemeEnd = uri.IndexOf("://", StringComparison.Ordinal);
+            if (schemeEnd <= 0) return false;
+            return uri[..schemeEnd].Equals(OwnProtocolScheme, StringComparison.OrdinalIgnoreCase);
+        }
+
         // ── 執行檔路徑 ────────────────────────────────────────────────────────
 
         /// <summary>

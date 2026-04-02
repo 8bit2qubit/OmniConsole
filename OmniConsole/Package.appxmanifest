@@ -45,7 +45,7 @@
 				<uap:SplashScreen Image="Assets\SplashScreen.png" />
 			</uap:VisualElements>
 
-			<!-- 宣告此 App 為 gamingApp 延伸模組，並同時註冊 omniconsole 自訂通訊協定以支援外部連結喚醒-->
+			<!-- 宣告此 App 為 gamingApp 延伸模組，並同時登錄 omniconsole 自訂通訊協定以支援外部連結喚醒-->
 			<Extensions>
 				<uap3:Extension Category="windows.appExtension">
 					<uap3:AppExtension Name="windows.gamingApp" Id="App" DisplayName="ms-resource:AppDisplayName" Description="ms-resource:AppExtensionDescription" PublicFolder="Public"/>

@@ -131,7 +131,7 @@ namespace OmniConsole
                 // 如果是 Settings 入口啟動 (AUMID)，則手動發送 Protocol 訊號以利統一處理
                 if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
                 {
-                    var uri = new Uri("omniconsole://show-settings");
+                    var uri = new Uri($"{PlatformFieldValidator.OwnProtocolScheme}://show-settings");
                     Windows.System.Launcher.LaunchUriAsync(uri).AsTask().GetAwaiter().GetResult();
                 }
                 else

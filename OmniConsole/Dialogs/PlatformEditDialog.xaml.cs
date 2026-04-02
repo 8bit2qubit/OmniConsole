@@ -403,8 +403,15 @@ namespace OmniConsole.Dialogs
                     }
                     else if (!isExe)
                     {
+                        // 阻止自身 protocol URI（啟動自己會導致 FSE 循環重啟）
+                        if (PlatformFieldValidator.IsSelfProtocolUri(TargetBox.Text.Trim()))
+                        {
+                            TargetError.Text = _resourceLoader.GetString("PlatformDialog_ValidationUriSelf");
+                            TargetError.Visibility = Visibility.Visible;
+                            hasError = true;
+                        }
                         // URI 格式驗證通過後，檢查系統是否有對應的 URI handler
-                        if (!await ProcessLauncherService.IsUriSupportedAsync(TargetBox.Text.Trim()))
+                        else if (!await ProcessLauncherService.IsUriSupportedAsync(TargetBox.Text.Trim()))
                         {
                             TargetError.Text = _resourceLoader.GetString("PlatformDialog_ValidationUriNotSupported");
                             TargetError.Visibility = Visibility.Visible;

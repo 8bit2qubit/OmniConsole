@@ -339,6 +339,9 @@
   <data name="PlatformDialog_ValidationUriNotSupported" xml:space="preserve">
     <value>No application is registered to handle this URI scheme.</value>
   </data>
+  <data name="PlatformDialog_ValidationUriSelf" xml:space="preserve">
+    <value>Cannot add OmniConsole itself as a platform; this would cause a restart loop.</value>
+  </data>
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>Invalid file path. Example: C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
@@ -465,6 +468,9 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   </data>
   <data name="Import_Error_UriNotSupported" xml:space="preserve">
     <value>No application is registered to handle this URI scheme.</value>
+  </data>
+  <data name="Import_Error_UriSelf" xml:space="preserve">
+    <value>Cannot import OmniConsole itself as a platform.</value>
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>Executable path must end with .exe.</value>

@@ -128,6 +128,8 @@ namespace OmniConsole.Services
                             return (null, "Import_Error_MissingTarget");
                         if (!PlatformFieldValidator.IsValidUri(t))
                             return (null, "Import_Error_InvalidUri");
+                        if (PlatformFieldValidator.IsSelfProtocolUri(t))
+                            return (null, "Import_Error_UriSelf");
                         if (!await ProcessLauncherService.IsUriSupportedAsync(t))
                             return (null, "Import_Error_UriNotSupported");
                         launchTarget = t;
