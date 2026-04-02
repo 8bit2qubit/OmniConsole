@@ -274,7 +274,7 @@ namespace OmniConsole.Services
         /// 查詢系統是否有已登錄的 URI handler 可處理指定 URI scheme，
         /// 不實際啟動應用程式。
         /// </summary>
-        private static async Task<bool> IsUriSupportedAsync(string uriString)
+        public static async Task<bool> IsUriSupportedAsync(string uriString)
         {
             try
             {

@@ -72,28 +72,32 @@ namespace OmniConsole.Dialogs
         }
 
         /// <summary>
-        /// 「匯入」按鈕點選時呼叫 <see cref="UserPlatformShareService.Import"/> 驗證 JSON。
+        /// 「匯入」按鈕點選時呼叫 <see cref="UserPlatformShareService.ImportAsync"/> 驗證 JSON。
         /// 驗證失敗時顯示錯誤訊息並取消關閉；通過後存入 <see cref="ResultEntry"/>。
         /// </summary>
-        private void ImportPlatformDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void ImportPlatformDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var deferral = args.GetDeferral();
-
-            var (entry, errorKey) = UserPlatformShareService.Import(JsonInputBox.Text);
-
-            if (errorKey is not null)
+            try
             {
-                ErrorText.Text = _resourceLoader.GetString(errorKey);
-                ErrorText.Visibility = Visibility.Visible;
-                args.Cancel = true;
-            }
-            else
-            {
-                ResultEntry = entry;
-                ErrorText.Visibility = Visibility.Collapsed;
-            }
+                var (entry, errorKey) = await UserPlatformShareService.ImportAsync(JsonInputBox.Text);
 
-            deferral.Complete();
+                if (errorKey is not null)
+                {
+                    ErrorText.Text = _resourceLoader.GetString(errorKey);
+                    ErrorText.Visibility = Visibility.Visible;
+                    args.Cancel = true;
+                }
+                else
+                {
+                    ResultEntry = entry;
+                    ErrorText.Visibility = Visibility.Collapsed;
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
         }
     }
 }

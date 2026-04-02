@@ -89,7 +89,7 @@ namespace OmniConsole.Services
         /// <returns>
         /// 成功：(Entry, null)；失敗：(null, errorKey)，errorKey 為 Resources.resw 資源鍵。
         /// </returns>
-        public static (UserPlatformEntry? Entry, string? ErrorKey) Import(string json)
+        public static async System.Threading.Tasks.Task<(UserPlatformEntry? Entry, string? ErrorKey)> ImportAsync(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
                 return (null, "Import_Error_EmptyJson");
@@ -128,6 +128,8 @@ namespace OmniConsole.Services
                             return (null, "Import_Error_MissingTarget");
                         if (!PlatformFieldValidator.IsValidUri(t))
                             return (null, "Import_Error_InvalidUri");
+                        if (!await ProcessLauncherService.IsUriSupportedAsync(t))
+                            return (null, "Import_Error_UriNotSupported");
                         launchTarget = t;
                         break;
                     }

@@ -336,6 +336,9 @@
   <data name="PlatformDialog_ValidationUriInvalid" xml:space="preserve">
     <value>URI 格式無效。例如 steam://open/bigpicture</value>
   </data>
+  <data name="PlatformDialog_ValidationUriNotSupported" xml:space="preserve">
+    <value>系統沒有已登錄的應用程式可處理此 URI 配置。</value>
+  </data>
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>路徑格式無效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
@@ -459,6 +462,9 @@
   </data>
   <data name="Import_Error_InvalidUri" xml:space="preserve">
     <value>Protocol URI 格式無效。</value>
+  </data>
+  <data name="Import_Error_UriNotSupported" xml:space="preserve">
+    <value>系統沒有已登錄的應用程式可處理此 URI 配置。</value>
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>執行檔路徑須以 .exe 結尾。</value>

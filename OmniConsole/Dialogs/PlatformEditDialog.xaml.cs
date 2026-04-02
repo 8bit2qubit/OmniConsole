@@ -352,67 +352,95 @@ namespace OmniConsole.Dialogs
         /// 儲存前驗證所有欄位。不合法時設 args.Cancel = true 阻止對話方塊關閉並顯示紅字錯誤；
         /// 驗證通過時建立 <see cref="ResultEntry"/> 供 MainWindow 在 ShowAsync 返回後儲存。
         /// </summary>
-        private void PlatformEditDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void PlatformEditDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            bool hasError = false;
-
-            string? nameErr = ValidateName(NameBox.Text.Trim());
-            if (nameErr != null) { NameError.Text = nameErr; NameError.Visibility = Visibility.Visible; hasError = true; }
-            else NameError.Visibility = Visibility.Collapsed;
-
-            bool isExe = LaunchTypeCombo.SelectedIndex == 1;
-            bool isPackagedAppMode = LaunchTypeCombo.SelectedIndex == 2;
-
-            if (isPackagedAppMode)
+            var deferral = args.GetDeferral();
+            try
             {
-                if (string.IsNullOrWhiteSpace(_selectedPackageFamilyName))
+                bool hasError = false;
+
+                string? nameErr = ValidateName(NameBox.Text.Trim());
+                if (nameErr != null) { NameError.Text = nameErr; NameError.Visibility = Visibility.Visible; hasError = true; }
+                else NameError.Visibility = Visibility.Collapsed;
+
+                bool isExe = LaunchTypeCombo.SelectedIndex == 1;
+                bool isPackagedAppMode = LaunchTypeCombo.SelectedIndex == 2;
+
+                if (isPackagedAppMode)
                 {
-                    PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppEmpty");
-                    PackagedAppError.Visibility = Visibility.Visible;
-                    hasError = true;
+                    if (string.IsNullOrWhiteSpace(_selectedPackageFamilyName))
+                    {
+                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppEmpty");
+                        PackagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else if (_selectedPackageFamilyName == _ownFamilyName)
+                    {
+                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppSelf");
+                        PackagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else if (_selectedPackageFamilyName == PlatformFieldValidator.GameBarFamilyName)
+                    {
+                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppGameBar");
+                        PackagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else if (!PlatformFieldValidator.IsAllowedPackageFamilyName(_selectedPackageFamilyName, _ownFamilyName))
+                    {
+                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppNotAllowed");
+                        PackagedAppError.Visibility = Visibility.Visible;
+                        hasError = true;
+                    }
+                    else PackagedAppError.Visibility = Visibility.Collapsed;
                 }
-                else if (_selectedPackageFamilyName == _ownFamilyName)
+                else
                 {
-                    PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppSelf");
-                    PackagedAppError.Visibility = Visibility.Visible;
-                    hasError = true;
+                    string? targetErr = isExe ? ValidatePath(TargetBox.Text.Trim()) : ValidateUri(TargetBox.Text.Trim());
+                    if (targetErr != null)
+                    {
+                        TargetError.Text = targetErr; TargetError.Visibility = Visibility.Visible; hasError = true;
+                    }
+                    else if (!isExe)
+                    {
+                        // URI 格式驗證通過後，檢查系統是否有對應的 URI handler
+                        if (!await ProcessLauncherService.IsUriSupportedAsync(TargetBox.Text.Trim()))
+                        {
+                            TargetError.Text = _resourceLoader.GetString("PlatformDialog_ValidationUriNotSupported");
+                            TargetError.Visibility = Visibility.Visible;
+                            hasError = true;
+                        }
+                        else
+                        {
+                            TargetError.Visibility = Visibility.Collapsed;
+                        }
+                    }
+                    else
+                    {
+                        TargetError.Visibility = Visibility.Collapsed;
+                    }
+
+                    if (isExe)
+                    {
+                        string? argsErr = ValidateArgs(ArgsBox.Text.Trim());
+                        if (argsErr != null) { ArgsError.Text = argsErr; ArgsError.Visibility = Visibility.Visible; hasError = true; }
+                        else ArgsError.Visibility = Visibility.Collapsed;
+                    }
                 }
-                else if (_selectedPackageFamilyName == PlatformFieldValidator.GameBarFamilyName)
+
+                if (hasError)
                 {
-                    PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppGameBar");
-                    PackagedAppError.Visibility = Visibility.Visible;
-                    hasError = true;
+                    args.Cancel = true;
+                    return;
                 }
-                else if (!PlatformFieldValidator.IsAllowedPackageFamilyName(_selectedPackageFamilyName, _ownFamilyName))
-                {
-                    PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppNotAllowed");
-                    PackagedAppError.Visibility = Visibility.Visible;
-                    hasError = true;
-                }
-                else PackagedAppError.Visibility = Visibility.Collapsed;
+
+                // 驗證通過：建立結果項目供 MainWindow 儲存
+                ResultEntry = BuildResultEntry();
             }
-            else
+            finally
             {
-                string? targetErr = isExe ? ValidatePath(TargetBox.Text.Trim()) : ValidateUri(TargetBox.Text.Trim());
-                if (targetErr != null) { TargetError.Text = targetErr; TargetError.Visibility = Visibility.Visible; hasError = true; }
-                else TargetError.Visibility = Visibility.Collapsed;
-
-                if (isExe)
-                {
-                    string? argsErr = ValidateArgs(ArgsBox.Text.Trim());
-                    if (argsErr != null) { ArgsError.Text = argsErr; ArgsError.Visibility = Visibility.Visible; hasError = true; }
-                    else ArgsError.Visibility = Visibility.Collapsed;
-                }
+                deferral.Complete();
             }
-
-            if (hasError)
-            {
-                args.Cancel = true;
-                return;
-            }
-
-            // 驗證通過：建立結果項目供 MainWindow 儲存
-            ResultEntry = BuildResultEntry();
         }
 
         /// <summary>
