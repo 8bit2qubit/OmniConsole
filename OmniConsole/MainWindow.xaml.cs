@@ -136,6 +136,7 @@ namespace OmniConsole
         private void LaunchPlatformDirectly()
         {
             SettingsPageControl.StopGamepadPolling();
+            _isShowingSettings = false;
             SettingsPageControl.Visibility = Visibility.Collapsed;
             LaunchPageControl.Visibility = Visibility.Visible;
             LaunchPageControl.Reactivate();
@@ -150,6 +151,9 @@ namespace OmniConsole
         /// </summary>
         private async void RequestExitApplication()
         {
+            bool fseActive = FseService.IsActive();
+            DebugLogger.Log($"[MainWindow] RequestExitApplication: _isShowingSettings={_isShowingSettings}, FseService.IsActive()={fseActive}");
+
             // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面 (如 FSE) 即可
             if (_isShowingSettings)
             {
