@@ -44,6 +44,18 @@ project.assets.json
 publish/
 *.appxrecipe
 
+## C++ build output (PhantomKey)
+version.h
+x64/
+*.ilk
+*.pdb
+*.obj
+*.res
+*.idb
+*.tlog
+*.recipe
+*.lastbuildstate
+
 ## Testing
 TestResults/
 

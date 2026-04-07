@@ -33,6 +33,23 @@
 		<Content Include="Assets\Platforms\*.png" />
 	</ItemGroup>
 
+	<!-- PhantomKey：建置 C++ 專案並封裝進 MSIX -->
+	<!-- OmniConsole 建置時自動觸發 PhantomKey 建置，跟隨 OmniConsole 的 Configuration -->
+	<!-- Debug 版會輸出 PhantomKeyTrace.log，Release 版日誌完全移除 -->
+	<Target Name="BuildPhantomKey" BeforeTargets="BeforeBuild">
+		<MSBuild Projects="..\OmniConsole.PhantomKey\OmniConsole.PhantomKey.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
+	</Target>
+	<ItemGroup>
+		<Content Include="..\OmniConsole.PhantomKey\x64\$(Configuration)\Steam.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>Steam.exe</Link>
+		</Content>
+	</ItemGroup>
+	<Target Name="SignOmniConsoleExe" AfterTargets="Build"
+	        Condition="'$(OMNI_PFX_PATH)' != '' AND Exists('$(OMNI_PFX_PATH)')">
+		<Exec Command="&quot;C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe&quot; sign /fd SHA256 /f &quot;$(OMNI_PFX_PATH)&quot; /p &quot;$(OMNI_PFX_PASSWORD)&quot; /t http://timestamp.digicert.com &quot;$(OutputPath)OmniConsole.exe&quot;" />
+	</Target>
+
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
 		<Content Include="Assets\AppIcon.ico" />

@@ -228,6 +228,18 @@
   <data name="AdvancedDescription.Text" xml:space="preserve">
     <value>Fine-tune system behavior and integration options.</value>
   </data>
+  <data name="AdvancedSection_GamepadInput.Text" xml:space="preserve">
+    <value>Gamepad Input</value>
+  </data>
+  <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
+    <value>Open Steam Menu with &#x29C9;</value>
+  </data>
+  <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
+    <value>Allow opening the overlay with &#x29C9; in Steam Big Picture mode.</value>
+  </data>
+  <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
+    <value>Short press &#x29C9; to open Steam Menu, long press &#x29C9; to open Quick Access Menu.</value>
+  </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
   </data>

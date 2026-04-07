@@ -128,6 +128,12 @@ namespace OmniConsole.Pages
 
             UpdateSettingsDescription();
 
+            // 還原 PhantomKey 手把輸入開關狀態，FSE 環境下若開關啟用且尚未執行則自動啟動
+            // （更新後重啟進設定頁時 PhantomKey 已被殺掉，需在此恢復）
+            UsePhantomKeySwitch.IsOn = SettingsService.GetUsePhantomKey();
+            if (FseService.IsActive() && UsePhantomKeySwitch.IsOn)
+                PhantomKeyService.Start();
+
             // 還原 Game Bar 媒體櫃的開關狀態
             UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
 
@@ -344,6 +350,17 @@ namespace OmniConsole.Pages
             ResetGameBarProgressRing.IsActive = false;
             ResetGameBarProgressRing.Visibility = Visibility.Collapsed;
             ResetGameBarButton.IsEnabled = true;
+        }
+
+        /// <summary>
+        /// PhantomKey 手把輸入開關切換時立即儲存。
+        /// 關閉時同時終止正在執行的 PhantomKey 服務。
+        /// </summary>
+        private void UsePhantomKeySwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetUsePhantomKey(UsePhantomKeySwitch.IsOn);
+            if (!UsePhantomKeySwitch.IsOn)
+                PhantomKeyService.Kill();
         }
 
         /// <summary>
@@ -760,6 +777,11 @@ namespace OmniConsole.Pages
                     ImportPlatformButton_Click(this, new RoutedEventArgs());
                     break;
 
+                // PhantomKey 手把輸入開關
+                case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySwitch):
+                    UsePhantomKeySwitch.IsOn = !sw.IsOn;
+                    break;
+
                 // Game Bar 媒體櫃開關：On = 媒體櫃按鈕開啟 OmniConsole 設定；Off = 開啟預設平台
                 case ToggleSwitch sw when ReferenceEquals(sw, UseGameBarLibrarySwitch):
                     UseGameBarLibrarySwitch.IsOn = !sw.IsOn;
@@ -1001,6 +1023,9 @@ namespace OmniConsole.Pages
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Installing");
                 DownloadProgressBar.Value = 100;
                 DownloadProgressText.Text = "100%";
+
+                // 終止 PhantomKey，避免 MSIX 更新時因 .exe 佔用而拖慢進度
+                PhantomKeyService.Kill();
 
                 // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
                 RegisterApplicationRestart("", 0);

@@ -228,6 +228,18 @@
   <data name="AdvancedDescription.Text" xml:space="preserve">
     <value>微調系統行為與整合選項。</value>
   </data>
+  <data name="AdvancedSection_GamepadInput.Text" xml:space="preserve">
+    <value>手把輸入</value>
+  </data>
+  <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
+    <value>&#x29C9; 鍵開啟 Steam 選單</value>
+  </data>
+  <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
+    <value>允許在 Steam Big Picture 模式中以 &#x29C9; 鍵開啟內嵌介面。</value>
+  </data>
+  <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
+    <value>短按 &#x29C9; 開啟 Steam 選單，長按 &#x29C9; 開啟快速存取選單。</value>
+  </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
   </data>

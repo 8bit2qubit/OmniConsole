@@ -473,6 +473,40 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- 手把輸入分類標題 -->
+                        <TextBlock x:Uid="AdvancedSection_GamepadInput" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="2,0,0,0"/>
+
+                        <!-- 手把輸入群組卡片 -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="400">
+                            <Grid Padding="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <FontIcon Glyph="&#xE7FC;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBlock x:Uid="PhantomKeySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    <TextBlock x:Uid="PhantomKeySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <ToggleSwitch x:Name="UsePhantomKeySwitch"
+                                              Toggled="UsePhantomKeySwitch_Toggled"
+                                              FlowDirection="RightToLeft"
+                                              Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                            </Grid>
+                        </Border>
+
                         <!-- Game Bar 分類標題 -->
                         <TextBlock x:Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"

@@ -228,6 +228,18 @@
   <data name="AdvancedDescription.Text" xml:space="preserve">
     <value>微调系统行为与集成选项。</value>
   </data>
+  <data name="AdvancedSection_GamepadInput.Text" xml:space="preserve">
+    <value>手柄输入</value>
+  </data>
+  <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
+    <value>&#x29C9; 键打开 Steam 菜单</value>
+  </data>
+  <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
+    <value>允许在 Steam Big Picture 模式中以 &#x29C9; 键打开内嵌界面。</value>
+  </data>
+  <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
+    <value>短按 &#x29C9; 打开 Steam 菜单，长按 &#x29C9; 打开快速访问菜单。</value>
+  </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
   </data>

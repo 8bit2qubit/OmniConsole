@@ -249,5 +249,27 @@ namespace OmniConsole.Services
         {
             ApplicationData.Current.LocalSettings.Values["CachedDownloadUrl"] = "";
         }
+
+        /// <summary>
+        /// 取得是否啟用 PhantomKey 手把輸入服務（⧉ 鍵開啟平台選單）。
+        /// 預設為 true。
+        /// </summary>
+        public static bool GetUsePhantomKey()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UsePhantomKey", out object? value) && value is bool enabled)
+            {
+                return enabled;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用 PhantomKey 手把輸入服務。
+        /// </summary>
+        public static void SetUsePhantomKey(bool enabled)
+        {
+            ApplicationData.Current.LocalSettings.Values["UsePhantomKey"] = enabled;
+        }
     }
 }
