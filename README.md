@@ -13,7 +13,7 @@
 <p align="center">
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat-square&color=blue" alt="Latest Release"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total" alt="Total Downloads"></a>
-<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat-square" alt="Tech"></a>
+<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat-square" alt="Tech"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/github/license/8bit2qubit/OmniConsole" alt="License"></a>
 </p>
 
@@ -49,6 +49,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole settings by default, or passes through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
+- **Gamepad Input Service** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the Steam Menu, long press for the Quick Access Menu.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 - **In-App Updates** – Automatically checks for the latest GitHub releases, with built-in downloading and installation available directly from the Advanced settings page.
@@ -95,7 +96,7 @@ OmniConsole will present the Settings UI on **first launch** or **after app upda
 </p>
 
 1.  Go to **Settings → Gaming → Full Screen Experience**.
-2.  Set "Choose Home app" to **OmniConsole**.
+2.  Set "Choose home app" to **OmniConsole**.
 3.  Enable **"Enter full screen experience on startup"** (**Highly Recommended**).
 
 ### 4. Done!
@@ -113,7 +114,7 @@ Your gaming platform now launches via any of these entry points:
 > ⚠️ **Change the FSE Home App setting _before_ uninstalling OmniConsole.** If OmniConsole is removed while it is still set as the FSE Home App, Windows **Task View will stop working**. This is a bug in Windows itself.
 
 1. Go to **Settings → Gaming → Full Screen Experience**.
-2. Set "Choose Home app" to **Xbox** or **None**.
+2. Set "Choose home app" to **Xbox** or **None**.
 3. Uninstall **OmniConsole** from **Settings → Apps → Installed apps**, or right-click **OmniConsole** in the Start Menu and select **Uninstall**.
 
 ---
@@ -130,7 +131,7 @@ If you experience an issue where the Windows Full Screen Experience (FSE) entry 
 
 ## 💻 Tech Stack
 
-- **Primary Stack**: C# & .NET 8
+- **Primary Stack**: C# & .NET 8, C++
 - **UI Framework**: WinUI 3
 - **Packaging**: MSIX
 
@@ -147,7 +148,7 @@ If you experience an issue where the Windows Full Screen Experience (FSE) entry 
 
 2.  **Open in Visual Studio**
 
-    Open `OmniConsole.sln` with Visual Studio 2022 (17.0+). Ensure the **WinUI application development** workload is installed.
+    Open `OmniConsole.sln` with Visual Studio 2026 (18.0+). Ensure the **WinUI application development** workload is installed.
 
 3.  **Run for Development**
 
