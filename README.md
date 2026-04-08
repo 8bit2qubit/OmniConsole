@@ -49,7 +49,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole settings by default, or passes through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
-- **Gamepad Input Service** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the Steam Menu, long press for the Quick Access Menu.
+- **Gamepad Input Service** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 - **In-App Updates** – Automatically checks for the latest GitHub releases, with built-in downloading and installation available directly from the Advanced settings page.
