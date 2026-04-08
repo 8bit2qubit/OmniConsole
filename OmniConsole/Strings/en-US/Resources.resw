@@ -211,7 +211,7 @@
     <value>Terminate Game Bar &amp; Enter FSE</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>Terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.</value>
+    <value>Terminate Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.</value>
   </data>
   <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
     <value>Platform</value>
@@ -235,10 +235,19 @@
     <value>Open Steam Menu with &#x29C9;</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>Allow opening the overlay with &#x29C9; in Steam Big Picture mode.</value>
+    <value>Use &#x29C9; to open the Steam overlay in Steam Big Picture mode.</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>Short press &#x29C9; to open Steam Menu, long press &#x29C9; to open Quick Access Menu.</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
+    <value>Long Press &#x2630; to Open Steam In-Game Overlay</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Description.Text" xml:space="preserve">
+    <value>Requires Steam In-Game Overlay to be enabled.</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Note.Text" xml:space="preserve">
+    <value>Only available when the default platform is set to Steam Big Picture.</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
@@ -247,13 +256,13 @@
     <value>Library Button Opens Settings</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>Action to perform when pressing the "Library" button in Game Bar.</value>
+    <value>Choose the action for the "Library" button in Game Bar.</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>Direct to Platform</value>
   </data>
   <data name="PassthroughSetting_Description.Text" xml:space="preserve">
-    <value>"Home" and "Library" buttons navigate directly to the default platform instead of OmniConsole.</value>
+    <value>Navigate "Home" and "Library" directly to the default platform instead of OmniConsole.</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
     <value>Currently only supports Xbox App. "Library" button setting above takes priority.</value>

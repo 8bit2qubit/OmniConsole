@@ -232,13 +232,22 @@
     <value>手把輸入</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>&#x29C9; 鍵開啟 Steam 選單</value>
+    <value>按 &#x29C9; 開啟 Steam 選單</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>允許在 Steam Big Picture 模式中以 &#x29C9; 鍵開啟內嵌介面。</value>
+    <value>在 Steam Big Picture 模式中以 &#x29C9; 開啟 Steam 內嵌介面。</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>短按 &#x29C9; 開啟 Steam 選單，長按 &#x29C9; 開啟快速存取選單。</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
+    <value>長按 &#x2630; 開啟 Steam 遊戲內嵌介面</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Description.Text" xml:space="preserve">
+    <value>需要在 Steam 中啟用遊戲內嵌介面。</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Note.Text" xml:space="preserve">
+    <value>僅在預設平台設為 Steam Big Picture 時生效。</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
@@ -247,7 +256,7 @@
     <value>媒體櫃按鈕開啟設定</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>按下 Game Bar 中的「媒體櫃」按鈕時所執行的動作。</value>
+    <value>選擇 Game Bar 中「媒體櫃」按鈕的動作。</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>直接導向平台</value>

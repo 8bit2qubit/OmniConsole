@@ -11,6 +11,9 @@ namespace OmniConsole
     /// </summary>
     public partial class App : Application
     {
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         private static Window? _window;
         private static DispatcherQueue? _dispatcherQueue;
         private readonly bool _startWithSettings;
@@ -26,6 +29,10 @@ namespace OmniConsole
             // 註冊 FSE 狀態變化通知（取代輪詢），記錄啟動時的 FSE 狀態供診斷
             FseService.StartListening();
             DebugLogger.Log($"[App] IsSupported={FseService.IsSupported()}, CanActivate={FseService.CanActivate()}, IsActive={FseService.IsActive()}");
+
+            // 首次安裝或版本更新時，同步 OmniConsole.ini（確保 INI 存在且包含所有欄位）
+            if (SettingsService.IsFirstRunOrUpdate())
+                SettingsService.SyncIni();
 
             // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
             if (!_startWithSettings && !FseService.IsActive())
@@ -127,9 +134,6 @@ namespace OmniConsole
         /// <summary>
         /// 從 Game Bar 重導時呼叫，直接啟動平台專屬 URI (Passthrough) 後退出應用程式。
         /// </summary>
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
         public static void PassthroughFromRedirect(string uri)
         {
             _dispatcherQueue?.TryEnqueue(() =>

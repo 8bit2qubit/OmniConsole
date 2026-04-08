@@ -1,4 +1,6 @@
 using OmniConsole.Models;
+using System.IO;
+using System.Runtime.InteropServices;
 using Windows.Storage;
 
 namespace OmniConsole.Services
@@ -7,11 +9,43 @@ namespace OmniConsole.Services
     /// 管理應用程式設定的持久化讀寫。
     /// 使用 ApplicationData.Current.LocalSettings 儲存於本機。
     /// 預設平台以穩定的字串 Id 儲存，而非列舉整數，確保平台清單調整後設定仍可正確讀取。
+    /// 同時維護 OmniConsole.ini 供外部程式（PhantomKey 等）讀取共用設定。
     /// </summary>
     public static class SettingsService
     {
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool WritePrivateProfileString(
+            string lpAppName, string lpKeyName, string lpString, string lpFileName);
+
+        private static readonly string IniDir = Path.Combine(
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "OmniConsole");
+
+        private static readonly string IniPath = Path.Combine(IniDir, "OmniConsole.ini");
+
+        /// <summary>
+        /// 將設定寫入 OmniConsole.ini，供外部程式（PhantomKey 等）讀取。
+        /// </summary>
+        private static void WriteIni(string section, string key, string value)
+        {
+            Directory.CreateDirectory(IniDir);
+            WritePrivateProfileString(section, key, value, IniPath);
+        }
+
         private const string DefaultPlatformKey = "DefaultPlatform";
         private const string LastLaunchedVersionKey = "LastLaunchedVersion";
+
+        /// <summary>
+        /// 將 LocalSettings 中的共用設定同步至 OmniConsole.ini，
+        /// 確保即使使用者從未手動切換設定，PhantomKey 仍能讀取正確的值。
+        /// 僅在首次安裝或版本更新時呼叫（由 IsFirstRunOrUpdate() 判斷）。
+        /// </summary>
+        public static void SyncIni()
+        {
+            var platform = GetDefaultPlatform();
+            WriteIni("General", "DefaultPlatform", platform.Id);
+            WriteIni("PhantomKey", "SteamInGameOverlayEnabled",
+                GetUsePhantomKeySteamInGameOverlay() ? "1" : "0");
+        }
 
         /// <summary>
         /// 取得目前應用程式的版本號字串。
@@ -80,7 +114,11 @@ namespace OmniConsole.Services
         /// </summary>
         public static void SetDefaultPlatform(PlatformDefinition platform)
         {
-            ApplicationData.Current.LocalSettings.Values[DefaultPlatformKey] = platform.Id;
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue(DefaultPlatformKey, out object? prev) && prev is string id && id == platform.Id)
+                return;
+            settings.Values[DefaultPlatformKey] = platform.Id;
+            WriteIni("General", "DefaultPlatform", platform.Id);
         }
         /// <summary>
         /// 取得是否啟用「Game Bar 媒體櫃按鈕進入設定介面」功能。
@@ -270,6 +308,32 @@ namespace OmniConsole.Services
         public static void SetUsePhantomKey(bool enabled)
         {
             ApplicationData.Current.LocalSettings.Values["UsePhantomKey"] = enabled;
+        }
+
+        /// <summary>
+        /// 取得是否啟用 Steam In-Game Overlay（長按 ☰ 送出 Overlay 快速鍵）。
+        /// 預設為 true。
+        /// </summary>
+        public static bool GetUsePhantomKeySteamInGameOverlay()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UsePhantomKeySteamInGameOverlay", out object? value) && value is bool enabled)
+            {
+                return enabled;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用 Steam In-Game Overlay，同步寫入 INI 供 PhantomKey 讀取。
+        /// </summary>
+        public static void SetUsePhantomKeySteamInGameOverlay(bool enabled)
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UsePhantomKeySteamInGameOverlay", out object? prev) && prev is bool val && val == enabled)
+                return;
+            settings.Values["UsePhantomKeySteamInGameOverlay"] = enabled;
+            WriteIni("PhantomKey", "SteamInGameOverlayEnabled", enabled ? "1" : "0");
         }
     }
 }

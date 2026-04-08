@@ -141,6 +141,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="PhantomKey.cpp" />
+    <ClCompile Include="ForegroundMonitor.cpp" />
+    <ClCompile Include="InputSender.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="VdfParser.cpp" />
+    <ClCompile Include="SteamConfig.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="ForegroundMonitor.h" />
+    <ClInclude Include="InputSender.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="VdfParser.h" />
+    <ClInclude Include="SteamConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources.rc" />

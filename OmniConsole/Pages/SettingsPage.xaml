@@ -485,26 +485,54 @@
                                 CornerRadius="8"
                                 HorizontalAlignment="Stretch"
                                 MinWidth="400">
-                            <Grid Padding="16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <!-- PhantomKey 手把輸入 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                <FontIcon Glyph="&#xE7FC;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <FontIcon Glyph="&#xEA5B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                    <TextBlock x:Uid="PhantomKeySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                    <TextBlock x:Uid="PhantomKeySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                                </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="PhantomKeySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="PhantomKeySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
 
-                                <ToggleSwitch x:Name="UsePhantomKeySwitch"
-                                              Toggled="UsePhantomKeySwitch_Toggled"
-                                              FlowDirection="RightToLeft"
-                                              Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
-                            </Grid>
+                                    <ToggleSwitch x:Name="UsePhantomKeySwitch"
+                                                  Toggled="UsePhantomKeySwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+
+                                <!-- 分隔線 -->
+                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                <!-- Steam In-Game Overlay -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xEA5B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="UsePhantomKeySteamInGameOverlaySwitch"
+                                                  Toggled="UsePhantomKeySteamInGameOverlaySwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+                            </StackPanel>
                         </Border>
 
                         <!-- Game Bar 分類標題 -->

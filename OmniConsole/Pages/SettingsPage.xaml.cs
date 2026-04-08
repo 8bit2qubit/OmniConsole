@@ -134,6 +134,10 @@ namespace OmniConsole.Pages
             if (FseService.IsActive() && UsePhantomKeySwitch.IsOn)
                 PhantomKeyService.Start();
 
+            // 還原 Steam In-Game Overlay 開關狀態，PhantomKey 未啟用時反灰
+            UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
+            UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
+
             // 還原 Game Bar 媒體櫃的開關狀態
             UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
 
@@ -354,13 +358,25 @@ namespace OmniConsole.Pages
 
         /// <summary>
         /// PhantomKey 手把輸入開關切換時立即儲存。
-        /// 關閉時同時終止正在執行的 PhantomKey 服務。
+        /// 開啟時若在 FSE 模式下立即啟動服務，關閉時終止服務。
+        /// 同時連動 Steam In-Game Overlay 開關的啟用狀態。
         /// </summary>
         private void UsePhantomKeySwitch_Toggled(object sender, RoutedEventArgs e)
         {
             SettingsService.SetUsePhantomKey(UsePhantomKeySwitch.IsOn);
-            if (!UsePhantomKeySwitch.IsOn)
+            UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
+            if (UsePhantomKeySwitch.IsOn && FseService.IsActive())
+                PhantomKeyService.Start();
+            else if (!UsePhantomKeySwitch.IsOn)
                 PhantomKeyService.Kill();
+        }
+
+        /// <summary>
+        /// Steam In-Game Overlay 開關切換時立即儲存（同步寫入 INI）。
+        /// </summary>
+        private void UsePhantomKeySteamInGameOverlaySwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetUsePhantomKeySteamInGameOverlay(UsePhantomKeySteamInGameOverlaySwitch.IsOn);
         }
 
         /// <summary>
@@ -780,6 +796,11 @@ namespace OmniConsole.Pages
                 // PhantomKey 手把輸入開關
                 case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySwitch):
                     UsePhantomKeySwitch.IsOn = !sw.IsOn;
+                    break;
+
+                // Steam In-Game Overlay 開關
+                case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySteamInGameOverlaySwitch):
+                    UsePhantomKeySteamInGameOverlaySwitch.IsOn = !sw.IsOn;
                     break;
 
                 // Game Bar 媒體櫃開關：On = 媒體櫃按鈕開啟 OmniConsole 設定；Off = 開啟預設平台

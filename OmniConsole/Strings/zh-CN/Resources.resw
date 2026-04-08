@@ -232,13 +232,22 @@
     <value>手柄输入</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>&#x29C9; 键打开 Steam 菜单</value>
+    <value>按 &#x29C9; 打开 Steam 菜单</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>允许在 Steam Big Picture 模式中以 &#x29C9; 键打开内嵌界面。</value>
+    <value>在 Steam Big Picture 模式中以 &#x29C9; 打开 Steam 叠加界面。</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>短按 &#x29C9; 打开 Steam 菜单，长按 &#x29C9; 打开快速访问菜单。</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
+    <value>长按 &#x2630; 打开 Steam 游戏叠加界面</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Description.Text" xml:space="preserve">
+    <value>需要在 Steam 中启用游戏叠加界面。</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_Note.Text" xml:space="preserve">
+    <value>仅在默认平台设为 Steam Big Picture 时生效。</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
@@ -247,7 +256,7 @@
     <value>库按钮打开设置</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>按下 Game Bar 中的“库”按钮时所执行的操作。</value>
+    <value>选择 Game Bar 中”库”按钮的操作。</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>直接导向平台</value>

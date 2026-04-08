@@ -45,10 +45,6 @@
 			<Link>Steam.exe</Link>
 		</Content>
 	</ItemGroup>
-	<Target Name="SignOmniConsoleExe" AfterTargets="Build"
-	        Condition="'$(OMNI_PFX_PATH)' != '' AND Exists('$(OMNI_PFX_PATH)')">
-		<Exec Command="&quot;C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe&quot; sign /fd SHA256 /f &quot;$(OMNI_PFX_PATH)&quot; /p &quot;$(OMNI_PFX_PASSWORD)&quot; /t http://timestamp.digicert.com &quot;$(OutputPath)OmniConsole.exe&quot;" />
-	</Target>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
