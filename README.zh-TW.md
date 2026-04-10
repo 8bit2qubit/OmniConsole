@@ -41,7 +41,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 
 - **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
 - **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
-- **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Launcher**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
+- **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Store**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
 - **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填卡片封面圖。啟動參數僅在使用執行檔路徑類型時可用。
 - **平台匯入與匯出** – 以 JSON 格式分享自訂平台配置。對卡片按右鍵或長按即可匯出；透過匯入按鈕可匯入他人分享的配置。
 - **支援手把操作的檔案選擇器** – 自製檔案選擇器，取代不支援手把的系統 FileOpenPicker。瀏覽執行檔與封面圖片可完全透過控制器操作。同時提供「瀏覽 (Windows)」按鈕，供偏好舊式體驗的使用者開啟系統檔案選擇器。
@@ -49,6 +49,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 - **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：「**首頁**」啟動遊戲平台、「**媒體櫃**」預設開啟 OmniConsole 設定，或直接導向 Xbox App 等平台。
 - **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
 - **手把支援** – 使用**方向鍵**或**左搖桿**導覽，**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯、**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（在 FSE 模式中）。
+- **手把滑鼠模式** – 在瀏覽器與支援的桌面應用程式（Edge、Chrome、Firefox、Opera、Brave、Epic Games Store）中，以手把作為滑鼠與鍵盤使用。提供兩種控制器版面配置：**OmniNav** 和 **Classic**，可調整游標速度。
 - **手把輸入服務** – 為 Steam Big Picture 模式提供手把 **⧉** 按鍵支援：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
@@ -63,6 +64,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 
 - **桌機、筆電、平板及未內建 FSE 的掌機**：請先使用 [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) 啟用 FSE 功能。
 - **原生 FSE 掌機裝置**（如 ROG Xbox Ally 系列）：已原生支援 FSE，可直接安裝 OmniConsole。
+- **需要 Xbox 手把**：Game Bar、FSE 以及所有手把功能皆需使用具備 Xbox 按鈕的 XInput 相容控制器。
 
 ---
 
@@ -83,7 +85,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 2.  從卡片網格中選擇您偏好的遊戲平台。支援使用**滑鼠**、**觸控**或 **Xbox 手把**（**方向鍵/左搖桿**四向移動，**A 鍵**確認）：
     - **Steam Big Picture**
     - **Xbox App**
-    - **Epic Games Launcher**
+    - **Epic Games Store**
     - **Armoury Crate SE**
     - **Playnite Fullscreen**
 
@@ -95,7 +97,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
   <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="221">
 </p>
 
-1.  前往**設定 → 遊戲 → 全螢幕體驗**。
+1.  前往**Windows 設定 → 遊戲 → 全螢幕體驗**。
 2.  將「選擇首頁應用程式」設為 **OmniConsole**。
 3.  啟用「**啟動時進入全螢幕體驗**」（**強烈建議**）。
 

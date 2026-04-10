@@ -56,7 +56,7 @@ body:
       options:
         - Steam Big Picture
         - Xbox App
-        - Epic Games Launcher
+        - Epic Games Store
         - Armoury Crate SE
         - Playnite Fullscreen
         - Custom Platform
@@ -67,6 +67,7 @@ body:
     attributes:
       label: "4. Which OmniConsole version are you using?"
       options:
+        - v1.7.0.0
         - v1.6.0.0
         - v1.5.0.0
         - v1.4.5.0

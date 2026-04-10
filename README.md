@@ -26,7 +26,7 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
-- **During use**: Press the **Xbox button**, then select **"Home"** in Game Bar to launch your gaming platform, or **"Library"** to open OmniConsole settings by default.
+- **During use**: Press the **Xbox button**, then select **"Home"** in Game Bar to launch your gaming platform, or **"Library"** to open OmniConsole Settings by default.
 
 ### How It Works
 
@@ -41,14 +41,15 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 
 - **Automatic Platform Launch** – Launches your configured gaming platform on activation.
 - **Automatic FSE Entry** – When launched outside of FSE mode (e.g., from the Start Menu), OmniConsole automatically triggers the FSE entry dialog.
-- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Launcher**, **Armoury Crate SE**, and **Playnite Fullscreen**.
+- **Multi-Platform Support** – Supports **Steam Big Picture**, **Xbox App**, **Epic Games Store**, **Armoury Crate SE**, and **Playnite Fullscreen**.
 - **Custom Platform Support (Experimental)** – Supports adding your own platforms via Protocol URI, executable path, or Packaged App (MSIX / APPX / Bundle), with a card cover image. Launch arguments are available when using the executable path type.
 - **Platform Import & Export** – Supports sharing custom platform configurations as JSON. Right-click or long-press a card to export; use the Import button to import shared configurations.
 - **Gamepad-Compatible File Picker** – A custom-built file picker that replaces the system FileOpenPicker (which does not support gamepad input). Browse for executables and cover images entirely with a controller. A "Browse (Windows)" button is also available for users who prefer the legacy system file picker.
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
-- **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole settings by default, or passes through directly to a platform like Xbox App.
+- **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole Settings by default, or passes through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
+- **Gamepad Mouse Mode** – Uses your gamepad as a mouse and keyboard in browsers and supported desktop apps (Edge, Chrome, Firefox, Opera, Brave, Epic Games Store). Two controller layouts available: **OmniNav** and **Classic**, with adjustable cursor speed.
 - **Gamepad Input Service** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -63,6 +64,7 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 - **Desktops, Laptops, Tablets & Handhelds without native FSE**: Use [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to enable FSE first.
 - **Native FSE Handheld Devices** (e.g., ROG Xbox Ally series): FSE is natively supported. Install OmniConsole directly.
+- **Xbox controller required**: Game Bar, FSE, and all gamepad features require an Xbox-compatible (XInput) controller with an Xbox button.
 
 ---
 
@@ -70,7 +72,7 @@ Before installing OmniConsole, you need to enable the Windows 11 Full Screen Exp
 
 ### 1. Install OmniConsole
 
-1.  **[Critical]** Go to **Settings → System → Advanced** and enable **Developer Mode**.
+1.  **[Critical]** Go to **Windows Settings → System → Advanced** and enable **Developer Mode**.
 2.  Download the latest `.msix` package and `.cer` certificate from the [**Releases Page**](https://github.com/8bit2qubit/OmniConsole/releases/latest).
 3.  **[Critical]** Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
 4.  Double-click the `.msix` file to install.
@@ -83,7 +85,7 @@ OmniConsole will present the Settings UI on **first launch** or **after app upda
 2.  Select your preferred gaming platform from the card grid using a **mouse**, **touch**, or **Xbox controller** (**D-Pad/Left Stick** to navigate in all four directions, **A** to confirm):
     - **Steam Big Picture**
     - **Xbox App**
-    - **Epic Games Launcher**
+    - **Epic Games Store**
     - **Armoury Crate SE**
     - **Playnite Fullscreen**
 
@@ -103,7 +105,7 @@ OmniConsole will present the Settings UI on **first launch** or **after app upda
 
 Your gaming platform now launches via any of these entry points:
 
-- **Game Bar**: Press the **Xbox button**, then select **"Home"** to launch your gaming platform, or **"Library"** to open OmniConsole settings by default.
+- **Game Bar**: Press the **Xbox button**, then select **"Home"** to launch your gaming platform, or **"Library"** to open OmniConsole Settings by default.
 - **Boot**: Enable **"Enter full screen experience on startup"** for automatic launch at boot.
 - **Start Menu**: Launch OmniConsole directly to automatically activate the Full Screen Experience (FSE).
 
