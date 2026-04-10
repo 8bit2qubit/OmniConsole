@@ -16,3 +16,6 @@ std::wstring GetForegroundProcessName();
 
 // 從規則表中查詢與前景程式匹配的規則
 const InputRule* FindRuleForForeground();
+
+// 判定前景程式是否為 Mouse Mode 目標（瀏覽器、Epic Games Launcher 等）
+bool IsMouseModeTarget(const std::wstring& processName);

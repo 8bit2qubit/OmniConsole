@@ -20,10 +20,11 @@ static std::wstring ReadFileAsWstring(const std::wstring& filePath) {
 
     std::string utf8(fileSize, '\0');
     DWORD bytesRead = 0;
-    ReadFile(hFile, utf8.data(), fileSize, &bytesRead, NULL);
+    if (!ReadFile(hFile, utf8.data(), fileSize, &bytesRead, NULL) || bytesRead == 0) {
+        CloseHandle(hFile);
+        return L"";
+    }
     CloseHandle(hFile);
-
-    if (bytesRead == 0) return L"";
 
     // 跳過 UTF-8 BOM
     const char* start = utf8.c_str();

@@ -52,3 +52,19 @@ const InputRule* FindRuleForForeground() {
     }
     return nullptr;
 }
+
+// ============================================================================
+// Mouse Mode 目標前景程式
+// ============================================================================
+
+static const wchar_t* g_mouseModeTargets[] = {
+    L"msedge", L"chrome", L"firefox", L"opera", L"brave",
+    L"EpicGamesLauncher"
+};
+
+bool IsMouseModeTarget(const std::wstring& processName) {
+    if (processName.empty()) return false;
+    for (auto t : g_mouseModeTargets)
+        if (_wcsicmp(processName.c_str(), t) == 0) return true;
+    return false;
+}

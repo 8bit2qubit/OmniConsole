@@ -197,7 +197,9 @@ namespace OmniConsole.Services
                  || pkgName.Contains("WebExperience", StringComparison.OrdinalIgnoreCase)
                  || pkgName.Contains("StartExperiences", StringComparison.OrdinalIgnoreCase)
                  || pkgName.Contains("ApplicationCompatibility", StringComparison.OrdinalIgnoreCase)
-                 || pkgName.Contains("AutoSuperResolution", StringComparison.OrdinalIgnoreCase))
+                 || pkgName.Contains("AutoSuperResolution", StringComparison.OrdinalIgnoreCase)
+                 || pkgName.Contains("Speech", StringComparison.OrdinalIgnoreCase)
+                 || pkgName.Contains("Voice", StringComparison.OrdinalIgnoreCase))
                     return false;
             }
 

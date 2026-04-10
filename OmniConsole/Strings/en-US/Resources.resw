@@ -166,7 +166,7 @@
     <value>Xbox App</value>
   </data>
   <data name="Platform_EpicGames" xml:space="preserve">
-    <value>Epic Games Launcher</value>
+    <value>Epic Games Store</value>
   </data>
   <data name="Platform_ArmouryCrateSE" xml:space="preserve">
     <value>Armoury Crate SE</value>
@@ -232,10 +232,10 @@
     <value>Gamepad Input</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>Open Steam Menu with &#x29C9;</value>
+    <value>Gamepad Input Service</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>Use &#x29C9; to open the Steam overlay in Steam Big Picture mode.</value>
+    <value>Press &#x29C9; to open the Steam Menu in Steam Big Picture mode.</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>Short press &#x29C9; to open Steam Menu, long press &#x29C9; to open Quick Access Menu.</value>
@@ -248,6 +248,40 @@
   </data>
   <data name="SteamInGameOverlaySetting_Note.Text" xml:space="preserve">
     <value>Only available when the default platform is set to Steam Big Picture.</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_ModifierNote.Text" xml:space="preserve">
+    <value>Long press &#x2630; to close the overlay and prevent modifier keys (e.g. Shift, Ctrl, Alt) from getting stuck in-game.
+Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; In Game &gt; Overlay shortcut key(s).</value>
+  </data>
+  <data name="MouseModeSetting_Title.Text" xml:space="preserve">
+    <value>Gamepad Mouse Mode</value>
+  </data>
+  <data name="MouseModeSetting_Description.Text" xml:space="preserve">
+    <value>Use gamepad as mouse and keyboard in browsers and supported apps.</value>
+  </data>
+  <data name="MouseModeSetting_Note.Text" xml:space="preserve">
+    <value>Supports Edge, Chrome, Firefox, Opera, Brave, and Epic Games Store.</value>
+  </data>
+  <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
+    <value>Automatically disabled because this device has built-in gamepad mapping.</value>
+  </data>
+  <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
+    <value>Controller Layout</value>
+  </data>
+  <data name="MouseModeLayoutSetting_Description.Text" xml:space="preserve">
+    <value>OmniNav: left stick moves the cursor. Classic: right stick moves the cursor.</value>
+  </data>
+  <data name="MouseModeLayoutSwitch.OffContent" xml:space="preserve">
+    <value>OmniNav</value>
+  </data>
+  <data name="MouseModeLayoutSwitch.OnContent" xml:space="preserve">
+    <value>Classic</value>
+  </data>
+  <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
+    <value>Cursor Speed</value>
+  </data>
+  <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
+    <value>Scale cursor movement speed relative to the default (100%).</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>

@@ -138,6 +138,20 @@ namespace OmniConsole.Pages
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
 
+            // 還原 Mouse Mode 開關 / 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
+            bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
+            UsePhantomKeyMouseModeSwitch.IsOn = SettingsService.GetUsePhantomKeyMouseMode() && !builtInMapping;
+            MouseModeLayoutSwitch.IsOn = SettingsService.GetMouseModeLayout() == SettingsService.LayoutClassic;
+
+            // 填充游標速度下拉選單並還原選取
+            CursorSpeedCombo.Items.Clear();
+            foreach (var p in SettingsService.ValidCursorSpeedPercents)
+                CursorSpeedCombo.Items.Add($"{p}%");
+            int pct = SettingsService.GetCursorSpeedPercent();
+            CursorSpeedCombo.SelectedIndex = Array.IndexOf(SettingsService.ValidCursorSpeedPercents, pct);
+
+            ApplyMouseModeEnabledState(builtInMapping);
+
             // 還原 Game Bar 媒體櫃的開關狀態
             UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
 
@@ -322,7 +336,7 @@ namespace OmniConsole.Pages
         // ── 設定控制項事件 ────────────────────────────────────────────────────
 
         /// <summary>
-        /// 重置 Game Bar 並觸發 FSE。先透過 <see cref="FseService.EnsureGameBarReadyAsync"/>
+        /// 重設 Game Bar 並觸發 FSE。先透過 <see cref="FseService.EnsureGameBarReadyAsync"/>
         /// 確保 Game Bar 完全就緒，再以「殺死後重發」機制繞過可能卡住的 FSE 進入對話方塊。
         /// </summary>
         private async void ResetGameBarButton_Click(object sender, RoutedEventArgs e)
@@ -365,6 +379,7 @@ namespace OmniConsole.Pages
         {
             SettingsService.SetUsePhantomKey(UsePhantomKeySwitch.IsOn);
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
+            ApplyMouseModeEnabledState();
             if (UsePhantomKeySwitch.IsOn && FseService.IsActive())
                 PhantomKeyService.Start();
             else if (!UsePhantomKeySwitch.IsOn)
@@ -377,6 +392,53 @@ namespace OmniConsole.Pages
         private void UsePhantomKeySteamInGameOverlaySwitch_Toggled(object sender, RoutedEventArgs e)
         {
             SettingsService.SetUsePhantomKeySteamInGameOverlay(UsePhantomKeySteamInGameOverlaySwitch.IsOn);
+        }
+
+        /// <summary>
+        /// Mouse Mode 主開關切換時立即儲存（同步寫入 INI），並更新子控制項反灰狀態。
+        /// </summary>
+        private void UsePhantomKeyMouseModeSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetUsePhantomKeyMouseMode(UsePhantomKeyMouseModeSwitch.IsOn);
+            ApplyMouseModeEnabledState();
+        }
+
+        /// <summary>
+        /// Mouse Mode 版面配置 ToggleSwitch 切換時立即儲存。Off=OmniNav、On=Classic。
+        /// </summary>
+        private void MouseModeLayoutSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsService.SetMouseModeLayout(
+                MouseModeLayoutSwitch.IsOn ? SettingsService.LayoutClassic : SettingsService.LayoutOmniNav);
+        }
+
+        /// <summary>
+        /// Cursor Speed 下拉選單選取變更時儲存百分比。
+        /// </summary>
+        private void CursorSpeedCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CursorSpeedCombo.SelectedIndex < 0) return;
+            int pct = SettingsService.ValidCursorSpeedPercents[CursorSpeedCombo.SelectedIndex];
+            SettingsService.SetCursorSpeedPercent(pct);
+        }
+
+        /// <summary>
+        /// 套用 Mouse Mode 子控制項的反灰串聯：
+        /// PhantomKey 主開關 + 內建廠商映射偵測 → Mouse Mode 主開關
+        /// → Layout / Cursor Speed。
+        /// </summary>
+        private void ApplyMouseModeEnabledState(bool? builtInMappingOverride = null)
+        {
+            bool builtIn = builtInMappingOverride ?? SettingsService.HasBuiltInGamepadMapping();
+            bool phantomOn = UsePhantomKeySwitch.IsOn;
+            bool mouseModeAvailable = phantomOn && !builtIn;
+            bool mouseModeOn = mouseModeAvailable && UsePhantomKeyMouseModeSwitch.IsOn;
+
+            UsePhantomKeyMouseModeSwitch.IsEnabled = mouseModeAvailable;
+            MouseModeBuiltInMappingNoteText.Visibility = builtIn ? Visibility.Visible : Visibility.Collapsed;
+
+            MouseModeLayoutSwitch.IsEnabled = mouseModeOn;
+            CursorSpeedCombo.IsEnabled = mouseModeOn;
         }
 
         /// <summary>
@@ -778,7 +840,7 @@ namespace OmniConsole.Pages
                     SettingsNav.IsPaneOpen = !SettingsNav.IsPaneOpen;
                     break;
 
-                // 重置 Game Bar 按鈕：觸發殺行程並重新啟動 FSE 的備援流程
+                // 重設 Game Bar 按鈕：觸發殺行程並重新啟動 FSE 的備援流程
                 case Button btn when ReferenceEquals(btn, ResetGameBarButton):
                     ResetGameBarButton_Click(this, new RoutedEventArgs());
                     break;
@@ -801,6 +863,16 @@ namespace OmniConsole.Pages
                 // Steam In-Game Overlay 開關
                 case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySteamInGameOverlaySwitch):
                     UsePhantomKeySteamInGameOverlaySwitch.IsOn = !sw.IsOn;
+                    break;
+
+                // Mouse Mode 主開關
+                case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeyMouseModeSwitch):
+                    if (sw.IsEnabled) UsePhantomKeyMouseModeSwitch.IsOn = !sw.IsOn;
+                    break;
+
+                // Mouse Mode 版面配置切換 (OmniNav / Classic)
+                case ToggleSwitch sw when ReferenceEquals(sw, MouseModeLayoutSwitch):
+                    if (sw.IsEnabled) MouseModeLayoutSwitch.IsOn = !sw.IsOn;
                     break;
 
                 // Game Bar 媒體櫃開關：On = 媒體櫃按鈕開啟 OmniConsole 設定；Off = 開啟預設平台

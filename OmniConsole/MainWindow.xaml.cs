@@ -152,7 +152,7 @@ namespace OmniConsole
         private async void RequestExitApplication()
         {
             bool fseActive = FseService.IsActive();
-            DebugLogger.Log($"[MainWindow] RequestExitApplication: _isShowingSettings={_isShowingSettings}, FseService.IsActive()={fseActive}");
+            DebugLogger.Log($"[MainWindow] RequestExitApplication: _isShowingSettings={_isShowingSettings}, fseActive={fseActive}");
 
             // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面 (如 FSE) 即可
             if (_isShowingSettings)
@@ -168,7 +168,7 @@ namespace OmniConsole
             //   - 確認退出 → StateChanged callback 觸發，IsActive() 變 false → Exit()
             //   - 取消 → FSE 退出對話方塊消失，OmniConsole 按鈕可正常點選
             //   - 再次點選「返回桌面」按鈕 → 取消前一輪等待，重新觸發
-            if (FseService.IsActive())
+            if (fseActive)
             {
                 _fseExitCts?.Cancel();
                 _fseExitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));

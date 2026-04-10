@@ -45,6 +45,11 @@ namespace OmniConsole.Services
             WriteIni("General", "DefaultPlatform", platform.Id);
             WriteIni("PhantomKey", "SteamInGameOverlayEnabled",
                 GetUsePhantomKeySteamInGameOverlay() ? "1" : "0");
+            WriteIni("PhantomKey", "MouseModeEnabled",
+                GetUsePhantomKeyMouseMode() ? "1" : "0");
+            WriteIni("PhantomKey", "MouseModeLayout", GetMouseModeLayout());
+            WriteIni("PhantomKey", "CursorSpeedPercent",
+                GetCursorSpeedPercent().ToString());
         }
 
         /// <summary>
@@ -334,6 +339,113 @@ namespace OmniConsole.Services
                 return;
             settings.Values["UsePhantomKeySteamInGameOverlay"] = enabled;
             WriteIni("PhantomKey", "SteamInGameOverlayEnabled", enabled ? "1" : "0");
+        }
+
+        // ─── Gamepad Mouse Mode ──────────────────────────────────────────
+
+        /// <summary>
+        /// 取得是否啟用 Gamepad Mouse Mode（在瀏覽器/Epic 等前景時將手把映射為滑鼠+鍵盤）。
+        /// 預設為 true。
+        /// </summary>
+        public static bool GetUsePhantomKeyMouseMode()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UsePhantomKeyMouseMode", out object? value) && value is bool enabled)
+                return enabled;
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用 Mouse Mode，同步寫入 INI 供 PhantomKey 讀取。
+        /// </summary>
+        public static void SetUsePhantomKeyMouseMode(bool enabled)
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("UsePhantomKeyMouseMode", out object? prev) && prev is bool val && val == enabled)
+                return;
+            settings.Values["UsePhantomKeyMouseMode"] = enabled;
+            WriteIni("PhantomKey", "MouseModeEnabled", enabled ? "1" : "0");
+        }
+
+        /// <summary>OmniNav 預設版面配置。</summary>
+        public const string LayoutOmniNav = "OmniNav";
+        /// <summary>Classic 版面配置。</summary>
+        public const string LayoutClassic = "Classic";
+
+        /// <summary>
+        /// 取得 Mouse Mode 按鍵配置（"OmniNav" 或 "Classic"）。預設 "OmniNav"。
+        /// </summary>
+        public static string GetMouseModeLayout()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("MouseModeLayout", out object? value) && value is string str
+                && (str == LayoutOmniNav || str == LayoutClassic))
+                return str;
+            return LayoutOmniNav;
+        }
+
+        /// <summary>
+        /// 儲存 Mouse Mode 按鍵配置，未知值回退至 "OmniNav"，同步寫入 INI。
+        /// </summary>
+        public static void SetMouseModeLayout(string layout)
+        {
+            if (layout != LayoutOmniNav && layout != LayoutClassic) layout = LayoutOmniNav;
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("MouseModeLayout", out object? prev) && prev is string pv && pv == layout)
+                return;
+            settings.Values["MouseModeLayout"] = layout;
+            WriteIni("PhantomKey", "MouseModeLayout", layout);
+        }
+
+        public static readonly int[] ValidCursorSpeedPercents = { 25, 50, 75, 100, 125, 150, 175, 200 };
+
+        /// <summary>
+        /// 取得游標速度百分比，限制為 25/50/75/100/125/150/175/200。預設 100。
+        /// </summary>
+        public static int GetCursorSpeedPercent()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CursorSpeedPercent", out object? value) && value is int pct)
+            {
+                foreach (var p in ValidCursorSpeedPercents)
+                    if (p == pct) return p;
+            }
+            return 100;
+        }
+
+        /// <summary>
+        /// 儲存游標速度百分比（限制為合法檔位），同步寫入 INI。
+        /// </summary>
+        public static void SetCursorSpeedPercent(int percent)
+        {
+            int valid = 100;
+            foreach (var p in ValidCursorSpeedPercents)
+                if (p == percent) { valid = p; break; }
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CursorSpeedPercent", out object? prev) && prev is int pv && pv == valid)
+                return;
+            settings.Values["CursorSpeedPercent"] = valid;
+            WriteIni("PhantomKey", "CursorSpeedPercent", valid.ToString());
+        }
+
+        /// <summary>
+        /// 偵測裝置是否內建廠商手把映射軟體（與 Mouse Mode 衝突需停用）。
+        /// 目前清單僅包含 ROG Ally 家族（Armoury Crate SE）；未來可擴充其他掌機。
+        /// </summary>
+        public static bool HasBuiltInGamepadMapping()
+        {
+            // return false; // 測試用：略過內建映射偵測
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS");
+                if (key?.GetValue("SystemProductName") is not string product) return false;
+                var upper = product.ToUpperInvariant();
+                string[] knownKeywords = { "RC71L", "RC72L", "RC72LA", "RC73XA", "RC73YA" };
+                foreach (var kw in knownKeywords)
+                    if (upper.Contains(kw)) return true;
+                return false;
+            }
+            catch { return false; }
         }
     }
 }

@@ -380,7 +380,7 @@
                     <ScrollViewer x:Name="AdvancedPage" Grid.Row="1" Visibility="Collapsed"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  Padding="0,0,0,40">
+                                  Padding="0">
                     <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
                         <TextBlock x:Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock x:Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
@@ -532,6 +532,74 @@
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
                                 </Grid>
+
+                                <!-- 分隔線 -->
+                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                <!-- Gamepad Mouse Mode 主開關 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE962;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="MouseModeSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="MouseModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="MouseModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="MouseModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="UsePhantomKeyMouseModeSwitch"
+                                                  Toggled="UsePhantomKeyMouseModeSwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+
+                                <!-- Mouse Mode 版面配置切換 (OmniNav / Classic) -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE8AB;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="MouseModeLayoutSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="MouseModeLayoutSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="MouseModeLayoutSwitch"
+                                                  x:Uid="MouseModeLayoutSwitch"
+                                                  Toggled="MouseModeLayoutSwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+
+                                <!-- Cursor Speed 下拉選單 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE7C9;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="CursorSpeedSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="CursorSpeedSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <ComboBox x:Name="CursorSpeedCombo" Grid.Column="2"
+                                              SelectionChanged="CursorSpeedCombo_SelectionChanged"
+                                              MinWidth="90" VerticalAlignment="Center" />
+                                </Grid>
                             </StackPanel>
                         </Border>
 
@@ -603,7 +671,7 @@
                     <ScrollViewer x:Name="TroubleshootPage" Grid.Row="1" Visibility="Collapsed"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  Padding="0,0,0,40">
+                                  Padding="0">
                     <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
                         <TextBlock x:Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock x:Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>

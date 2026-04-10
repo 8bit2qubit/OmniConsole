@@ -166,7 +166,7 @@
     <value>Xbox App</value>
   </data>
   <data name="Platform_EpicGames" xml:space="preserve">
-    <value>Epic Games Launcher</value>
+    <value>Epic Games Store</value>
   </data>
   <data name="Platform_ArmouryCrateSE" xml:space="preserve">
     <value>Armoury Crate SE</value>
@@ -232,10 +232,10 @@
     <value>手把輸入</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>按 &#x29C9; 開啟 Steam 選單</value>
+    <value>手把輸入服務</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>在 Steam Big Picture 模式中以 &#x29C9; 開啟 Steam 內嵌介面。</value>
+    <value>在 Steam Big Picture 模式中按 &#x29C9; 開啟 Steam 選單。</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>短按 &#x29C9; 開啟 Steam 選單，長按 &#x29C9; 開啟快速存取選單。</value>
@@ -248,6 +248,40 @@
   </data>
   <data name="SteamInGameOverlaySetting_Note.Text" xml:space="preserve">
     <value>僅在預設平台設為 Steam Big Picture 時生效。</value>
+  </data>
+  <data name="SteamInGameOverlaySetting_ModifierNote.Text" xml:space="preserve">
+    <value>長按 &#x2630; 關閉內嵌介面，避免修飾鍵（如 Shift、Ctrl、Alt）卡住遊戲。
+或至 Steam 設定 &gt; 遊戲中 &gt; 內嵌介面快捷鍵，改為非修飾鍵。</value>
+  </data>
+  <data name="MouseModeSetting_Title.Text" xml:space="preserve">
+    <value>手把滑鼠模式</value>
+  </data>
+  <data name="MouseModeSetting_Description.Text" xml:space="preserve">
+    <value>在瀏覽器與支援的應用程式中，以手把作為滑鼠與鍵盤使用。</value>
+  </data>
+  <data name="MouseModeSetting_Note.Text" xml:space="preserve">
+    <value>支援 Edge、Chrome、Firefox、Opera、Brave 和 Epic Games Store。</value>
+  </data>
+  <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
+    <value>此裝置內建手把映射功能，已自動停用。</value>
+  </data>
+  <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
+    <value>控制器版面配置</value>
+  </data>
+  <data name="MouseModeLayoutSetting_Description.Text" xml:space="preserve">
+    <value>OmniNav：左搖桿控制游標。Classic：右搖桿控制游標。</value>
+  </data>
+  <data name="MouseModeLayoutSwitch.OffContent" xml:space="preserve">
+    <value>OmniNav</value>
+  </data>
+  <data name="MouseModeLayoutSwitch.OnContent" xml:space="preserve">
+    <value>Classic</value>
+  </data>
+  <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
+    <value>游標速度</value>
+  </data>
+  <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
+    <value>相對於預設值（100%）縮放游標移動速度。</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>

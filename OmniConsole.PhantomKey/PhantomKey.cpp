@@ -9,6 +9,18 @@
 #include "SteamConfig.h"
 #include "ForegroundMonitor.h"
 #include "InputSender.h"
+#include "MouseMode.h"
+
+// ============================================================================
+// FSE 狀態查詢
+// ============================================================================
+typedef BOOL(WINAPI* PfnIsGamingFseActive)();
+static PfnIsGamingFseActive LoadIsGamingFseActive() {
+    HMODULE hMod = LoadLibraryW(L"api-ms-win-gaming-experience-l1-1-0.dll");
+    if (!hMod) return nullptr;
+    return reinterpret_cast<PfnIsGamingFseActive>(
+        GetProcAddress(hMod, "IsGamingFullScreenExperienceActive"));
+}
 
 // ============================================================================
 // 程式進入點
@@ -45,6 +57,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     AppConfig config = ReadConfig();
     SteamOverlayConfig steamCfg = ReadSteamOverlayConfig();
 
+    // FSE 狀態查詢函式（載入失敗時不阻擋啟動，僅跳過退出檢查）
+    auto pfnIsFseActive = LoadIsGamingFseActive();
+    if (!pfnIsFseActive)
+        Log(L"WARNING: Failed to load IsGamingFullScreenExperienceActive.");
+
     Log(L"Entering main loop.");
 
     // 自適應輪詢狀態
@@ -73,35 +90,53 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     while (true) {
         Sleep(sleepMs);
 
-        // XInput 輪詢（支援最多 4 個控制器）
+        // XInput 輪詢：遍歷所有手把，收集 View/Menu 按鍵，取最後一支有顯著輸入的手把狀態
+        XINPUT_GAMEPAD activePad = {};
         bool viewPressed = false;
         bool menuPressed = false;
         for (DWORD i = 0; i < 4; i++) {
             XINPUT_STATE state = {};
-            if (XInputGetState(i, &state) == ERROR_SUCCESS) {
-                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)
-                    viewPressed = true;
-                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_START)
-                    menuPressed = true;
-                if (viewPressed || menuPressed) break;
+            if (XInputGetState(i, &state) != ERROR_SUCCESS) continue;
+            const auto& g = state.Gamepad;
+            if (g.wButtons & XINPUT_GAMEPAD_BACK)  viewPressed = true;
+            if (g.wButtons & XINPUT_GAMEPAD_START) menuPressed = true;
+            if (g.wButtons || g.bLeftTrigger || g.bRightTrigger ||
+                abs(g.sThumbLX) > 8000 || abs(g.sThumbLY) > 8000 ||
+                abs(g.sThumbRX) > 8000 || abs(g.sThumbRY) > 8000) {
+                activePad = g;
             }
         }
 
+        // 前景程式變化偵測 → 重新讀取設定 + 重設 Mouse Mode 狀態 + FSE 退出檢查
+        std::wstring currentFg = GetForegroundProcessName();
+        if (currentFg != lastFgProcess) {
+            Log(L"FG changed: [%s] -> [%s].", lastFgProcess.c_str(), currentFg.c_str());
+            lastFgProcess = currentFg;
+
+            // 不在 FSE 中 → 結束 PhantomKey
+            if (pfnIsFseActive && !pfnIsFseActive()) {
+                Log(L"FSE no longer active, exiting.");
+                break;
+            }
+
+            config = ReadConfig();
+            steamCfg = ReadSteamOverlayConfig();
+            MouseMode::Reset();
+        }
+
+        // Mouse Mode 啟用條件：開關開、無內建廠商映射、前景為目標程式
+        bool mouseModeActive =
+            config.mouseModeEnabled &&
+            !config.hasBuiltInGamepadMapping &&
+            IsMouseModeTarget(currentFg);
+
         // 自適應輪詢頻率
-        if (viewPressed || viewWasPressed || menuPressed || menuWasPressed) {
+        if (viewPressed || viewWasPressed || menuPressed || menuWasPressed || mouseModeActive) {
             sleepMs = 8;        // 輸入偵測中 ~125Hz
             idleTicks = 0;
         } else {
             idleTicks++;
             if (idleTicks > 30) sleepMs = 100;  // 恢復閒置 ~10Hz
-        }
-
-        // 前景程式變化偵測 → 重新讀取設定
-        std::wstring currentFg = GetForegroundProcessName();
-        if (currentFg != lastFgProcess) {
-            lastFgProcess = currentFg;
-            config = ReadConfig();
-            steamCfg = ReadSteamOverlayConfig();
         }
 
         // ── View（⧉）狀態機：短按 / 長按 ──
@@ -159,9 +194,14 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             }
         }
         menuWasPressed = menuPressed;
+
+        // ── Mouse Mode：前景為目標程式時將手把映射為滑鼠+鍵盤 ──
+        if (mouseModeActive) {
+            MouseMode::Tick(activePad, config);
+        }
     }
 
-    // 以下程式碼正常情況下不會到達（常駐由外部終止）
+    // 清理資源（FSE 退出後 break 到此）
     ReleaseMutex(hMutex);
     CloseHandle(hMutex);
     Log(L"PhantomKey ended.");

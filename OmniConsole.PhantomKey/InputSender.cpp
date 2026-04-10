@@ -98,6 +98,10 @@ std::vector<WORD> ParseCombo(const std::wstring& combo) {
     return keys;
 }
 
+// ============================================================================
+// 公開介面
+// ============================================================================
+
 void SendKeyCombo(const std::wstring& combo) {
     auto keys = ParseCombo(combo);
     if (keys.empty()) return;

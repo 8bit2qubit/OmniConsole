@@ -146,6 +146,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="VdfParser.cpp" />
     <ClCompile Include="SteamConfig.cpp" />
+    <ClCompile Include="MouseMode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Log.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="VdfParser.h" />
     <ClInclude Include="SteamConfig.h" />
+    <ClInclude Include="MouseMode.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources.rc" />
