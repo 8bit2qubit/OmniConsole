@@ -50,7 +50,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Gamepad Mouse Mode** – Uses your gamepad as a mouse and keyboard in browsers and supported desktop apps (Edge, Chrome, Firefox, Opera, Brave, Epic Games Store). Two controller layouts available: **OmniNav** and **Classic**, with adjustable cursor speed.
-- **Gamepad Input Service** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
+- **Gamepad Steam Shortcuts** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
 - **In-App Updates** – Automatically checks for the latest GitHub releases, with built-in downloading and installation available directly from the Advanced settings page.
@@ -62,9 +62,9 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 
 Before installing OmniConsole, you need to enable the Windows 11 Full Screen Experience feature:
 
-- **Desktops, Laptops, Tablets & Handhelds without native FSE**: Use [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to enable FSE first.
+- **Desktops, Laptops, Tablets & Handhelds without Native FSE**: Use [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to enable FSE first.
 - **Native FSE Handheld Devices** (e.g., ROG Xbox Ally series): FSE is natively supported. Install OmniConsole directly.
-- **Xbox controller required**: Game Bar, FSE, and all gamepad features require an Xbox-compatible (XInput) controller with an Xbox button.
+- **Xbox Controller Required**: Game Bar, FSE, and all gamepad features require an Xbox-compatible (XInput) controller with an Xbox button.
 
 ---
 
