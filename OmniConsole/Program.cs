@@ -126,19 +126,30 @@ namespace OmniConsole
             if (!mainInstance.IsCurrent)
             {
                 DebugLogger.Log("→ Not current instance, redirecting...");
-                // 已有主實例 → 重導訊號 → 退出
-                // 注意：如果本身就是 Protocol 啟動，直接 Redirect 即可，OnRedirectedActivation 會處理
-                // 如果是 Settings 入口啟動 (AUMID)，則手動發送 Protocol 訊號以利統一處理
-                if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
+                // 副實例：重導訊號給主實例後退出。
+                // Protocol 啟動 → 直接 Redirect，OnRedirectedActivation 會處理。
+                // Settings 入口 (AUMID) → 手動發送 Protocol 訊號以利統一處理。
+                try
                 {
-                    var uri = new Uri($"{PlatformFieldValidator.OwnProtocolScheme}://show-settings");
-                    Windows.System.Launcher.LaunchUriAsync(uri).AsTask().GetAwaiter().GetResult();
+                    if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
+                    {
+                        var uri = new Uri($"{PlatformFieldValidator.OwnProtocolScheme}://show-settings");
+                        Windows.System.Launcher.LaunchUriAsync(uri).AsTask().GetAwaiter().GetResult();
+                    }
+                    else
+                    {
+                        // 主實例若已退出，RedirectActivationToAsync 會無限期卡住，加 timeout 防殭屍
+                        var redirectTask = mainInstance.RedirectActivationToAsync(activationArgs).AsTask();
+                        if (!redirectTask.Wait(5000))
+                            DebugLogger.Log("→ RedirectActivationToAsync timed out (main instance may have exited)");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    mainInstance.RedirectActivationToAsync(activationArgs).AsTask().GetAwaiter().GetResult();
+                    DebugLogger.Log($"→ Redirect failed: {ex.Message}");
                 }
-                return 0;
+                // Environment.Exit(0) 確保副實例一定結束
+                Environment.Exit(0);
             }
 
             // 這是主實例
@@ -153,7 +164,8 @@ namespace OmniConsole
                 new App(isSettingsEntry);
             });
 
-            return 0;
+            Environment.Exit(0);
+            return 0; // unreachable，僅滿足編譯器
         }
 
         /// <summary>

@@ -67,10 +67,16 @@ namespace OmniConsole
                 if (FseService.TryActivate())
                 {
                     // FSE 已觸發，Windows 會重新以 FSE 環境啟動本應用程式
-                    Application.Current.Exit();
+                    ExitApp();
                     return;
                 }
-                // TryActivate 失敗（系統支援但觸發失敗），繼續正常啟動
+
+                // TryActivate 失敗：使用者在 FSE 進入對話方塊中選擇了「停留在桌面上」，
+                // 或系統支援但觸發失敗。不應在桌面環境啟動遊戲平台，而是直接退出。
+                // Windows 11 Build 26220.8165+ 的 SetGamingFullScreenExperience 會同步阻塞至使用者選擇，
+                // 選擇「Stay on desktop」時回傳 0x80004004 (E_ABORT)。
+                ExitApp();
+                return;
             }
 
             var mainWindow = new MainWindow();
@@ -132,6 +138,16 @@ namespace OmniConsole
         }
 
         /// <summary>
+        /// 統一退出應用程式。取消 FSE 狀態通知後以 Environment.Exit(0) 終止行程。
+        /// </summary>
+        public static void ExitApp()
+        {
+            DebugLogger.Log("[App] ExitApp: stopping FSE listener and exiting");
+            FseService.StopListening();
+            Environment.Exit(0);
+        }
+
+        /// <summary>
         /// 從 Game Bar 重導時呼叫，直接啟動平台專屬 URI (Passthrough) 後退出應用程式。
         /// </summary>
         public static void PassthroughFromRedirect(string uri)
@@ -142,7 +158,7 @@ namespace OmniConsole
                 // 先隱藏視窗，避免退出時閃白
                 if (_window is not null)
                     ShowWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window), 0);
-                Application.Current.Exit();
+                ExitApp();
             });
         }
     }

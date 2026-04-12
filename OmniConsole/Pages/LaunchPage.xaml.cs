@@ -165,7 +165,7 @@ namespace OmniConsole.Pages
                             PhantomKeyService.Start();
 
                         ShowWindow(Hwnd, SW_HIDE);
-                        Application.Current.Exit();
+                        App.ExitApp();
                         return;
                     }
 

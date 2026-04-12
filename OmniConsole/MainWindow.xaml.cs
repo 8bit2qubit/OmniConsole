@@ -159,7 +159,7 @@ namespace OmniConsole
             {
                 SettingsPageControl.StopGamepadPolling();
                 ShowWindow(_hwnd, SW_HIDE); // 先隱藏視窗，避免 FullScreen presenter 卸載時閃白
-                Application.Current.Exit();
+                App.ExitApp();
                 return;
             }
 
@@ -192,7 +192,7 @@ namespace OmniConsole
                     FseService.StateChanged -= OnStateChanged;
                     LaunchPageControl.StopGamepadPolling();
                     ShowWindow(_hwnd, SW_HIDE);
-                    Application.Current.Exit();
+                    App.ExitApp();
                     return;
                 }
                 catch (OperationCanceledException)
@@ -205,7 +205,7 @@ namespace OmniConsole
             {
                 LaunchPageControl.StopGamepadPolling();
                 ShowWindow(_hwnd, SW_HIDE);
-                Application.Current.Exit();
+                App.ExitApp();
             }
         }
 
@@ -235,7 +235,7 @@ namespace OmniConsole
                 // → 與首次啟動相同，觸發 FSE 進入流程後退出，由 Windows 以 FSE 環境重啟
                 if (FseService.TryActivate())
                 {
-                    Application.Current.Exit();
+                    App.ExitApp();
                     return;
                 }
                 // TryActivate 失敗（系統支援但觸發失敗）→ 繼續正常啟動

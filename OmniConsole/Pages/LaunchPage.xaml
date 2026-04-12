@@ -60,7 +60,6 @@
                  Severity="Informational"
                  VerticalAlignment="Top"
                  HorizontalAlignment="Center"
-                 MaxWidth="800"
                  Margin="0,16,0,0"/>
 
         <!-- 浮水印：啟動畫面底部顯示 -->

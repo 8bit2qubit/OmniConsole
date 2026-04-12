@@ -362,7 +362,7 @@ namespace OmniConsole.Pages
             {
                 // 此應用程式會被重新啟動在 FSE 環境
                 ShowWindow(Hwnd, SW_HIDE);
-                Application.Current.Exit();
+                App.ExitApp();
             }
 
             ResetGameBarProgressRing.IsActive = false;
@@ -1119,6 +1119,9 @@ namespace OmniConsole.Pages
 
                 // 終止 PhantomKey，避免 MSIX 更新時因 .exe 佔用而拖慢進度
                 PhantomKeyService.Kill();
+
+                // MSIX 更新前取消 FSE 狀態通知
+                FseService.StopListening();
 
                 // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
                 RegisterApplicationRestart("", 0);

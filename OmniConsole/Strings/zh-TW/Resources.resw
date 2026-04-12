@@ -213,6 +213,9 @@
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
     <value>結束 Game Bar 後將繞過 FSE 確認對話方塊，直接進入 FSE。</value>
   </data>
+  <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
+    <value>部分 Windows 版本仍可能顯示確認對話方塊。</value>
+  </data>
   <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
     <value>遊戲平台</value>
   </data>

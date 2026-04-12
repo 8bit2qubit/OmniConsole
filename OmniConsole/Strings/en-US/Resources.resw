@@ -213,6 +213,9 @@
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
     <value>Terminate Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.</value>
   </data>
+  <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
+    <value>On some Windows versions, a confirmation dialog may still appear.</value>
+  </data>
   <data name="UseGameBarLibrarySwitch.OffContent" xml:space="preserve">
     <value>Platform</value>
   </data>

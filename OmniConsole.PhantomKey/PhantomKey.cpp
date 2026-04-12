@@ -14,6 +14,7 @@
 // ============================================================================
 // FSE 狀態查詢
 // ============================================================================
+
 typedef BOOL(WINAPI* PfnIsGamingFseActive)();
 static PfnIsGamingFseActive LoadIsGamingFseActive() {
     HMODULE hMod = LoadLibraryW(L"api-ms-win-gaming-experience-l1-1-0.dll");
