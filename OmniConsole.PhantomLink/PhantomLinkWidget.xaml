@@ -1,0 +1,98 @@
+<Page
+    x:Class="OmniConsole.PhantomLink.PhantomLinkWidget"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OmniConsole.PhantomLink"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    IsTabStop="True" UseSystemFocusVisuals="False">
+
+    <Page.Resources>
+        <Style TargetType="ToggleButton">
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Padding="16">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="RootPanel" Spacing="12">
+
+                <!-- <TextBlock Text="OmniCharm" FontSize="20" FontWeight="SemiBold"/> -->
+
+                <!-- Mouse Mode: 3 ToggleButton 水平組 -->
+                <StackPanel x:Name="ModeSection" Spacing="6">
+                    <TextBlock x:Uid="Widget_MouseMode_Title" FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off"
+                                      Click="ModeBtn_Click" Tag="Off"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind ModeOffBtn}"
+                                      XYFocusRight="{x:Bind ModeAutoBtn}"
+                                      XYFocusDown="{x:Bind LayoutNavBtn}"/>
+                        <ToggleButton x:Name="ModeAutoBtn" x:Uid="Widget_Mode_Auto"
+                                      Click="ModeBtn_Click" Tag="Auto"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind ModeOffBtn}"
+                                      XYFocusRight="{x:Bind ModeForceOnBtn}"
+                                      XYFocusDown="{x:Bind LayoutNavBtn}"/>
+                        <ToggleButton x:Name="ModeForceOnBtn" x:Uid="Widget_Mode_ForceOn"
+                                      Click="ModeBtn_Click" Tag="ForceOn"
+                                      UseSystemFocusVisuals="True" MinWidth="88"
+                                      XYFocusLeft="{x:Bind ModeAutoBtn}"
+                                      XYFocusRight="{x:Bind ModeForceOnBtn}"
+                                      XYFocusDown="{x:Bind LayoutNavBtn}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Layout: 2 ToggleButton 水平組 -->
+                <StackPanel Spacing="6">
+                    <TextBlock x:Uid="Widget_Layout_Title" FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="LayoutNavBtn" Content="OmniNav"
+                                      Click="LayoutBtn_Click" Tag="OmniNav"
+                                      UseSystemFocusVisuals="True" MinWidth="96"
+                                      XYFocusUp="{x:Bind ModeOffBtn}"
+                                      XYFocusLeft="{x:Bind LayoutNavBtn}"
+                                      XYFocusRight="{x:Bind LayoutClassicBtn}"
+                                      XYFocusDown="{x:Bind CursorSpeedSlider}"/>
+                        <ToggleButton x:Name="LayoutClassicBtn" Content="Classic"
+                                      Click="LayoutBtn_Click" Tag="Classic"
+                                      UseSystemFocusVisuals="True" MinWidth="96"
+                                      XYFocusUp="{x:Bind ModeForceOnBtn}"
+                                      XYFocusLeft="{x:Bind LayoutNavBtn}"
+                                      XYFocusRight="{x:Bind LayoutClassicBtn}"
+                                      XYFocusDown="{x:Bind CursorSpeedSlider}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Cursor Speed: Slider -->
+                <StackPanel Spacing="6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="CursorSpeedValueText" Grid.Column="1"
+                                   VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </Grid>
+                    <Slider x:Name="CursorSpeedSlider"
+                            Minimum="0" Maximum="7" StepFrequency="1"
+                            SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
+                            ValueChanged="CursorSpeedSlider_ValueChanged"
+                            UseSystemFocusVisuals="True"
+                            XYFocusUp="{x:Bind LayoutNavBtn}"
+                            XYFocusLeft="{x:Bind CursorSpeedSlider}"
+                            XYFocusRight="{x:Bind CursorSpeedSlider}"/>
+                </StackPanel>
+
+                <!-- ROG Ally Note（內建手把映射時顯示） -->
+                <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote"
+                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                           FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"/>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

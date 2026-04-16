@@ -57,6 +57,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     // 讀取設定
     AppConfig config = ReadConfig();
     SteamOverlayConfig steamCfg = ReadSteamOverlayConfig();
+    unsigned long long lastIniMTime = GetSharedIniLastWriteTime();
 
     // FSE 狀態查詢函式（載入失敗時不阻擋啟動，僅跳過退出檢查）
     auto pfnIsFseActive = LoadIsGamingFseActive();
@@ -112,6 +113,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         std::wstring currentFg = GetForegroundProcessName();
         if (currentFg != lastFgProcess) {
             Log(L"FG changed: [%s] -> [%s].", lastFgProcess.c_str(), currentFg.c_str());
+            LogForegroundWindowDiagnostics();
             lastFgProcess = currentFg;
 
             // 不在 FSE 中 → 結束 PhantomKey
@@ -120,16 +122,34 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
                 break;
             }
 
-            config = ReadConfig();
-            steamCfg = ReadSteamOverlayConfig();
+            // 切到 steamwebhelper 時重讀 SteamConfig：涵蓋 FSE 中登入 / 帳號切換 / 更改 overlay shortcut
+            if (_wcsicmp(currentFg.c_str(), L"steamwebhelper") == 0) {
+                steamCfg = ReadSteamOverlayConfig();
+            }
+
             MouseMode::Reset();
         }
 
-        // Mouse Mode 啟用條件：開關開、無內建廠商映射、前景為目標程式
-        bool mouseModeActive =
-            config.mouseModeEnabled &&
-            !config.hasBuiltInGamepadMapping &&
-            IsMouseModeTarget(currentFg);
+        // Shared.ini 被改寫（主程式或 PhantomLink 操作）→ 即時重載 AppConfig
+        // SteamOverlayConfig 不綁 Shared.ini：其值（overlay 快捷鍵、Steam 端 EnableGameOverlay）皆來自 Steam VDF，
+        // 於前景切入 steamwebhelper 時才重讀（見上方 FG change 分支中 currentFg == steamwebhelper 的處理）
+        unsigned long long curIniMTime = GetSharedIniLastWriteTime();
+        if (curIniMTime != 0 && curIniMTime != lastIniMTime) {
+            Log(L"Shared.ini changed, reloading config.");
+            lastIniMTime = curIniMTime;
+            config = ReadConfig();
+            MouseMode::Reset();
+        }
+
+        // Mouse Mode 啟用條件：模式非 Off、無內建廠商映射；Auto 需前景符合白名單，ForceOn 永遠生效
+        bool mouseModeActive = false;
+        if (!config.hasBuiltInGamepadMapping) {
+            switch (config.mouseMode) {
+                case MouseModeState::Off:     break;
+                case MouseModeState::Auto:    mouseModeActive = IsMouseModeTarget(currentFg); break;
+                case MouseModeState::ForceOn: mouseModeActive = !IsMouseModeForceExcluded(currentFg); break;
+            }
+        }
 
         // 自適應輪詢頻率
         if (viewPressed || viewWasPressed || menuPressed || menuWasPressed || mouseModeActive) {

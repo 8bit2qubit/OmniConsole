@@ -260,13 +260,22 @@
     <value>手柄鼠标模式</value>
   </data>
   <data name="MouseModeSetting_Description.Text" xml:space="preserve">
-    <value>在浏览器与支持的应用程序中，以手柄作为鼠标与键盘使用。</value>
+    <value>关闭：禁用。自动：见下方支持列表。强制开启：所有应用程序。</value>
+  </data>
+  <data name="MouseModeItem_Off.Content" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="MouseModeItem_Auto.Content" xml:space="preserve">
+    <value>自动</value>
+  </data>
+  <data name="MouseModeItem_ForceOn.Content" xml:space="preserve">
+    <value>强制开启</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>支持 Edge、Chrome、Firefox、Opera、Brave 和 Epic Games Store。</value>
+    <value>设为自动时，支持 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、文件资源管理器和 Steam。</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>此设备内置手柄映射功能，已自动停用。</value>
+    <value>此设备内置手柄映射功能，已自动禁用。</value>
   </data>
   <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
     <value>控制器布局</value>

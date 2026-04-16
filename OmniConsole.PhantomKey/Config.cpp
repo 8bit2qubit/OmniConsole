@@ -1,58 +1,136 @@
 #include "Config.h"
 #include "Log.h"
+#include <shlobj.h>
 
 // ============================================================================
-// INI 設定讀取
+// 共用 INI 設定讀取（PublisherCacheFolder\OmniConsoleShared\Shared.ini）
+// ============================================================================
+//
+// 主程式 OmniConsole 與 PhantomLink 共同寫入 PublisherCacheFolder，
+// 實體路徑為 %LOCALAPPDATA%\Publishers\<PublisherHash>\OmniConsoleShared\。
+// PhantomKey 透過列舉 Publishers 下的子目錄找到共用 INI。
 // ============================================================================
 
-static const wchar_t* PACKAGE_FAMILY = L"b5fbce6b-2d7d-4da0-b419-4beb30e2b808_n7gpkx2kypjte";
+static const wchar_t* kSharedFolderName = L"OmniConsoleShared";
+static const wchar_t* kSharedIniFileName = L"Shared.ini";
 
-// 偵測裝置是否內建廠商手把映射軟體（與 Mouse Mode 衝突需停用）。
-// 目前僅涵蓋 ROG Ally / Ally X / Xbox Ally 家族（Armoury Crate SE）；
-// 未來新增其他家族只需擴充關鍵字清單。
-static bool DetectBuiltInGamepadMapping() {
-    // return false; // 測試用：略過內建映射偵測
-    HKEY hKey = NULL;
-    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
-        L"HARDWARE\\DESCRIPTION\\System\\BIOS", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-        return false;
-    WCHAR buf[256] = {};
-    DWORD size = sizeof(buf), type = 0;
-    bool result = false;
-    if (RegQueryValueExW(hKey, L"SystemProductName", NULL, &type, (LPBYTE)buf, &size) == ERROR_SUCCESS && type == REG_SZ) {
-        // ROG Ally 家族
-        static const wchar_t* kKeywords[] = { L"RC71L", L"RC72L", L"RC72LA", L"RC73XA", L"RC73YA" };
-        std::wstring product(buf);
-        for (auto& c : product) c = towupper(c);
-        for (auto kw : kKeywords)
-            if (product.find(kw) != std::wstring::npos) { result = true; break; }
-        Log(L"[Config] SystemProductName=%s, hasBuiltInGamepadMapping=%d", buf, (int)result);
-    }
-    RegCloseKey(hKey);
+// ── 解析共用 INI 路徑 ─────────────────────────────────────────────────────
+
+static std::wstring FindSharedIniPath() {
+    wchar_t localAppData[MAX_PATH] = {};
+    if (FAILED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, localAppData)))
+        return L"";
+
+    std::wstring pubBase = std::wstring(localAppData) + L"\\Publishers";
+    std::wstring pattern = pubBase + L"\\*";
+
+    WIN32_FIND_DATAW fd = {};
+    HANDLE h = FindFirstFileW(pattern.c_str(), &fd);
+    if (h == INVALID_HANDLE_VALUE) return L"";
+
+    std::wstring result;
+    do {
+        if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue;
+        if (wcscmp(fd.cFileName, L".") == 0 || wcscmp(fd.cFileName, L"..") == 0) continue;
+
+        std::wstring candidate = pubBase + L"\\" + fd.cFileName + L"\\"
+                                 + kSharedFolderName + L"\\" + kSharedIniFileName;
+        DWORD attrs = GetFileAttributesW(candidate.c_str());
+        if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+            result = candidate;
+            break;
+        }
+    } while (FindNextFileW(h, &fd));
+
+    FindClose(h);
     return result;
 }
 
-// MSIX 封裝的 OmniConsole 會將 INI 寫入沙箱重導路徑（Packages\...\LocalCache\Local\），
-// Debug 版則寫入真正的 %LocalAppData%。先嘗試 MSIX 沙箱路徑，再 fallback 至一般路徑。
-static std::wstring GetIniPath() {
-    WCHAR localAppData[MAX_PATH];
-    if (FAILED(SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localAppData)))
-        return L"";
+static std::wstring GetSharedIniPath() {
+    static std::wstring cached;
+    if (cached.empty()) cached = FindSharedIniPath();
+    return cached;
+}
 
-    std::wstring base(localAppData);
+unsigned long long GetSharedIniLastWriteTime() {
+    auto path = GetSharedIniPath();
+    if (path.empty()) return 0;
+    WIN32_FILE_ATTRIBUTE_DATA attr = {};
+    if (!GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &attr)) return 0;
+    return ((unsigned long long)attr.ftLastWriteTime.dwHighDateTime << 32)
+         | attr.ftLastWriteTime.dwLowDateTime;
+}
 
-    // 優先：MSIX 沙箱路徑
-    std::wstring msixPath = base + L"\\Packages\\" + PACKAGE_FAMILY +
-                            L"\\LocalCache\\Local\\OmniConsole\\OmniConsole.ini";
-    if (GetFileAttributesW(msixPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
-        Log(L"[Config] Using MSIX INI: %s", msixPath.c_str());
-        return msixPath;
+// ── 小工具：讀 INI 字串 / 整數 ────────────────────────────────────────────
+
+static std::wstring ReadString(const wchar_t* section, const wchar_t* key,
+                               const wchar_t* defaultVal) {
+    auto path = GetSharedIniPath();
+    if (path.empty()) return std::wstring(defaultVal);
+    WCHAR buf[256] = {};
+    GetPrivateProfileStringW(section, key, defaultVal, buf, ARRAYSIZE(buf), path.c_str());
+    return std::wstring(buf);
+}
+
+static int ReadInt(const wchar_t* section, const wchar_t* key, int defaultVal) {
+    auto path = GetSharedIniPath();
+    if (path.empty()) return defaultVal;
+    return (int)GetPrivateProfileIntW(section, key, defaultVal, path.c_str());
+}
+
+// ── 內建手把映射偵測 ─────────────────────────────────────────────────────
+//
+// 偵測裝置是否內建廠商手把映射軟體（與 Mouse Mode 衝突需停用）。
+// 目前僅涵蓋 ROG Ally / Ally X / Xbox Ally 家族（Armoury Crate SE）。
+// 主程式、PhantomKey、PhantomLink 三處各自獨立偵測，不經 INI；
+// 機型清單更新時必須三處同步修改：
+//   - OmniConsole/Services/SettingsService.cs (HasBuiltInGamepadMapping)
+//   - OmniConsole.PhantomKey/Config.cpp (此函式)
+//   - OmniConsole.PhantomLink/Services/HardwareDetection.cs (HasBuiltInGamepadMapping)
+static bool DetectBuiltInGamepadMappingImpl();
+
+static bool DetectBuiltInGamepadMapping() {
+    // 硬體型號執行期不變，首次偵測後快取
+    static bool cached = DetectBuiltInGamepadMappingImpl();
+    return cached;
+}
+
+static bool DetectBuiltInGamepadMappingImpl() {
+    HKEY hKey = nullptr;
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
+                      L"HARDWARE\\DESCRIPTION\\System\\BIOS",
+                      0, KEY_READ, &hKey) != ERROR_SUCCESS) return false;
+
+    wchar_t buf[256] = {};
+    DWORD cb = sizeof(buf), type = 0;
+    LONG rc = RegQueryValueExW(hKey, L"SystemProductName", nullptr, &type,
+                               reinterpret_cast<LPBYTE>(buf), &cb);
+    RegCloseKey(hKey);
+    if (rc != ERROR_SUCCESS || type != REG_SZ) return false;
+
+    std::wstring upper(buf);
+    for (auto& c : upper) c = (wchar_t)towupper(c);
+    // ROG Ally 家族
+    static const wchar_t* kKeywords[] = {
+        L"RC71L", L"RC72L", L"RC72LA", L"RC73XA", L"RC73YA"
+    };
+    for (auto kw : kKeywords)
+        if (upper.find(kw) != std::wstring::npos) return true;
+    return false;
+}
+
+static MouseModeState ParseMouseMode(const std::wstring& s) {
+    if (_wcsicmp(s.c_str(), L"Off") == 0)     return MouseModeState::Off;
+    if (_wcsicmp(s.c_str(), L"ForceOn") == 0) return MouseModeState::ForceOn;
+    return MouseModeState::Auto;
+}
+
+static const wchar_t* MouseModeToStr(MouseModeState m) {
+    switch (m) {
+        case MouseModeState::Off:     return L"Off";
+        case MouseModeState::ForceOn: return L"ForceOn";
+        default:                      return L"Auto";
     }
-
-    // Fallback：非封裝（Debug）路徑
-    std::wstring normalPath = base + L"\\OmniConsole\\OmniConsole.ini";
-    Log(L"[Config] Using normal INI: %s", normalPath.c_str());
-    return normalPath;
 }
 
 // ============================================================================
@@ -61,38 +139,27 @@ static std::wstring GetIniPath() {
 
 AppConfig ReadConfig() {
     AppConfig cfg = {};
-    cfg.steamOverlayEnabled = false;
 
-    std::wstring iniPath = GetIniPath();
-    if (iniPath.empty()) {
-        Log(L"[Config] Cannot resolve INI path.");
-        return cfg;
-    }
+    cfg.defaultPlatform = ReadString(L"General", L"DefaultPlatform", L"");
 
-    WCHAR buf[256] = {};
-    GetPrivateProfileStringW(L"General", L"DefaultPlatform", L"", buf, _countof(buf), iniPath.c_str());
-    cfg.defaultPlatform = buf;
+    cfg.steamOverlayEnabled = ReadInt(L"PhantomKey", L"SteamInGameOverlayEnabled", 1) != 0;
 
-    cfg.steamOverlayEnabled = GetPrivateProfileIntW(L"PhantomKey", L"SteamInGameOverlayEnabled", 1, iniPath.c_str()) != 0;
+    cfg.mouseMode = ParseMouseMode(ReadString(L"PhantomKey", L"MouseMode", L"Auto"));
 
-    cfg.mouseModeEnabled = GetPrivateProfileIntW(L"PhantomKey", L"MouseModeEnabled", 1, iniPath.c_str()) != 0;
+    std::wstring layout = ReadString(L"PhantomKey", L"MouseModeLayout", L"OmniNav");
+    if (_wcsicmp(layout.c_str(), L"Classic") != 0) layout = L"OmniNav";
+    cfg.mouseModeLayout = layout;
 
-    WCHAR layoutBuf[32] = {};
-    GetPrivateProfileStringW(L"PhantomKey", L"MouseModeLayout", L"OmniNav",
-                             layoutBuf, _countof(layoutBuf), iniPath.c_str());
-    cfg.mouseModeLayout = layoutBuf;
-    if (_wcsicmp(cfg.mouseModeLayout.c_str(), L"Classic") != 0)
-        cfg.mouseModeLayout = L"OmniNav";  // 未知值回退至預設
-
-    int rawPct = GetPrivateProfileIntW(L"PhantomKey", L"CursorSpeedPercent", 100, iniPath.c_str());
+    int rawPct = ReadInt(L"PhantomKey", L"CursorSpeedPercent", 100);
     static const int kValidPercents[] = { 25, 50, 75, 100, 125, 150, 175, 200 };
     cfg.cursorSpeedPercent = 100;
     for (int p : kValidPercents) if (p == rawPct) { cfg.cursorSpeedPercent = p; break; }
 
     cfg.hasBuiltInGamepadMapping = DetectBuiltInGamepadMapping();
 
-    Log(L"[Config] DefaultPlatform=%s, SteamOverlay=%d, MouseMode=%d, Layout=%s, CursorSpeed=%d%%, BuiltInMapping=%d",
-        cfg.defaultPlatform.c_str(), (int)cfg.steamOverlayEnabled, (int)cfg.mouseModeEnabled,
-        cfg.mouseModeLayout.c_str(), cfg.cursorSpeedPercent, (int)cfg.hasBuiltInGamepadMapping);
+    Log(L"[Config] DefaultPlatform=%s, SteamOverlay=%d, MouseMode=%s, Layout=%s, CursorSpeed=%d%%, BuiltInMapping=%d",
+        cfg.defaultPlatform.c_str(), (int)cfg.steamOverlayEnabled,
+        MouseModeToStr(cfg.mouseMode), cfg.mouseModeLayout.c_str(),
+        cfg.cursorSpeedPercent, (int)cfg.hasBuiltInGamepadMapping);
     return cfg;
 }

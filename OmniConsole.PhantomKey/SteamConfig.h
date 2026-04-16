@@ -10,5 +10,5 @@ struct SteamOverlayConfig {
     std::wstring overlayShortcut = L"Shift+Tab";        // InGameOverlayShortcutKey（不存在=Shift+Tab）
 };
 
-// 偵測 Steam 安裝路徑，讀取當前使用者的 Overlay 設定
+// 偵測 Steam 安裝路徑，讀取目前使用者的 Overlay 設定
 SteamOverlayConfig ReadSteamOverlayConfig();

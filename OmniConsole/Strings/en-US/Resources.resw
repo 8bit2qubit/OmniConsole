@@ -260,10 +260,19 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Gamepad Mouse Mode</value>
   </data>
   <data name="MouseModeSetting_Description.Text" xml:space="preserve">
-    <value>Use gamepad as mouse and keyboard in browsers and supported apps.</value>
+    <value>Off: disabled. Auto: apps listed below. Force On: all apps.</value>
+  </data>
+  <data name="MouseModeItem_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="MouseModeItem_Auto.Content" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="MouseModeItem_ForceOn.Content" xml:space="preserve">
+    <value>Force On</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>Supports Edge, Chrome, Firefox, Opera, Brave, and Epic Games Store.</value>
+    <value>When set to Auto, supports Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, and Steam.</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Automatically disabled because this device has built-in gamepad mapping.</value>

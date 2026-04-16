@@ -30,9 +30,13 @@ namespace OmniConsole
             FseService.StartListening();
             DebugLogger.Log($"[App] IsSupported={FseService.IsSupported()}, CanActivate={FseService.CanActivate()}, IsActive={FseService.IsActive()}");
 
-            // 首次安裝或版本更新時，同步 OmniConsole.ini（確保 INI 存在且包含所有欄位）
+            // 首次安裝或版本更新時：先遷移舊版設定（若有殘留 LocalCache INI），再同步共用 INI
+            // 確保所有欄位存在、含內建手把映射偵測結果；一般啟動不需重跑這兩個動作
             if (SettingsService.IsFirstRunOrUpdate())
-                SettingsService.SyncIni();
+            {
+                SettingsService.MigrateLegacyIfNeeded();
+                SettingsService.SyncPhantomKeyStore();
+            }
 
             // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
             if (!_startWithSettings && !FseService.IsActive())

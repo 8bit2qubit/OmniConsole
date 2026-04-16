@@ -485,7 +485,7 @@
                                 HorizontalAlignment="Stretch"
                                 MinWidth="400">
                             <StackPanel>
-                                <!-- PhantomKey 手把輸入 -->
+                                <!-- PhantomKey 手把輸入 — 已改為 FSE 常駐，保留標題/描述作為以下設定的區段說明，僅註解開關 -->
                                 <Grid Padding="16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -493,7 +493,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <FontIcon Glyph="&#xEA5B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <FontIcon Glyph="&#xE961;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
@@ -501,10 +501,12 @@
                                         <TextBlock x:Uid="PhantomKeySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
+                                    <!--
                                     <ToggleSwitch x:Name="UsePhantomKeySwitch"
                                                   Toggled="UsePhantomKeySwitch_Toggled"
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                    -->
                                 </Grid>
 
                                 <!-- 分隔線 -->
@@ -552,10 +554,13 @@
                                         <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="MouseModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
                                     </StackPanel>
 
-                                    <ToggleSwitch x:Name="UsePhantomKeyMouseModeSwitch"
-                                                  Toggled="UsePhantomKeyMouseModeSwitch_Toggled"
-                                                  FlowDirection="RightToLeft"
-                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                    <ComboBox x:Name="MouseModeCombo" Grid.Column="2"
+                                              SelectionChanged="MouseModeCombo_SelectionChanged"
+                                              MinWidth="120" VerticalAlignment="Center">
+                                        <ComboBoxItem x:Uid="MouseModeItem_Off"     Tag="Off"/>
+                                        <ComboBoxItem x:Uid="MouseModeItem_Auto"    Tag="Auto"/>
+                                        <ComboBoxItem x:Uid="MouseModeItem_ForceOn" Tag="ForceOn"/>
+                                    </ComboBox>
                                 </Grid>
 
                                 <!-- Mouse Mode 版面配置切換 (OmniNav / Classic) -->
@@ -597,7 +602,7 @@
 
                                     <ComboBox x:Name="CursorSpeedCombo" Grid.Column="2"
                                               SelectionChanged="CursorSpeedCombo_SelectionChanged"
-                                              MinWidth="90" VerticalAlignment="Center" />
+                                              MinWidth="120" VerticalAlignment="Center" />
                                 </Grid>
                             </StackPanel>
                         </Border>

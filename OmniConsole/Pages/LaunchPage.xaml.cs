@@ -160,8 +160,9 @@ namespace OmniConsole.Pages
 
                     if (platformToForeground)
                     {
-                        // FSE 環境下啟動 PhantomKey 手把輸入服務
-                        if (FseService.IsActive() && SettingsService.GetUsePhantomKey())
+                        // FSE 環境下啟動 PhantomKey 手把輸入服務（常駐，不再檢查使用者開關）
+                        //if (FseService.IsActive() && SettingsService.GetUsePhantomKey())
+                        if (FseService.IsActive())
                             PhantomKeyService.Start();
 
                         ShowWindow(Hwnd, SW_HIDE);

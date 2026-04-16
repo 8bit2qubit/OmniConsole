@@ -74,6 +74,15 @@
 
 	</Applications>
 
+	<!-- 同 Publisher 的套件共用資料夾，供 PhantomKey 與 PhantomLink 存取 Shared.ini 設定 -->
+	<Extensions>
+		<Extension Category="windows.publisherCacheFolders">
+			<PublisherCacheFolders>
+				<Folder Name="OmniConsoleShared" />
+			</PublisherCacheFolders>
+		</Extension>
+	</Extensions>
+
 	<Capabilities>
 		<!-- 需要 runFullTrust 以便未來啟動 Steam 或其他 Win32 應用程式 -->
 		<rescap:Capability Name="runFullTrust" />

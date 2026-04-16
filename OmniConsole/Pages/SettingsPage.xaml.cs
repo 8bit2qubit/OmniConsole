@@ -92,6 +92,9 @@ namespace OmniConsole.Pages
         /// </summary>
         public void ShowSettings()
         {
+            // PhantomLink 可能已直接改動 Shared.ini，先從共用儲存同步回 LocalSettings
+            SettingsService.ReloadFromSharedStore();
+
             // 先設好狀態，再賦值 SelectedItem（賦值會觸發 SelectionChanged → UpdateGamepadHints）
             _currentNavTag = "General";
             VisualStateManager.GoToState(this, "General", false);
@@ -128,19 +131,27 @@ namespace OmniConsole.Pages
 
             UpdateSettingsDescription();
 
-            // 還原 PhantomKey 手把輸入開關狀態，FSE 環境下若開關啟用且尚未執行則自動啟動
-            // （更新後重啟進設定頁時 PhantomKey 已被殺掉，需在此恢復）
-            UsePhantomKeySwitch.IsOn = SettingsService.GetUsePhantomKey();
-            if (FseService.IsActive() && UsePhantomKeySwitch.IsOn)
+            // PhantomKey 已改為 FSE 常駐，不再有獨立開關。
+            // UI 開關雖然註解保留，但這裡直接判斷 FSE → 啟動，確保更新重啟後恢復。
+            //UsePhantomKeySwitch.IsOn = SettingsService.GetUsePhantomKey();
+            //if (FseService.IsActive() && UsePhantomKeySwitch.IsOn)
+            //    PhantomKeyService.Start();
+            if (FseService.IsActive())
                 PhantomKeyService.Start();
 
-            // 還原 Steam In-Game Overlay 開關狀態，PhantomKey 未啟用時反灰
+            // 還原 Steam In-Game Overlay 開關狀態（PhantomKey 恆為啟用，此開關恆可用）
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
-            UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
+            UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = true;
 
-            // 還原 Mouse Mode 開關 / 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
+            // 還原 Mouse Mode（Off/Auto/ForceOn）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
             bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
-            UsePhantomKeyMouseModeSwitch.IsOn = SettingsService.GetUsePhantomKeyMouseMode() && !builtInMapping;
+            string currentMode = builtInMapping ? SettingsService.MouseModeOff : SettingsService.GetMouseMode();
+            MouseModeCombo.SelectedIndex = currentMode switch
+            {
+                SettingsService.MouseModeOff => 0,
+                SettingsService.MouseModeForceOn => 2,
+                _ => 1,
+            };
             MouseModeLayoutSwitch.IsOn = SettingsService.GetMouseModeLayout() == SettingsService.LayoutClassic;
 
             // 填充游標速度下拉選單並還原選取
@@ -375,15 +386,16 @@ namespace OmniConsole.Pages
         /// 開啟時若在 FSE 模式下立即啟動服務，關閉時終止服務。
         /// 同時連動 Steam In-Game Overlay 開關的啟用狀態。
         /// </summary>
+        // PhantomKey 已改為 FSE 常駐；XAML 開關已註解，此 handler 保留但不再被觸發。
         private void UsePhantomKeySwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            SettingsService.SetUsePhantomKey(UsePhantomKeySwitch.IsOn);
-            UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
-            ApplyMouseModeEnabledState();
-            if (UsePhantomKeySwitch.IsOn && FseService.IsActive())
-                PhantomKeyService.Start();
-            else if (!UsePhantomKeySwitch.IsOn)
-                PhantomKeyService.Kill();
+            //SettingsService.SetUsePhantomKey(UsePhantomKeySwitch.IsOn);
+            //UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = UsePhantomKeySwitch.IsOn;
+            //ApplyMouseModeEnabledState();
+            //if (UsePhantomKeySwitch.IsOn && FseService.IsActive())
+            //    PhantomKeyService.Start();
+            //else if (!UsePhantomKeySwitch.IsOn)
+            //    PhantomKeyService.Kill();
         }
 
         /// <summary>
@@ -395,11 +407,13 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// Mouse Mode 主開關切換時立即儲存（同步寫入 INI），並更新子控制項反灰狀態。
+        /// Mouse Mode 下拉選單（Off/Auto/ForceOn）變更時立即儲存，並更新子控制項反灰狀態。
         /// </summary>
-        private void UsePhantomKeyMouseModeSwitch_Toggled(object sender, RoutedEventArgs e)
+        private void MouseModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SettingsService.SetUsePhantomKeyMouseMode(UsePhantomKeyMouseModeSwitch.IsOn);
+            if (MouseModeCombo.SelectedItem is not ComboBoxItem item) return;
+            string mode = item.Tag as string ?? SettingsService.MouseModeAuto;
+            SettingsService.SetMouseMode(mode);
             ApplyMouseModeEnabledState();
         }
 
@@ -430,11 +444,14 @@ namespace OmniConsole.Pages
         private void ApplyMouseModeEnabledState(bool? builtInMappingOverride = null)
         {
             bool builtIn = builtInMappingOverride ?? SettingsService.HasBuiltInGamepadMapping();
-            bool phantomOn = UsePhantomKeySwitch.IsOn;
+            // PhantomKey 改為 FSE 常駐，不再依開關；保留變數以利未來復原。
+            //bool phantomOn = UsePhantomKeySwitch.IsOn;
+            bool phantomOn = true;
             bool mouseModeAvailable = phantomOn && !builtIn;
-            bool mouseModeOn = mouseModeAvailable && UsePhantomKeyMouseModeSwitch.IsOn;
+            string mode = (MouseModeCombo.SelectedItem as ComboBoxItem)?.Tag as string ?? SettingsService.MouseModeAuto;
+            bool mouseModeOn = mouseModeAvailable && mode != SettingsService.MouseModeOff;
 
-            UsePhantomKeyMouseModeSwitch.IsEnabled = mouseModeAvailable;
+            MouseModeCombo.IsEnabled = mouseModeAvailable;
             MouseModeBuiltInMappingNoteText.Visibility = builtIn ? Visibility.Visible : Visibility.Collapsed;
 
             MouseModeLayoutSwitch.IsEnabled = mouseModeOn;
@@ -855,20 +872,17 @@ namespace OmniConsole.Pages
                     ImportPlatformButton_Click(this, new RoutedEventArgs());
                     break;
 
-                // PhantomKey 手把輸入開關
-                case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySwitch):
-                    UsePhantomKeySwitch.IsOn = !sw.IsOn;
-                    break;
+                // PhantomKey 手把輸入開關 — 已移除（FSE 常駐），保留註解以利復原
+                //case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySwitch):
+                //    UsePhantomKeySwitch.IsOn = !sw.IsOn;
+                //    break;
 
                 // Steam In-Game Overlay 開關
                 case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySteamInGameOverlaySwitch):
                     UsePhantomKeySteamInGameOverlaySwitch.IsOn = !sw.IsOn;
                     break;
 
-                // Mouse Mode 主開關
-                case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeyMouseModeSwitch):
-                    if (sw.IsEnabled) UsePhantomKeyMouseModeSwitch.IsOn = !sw.IsOn;
-                    break;
+                // Mouse Mode 下拉選單：A 鍵展開由 GamepadNavigationService 統一處理，此處無需動作
 
                 // Mouse Mode 版面配置切換 (OmniNav / Classic)
                 case ToggleSwitch sw when ReferenceEquals(sw, MouseModeLayoutSwitch):

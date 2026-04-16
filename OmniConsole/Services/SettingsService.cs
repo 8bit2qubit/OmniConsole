@@ -1,4 +1,5 @@
 using OmniConsole.Models;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Windows.Storage;
@@ -7,54 +8,181 @@ namespace OmniConsole.Services
 {
     /// <summary>
     /// 管理應用程式設定的持久化讀寫。
-    /// 使用 ApplicationData.Current.LocalSettings 儲存於本機。
-    /// 預設平台以穩定的字串 Id 儲存，而非列舉整數，確保平台清單調整後設定仍可正確讀取。
-    /// 同時維護 OmniConsole.ini 供外部程式（PhantomKey 等）讀取共用設定。
+    /// UI 狀態儲存於 ApplicationData.Current.LocalSettings。
+    /// PhantomKey / PhantomLink 共用的設定寫入 PublisherCacheFolder\OmniConsoleShared\Shared.ini，
+    /// 同 Publisher (CN=8bit2qubit) 的 MSIX 套件皆可共用。
     /// </summary>
     public static class SettingsService
     {
+        // ─── 共用 INI（同 Publisher 各套件共通） ──────────────────────
+        private const string SharedFolderName = "OmniConsoleShared";
+        private const string SharedIniFileName = "Shared.ini";
+
+        private static string? _cachedSharedIniPath;
+        private static string SharedIniPath
+        {
+            get
+            {
+                if (_cachedSharedIniPath != null) return _cachedSharedIniPath;
+                try
+                {
+                    var folder = ApplicationData.Current.GetPublisherCacheFolder(SharedFolderName);
+                    _cachedSharedIniPath = Path.Combine(folder.Path, SharedIniFileName);
+                }
+                catch
+                {
+                    _cachedSharedIniPath = string.Empty;
+                }
+                return _cachedSharedIniPath;
+            }
+        }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern bool WritePrivateProfileString(
-            string lpAppName, string lpKeyName, string lpString, string lpFileName);
+        private static extern int GetPrivateProfileStringW(
+            string? lpAppName, string? lpKeyName, string? lpDefault,
+            System.Text.StringBuilder? lpReturnedString, int nSize, string lpFileName);
 
-        private static readonly string IniDir = Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "OmniConsole");
-
-        private static readonly string IniPath = Path.Combine(IniDir, "OmniConsole.ini");
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool WritePrivateProfileStringW(
+            string lpAppName, string lpKeyName, string? lpString, string lpFileName);
 
         /// <summary>
-        /// 將設定寫入 OmniConsole.ini，供外部程式（PhantomKey 等）讀取。
+        /// 寫入共用 INI；PublisherCacheFolder 無法取得時靜默略過，避免影響 LocalSettings 主路徑。
         /// </summary>
-        private static void WriteIni(string section, string key, string value)
+        private static void WriteShared(string section, string name, string value)
         {
-            Directory.CreateDirectory(IniDir);
-            WritePrivateProfileString(section, key, value, IniPath);
+            var path = SharedIniPath;
+            if (string.IsNullOrEmpty(path)) return;
+            try { WritePrivateProfileStringW(section, name, value, path); } catch { }
         }
+
+        /// <summary>
+        /// 從共用 INI 讀值；路徑取不到或檔案不存在時回 defaultValue。
+        /// </summary>
+        private static string ReadShared(string section, string name, string defaultValue)
+        {
+            var path = SharedIniPath;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return defaultValue;
+            var sb = new System.Text.StringBuilder(256);
+            GetPrivateProfileStringW(section, name, defaultValue, sb, sb.Capacity, path);
+            return sb.ToString();
+        }
+
+        // ─── 舊版 INI 遷移（LocalCache\OmniConsole\OmniConsole.ini） ───────
+        private static readonly string LegacyIniDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OmniConsole");
+
+        private static readonly string LegacyIniPath = Path.Combine(LegacyIniDir, "OmniConsole.ini");
 
         private const string DefaultPlatformKey = "DefaultPlatform";
         private const string LastLaunchedVersionKey = "LastLaunchedVersion";
 
         /// <summary>
-        /// 將 LocalSettings 中的共用設定同步至 OmniConsole.ini，
-        /// 確保即使使用者從未手動切換設定，PhantomKey 仍能讀取正確的值。
+        /// 將 LocalSettings 與啟動時偵測值同步至共用 INI，
+        /// 確保即使使用者從未手動切換設定，PhantomKey 與 PhantomLink 仍能讀取正確值。
         /// 僅在首次安裝或版本更新時呼叫（由 IsFirstRunOrUpdate() 判斷）。
         /// </summary>
-        public static void SyncIni()
+        public static void SyncPhantomKeyStore()
         {
-            var platform = GetDefaultPlatform();
-            WriteIni("General", "DefaultPlatform", platform.Id);
-            WriteIni("PhantomKey", "SteamInGameOverlayEnabled",
-                GetUsePhantomKeySteamInGameOverlay() ? "1" : "0");
-            WriteIni("PhantomKey", "MouseModeEnabled",
-                GetUsePhantomKeyMouseMode() ? "1" : "0");
-            WriteIni("PhantomKey", "MouseModeLayout", GetMouseModeLayout());
-            WriteIni("PhantomKey", "CursorSpeedPercent",
-                GetCursorSpeedPercent().ToString());
+            WriteShared("General", "DefaultPlatform", GetDefaultPlatform().Id);
+            WriteShared("PhantomKey", "SteamInGameOverlayEnabled", GetUsePhantomKeySteamInGameOverlay() ? "1" : "0");
+            WriteShared("PhantomKey", "MouseMode", GetMouseMode());
+            WriteShared("PhantomKey", "MouseModeLayout", GetMouseModeLayout());
+            WriteShared("PhantomKey", "CursorSpeedPercent", GetCursorSpeedPercent().ToString());
         }
 
         /// <summary>
-        /// 取得目前應用程式的版本號字串。
+        /// 從共用 INI 重新同步值到 LocalSettings。
+        /// 外部行程（PhantomLink）可能直接改動 Shared.ini，
+        /// 本方法讓主程式 UI 重新讀取時能拿到最新狀態。
         /// </summary>
+        public static void ReloadFromSharedStore()
+        {
+            var path = SharedIniPath;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+            try
+            {
+                var settings = ApplicationData.Current.LocalSettings;
+
+                string defaultPlatform = ReadShared("General", "DefaultPlatform", "");
+                if (!string.IsNullOrEmpty(defaultPlatform))
+                    settings.Values[DefaultPlatformKey] = defaultPlatform;
+
+                string mouseMode = ReadShared("PhantomKey", "MouseMode", MouseModeAuto);
+                if (mouseMode == MouseModeOff || mouseMode == MouseModeAuto || mouseMode == MouseModeForceOn)
+                    settings.Values["MouseMode"] = mouseMode;
+
+                string layout = ReadShared("PhantomKey", "MouseModeLayout", LayoutOmniNav);
+                if (layout == LayoutOmniNav || layout == LayoutClassic)
+                    settings.Values["MouseModeLayout"] = layout;
+
+                string pctStr = ReadShared("PhantomKey", "CursorSpeedPercent", "100");
+                if (int.TryParse(pctStr, out int pct))
+                {
+                    foreach (var p in ValidCursorSpeedPercents)
+                        if (p == pct) { settings.Values["CursorSpeedPercent"] = pct; break; }
+                }
+
+                string steamOverlay = ReadShared("PhantomKey", "SteamInGameOverlayEnabled", "1");
+                settings.Values["UsePhantomKeySteamInGameOverlay"] = steamOverlay != "0";
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// 一次性遷移：若共用 INI 尚未建立 → 嘗試從舊版 LocalCache INI。
+        /// 僅在首次安裝或版本更新時呼叫（由 IsFirstRunOrUpdate() 判斷）。
+        /// </summary>
+        public static void MigrateLegacyIfNeeded()
+        {
+            try
+            {
+                var sharedPath = SharedIniPath;
+                if (string.IsNullOrEmpty(sharedPath)) return;
+
+                // 僅在共用 INI 尚未建立時才從舊檔讀值（避免覆蓋使用者後續修改）
+                if (!File.Exists(sharedPath) && File.Exists(LegacyIniPath))
+                {
+                    string oldMouseMode = ReadLegacyIni("PhantomKey", "MouseModeEnabled", "1");
+                    ApplicationData.Current.LocalSettings.Values["MouseMode"] =
+                        oldMouseMode == "0" ? "Off" : "Auto";
+
+                    string layout = ReadLegacyIni("PhantomKey", "MouseModeLayout", "OmniNav");
+                    if (layout != "OmniNav" && layout != "Classic") layout = "OmniNav";
+                    ApplicationData.Current.LocalSettings.Values["MouseModeLayout"] = layout;
+
+                    if (int.TryParse(ReadLegacyIni("PhantomKey", "CursorSpeedPercent", "100"), out var pct))
+                        ApplicationData.Current.LocalSettings.Values["CursorSpeedPercent"] = pct;
+
+                    string steamOverlay = ReadLegacyIni("PhantomKey", "SteamInGameOverlayEnabled", "1");
+                    ApplicationData.Current.LocalSettings.Values["UsePhantomKeySteamInGameOverlay"] = steamOverlay != "0";
+
+                    SyncPhantomKeyStore();
+                }
+
+                // 舊檔清理：與是否需要讀值無關，只要殘留就刪
+                if (File.Exists(LegacyIniPath))
+                {
+                    try { File.Delete(LegacyIniPath); } catch { }
+                    try
+                    {
+                        if (Directory.Exists(LegacyIniDir) && Directory.GetFileSystemEntries(LegacyIniDir).Length == 0)
+                            Directory.Delete(LegacyIniDir);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+
+        private static string ReadLegacyIni(string section, string key, string defaultValue)
+        {
+            var sb = new System.Text.StringBuilder(256);
+            GetPrivateProfileStringW(section, key, defaultValue, sb, sb.Capacity, LegacyIniPath);
+            return sb.ToString();
+        }
+
         public static string GetAppVersion()
         {
             try
@@ -102,7 +230,6 @@ namespace OmniConsole.Services
         public static PlatformDefinition GetDefaultPlatform()
         {
             var settings = ApplicationData.Current.LocalSettings;
-
             if (settings.Values.TryGetValue(DefaultPlatformKey, out object? value) && value is string id)
             {
                 // 先查系統平台，再查使用者自訂平台
@@ -110,7 +237,6 @@ namespace OmniConsole.Services
                     ?? UserPlatformStore.FindById(id)
                     ?? PlatformCatalog.All[0];
             }
-
             return PlatformCatalog.All[0];
         }
 
@@ -123,7 +249,7 @@ namespace OmniConsole.Services
             if (settings.Values.TryGetValue(DefaultPlatformKey, out object? prev) && prev is string id && id == platform.Id)
                 return;
             settings.Values[DefaultPlatformKey] = platform.Id;
-            WriteIni("General", "DefaultPlatform", platform.Id);
+            WriteShared("General", "DefaultPlatform", platform.Id);
         }
         /// <summary>
         /// 取得是否啟用「Game Bar 媒體櫃按鈕進入設定介面」功能。
@@ -133,9 +259,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("UseGameBarLibraryForSettings", out object? value) && value is bool isEnabled)
-            {
                 return isEnabled;
-            }
             return true;
         }
 
@@ -155,9 +279,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("EnablePassthrough", out object? value) && value is bool isEnabled)
-            {
                 return isEnabled;
-            }
             return false;
         }
 
@@ -176,9 +298,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("CustomPlatformConsentAccepted", out object? value) && value is bool accepted)
-            {
                 return accepted;
-            }
             return false;
         }
 
@@ -198,9 +318,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("AutoUpdateCheckEnabled", out object? value) && value is bool enabled)
-            {
                 return enabled;
-            }
             return true;
         }
 
@@ -219,9 +337,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("LastUpdateCheckDate", out object? value) && value is string date)
-            {
                 return date;
-            }
             return "";
         }
 
@@ -241,9 +357,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("CachedNewVersion", out object? value) && value is string version)
-            {
                 return version;
-            }
             return "";
         }
 
@@ -271,9 +385,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("CachedDownloadUrl", out object? value) && value is string url)
-            {
                 return url;
-            }
             return "";
         }
 
@@ -301,9 +413,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("UsePhantomKey", out object? value) && value is bool enabled)
-            {
                 return enabled;
-            }
             return true;
         }
 
@@ -323,9 +433,7 @@ namespace OmniConsole.Services
         {
             var settings = ApplicationData.Current.LocalSettings;
             if (settings.Values.TryGetValue("UsePhantomKeySteamInGameOverlay", out object? value) && value is bool enabled)
-            {
                 return enabled;
-            }
             return true;
         }
 
@@ -338,33 +446,42 @@ namespace OmniConsole.Services
             if (settings.Values.TryGetValue("UsePhantomKeySteamInGameOverlay", out object? prev) && prev is bool val && val == enabled)
                 return;
             settings.Values["UsePhantomKeySteamInGameOverlay"] = enabled;
-            WriteIni("PhantomKey", "SteamInGameOverlayEnabled", enabled ? "1" : "0");
+            WriteShared("PhantomKey", "SteamInGameOverlayEnabled", enabled ? "1" : "0");
         }
 
-        // ─── Gamepad Mouse Mode ──────────────────────────────────────────
+        // ─── Gamepad Mouse Mode（3-way: Off/Auto/ForceOn） ─────────────────
+
+        public const string MouseModeOff = "Off";
+        public const string MouseModeAuto = "Auto";
+        public const string MouseModeForceOn = "ForceOn";
 
         /// <summary>
-        /// 取得是否啟用 Gamepad Mouse Mode（在瀏覽器/Epic 等前景時將手把映射為滑鼠+鍵盤）。
-        /// 預設為 true。
+        /// 取得 Mouse Mode（"Off" / "Auto" / "ForceOn"）。
+        /// 無效或缺失值回 "Auto"。
         /// </summary>
-        public static bool GetUsePhantomKeyMouseMode()
+        public static string GetMouseMode()
         {
             var settings = ApplicationData.Current.LocalSettings;
-            if (settings.Values.TryGetValue("UsePhantomKeyMouseMode", out object? value) && value is bool enabled)
-                return enabled;
-            return true;
+            if (settings.Values.TryGetValue("MouseMode", out object? value) && value is string str)
+            {
+                if (str == MouseModeOff || str == MouseModeAuto || str == MouseModeForceOn)
+                    return str;
+            }
+            return MouseModeAuto;
         }
 
         /// <summary>
-        /// 儲存是否啟用 Mouse Mode，同步寫入 INI 供 PhantomKey 讀取。
+        /// 儲存 Mouse Mode，未知值回退至 "Auto"，同步寫入 INI；值未變動時直接略過避免多餘寫入。
         /// </summary>
-        public static void SetUsePhantomKeyMouseMode(bool enabled)
+        public static void SetMouseMode(string mode)
         {
+            if (mode != MouseModeOff && mode != MouseModeAuto && mode != MouseModeForceOn)
+                mode = MouseModeAuto;
             var settings = ApplicationData.Current.LocalSettings;
-            if (settings.Values.TryGetValue("UsePhantomKeyMouseMode", out object? prev) && prev is bool val && val == enabled)
+            if (settings.Values.TryGetValue("MouseMode", out object? prev) && prev is string pv && pv == mode)
                 return;
-            settings.Values["UsePhantomKeyMouseMode"] = enabled;
-            WriteIni("PhantomKey", "MouseModeEnabled", enabled ? "1" : "0");
+            settings.Values["MouseMode"] = mode;
+            WriteShared("PhantomKey", "MouseMode", mode);
         }
 
         /// <summary>OmniNav 預設版面配置。</summary>
@@ -394,7 +511,7 @@ namespace OmniConsole.Services
             if (settings.Values.TryGetValue("MouseModeLayout", out object? prev) && prev is string pv && pv == layout)
                 return;
             settings.Values["MouseModeLayout"] = layout;
-            WriteIni("PhantomKey", "MouseModeLayout", layout);
+            WriteShared("PhantomKey", "MouseModeLayout", layout);
         }
 
         public static readonly int[] ValidCursorSpeedPercents = { 25, 50, 75, 100, 125, 150, 175, 200 };
@@ -425,16 +542,21 @@ namespace OmniConsole.Services
             if (settings.Values.TryGetValue("CursorSpeedPercent", out object? prev) && prev is int pv && pv == valid)
                 return;
             settings.Values["CursorSpeedPercent"] = valid;
-            WriteIni("PhantomKey", "CursorSpeedPercent", valid.ToString());
+            WriteShared("PhantomKey", "CursorSpeedPercent", valid.ToString());
         }
 
         /// <summary>
         /// 偵測裝置是否內建廠商手把映射軟體（與 Mouse Mode 衝突需停用）。
         /// 目前清單僅包含 ROG Ally 家族（Armoury Crate SE）；未來可擴充其他掌機。
+        /// HKLM 讀取不受 MSIX 虛擬化影響。
+        /// 主程式、PhantomKey、PhantomLink 三處各自獨立偵測，不經 INI；
+        /// 機型清單更新時必須三處同步修改：
+        ///   - OmniConsole/Services/SettingsService.cs (此函式)
+        ///   - OmniConsole.PhantomKey/Config.cpp (DetectBuiltInGamepadMapping)
+        ///   - OmniConsole.PhantomLink/Services/HardwareDetection.cs (HasBuiltInGamepadMapping)
         /// </summary>
         public static bool HasBuiltInGamepadMapping()
         {
-            // return false; // 測試用：略過內建映射偵測
             try
             {
                 using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS");

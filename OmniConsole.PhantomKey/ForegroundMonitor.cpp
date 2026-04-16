@@ -1,5 +1,8 @@
 #include "ForegroundMonitor.h"
 #include "Log.h"
+#include <dwmapi.h>
+
+#pragma comment(lib, "dwmapi.lib")
 
 // ============================================================================
 // 規則表
@@ -42,13 +45,19 @@ std::wstring GetForegroundProcessName() {
     return result;
 }
 
+static bool IsSteamBigPicture();
+
 const InputRule* FindRuleForForeground() {
     std::wstring fgName = GetForegroundProcessName();
     if (fgName.empty()) return nullptr;
 
     for (int i = 0; i < g_ruleCount; i++) {
-        if (_wcsicmp(fgName.c_str(), g_rules[i].processName) == 0)
+        if (_wcsicmp(fgName.c_str(), g_rules[i].processName) == 0) {
+            // steamwebhelper 快捷鍵只在 Big Picture 模式下觸發
+            if (_wcsicmp(fgName.c_str(), L"steamwebhelper") == 0 && !IsSteamBigPicture())
+                return nullptr;
             return &g_rules[i];
+        }
     }
     return nullptr;
 }
@@ -56,6 +65,8 @@ const InputRule* FindRuleForForeground() {
 // ============================================================================
 // Mouse Mode 目標前景程式
 // ============================================================================
+
+static bool IsExplorerTaskView();
 
 static const wchar_t* g_mouseModeTargets[] = {
     L"msedge", L"chrome", L"firefox", L"opera", L"brave",
@@ -66,5 +77,100 @@ bool IsMouseModeTarget(const std::wstring& processName) {
     if (processName.empty()) return false;
     for (auto t : g_mouseModeTargets)
         if (_wcsicmp(processName.c_str(), t) == 0) return true;
+    // 檔案總管納入 Auto，但 FSE Task View 同行程需排除
+    if (_wcsicmp(processName.c_str(), L"explorer") == 0 && !IsExplorerTaskView())
+        return true;
+    // Steam 桌面模式（steamwebhelper, title=="Steam"）納入 Auto；Big Picture 不介入
+    if (_wcsicmp(processName.c_str(), L"steamwebhelper") == 0 && !IsSteamBigPicture())
+        return true;
+    return false;
+}
+
+// ForceOn 模式排除清單：即使強制也不該介入（本身用手把操作或會撞到 Shell）
+// explorer 由 IsExplorerTaskView() 動態判斷：FSE Task View 才排除，一般檔案總管不排除
+// UWP app（Xbox App / Armoury Crate SE）實際 proc 為 ApplicationFrameHost，
+// 靠視窗 title 判斷，見 IsExcludedAppFrame()
+static const wchar_t* g_mouseModeForceExclusions[] = {
+    L"OmniConsole",              // 主程式本身用手把導航
+    L"Playnite.FullscreenApp",   // Playnite Fullscreen 內建手把導覽
+    // steamwebhelper 由 IsSteamBigPicture() 動態判斷：Big Picture 排除，桌面 Steam 不排除
+    // ApplicationFrameHost 由 IsExcludedAppFrame() 動態判斷（Xbox / Armoury Crate SE）
+};
+
+// UWP app 由 ApplicationFrameHost 宿主，靠視窗 title 識別
+// Xbox App title="Xbox"（不隨語系變動），Armoury Crate SE title="Armoury Crate SE"
+static bool IsExcludedAppFrame() {
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd) return false;
+    WCHAR title[256] = {};
+    GetWindowTextW(hwnd, title, _countof(title));
+    return _wcsicmp(title, L"Xbox") == 0
+        || _wcsicmp(title, L"Armoury Crate SE") == 0;
+}
+
+// FSE Task View 與檔案總管同為 explorer.exe，靠視窗 class 區分
+// XamlExplorerHostIslandWindow = FSE Task View（不隨語系變動）
+// CabinetWClass = 一般檔案總管
+static bool IsExplorerTaskView() {
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd) return false;
+    WCHAR cls[128] = {};
+    GetClassNameW(hwnd, cls, _countof(cls));
+    return _wcsicmp(cls, L"XamlExplorerHostIslandWindow") == 0;
+}
+
+// Steam Big Picture 與桌面 Steam 同為 steam.exe (SDL_app)，靠視窗 title 區分
+// 桌面 Steam title 恰好 "Steam"（不隨語系變動），Big Picture 帶語系後綴
+static bool IsSteamBigPicture() {
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd) return false;
+    WCHAR title[256] = {};
+    GetWindowTextW(hwnd, title, _countof(title));
+    return _wcsicmp(title, L"Steam") != 0;
+}
+
+// 比對視窗 rect 四個邊是否都涵蓋所在 monitor rect（幾何比對，僅供診斷 log 參考）
+static bool IsWindowCoveringMonitor(HWND hwnd) {
+    RECT wr = {};
+    if (!GetWindowRect(hwnd, &wr)) return false;
+    HMONITOR hMon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi = { sizeof(mi) };
+    if (!GetMonitorInfoW(hMon, &mi)) return false;
+    return wr.left  <= mi.rcMonitor.left  && wr.top    <= mi.rcMonitor.top
+        && wr.right >= mi.rcMonitor.right && wr.bottom >= mi.rcMonitor.bottom;
+}
+
+void LogForegroundWindowDiagnostics() {
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd) { Log(L"FG diag: no foreground window."); return; }
+
+    WCHAR cls[128] = {};
+    GetClassNameW(hwnd, cls, _countof(cls));
+
+    WCHAR title[256] = {};
+    GetWindowTextW(hwnd, title, _countof(title));
+
+    bool coversMonitor = IsWindowCoveringMonitor(hwnd);
+
+    int cloaked = 0;
+    DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
+
+    std::wstring procName = GetForegroundProcessName();
+    Log(L"FG diag: proc=[%s] class=[%s] title=[%s] coversMonitor=%d cloaked=%d",
+        procName.c_str(), cls, title, coversMonitor ? 1 : 0, cloaked);
+}
+
+bool IsMouseModeForceExcluded(const std::wstring& processName) {
+    if (processName.empty()) return false;
+    for (auto t : g_mouseModeForceExclusions)
+        if (_wcsicmp(processName.c_str(), t) == 0) return true;
+    if (_wcsicmp(processName.c_str(), L"explorer") == 0 && IsExplorerTaskView())
+        return true;
+    // Steam Big Picture 內建手把導覽，ForceOn 也不該介入
+    if (_wcsicmp(processName.c_str(), L"steamwebhelper") == 0 && IsSteamBigPicture())
+        return true;
+    // Xbox App / Armoury Crate SE 由 ApplicationFrameHost 宿主，靠視窗 title 辨識
+    if (_wcsicmp(processName.c_str(), L"ApplicationFrameHost") == 0 && IsExcludedAppFrame())
+        return true;
     return false;
 }
