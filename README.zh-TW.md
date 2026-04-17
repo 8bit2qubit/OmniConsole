@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" width="650">
+  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" height="320"><img src="docs/images/widget-omnicharm.zh-TW.png" alt="OmniCharm 小工具" height="320">
 </p>
 
 <p align="center">
@@ -49,7 +49,8 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 - **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：「**首頁**」啟動遊戲平台、「**媒體櫃**」預設開啟 OmniConsole 設定，或直接導向 Xbox App 等平台。
 - **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
 - **手把支援** – 使用**方向鍵**或**左搖桿**導覽，**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯、**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（在 FSE 模式中）。
-- **手把滑鼠模式** – 在瀏覽器與支援的桌面應用程式（Edge、Chrome、Firefox、Opera、Brave、Epic Games Store）中，以手把作為滑鼠與鍵盤使用。提供兩種控制器版面配置：**OmniNav** 和 **Classic**，可調整游標速度。
+- **手把滑鼠模式** – 以手把作為滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store）與**強制開啟**（所有應用程式，排除清單除外）。提供兩種控制器版面配置：**OmniNav** 和 **Classic**，可調整游標速度。
+- **OmniCharm 小工具** – Game Bar 小工具，在遊戲中快速切換手把滑鼠模式、控制器版面配置與游標速度。
 - **手把 Steam 快捷鍵** – 為 Steam Big Picture 模式提供手把 **⧉** 按鍵支援：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
@@ -72,10 +73,18 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 
 ### 1. 安裝 OmniConsole
 
+從[**發布頁面**](https://github.com/8bit2qubit/OmniConsole/releases/latest)下載最新版本。
+
+**方式 A：Install.bat（建議）**
+
+1.  解壓縮 `OmniConsole_*_x64.zip` 後執行 `Install.bat`，將自動開啟開發人員模式、安裝憑證與兩個 MSIX 套件。
+
+**方式 B：手動安裝**
+
 1.  **[重要]** 前往**設定 → 系統 → 進階**，啟用**開發人員模式**。
-2.  從[**發布頁面**](https://github.com/8bit2qubit/OmniConsole/releases/latest)下載最新的 `.msix` 安裝套件與 `.cer` 憑證檔。
-3.  **[重要]** 點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下的存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
-4.  點兩下 `.msix` 檔案進行安裝。
+2.  **[重要]** 點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下的存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
+3.  點兩下 `OmniConsole_*_x64.msix` 安裝主程式。
+4.  點兩下 `OmniConsole.PhantomLink_*_x64-widget.msix` 安裝 OmniCharm 小工具。
 
 ### 2. 設定預設平台
 
@@ -113,7 +122,7 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ## 🔄 如何還原
 
-> ⚠️ **解除安裝前，請務必先變更 FSE 首頁應用程式設定。** 若在 OmniConsole 仍設為 FSE 首頁應用程式的情況下直接解除安裝，Windows **工作檢視將無法正常開啟**。這是 Windows 本身的 Bug。
+> ⚠️ **解除安裝前，請務必先變更 FSE 首頁應用程式設定。** 若在 OmniConsole 仍設為 FSE 首頁應用程式的情況下直接解除安裝，部分 Windows 版本的**工作檢視將無法正常開啟**。這是 Windows 本身的 Bug。
 
 1. 前往**設定 → 遊戲 → 全螢幕體驗**。
 2. 將「選擇首頁應用程式」改為 **Xbox** 或 **無**。
