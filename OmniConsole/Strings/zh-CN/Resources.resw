@@ -635,6 +635,18 @@
   <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
     <value>OmniConsole v{0} 已可下载。前往「☰ &gt; 高级」下载并安装。</value>
   </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Title" xml:space="preserve">
+    <value>OmniCharm 小组件已可安装。</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
+    <value>在游戏中快速切换 OmniConsole 功能的 Game Bar 小组件。前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
+    <value>OmniCharm 小组件已可安装。从「Game Bar &gt; 库」打开 OmniConsole 设置，前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Launch_StartMenu" xml:space="preserve">
+    <value>OmniCharm 小组件已可安装。从「开始 &gt; 所有应用」打开 OmniConsole 设置，前往「☰ &gt; 高级」下载并安装。</value>
+  </data>
   <data name="UpdateCheck_Checking" xml:space="preserve">
     <value>检查中...</value>
   </data>

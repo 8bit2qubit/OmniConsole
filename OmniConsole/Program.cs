@@ -107,7 +107,15 @@ namespace OmniConsole
                     }
                 }
 
-                // 3. 檢查是否為首次啟動或更新後的首次啟動
+                // 3. PhantomLink 安裝完成後透過 RequestRestartAsync 重啟，導向設定頁
+                if (!isSettingsEntry && SettingsService.GetPendingSettingsRestart())
+                {
+                    SettingsService.SetPendingSettingsRestart(false);
+                    isSettingsEntry = true;
+                    DebugLogger.Log("PendingSettingsRestart = True → settings entry");
+                }
+
+                // 4. 檢查是否為首次啟動或更新後的首次啟動
                 if (!isSettingsEntry)
                 {
                     isSettingsEntry = SettingsService.IsFirstRunOrUpdate();

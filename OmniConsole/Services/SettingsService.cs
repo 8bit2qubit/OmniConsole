@@ -405,6 +405,77 @@ namespace OmniConsole.Services
             ApplicationData.Current.LocalSettings.Values["CachedDownloadUrl"] = "";
         }
 
+        // ── PhantomLink 更新快取 ──────────────────────────────────────────
+
+        /// <summary>
+        /// 取得快取的更新類型（"None" | "MissingPhantomLink" | "MainAppUpdate"）。
+        /// 供 InfoBar 判斷顯示何種通知。
+        /// </summary>
+        public static string GetCachedUpdateKind()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CachedUpdateKind", out object? value) && value is string kind)
+                return kind;
+            return "";
+        }
+
+        /// <summary>
+        /// 儲存快取的更新類型。
+        /// </summary>
+        public static void SetCachedUpdateKind(string kind)
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedUpdateKind"] = kind;
+        }
+
+        /// <summary>
+        /// 取得快取的 PhantomLink .msix 下載 URL。
+        /// 空字串表示無可用下載連結。
+        /// </summary>
+        public static string GetCachedPhantomLinkUrl()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("CachedPhantomLinkUrl", out object? value) && value is string url)
+                return url;
+            return "";
+        }
+
+        /// <summary>
+        /// 儲存快取的 PhantomLink .msix 下載 URL。
+        /// </summary>
+        public static void SetCachedPhantomLinkUrl(string url)
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedPhantomLinkUrl"] = url;
+        }
+
+        /// <summary>
+        /// 清除快取的 PhantomLink 下載 URL。
+        /// </summary>
+        public static void ClearCachedPhantomLinkUrl()
+        {
+            ApplicationData.Current.LocalSettings.Values["CachedPhantomLinkUrl"] = "";
+        }
+
+        /// <summary>
+        /// 取得是否有待完成的設定頁重啟。
+        /// PhantomLink 安裝完成後透過 RequestRestartAsync 重啟時設為 true，
+        /// Program.cs 讀取後導向設定頁並清除。
+        /// </summary>
+        public static bool GetPendingSettingsRestart()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("PendingSettingsRestart", out object? value) && value is bool flag)
+                return flag;
+            return false;
+        }
+
+        /// <summary>
+        /// 設定待完成的設定頁重啟旗標。
+        /// </summary>
+        public static void SetPendingSettingsRestart(bool value)
+        {
+            ApplicationData.Current.LocalSettings.Values["PendingSettingsRestart"] = value;
+        }
+
         /// <summary>
         /// 取得是否啟用 PhantomKey 手把輸入服務（⧉ 鍵開啟平台選單）。
         /// 預設為 true。

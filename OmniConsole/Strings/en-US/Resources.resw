@@ -635,6 +635,18 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
     <value>OmniConsole v{0} is available. Go to ☰ &gt; Advanced to download and install.</value>
   </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Title" xml:space="preserve">
+    <value>OmniCharm Widget is available.</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
+    <value>Quick-access Game Bar widget to toggle OmniConsole features in-game. Go to ☰ &gt; Advanced to download and install.</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
+    <value>OmniCharm Widget is available. Open OmniConsole Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
+  </data>
+  <data name="UpdateInfoBar_MissingPhantomLink_Launch_StartMenu" xml:space="preserve">
+    <value>OmniCharm Widget is available. Open OmniConsole Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
+  </data>
   <data name="UpdateCheck_Checking" xml:space="preserve">
     <value>Checking...</value>
   </data>

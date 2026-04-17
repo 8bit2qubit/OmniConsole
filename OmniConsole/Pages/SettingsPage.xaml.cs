@@ -7,7 +7,6 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1039,7 +1038,7 @@ namespace OmniConsole.Pages
             CheckUpdateProgressRing.IsActive = true;
 
             var delayTask = Task.Delay(500);
-            var (result, version) = await UpdateCheckService.CheckForUpdateAsync();
+            var (kind, version) = await UpdateCheckService.CheckForUpdateAsync();
             UpdateCheckService.RecordCheckDate();
             await delayTask;
 
@@ -1047,9 +1046,16 @@ namespace OmniConsole.Pages
             CheckUpdateProgressRing.Visibility = Visibility.Collapsed;
             _isCheckingUpdate = false;
 
-            switch (result)
+            switch (kind)
             {
-                case UpdateCheckService.CheckResult.NewVersionAvailable:
+                case UpdateCheckService.UpdateKind.MissingPhantomLink:
+                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
+                    UpdateCheckStatusText.Visibility = Visibility.Visible;
+                    DownloadInstallButton.Visibility = Visibility.Visible;
+                    ShowSettingsUpdateInfoBar();
+                    break;
+
+                case UpdateCheckService.UpdateKind.MainAppUpdate:
                     UpdateCheckStatusText.Text = string.Format(
                         _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), version);
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
@@ -1057,21 +1063,16 @@ namespace OmniConsole.Pages
                     ShowSettingsUpdateInfoBar();
                     break;
 
-                case UpdateCheckService.CheckResult.UpToDate:
+                case UpdateCheckService.UpdateKind.None:
                     UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_UpToDate_Subtitle");
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
                     DownloadInstallButton.Visibility = Visibility.Collapsed;
                     SettingsUpdateInfoBar.IsOpen = false;
                     break;
-
-                case UpdateCheckService.CheckResult.Failed:
-                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Failed_Subtitle");
-                    UpdateCheckStatusText.Visibility = Visibility.Visible;
-                    break;
             }
         }
 
-        /// <summary>下載並安裝更新按鈕，下載 MSIX 後透過 PackageManager 自動安裝。</summary>
+        /// <summary>下載並安裝更新按鈕（PhantomLink 先裝，OmniConsole 後裝）。</summary>
         private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
             if (_downloadCts != null) return; // 下載中，防止重複觸發
@@ -1081,10 +1082,12 @@ namespace OmniConsole.Pages
             if (!UpdateCheckService.IsDeveloperModeEnabled()) return;
 
             // 重新檢查最新版本，確保下載的是最新的而非過期快取
-            await UpdateCheckService.CheckForUpdateAsync();
+            var (kind, _) = await UpdateCheckService.CheckForUpdateAsync();
 
-            var downloadUrl = SettingsService.GetCachedDownloadUrl();
-            if (string.IsNullOrEmpty(downloadUrl))
+            var mainUrl = SettingsService.GetCachedDownloadUrl();
+            var phantomLinkUrl = SettingsService.GetCachedPhantomLinkUrl();
+
+            if (string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(phantomLinkUrl))
             {
                 // 無快取下載連結時 fallback 開瀏覽器
                 await Windows.System.Launcher.LaunchUriAsync(
@@ -1099,15 +1102,8 @@ namespace OmniConsole.Pages
             UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_InProgress");
             UpdateCheckStatusText.Visibility = Visibility.Visible;
 
-            var localFolder = ApplicationData.Current.LocalFolder.Path;
-            var cachedVersion = SettingsService.GetCachedNewVersion();
-            var fileName = $"OmniConsole_{cachedVersion}_x64.msix";
-            var destPath = Path.Combine(localFolder, fileName);
-
             try
             {
-                UpdateCheckService.CleanUpOldMsixFiles(localFolder);
-
                 _downloadCts = new CancellationTokenSource();
                 var progress = new Progress<double>(pct =>
                 {
@@ -1124,12 +1120,10 @@ namespace OmniConsole.Pages
                     }
                 });
 
-                await UpdateCheckService.DownloadMsixAsync(
-                    downloadUrl, destPath, progress, _downloadCts.Token);
+                bool mainSkippable = kind == UpdateCheckService.UpdateKind.MissingPhantomLink
+                    && SettingsService.GetCachedNewVersion() == SettingsService.GetAppVersion();
 
-                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Installing");
-                DownloadProgressBar.Value = 100;
-                DownloadProgressText.Text = "100%";
+                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_InProgress");
 
                 // 終止 PhantomKey，避免 MSIX 更新時因 .exe 佔用而拖慢進度
                 PhantomKeyService.Kill();
@@ -1140,15 +1134,14 @@ namespace OmniConsole.Pages
                 // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
                 RegisterApplicationRestart("", 0);
 
-                var packageManager = new Windows.Management.Deployment.PackageManager();
-                await packageManager.AddPackageAsync(
-                    new Uri(destPath),
-                    null,
-                    Windows.Management.Deployment.DeploymentOptions.ForceApplicationShutdown);
+                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Installing");
+
+                await UpdateCheckService.InstallBundleAsync(
+                    phantomLinkUrl, mainUrl, mainSkippable, progress, _downloadCts.Token);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                DebugLogger.Log($"[SettingsPage] Download failed: {ex.Message}");
+                DebugLogger.Log($"[SettingsPage] Download/install failed: {ex.Message}");
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
                 DownloadProgressPanel.Visibility = Visibility.Collapsed;
@@ -1161,14 +1154,14 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// 自動檢查更新（靜默，僅新版時顯示 InfoBar）。
+        /// 自動檢查更新（靜默，有動作時顯示 InfoBar）。
         /// </summary>
         private async Task AutoCheckForUpdatesAsync()
         {
-            var (result, _) = await UpdateCheckService.CheckForUpdateAsync();
+            var (kind, _) = await UpdateCheckService.CheckForUpdateAsync();
             UpdateCheckService.RecordCheckDate();
 
-            if (result == UpdateCheckService.CheckResult.NewVersionAvailable)
+            if (kind != UpdateCheckService.UpdateKind.None)
             {
                 ShowSettingsUpdateInfoBar();
                 ShowCachedUpdateStatus();
@@ -1176,13 +1169,30 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// 依快取的新版本資訊顯示或隱藏設定頁 InfoBar。
+        /// 依快取的 UpdateKind 顯示或隱藏設定頁 InfoBar。
         /// </summary>
         private void ShowSettingsUpdateInfoBar()
         {
-            var cached = SettingsService.GetCachedNewVersion();
-            if (!string.IsNullOrEmpty(cached) && SettingsService.GetAutoUpdateCheckEnabled())
+            if (!SettingsService.GetAutoUpdateCheckEnabled())
             {
+                SettingsUpdateInfoBar.IsOpen = false;
+                return;
+            }
+
+            var kindStr = SettingsService.GetCachedUpdateKind();
+            var cached = SettingsService.GetCachedNewVersion();
+
+            if (kindStr == UpdateCheckService.UpdateKind.MissingPhantomLink.ToString()
+                && !string.IsNullOrEmpty(cached))
+            {
+                SettingsUpdateInfoBar.Title = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
+                SettingsUpdateInfoBar.Message = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Message");
+                SettingsUpdateInfoBar.IsOpen = true;
+            }
+            else if (kindStr == UpdateCheckService.UpdateKind.MainAppUpdate.ToString()
+                && !string.IsNullOrEmpty(cached))
+            {
+                SettingsUpdateInfoBar.Title = "";
                 SettingsUpdateInfoBar.Message = string.Format(
                     _resourceLoader.GetString("UpdateAvailable_InfoBar_Settings"), cached);
                 SettingsUpdateInfoBar.IsOpen = true;
@@ -1194,12 +1204,22 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// 依快取的新版本資訊，在版本號下方顯示狀態文字與「下載並安裝」按鈕。
+        /// 依快取的 UpdateKind，在版本號下方顯示狀態文字與「下載並安裝」按鈕。
         /// </summary>
         private void ShowCachedUpdateStatus()
         {
+            var kindStr = SettingsService.GetCachedUpdateKind();
             var cached = SettingsService.GetCachedNewVersion();
-            if (!string.IsNullOrEmpty(cached))
+
+            if (kindStr == UpdateCheckService.UpdateKind.MissingPhantomLink.ToString()
+                && !string.IsNullOrEmpty(cached))
+            {
+                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
+                UpdateCheckStatusText.Visibility = Visibility.Visible;
+                DownloadInstallButton.Visibility = Visibility.Visible;
+            }
+            else if (kindStr == UpdateCheckService.UpdateKind.MainAppUpdate.ToString()
+                && !string.IsNullOrEmpty(cached))
             {
                 UpdateCheckStatusText.Text = string.Format(
                     _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), cached);

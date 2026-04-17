@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Management.Deployment;
 #if DEBUG
 using Windows.Storage;
 #endif
@@ -19,19 +21,21 @@ namespace OmniConsole.Services
         private const string GitHubApiUrl = "https://api.github.com/repos/8bit2qubit/OmniConsole/releases/latest";
         private const string ReleasePageUrl = "https://github.com/8bit2qubit/OmniConsole/releases/latest";
 
+        public const string PhantomLinkFamilyName = "4fa8e044-7ffa-4059-b034-e4111881d96e_n7gpkx2kypjte";
+
         public static string ReleaseNotesUrl => ReleasePageUrl;
 
-        public enum CheckResult
+        public enum UpdateKind
         {
-            NewVersionAvailable,
-            UpToDate,
-            Failed
+            None,
+            MissingPhantomLink,
+            MainAppUpdate
         }
 
         /// <summary>
-        /// 呼叫 GitHub API（或 DEBUG mock）檢查最新版本，比較後快取結果。
+        /// 呼叫 GitHub API（或 DEBUG mock）檢查最新版本與 PhantomLink 安裝狀態，決定 UpdateKind 並快取結果。
         /// </summary>
-        public static async Task<(CheckResult Result, string LatestVersion)> CheckForUpdateAsync()
+        public static async Task<(UpdateKind Kind, string LatestVersion)> CheckForUpdateAsync()
         {
             try
             {
@@ -49,34 +53,56 @@ namespace OmniConsole.Services
 #endif
                 var tagName = ParseTagName(json);
                 if (string.IsNullOrEmpty(tagName))
-                    return (CheckResult.Failed, "");
+                    return (UpdateKind.None, "");
 
                 var versionStr = tagName.TrimStart('v');
                 if (!Version.TryParse(versionStr, out var latest))
-                    return (CheckResult.Failed, "");
+                    return (UpdateKind.None, "");
 
                 var currentStr = SettingsService.GetAppVersion();
                 if (!Version.TryParse(currentStr, out var current))
-                    return (CheckResult.Failed, "");
+                    return (UpdateKind.None, "");
 
-                if (latest > current)
+                var (mainUrl, phantomLinkUrl) = ParseBundleDownloadUrls(json);
+
+                bool phantomLinkUpToDate = IsPhantomLinkUpToDate(latest);
+                bool hasNewVersion = latest > current;
+
+                UpdateKind kind;
+                if (hasNewVersion)
                 {
+                    // 主程式有新版 → MainAppUpdate（InstallBundleAsync 會連帶更新 PhantomLink）
+                    kind = UpdateKind.MainAppUpdate;
                     SettingsService.SetCachedNewVersion(versionStr);
-                    var msixUrl = ParseMsixDownloadUrl(json);
-                    if (!string.IsNullOrEmpty(msixUrl))
-                        SettingsService.SetCachedDownloadUrl(msixUrl);
-                    return (CheckResult.NewVersionAvailable, versionStr);
+                    if (!string.IsNullOrEmpty(mainUrl))
+                        SettingsService.SetCachedDownloadUrl(mainUrl);
+                    if (!string.IsNullOrEmpty(phantomLinkUrl))
+                        SettingsService.SetCachedPhantomLinkUrl(phantomLinkUrl);
+                }
+                else if (!phantomLinkUpToDate)
+                {
+                    // 同版本但 PhantomLink 缺件或版本過時
+                    kind = UpdateKind.MissingPhantomLink;
+                    SettingsService.SetCachedNewVersion(versionStr);
+                    if (!string.IsNullOrEmpty(mainUrl))
+                        SettingsService.SetCachedDownloadUrl(mainUrl);
+                    if (!string.IsNullOrEmpty(phantomLinkUrl))
+                        SettingsService.SetCachedPhantomLinkUrl(phantomLinkUrl);
                 }
                 else
                 {
+                    kind = UpdateKind.None;
                     SettingsService.ClearCachedNewVersion();
                     SettingsService.ClearCachedDownloadUrl();
-                    return (CheckResult.UpToDate, versionStr);
+                    SettingsService.ClearCachedPhantomLinkUrl();
                 }
+
+                SettingsService.SetCachedUpdateKind(kind.ToString());
+                return (kind, versionStr);
             }
             catch
             {
-                return (CheckResult.Failed, "");
+                return (UpdateKind.None, "");
             }
         }
 
@@ -115,8 +141,17 @@ namespace OmniConsole.Services
                 Version.TryParse(currentStr, out var currentVer) &&
                 cachedVer <= currentVer)
             {
-                SettingsService.ClearCachedNewVersion();
-                SettingsService.ClearCachedDownloadUrl();
+                if (IsPhantomLinkUpToDate(cachedVer))
+                {
+                    SettingsService.ClearCachedNewVersion();
+                    SettingsService.ClearCachedDownloadUrl();
+                    SettingsService.ClearCachedPhantomLinkUrl();
+                    SettingsService.SetCachedUpdateKind(UpdateKind.None.ToString());
+                }
+                else
+                {
+                    SettingsService.SetCachedUpdateKind(UpdateKind.MissingPhantomLink.ToString());
+                }
             }
         }
 
@@ -166,7 +201,8 @@ namespace OmniConsole.Services
         {
             try
             {
-                foreach (var file in Directory.GetFiles(directory, "OmniConsole_*.msix"))
+                foreach (var file in Directory.GetFiles(directory, "OmniConsole_*.msix")
+                    .Concat(Directory.GetFiles(directory, "OmniConsole.PhantomLink_*-widget.msix")))
                 {
                     File.Delete(file);
                     DebugLogger.Log($"[UpdateCheck] Deleted old MSIX: {Path.GetFileName(file)}");
@@ -214,27 +250,135 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 從 GitHub Release JSON 的 assets 陣列中找出 .msix 的下載連結。
+        /// 從 GitHub Release JSON 的 assets 陣列中同時取出主程式 OmniConsole 與 PhantomLink 的 .msix 下載連結。
         /// </summary>
-        private static string ParseMsixDownloadUrl(string json)
+        private static (string mainUrl, string phantomLinkUrl) ParseBundleDownloadUrls(string json)
         {
+            string mainUrl = "";
+            string phantomLinkUrl = "";
+
             using var doc = JsonDocument.Parse(json);
             if (!doc.RootElement.TryGetProperty("assets", out var assets))
-                return "";
+                return ("", "");
 
             foreach (var asset in assets.EnumerateArray())
             {
-                if (asset.TryGetProperty("name", out var nameElement))
-                {
-                    var name = nameElement.GetString() ?? "";
-                    if (name.EndsWith("_x64.msix", StringComparison.OrdinalIgnoreCase) &&
-                        asset.TryGetProperty("browser_download_url", out var urlElement))
-                    {
-                        return urlElement.GetString() ?? "";
-                    }
-                }
+                if (!asset.TryGetProperty("name", out var nameElement))
+                    continue;
+                var name = nameElement.GetString() ?? "";
+                if (!asset.TryGetProperty("browser_download_url", out var urlElement))
+                    continue;
+                var url = urlElement.GetString() ?? "";
+
+                if (name.EndsWith("_x64-widget.msix", StringComparison.OrdinalIgnoreCase)
+                    && name.StartsWith("OmniConsole.PhantomLink_", StringComparison.OrdinalIgnoreCase))
+                    phantomLinkUrl = url;
+                else if (name.EndsWith("_x64.msix", StringComparison.OrdinalIgnoreCase)
+                    && name.StartsWith("OmniConsole_", StringComparison.OrdinalIgnoreCase))
+                    mainUrl = url;
             }
-            return "";
+            return (mainUrl, phantomLinkUrl);
+        }
+
+        /// <summary>
+        /// 判斷已安裝的 PhantomLink 版本是否 >= 指定版本。
+        /// 未安裝時回傳 false。
+        /// </summary>
+        private static bool IsPhantomLinkUpToDate(Version targetVersion)
+        {
+            try
+            {
+                var pm = new PackageManager();
+                var pkg = pm.FindPackagesForUser("", PhantomLinkFamilyName).FirstOrDefault();
+                if (pkg == null) return false;
+                var v = pkg.Id.Version;
+                var installed = new Version(v.Major, v.Minor, v.Build, v.Revision);
+                return installed >= targetVersion;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 下載並安裝 PhantomLink + OmniConsole 的統一入口。
+        /// 先終止 PhantomLink 行程，再以 ForceApplicationShutdown 安裝 PhantomLink，
+        /// 接著安裝 OmniConsole（ForceApplicationShutdown 會終止主程式）。
+        /// mainSkippable 為 true 時跳過 OmniConsole 重裝，改用 RequestRestartAsync 重啟。
+        /// </summary>
+        public static async Task InstallBundleAsync(
+            string phantomLinkUrl,
+            string mainUrl,
+            bool mainSkippable,
+            IProgress<double> progress,
+            CancellationToken ct)
+        {
+            var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+
+            DebugLogger.Log($"[InstallBundle] mainSkippable={mainSkippable}, phantomLinkUrl={phantomLinkUrl}, mainUrl={mainUrl}");
+
+            CleanUpOldMsixFiles(localFolder);
+
+            var pm = new PackageManager();
+
+            // 先終止 PhantomLink 行程，避免 AddPackageAsync 等待 Game Bar 釋放資源
+            foreach (var proc in System.Diagnostics.Process.GetProcessesByName("OmniConsole.PhantomLink"))
+            {
+                try
+                {
+                    DebugLogger.Log($"[InstallBundle] Killing PhantomLink PID={proc.Id}");
+                    proc.Kill();
+                    proc.WaitForExit(5000);
+                }
+                catch { }
+                finally { proc.Dispose(); }
+            }
+
+            // ── Phase 1: PhantomLink ────────────────────────────────────────────
+            if (!string.IsNullOrEmpty(phantomLinkUrl))
+            {
+                var cachedVersion = SettingsService.GetCachedNewVersion();
+                var plFileName = $"OmniConsole.PhantomLink_{cachedVersion}_x64-widget.msix";
+                var plPath = Path.Combine(localFolder, plFileName);
+
+                DebugLogger.Log($"[InstallBundle] Phase 1: downloading PhantomLink to {plPath}");
+                await DownloadMsixAsync(phantomLinkUrl, plPath, progress, ct);
+
+                DebugLogger.Log("[InstallBundle] Phase 1: installing PhantomLink...");
+                await pm.AddPackageAsync(
+                    new Uri(plPath),
+                    null,
+                    DeploymentOptions.ForceApplicationShutdown);
+                DebugLogger.Log("[InstallBundle] Phase 1: PhantomLink installed OK");
+            }
+
+            // ── Phase 2: OmniConsole ────────────────────────────────────────────
+            if (mainSkippable)
+            {
+                DebugLogger.Log("[InstallBundle] Phase 2: mainSkippable=true, requesting restart...");
+                SettingsService.SetPendingSettingsRestart(true);
+                var result = await Windows.ApplicationModel.Core.CoreApplication.RequestRestartAsync("");
+                DebugLogger.Log($"[InstallBundle] Phase 2: RequestRestartAsync returned {result}");
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(mainUrl))
+            {
+                var cachedVersion = SettingsService.GetCachedNewVersion();
+                var mainFileName = $"OmniConsole_{cachedVersion}_x64.msix";
+                var mainPath = Path.Combine(localFolder, mainFileName);
+
+                DebugLogger.Log($"[InstallBundle] Phase 2: downloading OmniConsole to {mainPath}");
+                await DownloadMsixAsync(mainUrl, mainPath, progress, ct);
+
+                DebugLogger.Log("[InstallBundle] Phase 2: installing OmniConsole (ForceApplicationShutdown)...");
+                await pm.AddPackageAsync(
+                    new Uri(mainPath),
+                    null,
+                    DeploymentOptions.ForceApplicationShutdown);
+            }
         }
     }
 }

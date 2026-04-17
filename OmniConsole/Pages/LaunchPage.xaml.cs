@@ -326,12 +326,30 @@ namespace OmniConsole.Pages
         // ── 更新通知 ───────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 讀取快取的新版本資訊，有新版時顯示 InfoBar。
+        /// 依快取的 UpdateKind 顯示 InfoBar（唯讀通知）。
         /// </summary>
         public void ShowUpdateInfoBarIfNeeded()
         {
+            if (!SettingsService.GetAutoUpdateCheckEnabled())
+            {
+                UpdateInfoBar.IsOpen = false;
+                return;
+            }
+
+            var kindStr = SettingsService.GetCachedUpdateKind();
             var cached = SettingsService.GetCachedNewVersion();
-            if (!string.IsNullOrEmpty(cached) && SettingsService.GetAutoUpdateCheckEnabled())
+
+            if (kindStr == UpdateCheckService.UpdateKind.MissingPhantomLink.ToString()
+                && !string.IsNullOrEmpty(cached))
+            {
+                var plKey = SettingsService.GetUseGameBarLibraryForSettings()
+                    ? "UpdateInfoBar_MissingPhantomLink_Launch_GameBar"
+                    : "UpdateInfoBar_MissingPhantomLink_Launch_StartMenu";
+                UpdateInfoBar.Message = _resourceLoader.GetString(plKey);
+                UpdateInfoBar.IsOpen = true;
+            }
+            else if (kindStr == UpdateCheckService.UpdateKind.MainAppUpdate.ToString()
+                && !string.IsNullOrEmpty(cached))
             {
                 var key = SettingsService.GetUseGameBarLibraryForSettings()
                     ? "UpdateAvailable_InfoBar_Launch_GameBar"
