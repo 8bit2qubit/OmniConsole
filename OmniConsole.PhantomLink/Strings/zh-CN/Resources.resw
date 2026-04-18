@@ -123,6 +123,18 @@
   <data name="WidgetDescription" xml:space="preserve">
     <value>在游戏中快速切换 OmniConsole 功能的 Game Bar 小组件。</value>
   </data>
+  <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
+    <value>长按 &#x2630; 打开 Steam 游戏叠加界面</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
+    <value>开启</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_Off.Content" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_PlatformNote.Text" xml:space="preserve">
+    <value>仅在默认平台设为 Steam Big Picture 时生效。</value>
+  </data>
   <data name="Widget_MouseMode_Title.Text" xml:space="preserve">
     <value>手柄鼠标模式</value>
   </data>

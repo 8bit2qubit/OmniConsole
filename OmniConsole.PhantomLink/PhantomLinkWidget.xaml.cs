@@ -16,8 +16,8 @@ namespace OmniConsole.PhantomLink
         private bool _loading;
         private bool _builtInMapping;
 
-        // 此時刻之前送達的 D-pad Down 視為 Game Bar 合成輸入，攔下
-        private DateTime _focusGuardUntil;
+        // 焦點剛從外部進入 Widget → 吞掉緊接著的一顆 D-pad Down，避免雙跳（OnGettingFocus 把焦點重導到選中態按鈕 + OnPreviewKeyDown 又推進一 section）
+        private DateTime _swallowNextDownUntil;
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
 
@@ -36,7 +36,6 @@ namespace OmniConsole.PhantomLink
                 try { ReloadFromStore(); DebugLogger.Log("[Widget] Reload OK"); }
                 catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
 
-                SetInitialFocus();
                 SyncThemeFromGameBar();
 
                 // Widget 從背景返回前景時重新讀設定（外部 OmniConsole 主程式可能改過），由 LeavingBackground 觸發
@@ -91,64 +90,48 @@ namespace OmniConsole.PhantomLink
             DebugLogger.Log("[Widget] LeavingBackground → reload");
             try { ReloadFromStore(); }
             catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
-            SetInitialFocus();
         }
 
-        // ── 焦點守門窗：吞掉 Game Bar 開啟時合成的 D-pad Down ────────────────
+        // ── 焦點進入偵測：重導至選中態按鈕 + 吞掉進入時的 D-pad Down ─────────
 
         /// <summary>
-        /// 焦點從 widget 外部（Game Bar 本體 / 其他 widget）重新進入 → 開啟守門窗，
-        /// 用以吞掉 Game Bar 隨後合成的 D-pad Down 事件。
+        /// 焦點從 Widget 外部進入（A 或 D-pad）→ 重導到第一 section 的選中態按鈕（checked），
+        /// 並開啟 150ms 吞 Down 窗。A 鍵進入無 Down 事件，窗自然過期；D-pad Down 進入時，
+        /// 同一顆 Down 會被窗吃掉，避免「系統送焦點進按鈕 + OnPreviewKeyDown 又推進下一 section」雙跳。
         /// </summary>
         private void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
-            var oldFE = args.OldFocusedElement as FrameworkElement;
-            if (oldFE == null || !IsDescendant(oldFE))
+            var oldFE = args.OldFocusedElement as DependencyObject;
+            if (!IsDescendant(oldFE))
             {
-                _focusGuardUntil = DateTime.UtcNow.AddMilliseconds(500);
-                DebugLogger.Log("[Widget] focus re-entered → arm guard");
+                _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(150);
+                var target = PickFocusTarget(SteamInGameOverlaySection);
+                if (target != null && !ReferenceEquals(target, args.NewFocusedElement))
+                {
+                    try { args.TrySetNewFocusedElement(target); }
+                    catch (Exception ex) { DebugLogger.Log("[Widget] TrySetNewFocusedElement FAIL: " + ex); }
+                }
+                DebugLogger.Log("[Widget] focus re-entered → redirect to checked + arm swallow-Down");
             }
         }
 
-        /// <summary>
-        /// 判斷節點是否為本 Page 視覺樹內的子元素；用於區分焦點是否從 widget 外部進入。
-        /// </summary>
+        /// <summary>判斷節點是否為本 Page 視覺樹內的子元素。</summary>
         private bool IsDescendant(DependencyObject node)
         {
             while (node != null)
             {
                 if (ReferenceEquals(node, this)) return true;
-                node = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(node);
+                node = VisualTreeHelper.GetParent(node);
             }
             return false;
-        }
-
-        /// <summary>
-        /// 初始焦點放 Page 本身（IsTabStop=True + UseSystemFocusVisuals=False）：
-        /// 有「目前焦點所有者」可承接合成 Down、但不顯示 focus visual → 視覺上無按鈕被醒目提示，
-        /// 直到第一個 Down 被攔下時才 Focus 到 Mode 按鈕觸發醒目提示（對齊微軟 Widget 行為）。
-        /// </summary>
-        private void SetInitialFocus()
-        {
-            _focusGuardUntil = DateTime.UtcNow.AddMilliseconds(500);
-            var _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, () =>
-            {
-                try
-                {
-                    bool ok = this.Focus(FocusState.Programmatic);
-                    DebugLogger.Log("[Widget] SetInitialFocus -> Page ok=" + ok);
-                }
-                catch (Exception ex) { DebugLogger.Log("[Widget] SetInitialFocus FAIL: " + ex); }
-            });
         }
 
         // ── 跨 Section D-pad 導航 ───────────────────────────────────────────
 
         /// <summary>
-        /// 攔 Up/Down 兩種情境：
-        ///   1) 守門窗期內的合成 Down 直接吃掉（Game Bar 啟用訊號）
-        ///   2) 跨 section 導航時，落點挑「已選中」的 ToggleButton（ToggleButton row）
-        ///      或唯一的 Slider / ComboBox — 通用規則，未來新增 section 不需改程式。
+        /// 跨 section D-pad 導航：落點挑選中態的 ToggleButton 或 Slider / ComboBox —
+        /// 通用規則，未來新增 section 不需改程式。初始焦點由 OnGettingFocus 重導到選中態按鈕，
+        /// 外部進入時緊接著的 D-pad Down 由 _swallowNextDownUntil 吃掉，避免雙跳。
         /// </summary>
         private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
@@ -156,12 +139,11 @@ namespace OmniConsole.PhantomLink
             bool up = e.Key == VirtualKey.GamepadDPadUp || e.Key == VirtualKey.Up;
             if (!down && !up) return;
 
-            if (down && DateTime.UtcNow < _focusGuardUntil)
+            if (down && DateTime.UtcNow < _swallowNextDownUntil)
             {
-                DebugLogger.Log("[Widget] swallow synthetic Down → focus current Mode");
-                _focusGuardUntil = DateTime.MinValue;
+                _swallowNextDownUntil = DateTime.MinValue;
+                DebugLogger.Log("[Widget] swallow entry Down");
                 e.Handled = true;
-                FocusSection(ModeSection);
                 return;
             }
 
@@ -197,20 +179,22 @@ namespace OmniConsole.PhantomLink
         /// <summary>
         /// Section 內挑焦點目標：checked ToggleButton > 第一顆 ToggleButton > Slider > ComboBox。
         /// </summary>
-        private bool FocusSection(FrameworkElement section)
+        private Control PickFocusTarget(FrameworkElement section)
         {
-            if (section == null) return false;
+            if (section == null) return null;
             var toggles = FindDescendants<ToggleButton>(section).Where(t => t.IsEnabled).ToList();
             if (toggles.Count > 0)
-            {
-                var target = toggles.FirstOrDefault(t => t.IsChecked == true) ?? toggles[0];
-                return target.Focus(FocusState.Keyboard);
-            }
+                return toggles.FirstOrDefault(t => t.IsChecked == true) ?? toggles[0];
             var slider = FindDescendants<Slider>(section).FirstOrDefault(s => s.IsEnabled);
-            if (slider != null) return slider.Focus(FocusState.Keyboard);
-            var combo = FindDescendants<ComboBox>(section).FirstOrDefault(c => c.IsEnabled);
-            if (combo != null) return combo.Focus(FocusState.Keyboard);
-            return false;
+            if (slider != null) return slider;
+            return FindDescendants<ComboBox>(section).FirstOrDefault(c => c.IsEnabled);
+        }
+
+        /// <summary>聚焦 section 的落點控制項；供跨 section 導航呼叫。</summary>
+        private bool FocusSection(FrameworkElement section)
+        {
+            var target = PickFocusTarget(section);
+            return target != null && target.Focus(FocusState.Keyboard);
         }
 
         /// <summary>
@@ -240,6 +224,11 @@ namespace OmniConsole.PhantomLink
             {
                 PhantomKeyStore.EnsureDefaultsIfMissing();
                 _builtInMapping = HardwareDetection.HasBuiltInGamepadMapping();
+
+                // Steam In-Game Overlay（獨立於 Mouse Mode，不受 _builtInMapping 影響）
+                bool overlay = PhantomKeyStore.GetSteamInGameOverlayEnabled();
+                SteamInGameOverlayOnBtn.IsChecked = overlay;
+                SteamInGameOverlayOffBtn.IsChecked = !overlay;
 
                 // Mouse Mode
                 string mode = PhantomKeyStore.GetMouseMode();
@@ -288,6 +277,28 @@ namespace OmniConsole.PhantomLink
         }
 
         // ── UI 事件處理 ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Steam In-Game Overlay 兩顆 ToggleButton 共用 Click：On/Off 互斥切換、寫入 Store。
+        /// 獨立於 Mouse Mode —— 不受 _builtInMapping 或 mode=Off 影響，永遠可操作。
+        /// </summary>
+        private void SteamInGameOverlayBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loading) return;
+            if (!(sender is ToggleButton btn)) return;
+
+            bool enabled = (btn.Tag as string) == "On";
+
+            _loading = true;
+            try
+            {
+                SteamInGameOverlayOnBtn.IsChecked = enabled;
+                SteamInGameOverlayOffBtn.IsChecked = !enabled;
+            }
+            finally { _loading = false; }
+
+            PhantomKeyStore.SetSteamInGameOverlayEnabled(enabled);
+        }
 
         /// <summary>
         /// Mouse Mode 三顆 ToggleButton 共用 Click：依 Tag 決定模式、互斥勾選狀態、寫入 Store 並更新 IsEnabled。

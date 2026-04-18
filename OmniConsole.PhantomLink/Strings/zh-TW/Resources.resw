@@ -123,6 +123,18 @@
   <data name="WidgetDescription" xml:space="preserve">
     <value>在遊戲中快速切換 OmniConsole 功能的 Game Bar 小工具。</value>
   </data>
+  <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
+    <value>長按 &#x2630; 開啟 Steam 遊戲內嵌介面</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
+    <value>開啟</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_Off.Content" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_PlatformNote.Text" xml:space="preserve">
+    <value>僅在預設平台設為 Steam Big Picture 時生效。</value>
+  </data>
   <data name="Widget_MouseMode_Title.Text" xml:space="preserve">
     <value>手把滑鼠模式</value>
   </data>

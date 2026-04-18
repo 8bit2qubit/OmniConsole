@@ -32,12 +32,12 @@
                 <ActivateAfterInstall>true</ActivateAfterInstall>
                 <Window>
                   <Size>
-                    <Height>280</Height>
-                    <Width>360</Width>
-                    <MinHeight>200</MinHeight>
-                    <MinWidth>280</MinWidth>
-                    <MaxHeight>400</MaxHeight>
-                    <MaxWidth>480</MaxWidth>
+                    <Height>340</Height>
+                    <Width>464</Width>
+                    <MinHeight>340</MinHeight>
+                    <MinWidth>464</MinWidth>
+                    <MaxHeight>670</MaxHeight>
+                    <MaxWidth>464</MaxWidth>
                   </Size>
                   <ResizeSupported>
                     <Horizontal>true</Horizontal>

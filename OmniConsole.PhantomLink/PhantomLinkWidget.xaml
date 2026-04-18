@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    IsTabStop="True" UseSystemFocusVisuals="False">
+    UseSystemFocusVisuals="False">
 
     <Page.Resources>
         <Style TargetType="ToggleButton">
@@ -14,11 +14,34 @@
         </Style>
     </Page.Resources>
 
-    <Grid Padding="16">
+    <Grid Padding="24,0,24,24">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel x:Name="RootPanel" Spacing="12">
+            <StackPanel x:Name="RootPanel" Spacing="12" Margin="0,0,12,0">
 
                 <!-- <TextBlock Text="OmniCharm" FontSize="20" FontWeight="SemiBold"/> -->
+
+                <!-- Steam In-Game Overlay: 2 ToggleButton 水平組（獨立於 Mouse Mode，不受內建手把映射影響） -->
+                <StackPanel x:Name="SteamInGameOverlaySection" Spacing="6">
+                    <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off"
+                                      Click="SteamInGameOverlayBtn_Click" Tag="Off"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
+                                      XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
+                                      XYFocusDown="{x:Bind ModeOffBtn}"/>
+                        <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On"
+                                      Click="SteamInGameOverlayBtn_Click" Tag="On"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
+                                      XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
+                                      XYFocusDown="{x:Bind ModeOffBtn}"/>
+                    </StackPanel>
+                    <!-- 平台適用性說明：此功能仰賴 Steam 長按 ☰ 觸發 Shift+Tab，需預設平台為 Steam Big Picture -->
+                    <TextBlock x:Uid="Widget_SteamInGameOverlay_PlatformNote"
+                               Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
+                               FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
 
                 <!-- Mouse Mode: 3 ToggleButton 水平組 -->
                 <StackPanel x:Name="ModeSection" Spacing="6">
@@ -27,18 +50,21 @@
                         <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off"
                                       Click="ModeBtn_Click" Tag="Off"
                                       UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind SteamInGameOverlayOffBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
                                       XYFocusRight="{x:Bind ModeAutoBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
                         <ToggleButton x:Name="ModeAutoBtn" x:Uid="Widget_Mode_Auto"
                                       Click="ModeBtn_Click" Tag="Auto"
                                       UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
                                       XYFocusRight="{x:Bind ModeForceOnBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
                         <ToggleButton x:Name="ModeForceOnBtn" x:Uid="Widget_Mode_ForceOn"
                                       Click="ModeBtn_Click" Tag="ForceOn"
                                       UseSystemFocusVisuals="True" MinWidth="88"
+                                      XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
                                       XYFocusLeft="{x:Bind ModeAutoBtn}"
                                       XYFocusRight="{x:Bind ModeForceOnBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>

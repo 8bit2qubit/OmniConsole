@@ -145,6 +145,26 @@ namespace OmniConsole.PhantomLink.Services
             Write("PhantomKey", "MouseModeLayout", layout);
         }
 
+        // ── 公開 API：Steam In-Game Overlay ──────────────────────────────────
+
+        /// <summary>
+        /// 讀取長按 ☰ 觸發 Steam In-Game Overlay 是否啟用；與主程式 WriteShared 約定一致（"1"=啟用）。
+        /// 非 "0" 一律視為啟用，與缺失情境的預設值對齊。
+        /// </summary>
+        public static bool GetSteamInGameOverlayEnabled()
+        {
+            var s = Read("PhantomKey", "SteamInGameOverlayEnabled", "1");
+            return s != "0";
+        }
+
+        /// <summary>
+        /// 寫入長按 ☰ 觸發 Steam In-Game Overlay 開關狀態。
+        /// </summary>
+        public static void SetSteamInGameOverlayEnabled(bool enabled)
+        {
+            Write("PhantomKey", "SteamInGameOverlayEnabled", enabled ? "1" : "0");
+        }
+
         // ── 公開 API：Cursor Speed ──────────────────────────────────────────
 
         /// <summary>

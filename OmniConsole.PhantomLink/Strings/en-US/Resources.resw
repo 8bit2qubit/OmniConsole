@@ -123,6 +123,18 @@
   <data name="WidgetDescription" xml:space="preserve">
     <value>Quick-access Game Bar widget to toggle OmniConsole features in-game.</value>
   </data>
+  <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
+    <value>Long Press &#x2630; to Open Steam In-Game Overlay</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Widget_SteamInGameOverlay_PlatformNote.Text" xml:space="preserve">
+    <value>Only available when the default platform is set to Steam Big Picture.</value>
+  </data>
   <data name="Widget_MouseMode_Title.Text" xml:space="preserve">
     <value>Gamepad Mouse Mode</value>
   </data>
