@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="320"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="320">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="350"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="350">
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Gamepad Mouse Mode** – Uses your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store), and **Force On** (all apps except an exclusion list). Two controller layouts: **OmniNav** and **Classic**, with adjustable cursor speed.
-- **OmniCharm Widget** – A Game Bar widget for quickly toggling Gamepad Mouse Mode, switching controller layouts, and adjusting cursor speed during gameplay.
+- **OmniCharm Widget** – A Game Bar widget for quickly toggling long-press ☰ to open Steam In-Game Overlay, switching Gamepad Mouse Mode, changing controller layouts, and adjusting cursor speed during gameplay.
 - **Gamepad Steam Shortcuts** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.

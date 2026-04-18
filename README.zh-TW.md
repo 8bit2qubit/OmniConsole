@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" height="320"><img src="docs/images/widget-omnicharm.zh-TW.png" alt="OmniCharm 小工具" height="320">
+  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" height="350"><img src="docs/images/widget-omnicharm.zh-TW.png" alt="OmniCharm 小工具" height="350">
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 - **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
 - **手把支援** – 使用**方向鍵**或**左搖桿**導覽，**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯、**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（在 FSE 模式中）。
 - **手把滑鼠模式** – 以手把作為滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store）與**強制開啟**（所有應用程式，排除清單除外）。提供兩種控制器版面配置：**OmniNav** 和 **Classic**，可調整游標速度。
-- **OmniCharm 小工具** – Game Bar 小工具，在遊戲中快速切換手把滑鼠模式、控制器版面配置與游標速度。
+- **OmniCharm 小工具** – Game Bar 小工具，在遊戲中快速切換長按 ☰ 開啟 Steam 遊戲內嵌介面、手把滑鼠模式、控制器版面配置與游標速度。
 - **手把 Steam 快捷鍵** – 為 Steam Big Picture 模式提供手把 **⧉** 按鍵支援：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
 - **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
 - **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
