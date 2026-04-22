@@ -115,6 +115,30 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
+        /// 回傳是否為「掌機完整版 FSE」（原生 FSE 掌機 OEM，或 Xbox Full Screen Experience Tool 已啟用）。
+        /// 需 IsSupported()=true 且 HKLM\...\OEM\DeviceForm == 0x2E (46)。
+        /// 微軟推出的「PC 限制版 FSE」不符此條件（IsSupported=true 但 DeviceForm≠46），
+        /// 不支援 Home App 設定與開機啟動，需引導使用者透過 XFSET 取得掌機完整版。
+        /// </summary>
+        public static bool IsHandheldFseAvailable()
+        {
+            if (!IsSupported()) return false;
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\OEM");
+                bool result = key?.GetValue("DeviceForm") is int form && form == 0x2E;
+                DebugLogger.Log($"[FseService] IsHandheldFseAvailable = {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[FseService] IsHandheldFseAvailable failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 回傳目前是否處於 FSE 模式（由 Windows FSE 機制啟動）。
         /// </summary>
         public static bool IsActive([CallerMemberName] string caller = "")

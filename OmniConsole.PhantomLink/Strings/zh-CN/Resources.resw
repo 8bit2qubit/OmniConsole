@@ -154,6 +154,6 @@
     <value>光标速度</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>此设备内置手柄映射功能，已自动禁用。</value>
+    <value>已禁用 — 设备具备内置手柄映射。</value>
   </data>
 </root>

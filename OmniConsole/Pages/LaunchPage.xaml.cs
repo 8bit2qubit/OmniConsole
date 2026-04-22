@@ -202,11 +202,13 @@ namespace OmniConsole.Pages
 
         /// <summary>
         /// 系統未啟用 FSE 時顯示提示，引導使用者透過 XboxFullScreenExperienceTool 工具啟用。
+        /// handheldRequired=true 時顯示「偵測到 PC 限制版、需要掌機完整版」訊息（IsSupported=true 但 DeviceForm≠46）。
         /// </summary>
-        public void ShowFseNotAvailable()
+        public void ShowFseNotAvailable(bool handheldRequired = false)
         {
-            DebugLogger.Log("ShowFseNotAvailable: FSE not available.");
-            StatusText.Text = _resourceLoader.GetString("FseNotAvailable");
+            string resourceKey = handheldRequired ? "FseHandheldRequired" : "FseNotAvailable";
+            DebugLogger.Log($"ShowFseNotAvailable: handheldRequired={handheldRequired}");
+            StatusText.Text = _resourceLoader.GetString(resourceKey);
             VisualStateManager.GoToState(this, "FseNotAvailable", false);
             EnableFseButton.Focus(FocusState.Programmatic);
             StartGamepadPolling();

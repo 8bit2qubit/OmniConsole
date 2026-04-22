@@ -219,13 +219,19 @@ namespace OmniConsole
         {
             if (!FseService.IsActive())
             {
-                // FSE 功能未啟用 → 引導啟用，不啟動平台
-                if (!FseService.CanActivate())
+                // 系統完全不支援 FSE（舊版 Windows 或未啟用任何 FSE）→ 引導啟用
+                if (!FseService.IsSupported())
                 {
                     LaunchPageControl.ShowFseNotAvailable();
                     return;
                 }
-                // FSE 可用但 Home App 尚未設為 OmniConsole（例如仍為 Xbox）→ 引導至設定，不啟動平台
+                // 僅支援 PC 限制版 FSE（DeviceForm≠46）→ 引導透過 XFSET 取得掌機完整版
+                if (!FseService.IsHandheldFseAvailable())
+                {
+                    LaunchPageControl.ShowFseNotAvailable(handheldRequired: true);
+                    return;
+                }
+                // 掌機完整版可用但 Home App 尚未設為 OmniConsole（例如仍為 Xbox）→ 引導至設定，不啟動平台
                 if (!FseService.IsOmniConsoleSetAsHomeApp())
                 {
                     LaunchPageControl.ShowFseHomeAppNotSet();
@@ -250,10 +256,11 @@ namespace OmniConsole
 
         /// <summary>
         /// 系統未啟用 FSE 時顯示提示畫面。
+        /// handheldRequired=true 時顯示「偵測到 PC 限制版、需要掌機完整版」訊息。
         /// </summary>
-        public void ShowFseNotAvailable()
+        public void ShowFseNotAvailable(bool handheldRequired = false)
         {
-            LaunchPageControl.ShowFseNotAvailable();
+            LaunchPageControl.ShowFseNotAvailable(handheldRequired);
         }
 
         /// <summary>

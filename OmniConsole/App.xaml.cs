@@ -43,14 +43,22 @@ namespace OmniConsole
             {
                 if (!FseService.IsSupported())
                 {
-                    // 系統未啟用 FSE（未使用 Xbox Full Screen Experience Tool 或非原生 FSE 掌機），引導使用者先啟用
+                    // 系統完全不支援 FSE（舊版 Windows 或未啟用任何 FSE），引導使用者先啟用
                     ShowGuidanceWindow(w => w.ShowFseNotAvailable());
+                    return;
+                }
+
+                if (!FseService.IsHandheldFseAvailable())
+                {
+                    // 僅支援微軟於 PC 推出的「PC 限制版 FSE」（IsSupported=true 但 DeviceForm≠46），
+                    // 不支援 Home App 設定與開機啟動，需引導透過 XFSET 取得掌機完整版
+                    ShowGuidanceWindow(w => w.ShowFseNotAvailable(handheldRequired: true));
                     return;
                 }
 
                 if (!FseService.CanActivate() || !FseService.IsOmniConsoleSetAsHomeApp())
                 {
-                    // FSE 已啟用但 Home App 未設為 OmniConsole（設為「無」、其他 App、或尚未設定）
+                    // 掌機完整版可用但 Home App 未設為 OmniConsole（設為「無」、其他 App、或尚未設定）
                     ShowGuidanceWindow(w => w.ShowFseHomeAppNotSet());
                     return;
                 }

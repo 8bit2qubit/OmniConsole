@@ -150,6 +150,9 @@
   <data name="FseNotAvailable" xml:space="preserve">
     <value>Full Screen Experience is not enabled. Please enable it first, then manually restart OmniConsole.</value>
   </data>
+  <data name="FseHandheldRequired" xml:space="preserve">
+    <value>Limited PC FSE detected, but OmniConsole requires Full Handheld FSE. Please enable it with Xbox Full Screen Experience Tool, then manually restart OmniConsole.</value>
+  </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
     <value>Please go to Windows Settings → Gaming → Full Screen Experience and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>
   </data>
@@ -275,7 +278,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>When set to Auto, supports Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, and Steam.</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Automatically disabled because this device has built-in gamepad mapping.</value>
+    <value>Disabled — device has built-in gamepad mapping.</value>
   </data>
   <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
     <value>Controller Layout</value>

@@ -154,6 +154,6 @@
     <value>Cursor Speed</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Automatically disabled because this device has built-in gamepad mapping.</value>
+    <value>Disabled — device has built-in gamepad mapping.</value>
   </data>
 </root>

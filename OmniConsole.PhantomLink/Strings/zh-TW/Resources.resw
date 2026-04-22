@@ -154,6 +154,6 @@
     <value>游標速度</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>此裝置內建手把映射功能，已自動停用。</value>
+    <value>已停用 — 裝置具備內建手把映射。</value>
   </data>
 </root>

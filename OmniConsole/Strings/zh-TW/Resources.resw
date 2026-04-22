@@ -150,6 +150,9 @@
   <data name="FseNotAvailable" xml:space="preserve">
     <value>全螢幕體驗尚未啟用，請先啟用後手動重啟 OmniConsole。</value>
   </data>
+  <data name="FseHandheldRequired" xml:space="preserve">
+    <value>偵測到 PC 限制版 FSE，但 OmniConsole 需要掌機完整版 FSE。請使用 Xbox Full Screen Experience Tool 啟用後，手動重啟 OmniConsole。</value>
+  </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
     <value>請前往 Windows 設定 → 遊戲 → 全螢幕體驗，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟 OmniConsole。</value>
   </data>
@@ -275,7 +278,7 @@
     <value>設為自動時，支援 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、檔案總管和 Steam。</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>此裝置內建手把映射功能，已自動停用。</value>
+    <value>已停用 — 裝置具備內建手把映射。</value>
   </data>
   <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
     <value>控制器版面配置</value>
