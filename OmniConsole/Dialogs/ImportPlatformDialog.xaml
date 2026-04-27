@@ -6,6 +6,14 @@
     DefaultButton="Primary"
     RequestedTheme="Dark">
 
+    <ContentDialog.Resources>
+        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+    </ContentDialog.Resources>
+
     <StackPanel Width="400">
 
         <!-- 安全警告（與 PlatformEditDialog 的 ConfigWarning 風格一致） -->

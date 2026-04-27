@@ -8,6 +8,13 @@
 
     <ContentDialog.Resources>
         <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
+        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+        <!-- Phantom 配色：對話方塊內卡片背景 #25282C -->
+        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
     </ContentDialog.Resources>
 
     <Grid x:Name="RootGrid" MinHeight="400">

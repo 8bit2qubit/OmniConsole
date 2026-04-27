@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Title="OmniConsole">
 
-    <Grid Background="#1e1e1e" RequestedTheme="Dark">
+    <Grid Background="#1A1B1E" RequestedTheme="Dark">
         <pages:LaunchPage x:Name="LaunchPageControl"/>
         <pages:SettingsPage x:Name="SettingsPageControl" Visibility="Collapsed"/>
     </Grid>

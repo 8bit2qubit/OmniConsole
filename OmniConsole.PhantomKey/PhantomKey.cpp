@@ -31,7 +31,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     InitLog();
     Log(L"PhantomKey started.");
 
-    // 全域單例 Mutex：同時只允許一個 PhantomKey 實例
+    // 單例 Mutex：同一登入工作階段同時只允許一個 PhantomKey 實例（Local\ 命名空間）
     HANDLE hMutex = CreateMutexW(NULL, TRUE, L"Local\\OmniConsole_PhantomKey");
     if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
         Log(L"Another PhantomKey instance already running, exiting.");
@@ -57,7 +57,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     // 讀取設定
     AppConfig config = ReadConfig();
     SteamOverlayConfig steamCfg = ReadSteamOverlayConfig();
+    WriteSteamInGameOverlayShortcut(steamCfg.overlayShortcut); // 同步給 Widget 讀
     unsigned long long lastIniMTime = GetSharedIniLastWriteTime();
+    unsigned long long lastSteamVdfMTime = GetSteamLocalConfigLastWriteTime();
 
     // FSE 狀態查詢函式（載入失敗時不阻擋啟動，僅跳過退出檢查）
     auto pfnIsFseActive = LoadIsGamingFseActive();
@@ -122,17 +124,18 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
                 break;
             }
 
-            // 切到 steamwebhelper 時重讀 SteamConfig：涵蓋 FSE 中登入 / 帳號切換 / 更改 overlay shortcut
+            // 切到 steamwebhelper 時重讀 SteamConfig：涵蓋首次登入（vdf 路徑尚未確立）與帳號切換
+            // Overlay 快捷鍵改動的同步走下方 localconfig.vdf mtime 監看，不依賴前景切換
             if (_wcsicmp(currentFg.c_str(), L"steamwebhelper") == 0) {
                 steamCfg = ReadSteamOverlayConfig();
+                WriteSteamInGameOverlayShortcut(steamCfg.overlayShortcut); // 同步給 Widget 讀
+                lastSteamVdfMTime = GetSteamLocalConfigLastWriteTime();
             }
 
             MouseMode::Reset();
         }
 
         // Shared.ini 被改寫（主程式或 PhantomLink 操作）→ 即時重載 AppConfig
-        // SteamOverlayConfig 不綁 Shared.ini：其值（overlay 快捷鍵、Steam 端 EnableGameOverlay）皆來自 Steam VDF，
-        // 於前景切入 steamwebhelper 時才重讀（見上方 FG change 分支中 currentFg == steamwebhelper 的處理）
         unsigned long long curIniMTime = GetSharedIniLastWriteTime();
         if (curIniMTime != 0 && curIniMTime != lastIniMTime) {
             Log(L"Shared.ini changed, reloading config.");
@@ -141,7 +144,18 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             MouseMode::Reset();
         }
 
-        // Mouse Mode 啟用條件：模式非 Off、無內建廠商映射；Auto 需前景符合白名單，ForceOn 永遠生效
+        // localconfig.vdf 被改寫（使用者在 SteamBigPicture 調整 overlay 快捷鍵或開關）→ 即時重讀 SteamConfig
+        // 涵蓋「SteamBigPicture 改快捷鍵 → 直接啟動遊戲、未回 SteamBigPicture」這條路徑（前景切換偵測點抓不到）
+        // Steam 未安裝 / 未登入 / 路徑尚未確立 → GetSteamLocalConfigLastWriteTime() 回 0
+        unsigned long long curSteamVdfMTime = GetSteamLocalConfigLastWriteTime();
+        if (curSteamVdfMTime != 0 && curSteamVdfMTime != lastSteamVdfMTime) {
+            Log(L"localconfig.vdf changed, reloading SteamConfig.");
+            lastSteamVdfMTime = curSteamVdfMTime;
+            steamCfg = ReadSteamOverlayConfig();
+            WriteSteamInGameOverlayShortcut(steamCfg.overlayShortcut);
+        }
+
+        // Mouse Mode 啟用條件：模式非 Off、無內建廠商映射；Auto 需前景符合白名單，ForceOn 除排除清單外皆生效
         bool mouseModeActive = false;
         if (!config.hasBuiltInGamepadMapping) {
             switch (config.mouseMode) {

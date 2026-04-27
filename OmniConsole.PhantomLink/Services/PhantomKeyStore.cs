@@ -8,7 +8,7 @@ namespace OmniConsole.PhantomLink.Services
 {
     /// <summary>
     /// 透過 PublisherCacheFolder 共用 INI 與主程式 / PhantomKey 交換設定。
-    /// 同 Publisher (CN=8bit2qubit) 的 MSIX 套件共用資料夾，繞過各自的沙箱。
+    /// 同 Publisher (CN=8bit2qubit) 的 MSIX 套件共用資料夾，於沙箱規格內共用設定。
     /// </summary>
     internal static class PhantomKeyStore
     {
@@ -20,6 +20,12 @@ namespace OmniConsole.PhantomLink.Services
 
         public const string LayoutOmniNav = "OmniNav";
         public const string LayoutClassic = "Classic";
+
+        // 預設平台 Id（與主程式 Models/PlatformCatalog.cs 一致）
+        public const string PlatformSteamBigPicture = "SteamBigPicture";
+
+        // Steam In-Game Overlay 預設快捷鍵；若 PhantomKey 尚未寫入 Shared.ini 則用此回退
+        public const string DefaultSteamInGameOverlayShortcut = "Shift+Tab";
 
         public static readonly int[] ValidCursorSpeedPercents = { 25, 50, 75, 100, 125, 150, 175, 200 };
 
@@ -115,7 +121,7 @@ namespace OmniConsole.PhantomLink.Services
         }
 
         /// <summary>
-        /// 寫入 Mouse Mode；非預期值會 fallback 成 Auto，避免下次讀取再做一次 fallback。
+        /// 寫入 Mouse Mode；非預期值會回退成 Auto，避免下次讀取再做一次回退。
         /// </summary>
         public static void SetMouseMode(string mode)
         {
@@ -137,7 +143,7 @@ namespace OmniConsole.PhantomLink.Services
         }
 
         /// <summary>
-        /// 寫入手把配置；非預期值 fallback 成 OmniNav。
+        /// 寫入手把配置；非預期值回退成 OmniNav。
         /// </summary>
         public static void SetMouseModeLayout(string layout)
         {
@@ -182,7 +188,7 @@ namespace OmniConsole.PhantomLink.Services
         }
 
         /// <summary>
-        /// 寫入游標速度百分比；不在 ValidCursorSpeedPercents 範圍時 fallback 成 100。
+        /// 寫入游標速度百分比；不在 ValidCursorSpeedPercents 範圍時回退成 100。
         /// </summary>
         public static void SetCursorSpeedPercent(int percent)
         {
@@ -190,6 +196,28 @@ namespace OmniConsole.PhantomLink.Services
             foreach (var p in ValidCursorSpeedPercents)
                 if (p == percent) { valid = p; break; }
             Write("PhantomKey", "CursorSpeedPercent", valid.ToString());
+        }
+
+        // ── 公開 API：DefaultPlatform / SteamInGameOverlay 快捷鍵 ───────────
+
+        /// <summary>
+        /// 讀取目前預設平台 Id（[General] DefaultPlatform）。值由主程式於 SettingsService 寫入；
+        /// Widget 用於決定平台特定按鈕的可見性（例如 SteamInGameOverlayBtn 僅在 SteamBigPicture 顯示）。
+        /// </summary>
+        public static string GetDefaultPlatform()
+        {
+            return Read("General", "DefaultPlatform", string.Empty);
+        }
+
+        /// <summary>
+        /// 讀取 Steam In-Game Overlay 快捷鍵字串（如 "Shift+Tab"、"Insert"）。
+        /// 來源：PhantomKey 解析 Steam VDF 後寫入 [PhantomKey] SteamInGameOverlayShortcut（cached）。
+        /// 若 PhantomKey 尚未執行（FSE 尚未啟動平台）或 Steam 未安裝，回傳預設 "Shift+Tab"。
+        /// </summary>
+        public static string GetSteamInGameOverlayShortcut()
+        {
+            var s = Read("PhantomKey", "SteamInGameOverlayShortcut", DefaultSteamInGameOverlayShortcut);
+            return string.IsNullOrEmpty(s) ? DefaultSteamInGameOverlayShortcut : s;
         }
     }
 }

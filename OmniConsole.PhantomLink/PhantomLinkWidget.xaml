@@ -12,6 +12,10 @@
         <Style TargetType="ToggleButton">
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
+        <!-- Button 圓角對齊 ToggleButton 視覺風格（Quick Actions 用） -->
+        <Style TargetType="Button">
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
     </Page.Resources>
 
     <Grid Padding="24,0,24,24">
@@ -20,23 +24,92 @@
 
                 <!-- <TextBlock Text="OmniCharm" FontSize="20" FontWeight="SemiBold"/> -->
 
-                <!-- Steam In-Game Overlay: 2 ToggleButton 水平組（獨立於 Mouse Mode，不受內建手把映射影響） -->
+                <!-- Quick Actions: 一次性動作按鈕；委派給 PhantomBridge COM server。
+                     不設 XYFocusUp —— 讓 D-pad Up 從最頂端按鈕外移到 Game Bar，使用者能回到小工具切換列。
+
+                     XboxLibraryBtn 全域顯示 —— 補回 Game Bar Library 原本的 xbox://library 功能
+                     （該按鈕被 OmniConsole 接管後遺漏的入口）。
+
+                     SettingsBtn 暫時註解保留 —— 桌面模式啟動有焦點 quirk 無法解決；
+                     使用者可從 Game Bar Library 入口進入 Settings 替代。日後研究後再啟用。 -->
+                <Grid x:Name="QuickActionsSection" ColumnSpacing="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="TaskViewBtn" Grid.Column="0"
+                            Click="TaskViewBtn_Click"
+                            HorizontalAlignment="Stretch"
+                            UseSystemFocusVisuals="True"
+                            XYFocusDown="{x:Bind SteamInGameOverlayOffBtn}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE7C4;" FontSize="16"/>
+                            <TextBlock x:Uid="Widget_OpenTaskView"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="XboxLibraryBtn" Grid.Column="1"
+                            Click="XboxLibraryBtn_Click"
+                            HorizontalAlignment="Stretch"
+                            UseSystemFocusVisuals="True"
+                            XYFocusDown="{x:Bind SteamInGameOverlayOnBtn}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE990;" FontSize="16"/>
+                            <TextBlock x:Uid="Widget_OpenXboxLibrary"/>
+                        </StackPanel>
+                    </Button>
+                    <!--
+                    <Button x:Name="SettingsBtn" Grid.Column="?"
+                            Click="SettingsBtn_Click"
+                            HorizontalAlignment="Stretch"
+                            UseSystemFocusVisuals="True"
+                            XYFocusDown="{x:Bind SteamInGameOverlayOnBtn}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE713;" FontSize="16"/>
+                            <TextBlock x:Uid="Widget_OpenSettings"/>
+                        </StackPanel>
+                    </Button>
+                    -->
+                </Grid>
+
+                <!-- Steam In-Game Overlay: 2 ToggleButton 水平組（獨立於 Mouse Mode，不受內建手把映射影響）。
+                     右端額外放 TriggerSteamInGameOverlayBtn 觸發按鈕；條件可見性（FSE + 預設平台為 SteamBigPicture）。 -->
                 <StackPanel x:Name="SteamInGameOverlaySection" Spacing="6">
                     <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" FontWeight="SemiBold"/>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off"
-                                      Click="SteamInGameOverlayBtn_Click" Tag="Off"
-                                      UseSystemFocusVisuals="True" MinWidth="72"
-                                      XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
-                                      XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
-                                      XYFocusDown="{x:Bind ModeOffBtn}"/>
-                        <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On"
-                                      Click="SteamInGameOverlayBtn_Click" Tag="On"
-                                      UseSystemFocusVisuals="True" MinWidth="72"
-                                      XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
-                                      XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
-                                      XYFocusDown="{x:Bind ModeOffBtn}"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                            <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off"
+                                          Click="SteamInGameOverlayBtn_Click" Tag="Off"
+                                          UseSystemFocusVisuals="True" MinWidth="72"
+                                          XYFocusUp="{x:Bind TaskViewBtn}"
+                                          XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
+                                          XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
+                                          XYFocusDown="{x:Bind ModeOffBtn}"/>
+                            <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On"
+                                          Click="SteamInGameOverlayBtn_Click" Tag="On"
+                                          UseSystemFocusVisuals="True" MinWidth="72"
+                                          XYFocusUp="{x:Bind XboxLibraryBtn}"
+                                          XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
+                                          XYFocusDown="{x:Bind ModeOffBtn}"/>
+                        </StackPanel>
+                        <Button x:Name="TriggerSteamInGameOverlayBtn" Grid.Column="2"
+                                Click="TriggerSteamInGameOverlayBtn_Click"
+                                UseSystemFocusVisuals="True"
+                                Visibility="Collapsed"
+                                XYFocusUp="{x:Bind XboxLibraryBtn}"
+                                XYFocusLeft="{x:Bind SteamInGameOverlayOnBtn}"
+                                XYFocusRight="{x:Bind TriggerSteamInGameOverlayBtn}"
+                                XYFocusDown="{x:Bind ModeForceOnBtn}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xEA5B;" FontSize="16"/>
+                                <TextBlock x:Uid="Widget_TriggerSteamInGameOverlay"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                     <!-- 平台適用性說明：此功能仰賴 Steam 長按 ☰ 觸發 Shift+Tab，需預設平台為 Steam Big Picture -->
                     <TextBlock x:Uid="Widget_SteamInGameOverlay_PlatformNote"
                                Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
@@ -113,7 +186,7 @@
                             XYFocusRight="{x:Bind CursorSpeedSlider}"/>
                 </StackPanel>
 
-                <!-- ROG Ally Note（內建手把映射時顯示） -->
+                <!-- 內建手把映射說明（ROG Ally 家族時顯示） -->
                 <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote"
                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                            FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"/>

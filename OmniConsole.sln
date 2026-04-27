@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OmniConsole.PhantomKey", "O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmniConsole.PhantomLink", "OmniConsole.PhantomLink\OmniConsole.PhantomLink.csproj", "{7EF8DAF9-69DF-403D-9716-4B10898086B4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OmniConsole.PhantomBridge", "OmniConsole.PhantomBridge\OmniConsole.PhantomBridge.vcxproj", "{67712538-923F-4FD6-B006-E33A35F809D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -67,6 +69,18 @@ Global
 		{7EF8DAF9-69DF-403D-9716-4B10898086B4}.Release|x86.ActiveCfg = Release|x86
 		{7EF8DAF9-69DF-403D-9716-4B10898086B4}.Release|x86.Build.0 = Release|x86
 		{7EF8DAF9-69DF-403D-9716-4B10898086B4}.Release|x86.Deploy.0 = Release|x86
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|ARM64.ActiveCfg = Debug|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|ARM64.Build.0 = Debug|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|x64.ActiveCfg = Debug|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|x64.Build.0 = Debug|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|x86.ActiveCfg = Debug|Win32
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Debug|x86.Build.0 = Debug|Win32
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|ARM64.ActiveCfg = Release|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|ARM64.Build.0 = Release|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|x64.ActiveCfg = Release|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|x64.Build.0 = Release|x64
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|x86.ActiveCfg = Release|Win32
+		{67712538-923F-4FD6-B006-E33A35F809D6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

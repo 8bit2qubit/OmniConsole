@@ -23,7 +23,7 @@ bool IsMouseModeTarget(const std::wstring& processName);
 
 // ForceOn 模式下仍應排除的程式（本身用手把導覽或會撞到 Shell）
 // 排除項：
-//   - OmniConsole 主程式、Playnite Fullscreen（依 process name 比對）
+//   - OmniConsole 主程式、Playnite Fullscreen（依行程名比對）
 //   - Xbox App / Armoury Crate SE（UWP 由 ApplicationFrameHost 宿主，依視窗 title 比對）
 //   - explorer 的 FSE Task View 子模式（依視窗 class XamlExplorerHostIslandWindow 比對）
 //   - steamwebhelper 的 Steam Big Picture 子模式（依視窗 title 比對）

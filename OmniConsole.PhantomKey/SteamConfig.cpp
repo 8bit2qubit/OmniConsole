@@ -24,7 +24,7 @@ static std::wstring TryReadSteamPath(REGSAM extraFlags) {
     return L"";
 }
 
-// 從 Registry 讀取 Steam 安裝路徑（先 64-bit 登錄檔路徑，再 fallback 32-bit 登錄檔路徑）
+// 從 Registry 讀取 Steam 安裝路徑（先 64-bit 登錄檔路徑，再回退 32-bit 登錄檔路徑）
 static std::wstring GetSteamInstallPath() {
     // 現代 Steam（64-bit）寫在原生 64-bit 登錄檔路徑
     std::wstring path = TryReadSteamPath(KEY_WOW64_64KEY);
@@ -33,7 +33,7 @@ static std::wstring GetSteamInstallPath() {
         return path;
     }
 
-    // Fallback：舊版 Steam 或 steamservice（32-bit）可能寫在 WOW6432Node
+    // 回退：舊版 Steam 或 steamservice（32-bit）可能寫在 WOW6432Node
     path = TryReadSteamPath(KEY_WOW64_32KEY);
     if (!path.empty()) {
         Log(L"[SteamConfig] InstallPath (32-bit Registry): %s", path.c_str());
@@ -56,7 +56,7 @@ static std::wstring FindActiveSteamId32(const std::wstring& steamPath) {
     std::wstring loginUsersPath = steamPath + L"\\config\\loginusers.vdf";
     VdfNode root = VdfParse(loginUsersPath);
 
-    // 根節點下應有 "users" section
+    // 根節點下應有 "users" 區段
     const VdfNode* users = root.Navigate(L"users");
     if (!users) {
         Log(L"[SteamConfig] 'users' section not found in loginusers.vdf");
@@ -123,6 +123,11 @@ static std::wstring NormalizeOverlayShortcut(const std::wstring& raw) {
 // 公開介面
 // ============================================================================
 
+// 快取 localconfig.vdf 路徑：ReadSteamOverlayConfig() 成功定位後寫入；
+// GetSteamLocalConfigLastWriteTime() 用此路徑做 mtime 監看。
+// 為空時表示 Steam 未安裝 / 未登入 / 首次尚未成功讀取，mtime 查詢直接回 0。
+static std::wstring g_localConfigPath;
+
 SteamOverlayConfig ReadSteamOverlayConfig() {
     SteamOverlayConfig cfg;
 
@@ -134,6 +139,7 @@ SteamOverlayConfig ReadSteamOverlayConfig() {
 
     // 讀取 localconfig.vdf
     std::wstring localConfigPath = steamPath + L"\\userdata\\" + id32 + L"\\config\\localconfig.vdf";
+    g_localConfigPath = localConfigPath;
     VdfNode root = VdfParse(localConfigPath);
 
     const VdfNode* system = root.Navigate(L"UserLocalConfigStore.system");
@@ -158,4 +164,12 @@ SteamOverlayConfig ReadSteamOverlayConfig() {
     }
 
     return cfg;
+}
+
+unsigned long long GetSteamLocalConfigLastWriteTime() {
+    if (g_localConfigPath.empty()) return 0;
+    WIN32_FILE_ATTRIBUTE_DATA attr = {};
+    if (!GetFileAttributesExW(g_localConfigPath.c_str(), GetFileExInfoStandard, &attr)) return 0;
+    return ((unsigned long long)attr.ftLastWriteTime.dwHighDateTime << 32)
+         | attr.ftLastWriteTime.dwLowDateTime;
 }

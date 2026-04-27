@@ -123,6 +123,20 @@
   <data name="WidgetDescription" xml:space="preserve">
     <value>Quick-access Game Bar widget to toggle OmniConsole features in-game.</value>
   </data>
+  <data name="Widget_OpenTaskView.Text" xml:space="preserve">
+    <value>Task View</value>
+  </data>
+  <data name="Widget_TriggerSteamInGameOverlay.Text" xml:space="preserve">
+    <value>Steam Overlay</value>
+  </data>
+  <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
+    <value>Xbox Library</value>
+  </data>
+  <!-- Widget_OpenSettings.Text: SettingsBtn 暫時註解保留，往後啟用時恢復此資源
+  <data name="Widget_OpenSettings.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  -->
   <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
     <value>Long Press &#x2630; to Open Steam In-Game Overlay</value>
   </data>

@@ -6,6 +6,17 @@
     DefaultButton="Primary"
     RequestedTheme="Dark">
 
+    <ContentDialog.Resources>
+        <!-- Phantom 配色：ContentDialog 主內容 #1A1B1E、按鈕區 CommandSpace #25282C -->
+        <!-- ContentDialogTopOverlay 影響主內容區（generic.xaml line 29692），預設 LayerFillColorAltBrush 半透視灰 -->
+        <!-- App 層 ThemeDictionaries 對 ContentDialog 吃不到，必須在控制項層級定義 -->
+        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+    </ContentDialog.Resources>
+
     <StackPanel Width="400">
 
         <!-- 平台名稱 -->

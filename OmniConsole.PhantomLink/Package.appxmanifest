@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap uap3 mp">
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap3 mp com rescap">
   <Identity Name="4fa8e044-7ffa-4059-b034-e4111881d96e" Publisher="CN=8bit2qubit" Version="1.8.1.0" />
   <mp:PhoneIdentity PhoneProductId="4fa8e044-7ffa-4059-b034-e4111881d96e" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
@@ -16,12 +16,28 @@
     <Resource Language="zh-CN" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="OmniConsole OmniCharm.App">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements DisplayName="OmniConsole OmniCharm" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="OmniConsole OmniCharm" BackgroundColor="transparent" AppListEntry="none">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
+        <!-- Full Trust COM Server：Widget 以 CoCreateInstance(CLSCTX_LOCAL_SERVER) 呼叫，
+             Windows 按需 spawn OmniConsole.PhantomBridge.exe 執行受 UWP 限制的桌面動作
+             （SendInput、ShellExecute 等）。CLSID 須與 PhantomBridgeFactoryClsid.h 一致。
+             LaunchAndActivationPermission SDDL：
+               O:PS              Owner = Personal Self
+               G:BU              Group = Built-in Users
+               D:(A;;11;;;WD)    Allow Everyone 執行 + 本地啟動（0x11 = COM_RIGHTS_EXECUTE | COM_RIGHTS_ACTIVATE_LOCAL）
+               D:(A;;11;;;AC)    Allow ALL APPLICATION PACKAGES 同上（讓 UWP Widget 能呼叫）
+               S:(ML;;NX;;;LW)   Low integrity 不允許執行（防低權限程序啟動 fulltrust server） -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="OmniConsole.PhantomBridge.exe" LaunchAndActivationPermission="O:PSG:BUD:(A;;11;;;WD)(A;;11;;;AC)S:(ML;;NX;;;LW)">
+              <com:Class Id="0370C27A-B39D-4B74-B20A-639B49026B14" DisplayName="PhantomBridgeFactory" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
         <uap3:Extension Category="windows.appExtension">
           <uap3:AppExtension Name="microsoft.gameBarUIExtension" Id="PhantomLinkWidget" DisplayName="ms-resource:WidgetDisplayName" Description="ms-resource:WidgetDescription" PublicFolder="GameBar">
             <uap3:Properties>
@@ -32,9 +48,9 @@
                 <ActivateAfterInstall>true</ActivateAfterInstall>
                 <Window>
                   <Size>
-                    <Height>340</Height>
+                    <Height>400</Height>
                     <Width>464</Width>
-                    <MinHeight>340</MinHeight>
+                    <MinHeight>400</MinHeight>
                     <MinWidth>464</MinWidth>
                     <MaxHeight>670</MaxHeight>
                     <MaxWidth>464</MaxWidth>
@@ -57,9 +73,9 @@
         <Folder Name="OmniConsoleShared" />
       </PublisherCacheFolders>
     </Extension>
-    <!-- Enlighten COM on where to find Metadata Based Marshaling (MBM) data for the Game Bar private types.
-         <Path> is required by VS but unused when ClassId is 00000355-0000-0000-C000-000000000046 (MBM);
-         we point it at Microsoft.Gaming.XboxGameBar.winmd as a placeholder. -->
+    <!-- 告知 COM 到哪裡找 Game Bar 私有型別的 Metadata Based Marshaling (MBM) 資料。
+         <Path> 為 VS 必填欄位但實際上 ClassId 為 00000355-0000-0000-C000-000000000046（MBM）時不被使用；
+         此處指向 Microsoft.Gaming.XboxGameBar.winmd 作為 placeholder。 -->
     <Extension Category="windows.activatableClass.proxyStub">
       <ProxyStub ClassId="00000355-0000-0000-C000-000000000046">
         <Path>Microsoft.Gaming.XboxGameBar.winmd</Path>
@@ -90,5 +106,8 @@
   </Extensions>
   <Capabilities>
     <Capability Name="internetClient" />
+    <!-- PhantomBridge COM server 以 fulltrust 桌面行程執行；Widget 端不需 fulltrust，
+         但只要套件內含 fulltrust exe 就必須在套件層宣告此 capability。 -->
+    <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

@@ -123,6 +123,20 @@
   <data name="WidgetDescription" xml:space="preserve">
     <value>在游戏中快速切换 OmniConsole 功能的 Game Bar 小组件。</value>
   </data>
+  <data name="Widget_OpenTaskView.Text" xml:space="preserve">
+    <value>任务视图</value>
+  </data>
+  <data name="Widget_TriggerSteamInGameOverlay.Text" xml:space="preserve">
+    <value>Steam 叠加界面</value>
+  </data>
+  <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
+    <value>Xbox 库</value>
+  </data>
+  <!-- Widget_OpenSettings.Text: SettingsBtn 暫時註解保留，往後啟用時恢復此資源
+  <data name="Widget_OpenSettings.Text" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  -->
   <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
     <value>长按 &#x2630; 打开 Steam 游戏叠加界面</value>
   </data>

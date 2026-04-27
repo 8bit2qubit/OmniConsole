@@ -1089,7 +1089,7 @@ namespace OmniConsole.Pages
 
             if (string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(phantomLinkUrl))
             {
-                // 無快取下載連結時 fallback 開瀏覽器
+                // 無快取下載連結時回退開瀏覽器
                 await Windows.System.Launcher.LaunchUriAsync(
                     new Uri(UpdateCheckService.ReleaseNotesUrl));
                 return;

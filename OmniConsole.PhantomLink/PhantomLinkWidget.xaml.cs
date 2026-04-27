@@ -73,7 +73,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// Game Bar 主題變更事件可能來自非 UI thread，marshal 回 UI thread 再套用。
+        /// Game Bar 主題變更事件可能來自非 UI thread，marshal 回 UI 執行緒再套用。
         /// </summary>
         private async void OnGameBarThemeChanged(Microsoft.Gaming.XboxGameBar.XboxGameBarWidget sender, object args)
         {
@@ -104,8 +104,12 @@ namespace OmniConsole.PhantomLink
             var oldFE = args.OldFocusedElement as DependencyObject;
             if (!IsDescendant(oldFE))
             {
+                // 已知 Game Bar 冷啟動後首次 D-pad Down 進 Widget 的行為是 Game Bar 自身的 quirk：
+                // 焦點會落在第一組第一顆按鈕但無 focus ring，再按一次 Down 才正確顯示第二組的
+                // 選中態。無法從 Widget 這邊修正（Game Bar 側的焦點渲染問題），Widget 已 loaded
+                // 後再進入就正常。
                 _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(150);
-                var target = PickFocusTarget(SteamInGameOverlaySection);
+                var target = PickFocusTarget(QuickActionsSection);
                 if (target != null && !ReferenceEquals(target, args.NewFocusedElement))
                 {
                     try { args.TrySetNewFocusedElement(target); }
@@ -177,7 +181,8 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// Section 內挑焦點目標：checked ToggleButton > 第一顆 ToggleButton > Slider > ComboBox。
+        /// Section 內挑焦點目標：checked ToggleButton > 第一顆 ToggleButton > Slider > ComboBox > Button。
+        /// Button 回退 供 Quick Actions 等只含一次性動作按鈕的 section 使用（無 checked 狀態）。
         /// </summary>
         private Control PickFocusTarget(FrameworkElement section)
         {
@@ -187,7 +192,9 @@ namespace OmniConsole.PhantomLink
                 return toggles.FirstOrDefault(t => t.IsChecked == true) ?? toggles[0];
             var slider = FindDescendants<Slider>(section).FirstOrDefault(s => s.IsEnabled);
             if (slider != null) return slider;
-            return FindDescendants<ComboBox>(section).FirstOrDefault(c => c.IsEnabled);
+            var combo = FindDescendants<ComboBox>(section).FirstOrDefault(c => c.IsEnabled);
+            if (combo != null) return combo;
+            return FindDescendants<Button>(section).FirstOrDefault(b => b.IsEnabled);
         }
 
         /// <summary>聚焦 section 的落點控制項；供跨 section 導航呼叫。</summary>
@@ -224,6 +231,18 @@ namespace OmniConsole.PhantomLink
             {
                 PhantomKeyStore.EnsureDefaultsIfMissing();
                 _builtInMapping = HardwareDetection.HasBuiltInGamepadMapping();
+
+                // SteamInGameOverlay 觸發按鈕條件可見性（位於 SteamInGameOverlaySection 同行右端）
+                // 條件：FSE 模式 + DefaultPlatform=SteamBigPicture
+                //   - 桌面模式不顯示
+                //   - 非 SteamBigPicture 平台不顯示
+                // Grid 中按鈕為 Auto-width，Collapsed 時自動收合不佔空間，無需動態調整 Grid 欄寬
+                string defaultPlatform = PhantomKeyStore.GetDefaultPlatform();
+                bool steamBtnVisible =
+                    FseStatus.IsActive() &&
+                    defaultPlatform == PhantomKeyStore.PlatformSteamBigPicture;
+                TriggerSteamInGameOverlayBtn.Visibility =
+                    steamBtnVisible ? Visibility.Visible : Visibility.Collapsed;
 
                 // Steam In-Game Overlay（獨立於 Mouse Mode，不受 _builtInMapping 影響）
                 bool overlay = PhantomKeyStore.GetSteamInGameOverlayEnabled();
@@ -275,6 +294,55 @@ namespace OmniConsole.PhantomLink
 
             BuiltInMappingNote.Visibility = _builtInMapping ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        // ── Quick Actions：一次性動作按鈕 ────────────────────────────────────
+        //
+        // 委派給 PhantomBridge Full Trust COM Server 執行；Widget 受 UWP AppContainer 限制，
+        // SendInput 會被靜默封鎖，LaunchUriAsync 跨套件 protocol 不可靠。
+        // Bridge 為獨立的 fulltrust 桌面行程，Windows 於 CoCreateInstance 時按需 spawn。
+
+        /// <summary>透過 PhantomBridge 送 Win+Tab 開啟 Windows 工作檢視。</summary>
+        private void TaskViewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogger.Log("[Widget] TaskViewBtn_Click → PhantomBridge.SendTaskView");
+            try { PhantomBridgeHelper.CreateFactory().SendTaskView(); }
+            catch (Exception ex) { DebugLogger.Log("[Widget] TaskView FAIL: " + ex); }
+        }
+
+        /// <summary>
+        /// 透過 PhantomBridge 觸發 Steam In-Game Overlay。快捷鍵字串從 Shared.ini 讀取
+        /// （PhantomKey 從 Steam VDF 解析後寫入），確保符合使用者在 Steam 自訂的快捷鍵。
+        /// 僅在 DefaultPlatform=SteamBigPicture 時可見，避免對非 Steam 遊戲送 Shift+Tab 造成意外。
+        /// </summary>
+        private void TriggerSteamInGameOverlayBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string shortcut = PhantomKeyStore.GetSteamInGameOverlayShortcut();
+            DebugLogger.Log($"[Widget] TriggerSteamInGameOverlayBtn_Click → PhantomBridge.TriggerSteamInGameOverlay(\"{shortcut}\")");
+            try { PhantomBridgeHelper.CreateFactory().TriggerSteamInGameOverlay(shortcut); }
+            catch (Exception ex) { DebugLogger.Log("[Widget] TriggerSteamInGameOverlay FAIL: " + ex); }
+        }
+
+        /// <summary>
+        /// 透過 PhantomBridge 啟動 xbox://library（Xbox 媒體櫃）。
+        /// 全域可見：補回 Game Bar Library 原本啟動 xbox://library 的功能（被 OmniConsole 接管後遺漏）。
+        /// </summary>
+        private void XboxLibraryBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogger.Log("[Widget] XboxLibraryBtn_Click → PhantomBridge.OpenXboxLibrary");
+            try { PhantomBridgeHelper.CreateFactory().OpenXboxLibrary(); }
+            catch (Exception ex) { DebugLogger.Log("[Widget] OpenXboxLibrary FAIL: " + ex); }
+        }
+
+        /*
+        // SettingsBtn 暫時註解保留 —— 桌面模式啟動有焦點 quirk 無法解決；
+        // 使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogger.Log("[Widget] SettingsBtn_Click → PhantomBridge.OpenSettings");
+            try { PhantomBridgeHelper.CreateFactory().OpenSettings(); }
+            catch (Exception ex) { DebugLogger.Log("[Widget] Settings FAIL: " + ex); }
+        }
+        */
 
         // ── UI 事件處理 ─────────────────────────────────────────────────────
 

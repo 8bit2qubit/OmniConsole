@@ -5,6 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:OmniConsole.Models">
 
+    <UserControl.Resources>
+        <!-- Phantom 配色：設定卡片背景 #25282C -->
+        <!-- 預設 #0DFFFFFF（半透白）疊在 #1A1B1E 上會合成 #262729，需直接以實色覆寫 -->
+        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
+    </UserControl.Resources>
+
     <Grid>
         <VisualStateManager.VisualStateGroups>
             <!-- 群組 1：設定導覽頁面切換（General / Advanced / Troubleshoot 三選一） -->
@@ -139,6 +145,11 @@
                 <!-- 選取指示器寬度與高度 -->
                 <x:Double x:Key="NavigationViewSelectionIndicatorWidth">6</x:Double>
                 <x:Double x:Key="NavigationViewSelectionIndicatorHeight">24</x:Double>
+
+                <!-- Phantom 配色：覆寫 LeftMinimal overlay pane 為純色 #25282C -->
+                <!-- 預設指向 AcrylicInAppFillColorDefaultBrush 造成磨砂半透視，需直接以 SolidColorBrush 覆寫 -->
+                <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#25282C"/>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
             </NavigationView.Resources>
 
             <!-- 主要導覽項目 -->
@@ -191,10 +202,17 @@
                         <NavigationView x:Name="PlatformCategoryNav"
                                         Grid.Row="1"
                                         PaneDisplayMode="Top"
+                                        Background="Transparent"
                                         IsBackButtonVisible="Collapsed"
                                         IsSettingsVisible="False"
                                         SelectionChanged="PlatformCategoryNav_SelectionChanged"
                                         XYFocusKeyboardNavigation="Enabled">
+
+                            <!-- Phantom 配色：Top 索引標籤橫條融入主背景 -->
+                            <NavigationView.Resources>
+                                <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
+                                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+                            </NavigationView.Resources>
 
                             <NavigationView.MenuItems>
                                 <NavigationViewItem x:Uid="Nav_SystemPlatforms" Tag="System" IsSelected="True">

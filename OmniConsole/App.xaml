@@ -10,7 +10,21 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+
+            <!-- Phantom 配色：NavigationView 面板背景純色 -->
+            <!-- LeftMinimal overlay pane 內部走 SplitView.PaneBackground = NavigationViewDefaultPaneBackground（generic.xaml line 17640） -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#25282C"/>
+                    <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#25282C"/>
+                    <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

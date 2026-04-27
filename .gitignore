@@ -68,3 +68,6 @@ desktop.ini
 *.log
 *.tmp
 /tmp/
+
+## Build-time generated sources
+OmniConsole.PhantomLink/Generated/

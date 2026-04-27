@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <!-- 各 PropertyGroup 共用的 NoWarn 抑制原因（設定保留在各組態內以維持原建置行為）：
+       APPX0006 (runFullTrust) 與 APPX1707 (ExeServer 自動註冊不支援) 皆為本專案以 csproj
+       直接產出 .msix、手動於 Package.appxmanifest 宣告 com:ExeServer 的合理組態，警告誤判可忽略。 -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -25,7 +28,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -36,7 +39,7 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -48,7 +51,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\ARM\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>ARM</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -59,7 +62,7 @@
     <OutputPath>bin\ARM\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>ARM</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -71,7 +74,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\ARM64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>ARM64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -83,7 +86,7 @@
     <OutputPath>bin\ARM64\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>ARM64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -95,7 +98,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -106,7 +109,7 @@
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
-    <NoWarn>;2008</NoWarn>
+    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -125,7 +128,9 @@
       <DependentUpon>PhantomLinkWidget.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\DebugLogger.cs" />
+    <Compile Include="Services\FseStatus.cs" />
     <Compile Include="Services\HardwareDetection.cs" />
+    <Compile Include="Services\PhantomBridgeHelper.cs" />
     <Compile Include="Services\PhantomKeyStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -146,6 +151,28 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <!-- ── Full Trust COM Server 產出（由 PhantomBridge vcxproj 建置） ── -->
+    <!-- 路徑 Link 決定 exe/winmd 在 msix 套件內的相對位置，與 Package.appxmanifest
+         的 <com:ExeServer Executable="..."/> 必須對齊（皆為套件根目錄）。 -->
+    <Content Include="..\OmniConsole.PhantomBridge\x64\$(Configuration)\OmniConsole.PhantomBridge.exe">
+      <Link>OmniConsole.PhantomBridge.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OmniConsole.PhantomBridge\x64\$(Configuration)\PhantomBridge.winmd">
+      <Link>PhantomBridge.winmd</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- ── PhantomBridge WinRT metadata 參考 ── -->
+    <!-- winmd 已作為 Content 一併封裝（供 Metadata Based Marshaling 跨行程使用）。
+         C# 端不依賴 winmd 投影，改以 Services/PhantomBridgeHelper.cs 的 [ComImport] 手動宣告。
+         此 Reference 保留是為了：(1) 建置順序關聯 (2) IDE 工具能找到型別資訊。 -->
+    <Reference Include="PhantomBridge">
+      <HintPath>..\OmniConsole.PhantomBridge\x64\$(Configuration)\PhantomBridge.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -171,6 +198,36 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Target Name="SyncVersionFromMainManifest" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NoProfile -Command &quot;[xml]$m = Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest'; $v = $m.Package.Identity.Version; [xml]$t = Get-Content '$(ProjectDir)Package.appxmanifest'; if ($t.Package.Identity.Version -ne $v) { $t.Package.Identity.Version = $v; $t.Save('$(ProjectDir)Package.appxmanifest') }&quot;" />
+  </Target>
+  <!-- PhantomBridge (fulltrust C++/WinRT COM server) 必須先於 PhantomLink 建置。
+       不用 <ProjectReference>：傳統 UWP / .NET Native csproj 的 ResolveProjectReferences
+       不會自動觸發 vcxproj 建置，實測會出 MSB3073（PhantomBridge.0.h 不存在）。
+       明確的 <Target><MSBuild Projects=.../></Target> 是這個 toolchain 上實測可靠的依賴宣告之一。
+       Platform 鎖 x64：PhantomLink msix 為 x64-only，PhantomBridge 對齊 x64。 -->
+  <Target Name="BuildPhantomBridge" BeforeTargets="BeforeBuild">
+    <MSBuild Projects="..\OmniConsole.PhantomBridge\OmniConsole.PhantomBridge.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
+  </Target>
+  <!-- 從 cppwinrt 產出的 PhantomBridge.0.h 解析 IPhantomBridgeFactory 的 IID，
+       產生 Generated\PhantomBridgeIIDs.g.cs。IDL 變更 → IID 自動同步到 C#。
+
+       設計要點：
+         1. BeforeTargets 同時掛 BeforeBuild 與 CoreCompile：CoreCompile 在增量建置中
+            可能被跳過，連帶 BeforeTargets 也不執行；雙掛保證 IID 同步。
+         2. DependsOnTargets="BuildPhantomBridge" 鎖序：.h 必須先由 vcxproj 產出。
+         3. .g.cs 由本 target 動態加入 Compile item，避免乾淨 repo 首次建置報 CS2001。
+         4. 不設 Inputs/Outputs incremental check：腳本內部已比對內容相同則不寫檔。 -->
+  <Target Name="GeneratePhantomBridgeIIDs"
+          BeforeTargets="BeforeBuild;CoreCompile"
+          DependsOnTargets="BuildPhantomBridge">
+    <PropertyGroup>
+      <_PhantomBridgeHeader>..\OmniConsole.PhantomBridge\x64\$(Configuration)\Intermediate\Generated Files\winrt\impl\PhantomBridge.0.h</_PhantomBridgeHeader>
+      <_PhantomBridgeIIDsFile>$(ProjectDir)Generated\PhantomBridgeIIDs.g.cs</_PhantomBridgeIIDsFile>
+    </PropertyGroup>
+    <MakeDir Directories="$(ProjectDir)Generated" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)Build\GeneratePhantomBridgeIIDs.ps1&quot; -HeaderPath &quot;$(_PhantomBridgeHeader)&quot; -OutputPath &quot;$(_PhantomBridgeIIDsFile)&quot;" />
+    <ItemGroup>
+      <Compile Include="$(_PhantomBridgeIIDsFile)" />
+    </ItemGroup>
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

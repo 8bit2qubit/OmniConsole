@@ -61,6 +61,22 @@ unsigned long long GetSharedIniLastWriteTime() {
          | attr.ftLastWriteTime.dwLowDateTime;
 }
 
+// ── Steam In-Game Overlay 快捷鍵寫入 ───────────────────────────────────────
+//
+// 靜態快取比對：相同值不寫檔，避免每次主迴圈重新載入 SteamConfig 時觸發 mtime 變動
+// （mtime 改變會讓 Widget 等讀取端誤以為設定有變、重新讀全部鍵值）。
+void WriteSteamInGameOverlayShortcut(const std::wstring& shortcut) {
+    auto path = GetSharedIniPath();
+    if (path.empty()) return;
+    static std::wstring lastWritten;
+    if (shortcut == lastWritten) return;
+    if (WritePrivateProfileStringW(L"PhantomKey", L"SteamInGameOverlayShortcut",
+                                   shortcut.c_str(), path.c_str())) {
+        lastWritten = shortcut;
+        Log(L"[Config] Wrote SteamInGameOverlayShortcut=\"%s\" to Shared.ini", shortcut.c_str());
+    }
+}
+
 // ── 小工具：讀 INI 字串 / 整數 ────────────────────────────────────────────
 
 static std::wstring ReadString(const wchar_t* section, const wchar_t* key,

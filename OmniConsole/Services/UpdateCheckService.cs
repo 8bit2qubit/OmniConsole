@@ -322,17 +322,22 @@ namespace OmniConsole.Services
 
             var pm = new PackageManager();
 
-            // 先終止 PhantomLink 行程，避免 AddPackageAsync 等待 Game Bar 釋放資源
-            foreach (var proc in System.Diagnostics.Process.GetProcessesByName("OmniConsole.PhantomLink"))
+            // PhantomBridge 為 PhantomLink 啟動的 Full Trust COM Server，正常情況下會在所有
+            // COM interface 釋放後由 module_lock 歸零事件觸發退出；但 client 連線拆除時機
+            // 不可控，顯式終止可確保 MSIX 安裝/解除安裝不被檔案鎖定卡住。
+            foreach (var name in new[] { "OmniConsole.PhantomLink", "OmniConsole.PhantomBridge" })
             {
-                try
+                foreach (var proc in System.Diagnostics.Process.GetProcessesByName(name))
                 {
-                    DebugLogger.Log($"[InstallBundle] Killing PhantomLink PID={proc.Id}");
-                    proc.Kill();
-                    proc.WaitForExit(5000);
+                    try
+                    {
+                        DebugLogger.Log($"[InstallBundle] Killing {name} PID={proc.Id}");
+                        proc.Kill();
+                        proc.WaitForExit(5000);
+                    }
+                    catch { }
+                    finally { proc.Dispose(); }
                 }
-                catch { }
-                finally { proc.Dispose(); }
             }
 
             // ── Phase 1: PhantomLink ────────────────────────────────────────────

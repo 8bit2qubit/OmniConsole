@@ -1,0 +1,35 @@
+#include <windows.h>
+#include "version.h"
+
+// 應用程式圖示（與 OmniConsole 主程式共用）
+1 ICON "..\\OmniConsole\\Assets\\AppIcon.ico"
+
+// 版本資訊（版本號自動從 Package.appxmanifest 同步，見 version.h）
+VS_VERSION_INFO VERSIONINFO
+    FILEVERSION    VERSION_CSV
+    PRODUCTVERSION VERSION_CSV
+    FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+    FILEFLAGS      0x0L
+    FILEOS         VOS_NT_WINDOWS32
+    FILETYPE       VFT_APP
+    FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "8bit2qubit"
+            VALUE "FileDescription",  "OmniCharm Full Trust COM Server"
+            VALUE "FileVersion",      VERSION_STR
+            VALUE "InternalName",     "PhantomBridge"
+            VALUE "LegalCopyright",   "Copyright (C) 2026 8bit2qubit"
+            VALUE "OriginalFilename", "OmniConsole.PhantomBridge.exe"
+            VALUE "ProductName",      "OmniConsole"
+            VALUE "ProductVersion",   VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
