@@ -50,7 +50,7 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Gamepad Mouse Mode** – Uses your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store), and **Force On** (all apps except an exclusion list). Two controller layouts: **OmniNav** and **Classic**, with adjustable cursor speed.
-- **OmniCharm Widget** – A Game Bar widget for quickly toggling long-press ☰ to open Steam In-Game Overlay, switching Gamepad Mouse Mode, changing controller layouts, and adjusting cursor speed during gameplay.
+- **OmniCharm Widget** – A Game Bar widget for in-game quick access to **Task View**, the **Xbox Library**, and the **Steam Overlay**, as well as toggling long-press ☰ to open Steam In-Game Overlay, Gamepad Mouse Mode, controller layouts, and cursor speed.
 - **Gamepad Steam Shortcuts** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -106,9 +106,9 @@ OmniConsole will present the Settings UI on **first launch** or **after app upda
   <img src="docs/images/fse-settings.png" alt="Full Screen Experience Settings" height="221">
 </p>
 
-1.  Go to **Settings → Gaming → Full Screen Experience**.
+1.  Go to **Windows Settings → Gaming → Full Screen Experience**.
 2.  Set "Choose home app" to **OmniConsole**.
-3.  Enable **"Enter full screen experience on startup"** (**Highly Recommended**).
+3.  Enable **"Enter full screen experience on startup"**.
 
 ### 4. Done!
 
@@ -124,9 +124,10 @@ Your gaming platform now launches via any of these entry points:
 
 > ⚠️ **Change the FSE Home App setting _before_ uninstalling OmniConsole.** If OmniConsole is removed while it is still set as the FSE Home App, Windows **Task View will stop working** on some builds. This is a bug in Windows itself.
 
-1. Go to **Settings → Gaming → Full Screen Experience**.
+1. Go to **Windows Settings → Gaming → Full Screen Experience**.
 2. Set "Choose home app" to **Xbox** or **None**.
-3. Uninstall **OmniConsole** from **Settings → Apps → Installed apps**, or right-click **OmniConsole** in the Start Menu and select **Uninstall**.
+3. Right-click **OmniConsole** in the Start Menu and select **Uninstall**, or go to **Windows Settings → Apps → Installed apps** to uninstall it.
+4. Go to **Windows Settings → Apps → Installed apps** and uninstall **OmniCharm** (the widget does not appear in the Start Menu).
 
 ---
 
