@@ -153,6 +153,8 @@ namespace OmniConsole.Services
             // 禁止自身（循環啟動）與 Game Bar（FSE 衝突）
             if (trimmed.Equals(ownFamilyName, StringComparison.OrdinalIgnoreCase)) return false;
             if (trimmed.Equals(GameBarFamilyName, StringComparison.OrdinalIgnoreCase)) return false;
+            // 禁止 PhantomLink (OmniCharm)：Game Bar 小工具，無獨立啟動進入點
+            if (trimmed.Equals(UpdateCheckService.PhantomLinkFamilyName, StringComparison.OrdinalIgnoreCase)) return false;
 
             // 從 PackageFamilyName 提取套件名稱部分（最後一個底線之前）
             int lastUnderscore = trimmed.LastIndexOf('_');
