@@ -162,11 +162,13 @@ namespace OmniConsole.Pages
 
             ApplyMouseModeEnabledState(builtInMapping);
 
-            // 還原 Game Bar 媒體櫃的開關狀態
-            UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
-
-            // 還原 Passthrough 開關狀態
-            EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
+            // Game Bar 媒體櫃 / Passthrough 開關 UI 暫時隱藏（見 SettingsPage.xaml 註解），強制走 SettingsService 預設值。
+            //
+            // // 還原 Game Bar 媒體櫃的開關狀態
+            // UseGameBarLibrarySwitch.IsOn = SettingsService.GetUseGameBarLibraryForSettings();
+            //
+            // // 還原 Passthrough 開關狀態
+            // EnablePassthroughSwitch.IsOn = SettingsService.GetEnablePassthrough();
 
             // 還原自動檢查更新開關狀態，並顯示進階區版本號
             AutoUpdateCheckSwitch.IsOn = SettingsService.GetAutoUpdateCheckEnabled();
@@ -457,23 +459,25 @@ namespace OmniConsole.Pages
             CursorSpeedCombo.IsEnabled = mouseModeOn;
         }
 
-        /// <summary>
-        /// Game Bar 媒體櫃開關切換時立即儲存。
-        /// 開啟時 Game Bar 的「媒體櫃」按鈕將開啟 OmniConsole 設定介面；關閉時開啟預設遊戲平台。
-        /// </summary>
-        private void UseGameBarLibrarySwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            SettingsService.SetUseGameBarLibraryForSettings(UseGameBarLibrarySwitch.IsOn);
-        }
-
-        /// <summary>
-        /// Passthrough 開關切換時立即儲存。
-        /// 開啟時 Game Bar 的「首頁」與「媒體櫃」按鈕將直接導向預設平台，跳過 OmniConsole。
-        /// </summary>
-        private void EnablePassthroughSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            SettingsService.SetEnablePassthrough(EnablePassthroughSwitch.IsOn);
-        }
+        // Game Bar 媒體櫃 / Passthrough 開關 UI 暫時隱藏（見 SettingsPage.xaml 註解），Toggled handler 一併停用。
+        //
+        // /// <summary>
+        // /// Game Bar 媒體櫃開關切換時立即儲存。
+        // /// 開啟時 Game Bar 的「媒體櫃」按鈕將開啟 OmniConsole 設定介面；關閉時開啟預設遊戲平台。
+        // /// </summary>
+        // private void UseGameBarLibrarySwitch_Toggled(object sender, RoutedEventArgs e)
+        // {
+        //     SettingsService.SetUseGameBarLibraryForSettings(UseGameBarLibrarySwitch.IsOn);
+        // }
+        //
+        // /// <summary>
+        // /// Passthrough 開關切換時立即儲存。
+        // /// 開啟時 Game Bar 的「首頁」與「媒體櫃」按鈕將直接導向預設平台，跳過 OmniConsole。
+        // /// </summary>
+        // private void EnablePassthroughSwitch_Toggled(object sender, RoutedEventArgs e)
+        // {
+        //     SettingsService.SetEnablePassthrough(EnablePassthroughSwitch.IsOn);
+        // }
 
         /// <summary>
         /// 底部提示列「B 退出」按鈕的滑鼠點選處理。
@@ -888,15 +892,17 @@ namespace OmniConsole.Pages
                     if (sw.IsEnabled) MouseModeLayoutSwitch.IsOn = !sw.IsOn;
                     break;
 
-                // Game Bar 媒體櫃開關：On = 媒體櫃按鈕開啟 OmniConsole 設定；Off = 開啟預設平台
-                case ToggleSwitch sw when ReferenceEquals(sw, UseGameBarLibrarySwitch):
-                    UseGameBarLibrarySwitch.IsOn = !sw.IsOn;
-                    break;
-
-                // Passthrough 開關：切換「首頁 / 媒體櫃按鈕直接導向預設平台，跳過 OmniConsole」
-                case ToggleSwitch sw when ReferenceEquals(sw, EnablePassthroughSwitch):
-                    EnablePassthroughSwitch.IsOn = !sw.IsOn;
-                    break;
+                // Game Bar 媒體櫃 / Passthrough 開關 UI 暫時隱藏（見 SettingsPage.xaml 註解），手把 A 鍵切換 case 一併停用。
+                //
+                // // Game Bar 媒體櫃開關：On = 媒體櫃按鈕開啟 OmniConsole 設定；Off = 開啟預設平台
+                // case ToggleSwitch sw when ReferenceEquals(sw, UseGameBarLibrarySwitch):
+                //     UseGameBarLibrarySwitch.IsOn = !sw.IsOn;
+                //     break;
+                //
+                // // Passthrough 開關：切換「首頁 / 媒體櫃按鈕直接導向預設平台，跳過 OmniConsole」
+                // case ToggleSwitch sw when ReferenceEquals(sw, EnablePassthroughSwitch):
+                //     EnablePassthroughSwitch.IsOn = !sw.IsOn;
+                //     break;
 
                 // 自動檢查更新開關
                 case ToggleSwitch sw when ReferenceEquals(sw, AutoUpdateCheckSwitch):

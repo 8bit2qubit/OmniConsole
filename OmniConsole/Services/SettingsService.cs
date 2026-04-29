@@ -254,13 +254,17 @@ namespace OmniConsole.Services
         /// <summary>
         /// 取得是否啟用「Game Bar 媒體櫃按鈕進入設定介面」功能。
         /// 預設為 true。
+        /// 註：自 v1.9.0.0 起 SettingsPage 已隱藏此開關，強制 return true 忽略 LocalSettings 中的舊值，
+        /// 避免使用者過去若關過此項，升級後從 Game Bar 媒體櫃進不來、又無 UI 可改回的死結。
+        /// 待開發人員模式頁完工後再還原讀取 LocalSettings 的邏輯。
         /// </summary>
         public static bool GetUseGameBarLibraryForSettings()
         {
-            var settings = ApplicationData.Current.LocalSettings;
-            if (settings.Values.TryGetValue("UseGameBarLibraryForSettings", out object? value) && value is bool isEnabled)
-                return isEnabled;
             return true;
+            // var settings = ApplicationData.Current.LocalSettings;
+            // if (settings.Values.TryGetValue("UseGameBarLibraryForSettings", out object? value) && value is bool isEnabled)
+            //     return isEnabled;
+            // return true;
         }
 
         /// <summary>
@@ -274,13 +278,17 @@ namespace OmniConsole.Services
         /// <summary>
         /// 取得是否啟用「Game Bar 平台對接 (Passthrough)」功能。
         /// 預設為 false。
+        /// 註：自 v1.9.0.0 起 SettingsPage 已隱藏此開關，強制 return false 忽略 LocalSettings 中的舊值，
+        /// 避免使用者過去若開過 Passthrough，升級後 Game Bar 媒體櫃按鈕直接導向預設平台、無 UI 可關回的死結。
+        /// 待開發人員模式頁完工後再還原讀取 LocalSettings 的邏輯。
         /// </summary>
         public static bool GetEnablePassthrough()
         {
-            var settings = ApplicationData.Current.LocalSettings;
-            if (settings.Values.TryGetValue("EnablePassthrough", out object? value) && value is bool isEnabled)
-                return isEnabled;
             return false;
+            // var settings = ApplicationData.Current.LocalSettings;
+            // if (settings.Values.TryGetValue("EnablePassthrough", out object? value) && value is bool isEnabled)
+            //     return isEnabled;
+            // return false;
         }
 
         /// <summary>

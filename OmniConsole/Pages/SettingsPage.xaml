@@ -625,12 +625,20 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Game Bar 分類標題 -->
+                        <!--
+                            Game Bar 進階設定（媒體櫃按鈕開啟設定 / Passthrough）暫時隱藏：
+                            自 v1.9.0.0 起，OmniCharm 小工具按鈕已可直接進入 Xbox 媒體櫃；
+                            而 Passthrough 目前僅 Xbox 平台有對應 URI，其它平台尚未發現可用入口，
+                            開放給使用者調整反而容易踩雷（誤設後會無法從 Game Bar 媒體櫃進入 OmniConsole 設定介面）。
+                            因此 UI 暫時隱藏，強制走 SettingsService 的預設值；待開發人員模式頁完工後再搬移過去。
+                            （XAML 不支援巢狀註解，原本各小節的 <!~~ Game Bar 分類標題 ~~> /
+                              <!~~ Game Bar 群組卡片 ~~> / <!~~ 媒體櫃按鈕開啟設定 ~~> /
+                              <!~~ 分隔線 ~~> / <!~~ 直接導向平台 ~~> 子註解，於還原時依下列順序補回原位。）
+
                         <TextBlock x:Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
-                        <!-- Game Bar 群組卡片 -->
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -638,7 +646,6 @@
                                 HorizontalAlignment="Stretch"
                                 MinWidth="400">
                             <StackPanel>
-                                <!-- 媒體櫃按鈕開啟設定 -->
                                 <Grid Padding="16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -659,10 +666,8 @@
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
                                 </Grid>
 
-                                <!-- 分隔線 -->
                                 <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
 
-                                <!-- 直接導向平台 -->
                                 <Grid Padding="16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -685,6 +690,7 @@
                                 </Grid>
                             </StackPanel>
                         </Border>
+                        -->
 
                     </StackPanel>
                     </ScrollViewer>
