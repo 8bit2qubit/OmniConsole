@@ -10,17 +10,15 @@
 
 namespace winrt::PhantomBridge::implementation
 {
-    // ── 內部：解析 "Ctrl+Shift+Tab" 字串為 VK code 序列 ──────────────────────
+    // ── 內部：解析 "Shift+Tab" 字串為 VK code 序列 ──────────────────────────
     //
-    // 對齊 PhantomKey/InputSender.cpp 的 ParseCombo 行為，獨立實作避免跨專案連結。
-    // 支援：Ctrl/Control、Alt、Shift、Win/LWin、Tab、Esc、Space、F1-F12、A-Z、0-9 等。
+    // 鍵名表與 PhantomKey/InputSender.cpp 的 ParseCombo 相同。
     static std::vector<WORD> ParseShortcut(const std::wstring& combo)
     {
         static const std::map<std::wstring, WORD> keyMap = {
             { L"ctrl", VK_LCONTROL }, { L"control", VK_LCONTROL },
             { L"alt", VK_LMENU },
             { L"shift", VK_LSHIFT },
-            { L"win", VK_LWIN }, { L"lwin", VK_LWIN }, { L"windows", VK_LWIN },
             { L"tab", VK_TAB },
             { L"escape", VK_ESCAPE }, { L"esc", VK_ESCAPE },
             { L"space", VK_SPACE },
@@ -68,7 +66,7 @@ namespace winrt::PhantomBridge::implementation
     // ── 內部：批次送任意 modifier+key 組合 ───────────────────────────────────
     //
     // 一次 SendInput 按下所有鍵 → Sleep 50ms → 反序一次釋放。
-    // 對齊 PhantomKey/InputSender.cpp 的 SendKeyCombo 既有實作。
+    // 行為與 PhantomKey/InputSender.cpp 的 SendKeyCombo 相同。
     static void SendKeyComboFromVks(const std::vector<WORD>& keys) noexcept
     {
         if (keys.empty()) return;

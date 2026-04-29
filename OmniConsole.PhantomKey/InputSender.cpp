@@ -44,19 +44,6 @@ static const std::map<std::wstring, WORD>& GetKeyMap() {
         { L"f1",  VK_F1 },  { L"f2",  VK_F2 },  { L"f3",  VK_F3 },  { L"f4",  VK_F4 },
         { L"f5",  VK_F5 },  { L"f6",  VK_F6 },  { L"f7",  VK_F7 },  { L"f8",  VK_F8 },
         { L"f9",  VK_F9 },  { L"f10", VK_F10 }, { L"f11", VK_F11 }, { L"f12", VK_F12 },
-
-        // 符號鍵
-        { L"`",   VK_OEM_3 },      // `~
-        { L"-",   VK_OEM_MINUS },  // -_
-        { L"=",   VK_OEM_PLUS },   // =+
-        { L"[",   VK_OEM_4 },      // [{
-        { L"]",   VK_OEM_6 },      // ]}
-        { L"\\",  VK_OEM_5 },      // \|
-        { L";",   VK_OEM_1 },      // ;:
-        { L"'",   VK_OEM_7 },      // '"
-        { L",",   VK_OEM_COMMA },  // ,<
-        { L".",   VK_OEM_PERIOD }, // .>
-        { L"/",   VK_OEM_2 },      // /?
     };
     return keyMap;
 }
