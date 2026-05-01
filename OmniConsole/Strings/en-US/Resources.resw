@@ -668,4 +668,148 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
     <value>Open Settings</value>
   </data>
+  <data name="Nav_About.Content" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="AboutTitle.Text" xml:space="preserve">
+    <value>About OmniConsole</value>
+  </data>
+  <data name="AboutDescription.Text" xml:space="preserve">
+    <value>Version and environment details to help report upgrade or compatibility issues.</value>
+  </data>
+  <data name="AboutSection_Suite.Text" xml:space="preserve">
+    <value>OmniConsole Suite</value>
+  </data>
+  <data name="AboutSection_Xfset.Text" xml:space="preserve">
+    <value>XFSET (Xbox Full Screen Experience Tool)</value>
+  </data>
+  <data name="AboutSection_Hardware.Text" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="AboutSection_PhantomKey.Text" xml:space="preserve">
+    <value>PhantomKey Health</value>
+  </data>
+  <data name="AboutSection_Actions.Text" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="AboutActions_Title.Text" xml:space="preserve">
+    <value>Environment Snapshot</value>
+  </data>
+  <data name="Label_PhantomKeyProcess.Text" xml:space="preserve">
+    <value>Process</value>
+  </data>
+  <data name="Label_PhantomKeyUptime.Text" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Label_PhantomKeyIntegrity.Text" xml:space="preserve">
+    <value>Integrity Level</value>
+  </data>
+  <data name="Label_PhantomKeyResponsiveness.Text" xml:space="preserve">
+    <value>Responsiveness</value>
+  </data>
+  <data name="PhantomKeyHealth_Running" xml:space="preserve">
+    <value>running</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Common_NotInstalled" xml:space="preserve">
+    <value>Not installed</value>
+  </data>
+  <data name="PhantomKeyHealth_NotRunning" xml:space="preserve">
+    <value>not running</value>
+  </data>
+  <data name="PhantomKeyResp_Responsive" xml:space="preserve">
+    <value>responsive ({0} ms)</value>
+  </data>
+  <data name="PhantomKeyResp_Busy" xml:space="preserve">
+    <value>busy ({0} ms)</value>
+  </data>
+  <data name="PhantomKeyResp_Stuck" xml:space="preserve">
+    <value>main loop stuck ({0} ms without advance)</value>
+  </data>
+  <data name="PhantomKeyResp_Hung" xml:space="preserve">
+    <value>not responding (process may be frozen)</value>
+  </data>
+  <data name="PhantomKeyResp_NoPingWindow" xml:space="preserve">
+    <value>no ping window (older build or just started)</value>
+  </data>
+  <data name="AboutSection_System.Text" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Label_System.Text" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="Label_Baseboard.Text" xml:space="preserve">
+    <value>Motherboard</value>
+  </data>
+  <data name="Label_Cpu.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Label_Ram.Text" xml:space="preserve">
+    <value>RAM</value>
+  </data>
+  <data name="Label_Gpu.Text" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Label_OmniConsole.Text" xml:space="preserve">
+    <value>OmniConsole</value>
+  </data>
+  <data name="Label_PhantomBridge.Text" xml:space="preserve">
+    <value>PhantomBridge</value>
+  </data>
+  <data name="Label_PhantomKey.Text" xml:space="preserve">
+    <value>PhantomKey</value>
+  </data>
+  <data name="Label_PhantomLink.Text" xml:space="preserve">
+    <value>PhantomLink (OmniCharm)</value>
+  </data>
+  <data name="Label_WindowsBuild.Text" xml:space="preserve">
+    <value>OS</value>
+  </data>
+  <data name="Label_FseState.Text" xml:space="preserve">
+    <value>FSE State</value>
+  </data>
+  <data name="Label_DeviceForm.Text" xml:space="preserve">
+    <value>DeviceForm</value>
+  </data>
+  <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
+    <value>Max Touch Points</value>
+  </data>
+  <data name="MaxTouchPoints_NoTouch" xml:space="preserve">
+    <value>no touch screen</value>
+  </data>
+  <data name="Label_Locale.Text" xml:space="preserve">
+    <value>Locale</value>
+  </data>
+  <data name="Label_CapturedAt.Text" xml:space="preserve">
+    <value>Captured at:</value>
+  </data>
+  <data name="XfsetStatus_NotInstalled" xml:space="preserve">
+    <value>not installed</value>
+  </data>
+  <data name="XfsetStatus_Installed" xml:space="preserve">
+    <value>installed</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceRunning" xml:space="preserve">
+    <value>touchservice running</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceNotRunning" xml:space="preserve">
+    <value>touchservice not running</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceUnknown" xml:space="preserve">
+    <value>touchservice state unknown</value>
+  </data>
+  <data name="CopyAboutButton.Content" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+  <data name="RefreshAboutButton.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="AboutCopyConfirmTeachingTip.Title" xml:space="preserve">
+    <value>Copied to clipboard</value>
+  </data>
+  <data name="AboutCopyConfirmTeachingTip.Subtitle" xml:space="preserve">
+    <value>Paste it into a GitHub Issue.</value>
+  </data>
 </root>

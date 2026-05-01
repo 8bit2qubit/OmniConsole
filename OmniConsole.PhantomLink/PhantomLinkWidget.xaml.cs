@@ -232,17 +232,27 @@ namespace OmniConsole.PhantomLink
                 PhantomKeyStore.EnsureDefaultsIfMissing();
                 _builtInMapping = HardwareDetection.HasBuiltInGamepadMapping();
 
-                // SteamInGameOverlay 觸發按鈕條件可見性（位於 SteamInGameOverlaySection 同行右端）
+                // SteamInGameOverlay 觸發按鈕條件可見性（夾於 [Off] [Trigger] [On] 中央）
                 // 條件：FSE 模式 + DefaultPlatform=SteamBigPicture
                 //   - 桌面模式不顯示
                 //   - 非 SteamBigPicture 平台不顯示
-                // Grid 中按鈕為 Auto-width，Collapsed 時自動收合不佔空間，無需動態調整 Grid 欄寬
+                // 不可見時 StackPanel 會收合該位置，Off/On 視覺上相鄰；
+                // 此時水平 XYFocus 改讓 Off/On 直接相連，避免 D-pad 走入隱藏按鈕。
                 string defaultPlatform = PhantomKeyStore.GetDefaultPlatform();
                 bool steamBtnVisible =
                     FseStatus.IsActive() &&
                     defaultPlatform == PhantomKeyStore.PlatformSteamBigPicture;
                 TriggerSteamInGameOverlayBtn.Visibility =
                     steamBtnVisible ? Visibility.Visible : Visibility.Collapsed;
+                SteamInGameOverlayOffBtn.XYFocusRight =
+                    steamBtnVisible ? (DependencyObject)TriggerSteamInGameOverlayBtn : SteamInGameOverlayOnBtn;
+                SteamInGameOverlayOnBtn.XYFocusLeft =
+                    steamBtnVisible ? (DependencyObject)TriggerSteamInGameOverlayBtn : SteamInGameOverlayOffBtn;
+                // StackPanel.Spacing 不跳過 Collapsed 子元素：三顆全顯時 Off-Trigger-On 兩段 6px 共 12px；
+                // Trigger 隱藏時若仍為 6，Off-On 之間仍累計 12px（兩段 spacing 都還在），與下方 Mode
+                // 區塊「三顆兩段 12px」失去一致性（Mode 是三顆全顯）。隱藏時改 3，使 Off-On 視覺間距
+                // 收斂為單段 6px，與其它區塊「相鄰兩顆按鈕」的間距一致。
+                SteamInGameOverlayButtonRow.Spacing = steamBtnVisible ? 6 : 3;
 
                 // Steam In-Game Overlay（獨立於 Mouse Mode，不受 _builtInMapping 影響）
                 bool overlay = PhantomKeyStore.GetSteamInGameOverlayEnabled();

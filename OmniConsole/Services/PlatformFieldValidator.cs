@@ -208,7 +208,7 @@ namespace OmniConsole.Services
             return true;
         }
 
-        // ── 共用輔助 ──────────────────────────────────────────────────────────
+        // ── 共用輔助方法 ──────────────────────────────────────────────────────────
 
         /// <summary>檢查字串是否含有控制字元（0x00–0x1F，排除一般空白）。</summary>
         public static bool HasControlCharacters(string value)

@@ -119,14 +119,29 @@ static bool IsExplorerTaskView() {
     return _wcsicmp(cls, L"XamlExplorerHostIslandWindow") == 0;
 }
 
-// Steam Big Picture 與桌面 Steam 同為 steam.exe (SDL_app)，靠視窗 title 區分
-// 桌面 Steam title 恰好 "Steam"（不隨語系變動），Big Picture 帶語系後綴
+// Steam Big Picture 與桌面 Steam 同為 steamwebhelper.exe (SDL_app)，靠視窗特徵區分
+// title 比對在多語系下不可靠（zh-tw "Steam Big Picture 模式"、bg "Steam режим „Голям екран"、
+// th "โหมด Steam Big Picture" 其排列千變萬化），改以視窗 style + 相對尺寸判斷：
+//   Big Picture：無 WS_CAPTION（無標題列）+ 視窗寬高皆 ≥ 所在 monitor 的 50%
+//   桌面 Steam 主視窗及子視窗（設定/好友/關於）皆帶 WS_CAPTION → 第一條件擋下
+//   桌面 Steam 偶見的無 caption 提示彈窗遠小於 monitor 一半 → 第二條件擋下
+// 不用「覆蓋整個 monitor」當條件，因 Big Picture 偶會置中留黑邊未貼齊四邊 (Steam / Windows Bug)
+// （實測 2560x1440 → 1618x1047；1920x1080 → 1296x839，皆超過 monitor 50%）。
+// 用「相對 monitor 尺寸」，自動適應不同解析度與 DPI。
 static bool IsSteamBigPicture() {
     HWND hwnd = GetForegroundWindow();
     if (!hwnd) return false;
-    WCHAR title[256] = {};
-    GetWindowTextW(hwnd, title, _countof(title));
-    return _wcsicmp(title, L"Steam") != 0;
+    LONG style = GetWindowLongW(hwnd, GWL_STYLE);
+    if ((style & WS_CAPTION) != 0) return false;  // 有標題列 → 桌面 Steam 任一視窗
+    RECT wr = {};
+    if (!GetWindowRect(hwnd, &wr)) return false;
+    HMONITOR hMon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi = { sizeof(mi) };
+    if (!GetMonitorInfoW(hMon, &mi)) return false;
+    LONG winW = wr.right - wr.left, winH = wr.bottom - wr.top;
+    LONG monW = mi.rcMonitor.right - mi.rcMonitor.left;
+    LONG monH = mi.rcMonitor.bottom - mi.rcMonitor.top;
+    return winW * 2 >= monW && winH * 2 >= monH;
 }
 
 // 比對視窗 rect 四個邊是否都涵蓋所在 monitor rect（幾何比對，僅供診斷 log 參考）
@@ -142,7 +157,7 @@ static bool IsWindowCoveringMonitor(HWND hwnd) {
 
 void LogForegroundWindowDiagnostics() {
     HWND hwnd = GetForegroundWindow();
-    if (!hwnd) { Log(L"FG diag: no foreground window."); return; }
+    if (!hwnd) { Log(L"[FGMonitor] diag: no foreground window."); return; }
 
     WCHAR cls[128] = {};
     GetClassNameW(hwnd, cls, _countof(cls));
@@ -156,7 +171,7 @@ void LogForegroundWindowDiagnostics() {
     DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
 
     std::wstring procName = GetForegroundProcessName();
-    Log(L"FG diag: proc=[%s] class=[%s] title=[%s] coversMonitor=%d cloaked=%d",
+    Log(L"[FGMonitor] diag: proc=[%s] class=[%s] title=[%s] coversMonitor=%d cloaked=%d",
         procName.c_str(), cls, title, coversMonitor ? 1 : 0, cloaked);
 }
 

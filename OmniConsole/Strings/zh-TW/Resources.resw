@@ -668,4 +668,148 @@
   <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
     <value>開啟設定</value>
   </data>
+  <data name="Nav_About.Content" xml:space="preserve">
+    <value>關於</value>
+  </data>
+  <data name="AboutTitle.Text" xml:space="preserve">
+    <value>關於 OmniConsole</value>
+  </data>
+  <data name="AboutDescription.Text" xml:space="preserve">
+    <value>顯示版本與環境資訊，協助回報升級或相容性問題。</value>
+  </data>
+  <data name="AboutSection_Suite.Text" xml:space="preserve">
+    <value>OmniConsole Suite</value>
+  </data>
+  <data name="AboutSection_Xfset.Text" xml:space="preserve">
+    <value>XFSET（Xbox Full Screen Experience Tool）</value>
+  </data>
+  <data name="AboutSection_Hardware.Text" xml:space="preserve">
+    <value>硬體</value>
+  </data>
+  <data name="AboutSection_PhantomKey.Text" xml:space="preserve">
+    <value>PhantomKey 健康狀況</value>
+  </data>
+  <data name="AboutSection_Actions.Text" xml:space="preserve">
+    <value>動作</value>
+  </data>
+  <data name="AboutActions_Title.Text" xml:space="preserve">
+    <value>環境快照</value>
+  </data>
+  <data name="Label_PhantomKeyProcess.Text" xml:space="preserve">
+    <value>行程</value>
+  </data>
+  <data name="Label_PhantomKeyUptime.Text" xml:space="preserve">
+    <value>已執行</value>
+  </data>
+  <data name="Label_PhantomKeyIntegrity.Text" xml:space="preserve">
+    <value>完整性等級</value>
+  </data>
+  <data name="Label_PhantomKeyResponsiveness.Text" xml:space="preserve">
+    <value>回應狀況</value>
+  </data>
+  <data name="PhantomKeyHealth_Running" xml:space="preserve">
+    <value>執行中</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Common_NotInstalled" xml:space="preserve">
+    <value>未安裝</value>
+  </data>
+  <data name="PhantomKeyHealth_NotRunning" xml:space="preserve">
+    <value>未執行</value>
+  </data>
+  <data name="PhantomKeyResp_Responsive" xml:space="preserve">
+    <value>正常回應（{0} ms）</value>
+  </data>
+  <data name="PhantomKeyResp_Busy" xml:space="preserve">
+    <value>忙碌（{0} ms）</value>
+  </data>
+  <data name="PhantomKeyResp_Stuck" xml:space="preserve">
+    <value>主迴圈卡住（{0} ms 未推進）</value>
+  </data>
+  <data name="PhantomKeyResp_Hung" xml:space="preserve">
+    <value>沒有回應（行程可能凍結）</value>
+  </data>
+  <data name="PhantomKeyResp_NoPingWindow" xml:space="preserve">
+    <value>找不到 ping 視窗（舊版或剛啟動）</value>
+  </data>
+  <data name="AboutSection_System.Text" xml:space="preserve">
+    <value>系統</value>
+  </data>
+  <data name="Label_System.Text" xml:space="preserve">
+    <value>型號</value>
+  </data>
+  <data name="Label_Baseboard.Text" xml:space="preserve">
+    <value>主機板</value>
+  </data>
+  <data name="Label_Cpu.Text" xml:space="preserve">
+    <value>處理器</value>
+  </data>
+  <data name="Label_Ram.Text" xml:space="preserve">
+    <value>記憶體</value>
+  </data>
+  <data name="Label_Gpu.Text" xml:space="preserve">
+    <value>顯示卡</value>
+  </data>
+  <data name="Label_OmniConsole.Text" xml:space="preserve">
+    <value>OmniConsole</value>
+  </data>
+  <data name="Label_PhantomBridge.Text" xml:space="preserve">
+    <value>PhantomBridge</value>
+  </data>
+  <data name="Label_PhantomKey.Text" xml:space="preserve">
+    <value>PhantomKey</value>
+  </data>
+  <data name="Label_PhantomLink.Text" xml:space="preserve">
+    <value>PhantomLink（OmniCharm）</value>
+  </data>
+  <data name="Label_WindowsBuild.Text" xml:space="preserve">
+    <value>OS</value>
+  </data>
+  <data name="Label_FseState.Text" xml:space="preserve">
+    <value>FSE 狀態</value>
+  </data>
+  <data name="Label_DeviceForm.Text" xml:space="preserve">
+    <value>DeviceForm</value>
+  </data>
+  <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
+    <value>觸控點上限</value>
+  </data>
+  <data name="MaxTouchPoints_NoTouch" xml:space="preserve">
+    <value>無觸控螢幕</value>
+  </data>
+  <data name="Label_Locale.Text" xml:space="preserve">
+    <value>語系</value>
+  </data>
+  <data name="Label_CapturedAt.Text" xml:space="preserve">
+    <value>擷取時間：</value>
+  </data>
+  <data name="XfsetStatus_NotInstalled" xml:space="preserve">
+    <value>未安裝</value>
+  </data>
+  <data name="XfsetStatus_Installed" xml:space="preserve">
+    <value>已安裝</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceRunning" xml:space="preserve">
+    <value>touchservice 執行中</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceNotRunning" xml:space="preserve">
+    <value>touchservice 未執行</value>
+  </data>
+  <data name="XfsetStatus_TouchServiceUnknown" xml:space="preserve">
+    <value>touchservice 狀態未知</value>
+  </data>
+  <data name="CopyAboutButton.Content" xml:space="preserve">
+    <value>複製到剪貼簿</value>
+  </data>
+  <data name="RefreshAboutButton.Content" xml:space="preserve">
+    <value>重新整理</value>
+  </data>
+  <data name="AboutCopyConfirmTeachingTip.Title" xml:space="preserve">
+    <value>已複製到剪貼簿</value>
+  </data>
+  <data name="AboutCopyConfirmTeachingTip.Subtitle" xml:space="preserve">
+    <value>可直接貼到 GitHub Issue。</value>
+  </data>
 </root>

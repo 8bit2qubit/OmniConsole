@@ -39,6 +39,9 @@
     <ClCompile Include="MouseMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PingService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Log.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MouseMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PingService.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

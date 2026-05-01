@@ -145,12 +145,9 @@
                     Margin="0,0,0,24" Spacing="32"
                     Visibility="Collapsed">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
-                        Width="28" Height="28">
-                    <TextBlock Text="A" FontSize="14" FontWeight="SemiBold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                </Border>
+                <FontIcon Glyph="&#xF093;" FontSize="22"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          VerticalAlignment="Center"/>
                 <TextBlock x:Uid="GamepadHint_Select" FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
@@ -161,12 +158,9 @@
                     Padding="0" MinWidth="0" MinHeight="0"
                     IsTabStop="False">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Border CornerRadius="4" BorderBrush="{ThemeResource TextFillColorTertiaryBrush}" BorderThickness="1.5"
-                            Width="28" Height="28">
-                        <TextBlock Text="B" FontSize="14" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    </Border>
+                    <FontIcon Glyph="&#xF094;" FontSize="22"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              VerticalAlignment="Center"/>
                     <TextBlock x:Uid="GamepadHint_Exit" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>

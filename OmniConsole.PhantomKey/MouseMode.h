@@ -30,9 +30,11 @@
 // ============================================================================
 
 namespace MouseMode {
+
     // 主迴圈每 tick 呼叫
     void Tick(const XINPUT_GAMEPAD& pad, const AppConfig& cfg);
 
     // 離開目標前景時清除滾輪累積與長按連發狀態
     void Reset();
-}
+
+}  // namespace MouseMode

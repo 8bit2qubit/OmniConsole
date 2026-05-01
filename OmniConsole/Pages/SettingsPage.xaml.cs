@@ -7,6 +7,7 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,12 +54,18 @@ namespace OmniConsole.Pages
         // 匯出成功提示的自動關閉計時器（2 秒後關閉 TeachingTip）
         private readonly DispatcherTimer _exportTipTimer = new() { Interval = TimeSpan.FromSeconds(2) };
 
+        // 關於頁「已複製」InfoBar 的自動關閉計時器（2 秒後關閉）
+        private readonly DispatcherTimer _aboutCopyConfirmTimer = new() { Interval = TimeSpan.FromSeconds(2) };
+
         // ContentDialog 重入防護：平板互動模式下 Dialog 關閉動畫較慢，
         // 手把快速按 A 可能在前一個 Dialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
         private bool _isDialogOpen;
 
         // 防止檢查更新重複觸發
         private bool _isCheckingUpdate;
+
+        // 防止關於頁重新整理重複觸發
+        private bool _isRefreshingAbout;
 
         // 下載更新的取消 token
         private CancellationTokenSource? _downloadCts;
@@ -80,6 +87,11 @@ namespace OmniConsole.Pages
             {
                 _exportTipTimer.Stop();
                 ExportSuccessTeachingTip.IsOpen = false;
+            };
+            _aboutCopyConfirmTimer.Tick += (_, _) =>
+            {
+                _aboutCopyConfirmTimer.Stop();
+                AboutCopyConfirmTeachingTip.IsOpen = false;
             };
         }
 
@@ -186,7 +198,7 @@ namespace OmniConsole.Pages
             StartGamepadPolling();
         }
 
-        // ── VSM 狀態輔助 ─────────────────────────────────────────────────────
+        // ── VSM 狀態輔助方法 ─────────────────────────────────────────────────────
 
         /// <summary>
         /// 依目前導覽頁面、分類索引標籤及免責聲明同意狀態，更新底部手把提示列的按鍵圖示。
@@ -227,7 +239,270 @@ namespace OmniConsole.Pages
                 _currentNavTag = tag;
                 VisualStateManager.GoToState(this, tag, false);
                 UpdateGamepadHints();
+
+                // 切到關於頁時，每次都重新擷取一次環境快照（PhantomKey 狀態在工作階段中變動）
+                if (tag == "About")
+                {
+                    LoadAboutPageContent();
+                }
             }
+        }
+
+        // ── 關於頁 ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 擷取環境快照並更新關於頁各文字區塊。
+        /// 在背景執行緒取資料、再回 UI 執行緒設值。
+        /// </summary>
+        private async void LoadAboutPageContent()
+        {
+            if (_isRefreshingAbout) return;
+            _isRefreshingAbout = true;
+
+            // 進度環用 Opacity 而非 Visibility 切換：保持佔位（20×20），避免顯隱時推動按鈕 row 寬度。
+            RefreshAboutProgressRing.Opacity = 1;
+            RefreshAboutProgressRing.IsActive = true;
+
+            var delayTask = Task.Delay(500);
+            var snapshot = await Task.Run(() => AboutInfoService.GetEnvironmentSnapshot());
+            await delayTask;
+
+            ApplyAboutSnapshot(snapshot);
+            RefreshAboutProgressRing.IsActive = false;
+            RefreshAboutProgressRing.Opacity = 0;
+            _isRefreshingAbout = false;
+        }
+
+        /// <summary>
+        /// 將 <see cref="AboutInfoService.EnvironmentSnapshot"/> 套用到「關於」分頁的各 UI 欄位。
+        /// </summary>
+        private void ApplyAboutSnapshot(AboutInfoService.EnvironmentSnapshot s)
+        {
+            AboutOmniConsoleVersion.Text = LocalizeForUI(s.Versions.OmniConsole);
+            AboutPhantomBridgeVersion.Text = LocalizeForUI(s.Versions.PhantomBridge);
+            // PhantomKey 同時顯示套件內版本與已部署副本版本，便於診斷複製失敗或舊副本殘留。
+            AboutPhantomKeyVersion.Text = s.Versions.PhantomKey == s.Versions.PhantomKeyDeployed
+                ? LocalizeForUI(s.Versions.PhantomKey)
+                : $"{LocalizeForUI(s.Versions.PhantomKey)} → {LocalizeForUI(s.Versions.PhantomKeyDeployed)}";
+            AboutPhantomLinkVersion.Text = LocalizeForUI(s.Versions.PhantomLink);
+
+            // PhantomKey 健康狀況
+            ApplyPhantomKeyHealth(s.PhantomKey);
+
+            AboutXfsetToolStatus.Text = FormatXfsetToolForUI(s.Xfset);
+            AboutXfsetPhysPanelStatus.Text = FormatPhysPanelForUI(s.Xfset);
+
+            AboutSystemText.Text = $"{LocalizeForUI(s.Hardware.SystemManufacturer)} / {LocalizeForUI(s.Hardware.SystemProductName)}";
+            AboutBaseboardText.Text = $"{LocalizeForUI(s.Hardware.BaseboardManufacturer)} / {LocalizeForUI(s.Hardware.BaseboardProduct)}";
+            AboutCpuText.Text = FormatCpuForUI(s.Hardware);
+            AboutRamText.Text = FormatBytesForUI(s.Hardware.RamTotalBytes);
+            AboutGpuText.Text = FormatGpuForUI(s.Hardware);
+
+            AboutWindowsBuildText.Text = LocalizeForUI(s.WindowsBuild);
+            AboutFseStateText.Text = s.FseState;
+
+            AboutMaxTouchPointsText.Text = s.MaxTouchPoints == 0
+                ? $"{s.MaxTouchPoints} ({_resourceLoader.GetString("MaxTouchPoints_NoTouch")})"
+                : s.MaxTouchPoints.ToString(CultureInfo.InvariantCulture);
+            AboutLocaleText.Text = LocalizeForUI(s.Locale);
+            AboutCapturedAtText.Text = s.CapturedAt.ToString(
+                "yyyy-MM-dd HH:mm:ss zzz",
+                CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// 把資料層的固定英文回退字串（"(unknown)" / "(not installed)"）替換為在地化字串供 UI 顯示。
+        /// 資料層保持英文常數有助於 Markdown 輸出的可讀性（貼到 GitHub Issue 不會帶非 ASCII 字串）。
+        /// </summary>
+        private string LocalizeForUI(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return raw;
+            if (raw == "(unknown)") return _resourceLoader.GetString("Common_Unknown");
+            if (raw == "(not installed)") return _resourceLoader.GetString("Common_NotInstalled");
+            return raw;
+        }
+
+        /// <summary>
+        /// 把 XFSET 主程式安裝狀態格式化為設定頁顯示用的在地化字串。
+        /// </summary>
+        private string FormatXfsetToolForUI(AboutInfoService.XfsetInfo x)
+        {
+            if (!x.ToolInstalled) return _resourceLoader.GetString("XfsetStatus_NotInstalled");
+            return $"{_resourceLoader.GetString("XfsetStatus_Installed")} ({x.ToolVersion})";
+        }
+
+        /// <summary>
+        /// 把 PhysPanelCS 安裝狀態與 touchservice 執行狀態組合為設定頁顯示用的在地化字串。
+        /// </summary>
+        private string FormatPhysPanelForUI(AboutInfoService.XfsetInfo x)
+        {
+            if (!x.PhysPanelInstalled) return _resourceLoader.GetString("XfsetStatus_NotInstalled");
+
+            string touchKey = x.TouchService switch
+            {
+                AboutInfoService.TouchServiceState.Running => "XfsetStatus_TouchServiceRunning",
+                AboutInfoService.TouchServiceState.NotConfigured => "XfsetStatus_TouchServiceNotRunning",
+                _ => "XfsetStatus_TouchServiceUnknown",
+            };
+
+            return $"{_resourceLoader.GetString("XfsetStatus_Installed")} ({x.PhysPanelVersion}), {_resourceLoader.GetString(touchKey)}";
+        }
+
+        /// <summary>
+        /// 把位元組數格式化為設定頁顯示用的可讀字串（≥1 GiB 用 GB，否則用 MB）。
+        /// </summary>
+        private string FormatBytesForUI(ulong bytes)
+        {
+            if (bytes == 0) return _resourceLoader.GetString("Common_Unknown");
+            const double GiB = 1024.0 * 1024.0 * 1024.0;
+            double gib = bytes / GiB;
+            return gib >= 1.0
+                ? gib.ToString("0.# GB", CultureInfo.InvariantCulture)
+                : (bytes / (1024.0 * 1024.0)).ToString("0 MB", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// 把 CPU 頻率（MHz）格式化為設定頁顯示用字串：≥1000 顯示 GHz，否則顯示 MHz。
+        /// </summary>
+        private string FormatMhzForUI(int mhz)
+        {
+            if (mhz <= 0) return _resourceLoader.GetString("Common_Unknown");
+            return mhz >= 1000
+                ? (mhz / 1000.0).ToString("0.00 GHz", CultureInfo.InvariantCulture)
+                : $"{mhz} MHz";
+        }
+
+        /// <summary>
+        /// 把 CPU 名稱、頻率、實體/邏輯核心數組合為設定頁顯示用的單行字串。
+        /// </summary>
+        private string FormatCpuForUI(AboutInfoService.HardwareInfo h)
+        {
+            // 顯示為「<名稱> (<時脈>, <實體>C/<邏輯>T)」
+            return $"{LocalizeForUI(h.CpuName)} ({FormatMhzForUI(h.CpuMhz)}, {h.CpuPhysicalCores}C/{h.CpuLogicalCores}T)";
+        }
+
+        /// <summary>
+        /// 把 GPU 清單（名稱、VRAM、驅動程式版本與日期）格式化為設定頁顯示用的多行字串。
+        /// </summary>
+        private string FormatGpuForUI(AboutInfoService.HardwareInfo h)
+        {
+            // 多張顯示卡，每張一行；驅動版本/日期各自顯示
+            if (h.Gpus.Count == 0) return _resourceLoader.GetString("Common_Unknown");
+            return string.Join(Environment.NewLine,
+                h.Gpus.Select(g => $"{LocalizeForUI(g.Name)} ({FormatBytesForUI(g.VramBytes)} VRAM, {LocalizeForUI(g.DriverVersion)} / {LocalizeForUI(g.DriverDate)})"));
+        }
+
+        /// <summary>
+        /// 把 PhantomKeyHealth 紀錄投到對應文字區塊。未在跑時將細節欄為 dash。
+        /// </summary>
+        private void ApplyPhantomKeyHealth(AboutInfoService.PhantomKeyHealth h)
+        {
+            if (!h.ProcessRunning)
+            {
+                AboutPhantomKeyProcessText.Text = _resourceLoader.GetString("PhantomKeyHealth_NotRunning");
+                AboutPhantomKeyUptimeText.Text = "—";
+                AboutPhantomKeyIntegrityText.Text = "—";
+                AboutPhantomKeyResponsivenessText.Text = "—";
+                return;
+            }
+
+            AboutPhantomKeyProcessText.Text = _resourceLoader.GetString("PhantomKeyHealth_Running");
+
+            AboutPhantomKeyUptimeText.Text = FormatUptimeForUI(h.Uptime);
+            AboutPhantomKeyIntegrityText.Text = h.IntegrityLevel == AboutInfoService.IntegrityLevel.Unknown
+                ? _resourceLoader.GetString("Common_Unknown")
+                : h.IntegrityLevel.ToString();
+            AboutPhantomKeyResponsivenessText.Text = FormatResponsivenessForUI(h);
+        }
+
+        /// <summary>
+        /// 把 PhantomKey Uptime 格式化為設定頁顯示用字串，依量級裁切顯示精度；非正值回 dash。
+        /// </summary>
+        private static string FormatUptimeForUI(TimeSpan ts)
+        {
+            if (ts <= TimeSpan.Zero) return "—";
+            if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h {ts.Minutes}m";
+            if (ts.TotalHours >= 1) return $"{ts.Hours}h {ts.Minutes}m";
+            if (ts.TotalMinutes >= 1) return $"{ts.Minutes}m {ts.Seconds}s";
+            return $"{ts.Seconds}s";
+        }
+
+        /// <summary>
+        /// 把 PhantomKey 健康分級轉成設定頁顯示用的在地化描述（含延遲毫秒）。
+        /// </summary>
+        private string FormatResponsivenessForUI(AboutInfoService.PhantomKeyHealth h)
+        {
+            return h.Responsiveness switch
+            {
+                AboutInfoService.PhantomKeyResponsiveness.Responsive
+                    => string.Format(CultureInfo.InvariantCulture,
+                        _resourceLoader.GetString("PhantomKeyResp_Responsive"), h.PingLagMs),
+                AboutInfoService.PhantomKeyResponsiveness.Busy
+                    => string.Format(CultureInfo.InvariantCulture,
+                        _resourceLoader.GetString("PhantomKeyResp_Busy"), h.PingLagMs),
+                AboutInfoService.PhantomKeyResponsiveness.Stuck
+                    => string.Format(CultureInfo.InvariantCulture,
+                        _resourceLoader.GetString("PhantomKeyResp_Stuck"), h.PingLagMs),
+                AboutInfoService.PhantomKeyResponsiveness.Hung
+                    => _resourceLoader.GetString("PhantomKeyResp_Hung"),
+                AboutInfoService.PhantomKeyResponsiveness.NoPingWindow
+                    => _resourceLoader.GetString("PhantomKeyResp_NoPingWindow"),
+                AboutInfoService.PhantomKeyResponsiveness.NotRunning
+                    => _resourceLoader.GetString("PhantomKeyHealth_NotRunning"),
+                _ => "—",
+            };
+        }
+
+        /// <summary>
+        /// 複製關於頁的環境快照到剪貼簿，供使用者貼到 GitHub Issue 協助回報問題。
+        /// </summary>
+        private void CopyAboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var snapshot = AboutInfoService.GetEnvironmentSnapshot();
+                var markdown = AboutInfoService.FormatAsMarkdown(snapshot);
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(markdown);
+                Clipboard.SetContent(dataPackage);
+
+                // 同步把畫面上的快照重新整理為這次複製的版本，使顯示與剪貼簿一致
+                ApplyAboutSnapshot(snapshot);
+
+                AboutCopyConfirmTeachingTip.IsOpen = true;
+                _aboutCopyConfirmTimer.Stop();
+                _aboutCopyConfirmTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[SettingsPage] CopyAboutButton_Click failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 重新整理關於頁所有欄位。
+        /// 走 LoadAboutPageContent 路徑。
+        /// </summary>
+        private void RefreshAboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadAboutPageContent();
+        }
+
+        /// <summary>
+        /// 依關於頁實際可用寬度切換雙欄/單欄版型。閾值 1416 = 兩欄各 700 + ColumnSpacing 16。
+        /// </summary>
+        private void AboutPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // 用 ViewportWidth（ScrollViewer 實際給內容的可用寬度）而非 e.NewSize.Width。
+            const double DualColumnThreshold = 1416;
+            double newSize = e.NewSize.Width;
+            double viewport = AboutPage.ViewportWidth;
+            double actualWidth = AboutPage.ActualWidth;
+            double available = viewport > 0 ? viewport : (actualWidth > 0 ? actualWidth : newSize);
+            string targetState = available >= DualColumnThreshold ? "WideAboutState" : "NarrowAboutState";
+            // VSG 掛在 SettingsPage 根 Grid 上，與 SettingsNavPage / GeneralContent / GamepadHints 並列。
+            VisualStateManager.GoToState(this, targetState, false);
         }
 
         // ── 平台可用性 ────────────────────────────────────────────────────────
@@ -922,6 +1197,16 @@ namespace OmniConsole.Pages
                 // 開發人員模式設定按鈕
                 case HyperlinkButton btn when ReferenceEquals(btn, DeveloperModeOpenSettingsButton):
                     DeveloperModeOpenSettings_Click(this, new RoutedEventArgs());
+                    break;
+
+                // 關於頁「複製到剪貼簿」按鈕
+                case Button btn when ReferenceEquals(btn, CopyAboutButton):
+                    CopyAboutButton_Click(this, new RoutedEventArgs());
+                    break;
+
+                // 關於頁「重新整理」按鈕
+                case Button btn when ReferenceEquals(btn, RefreshAboutButton):
+                    RefreshAboutButton_Click(this, new RoutedEventArgs());
                     break;
             }
         }

@@ -10,6 +10,7 @@
 #include "ForegroundMonitor.h"
 #include "InputSender.h"
 #include "MouseMode.h"
+#include "PingService.h"
 
 // ============================================================================
 // FSE 狀態查詢
@@ -29,17 +30,17 @@ static PfnIsGamingFseActive LoadIsGamingFseActive() {
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     InitLog();
-    Log(L"PhantomKey started.");
+    Log(L"[PhantomKey] started.");
 
     // 單例 Mutex：同一登入工作階段同時只允許一個 PhantomKey 實例（Local\ 命名空間）
     HANDLE hMutex = CreateMutexW(NULL, TRUE, L"Local\\OmniConsole_PhantomKey");
     if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
-        Log(L"Another PhantomKey instance already running, exiting.");
+        Log(L"[PhantomKey] Another instance already running, exiting.");
         if (hMutex) CloseHandle(hMutex);
         return 0;
     }
 
-    Log(L"Singleton acquired.");
+    Log(L"[PhantomKey] Singleton acquired.");
 
     // 驗證 OmniConsole MSIX 套件是否已安裝
     {
@@ -47,11 +48,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         UINT32 count = 0, bufLen = 0;
         (void)FindPackagesByPackageFamily(familyName, PACKAGE_FILTER_HEAD, &count, NULL, &bufLen, NULL, NULL);
         if (count == 0) {
-            Log(L"OmniConsole package not installed, exiting.");
+            Log(L"[PhantomKey] OmniConsole package not installed, exiting.");
             CloseHandle(hMutex);
             return 1;
         }
-        Log(L"OmniConsole package verified (count=%u).", count);
+        Log(L"[PhantomKey] OmniConsole package verified (count=%u).", count);
     }
 
     // 讀取設定
@@ -64,9 +65,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     // FSE 狀態查詢函式（載入失敗時不阻擋啟動，僅跳過退出檢查）
     auto pfnIsFseActive = LoadIsGamingFseActive();
     if (!pfnIsFseActive)
-        Log(L"WARNING: Failed to load IsGamingFullScreenExperienceActive.");
+        Log(L"[PhantomKey] WARNING: Failed to load IsGamingFullScreenExperienceActive.");
 
-    Log(L"Entering main loop.");
+    // 啟動 ping 服務（健康檢查回應通道）：建立 message-only window，主程式可透過 SendMessageTimeout 量測主迴圈推進狀況
+    PingService::Start();
+
+    Log(L"[PhantomKey] Entering main loop.");
 
     // 自適應輪詢狀態
     DWORD sleepMs = 100;        // 初始閒置頻率 ~10Hz
@@ -94,6 +98,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     while (true) {
         Sleep(sleepMs);
 
+        // 心跳：每圈更新一次；ping 執行緒讀此值回報主迴圈推進狀況
+        PingService::UpdateHeartbeat();
+
         // XInput 輪詢：遍歷所有手把，收集 View/Menu 按鍵，取最後一支有顯著輸入的手把狀態
         XINPUT_GAMEPAD activePad = {};
         bool viewPressed = false;
@@ -114,13 +121,13 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         // 前景程式變化偵測 → 重新讀取設定 + 重設 Mouse Mode 狀態 + FSE 退出檢查
         std::wstring currentFg = GetForegroundProcessName();
         if (currentFg != lastFgProcess) {
-            Log(L"FG changed: [%s] -> [%s].", lastFgProcess.c_str(), currentFg.c_str());
+            Log(L"[PhantomKey] FG changed: [%s] -> [%s].", lastFgProcess.c_str(), currentFg.c_str());
             LogForegroundWindowDiagnostics();
             lastFgProcess = currentFg;
 
             // 不在 FSE 中 → 結束 PhantomKey
             if (pfnIsFseActive && !pfnIsFseActive()) {
-                Log(L"FSE no longer active, exiting.");
+                Log(L"[PhantomKey] FSE no longer active, exiting.");
                 break;
             }
 
@@ -138,7 +145,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         // Shared.ini 被改寫（主程式或 PhantomLink 操作）→ 即時重載 AppConfig
         unsigned long long curIniMTime = GetSharedIniLastWriteTime();
         if (curIniMTime != 0 && curIniMTime != lastIniMTime) {
-            Log(L"Shared.ini changed, reloading config.");
+            Log(L"[PhantomKey] Shared.ini changed, reloading config.");
             lastIniMTime = curIniMTime;
             config = ReadConfig();
             MouseMode::Reset();
@@ -149,7 +156,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         // Steam 未安裝 / 未登入 / 路徑尚未確立 → GetSteamLocalConfigLastWriteTime() 回 0
         unsigned long long curSteamVdfMTime = GetSteamLocalConfigLastWriteTime();
         if (curSteamVdfMTime != 0 && curSteamVdfMTime != lastSteamVdfMTime) {
-            Log(L"localconfig.vdf changed, reloading SteamConfig.");
+            Log(L"[PhantomKey] localconfig.vdf changed, reloading SteamConfig.");
             lastSteamVdfMTime = curSteamVdfMTime;
             steamCfg = ReadSteamOverlayConfig();
             WriteSteamInGameOverlayShortcut(steamCfg.overlayShortcut);
@@ -185,7 +192,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             if (holdMs > 500.0) {
                 const InputRule* rule = FindRuleForForeground();
                 if (rule && rule->longCombo[0] != L'\0') {
-                    Log(L"View long press (%dms). FG matched [%s]. Sending: %s",
+                    Log(L"[PhantomKey] View long press (%dms). FG matched [%s]. Sending: %s",
                         (int)holdMs, rule->processName, rule->longCombo);
                     SendKeyCombo(rule->longCombo);
                 }
@@ -195,7 +202,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             if (!viewLongPressFired) {
                 const InputRule* rule = FindRuleForForeground();
                 if (rule) {
-                    Log(L"View short press. FG matched [%s]. Sending: %s",
+                    Log(L"[PhantomKey] View short press. FG matched [%s]. Sending: %s",
                         rule->processName, rule->shortCombo);
                     SendKeyCombo(rule->shortCombo);
                 }
@@ -221,7 +228,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
                     _wcsicmp(currentFg.c_str(), L"explorer") != 0;
 
                 if (shouldFire) {
-                    Log(L"Menu long press (%dms). FG=[%s]. Sending overlay: %s",
+                    Log(L"[PhantomKey] Menu long press (%dms). FG=[%s]. Sending overlay: %s",
                         (int)holdMs, currentFg.c_str(), steamCfg.overlayShortcut.c_str());
                     SendKeyCombo(steamCfg.overlayShortcut);
                 }
@@ -239,6 +246,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     // 清理資源（FSE 退出後 break 到此）
     ReleaseMutex(hMutex);
     CloseHandle(hMutex);
-    Log(L"PhantomKey ended.");
+    Log(L"[PhantomKey] ended.");
     return 0;
 }

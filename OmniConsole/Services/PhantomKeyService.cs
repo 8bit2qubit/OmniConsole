@@ -21,16 +21,23 @@ namespace OmniConsole.Services
 
         private static readonly string _targetExePath = Path.Combine(_targetDir, "Steam.exe");
 
+        /// <summary>套件內 PhantomKey 的完整路徑，供其他服務（如 AboutInfoService）讀版本號使用。</summary>
+        public static string PackageExePath => _sourceExePath;
+
+        /// <summary>使用者 LocalAppData 下實際執行的 PhantomKey 副本路徑，供 AboutInfoService 對比版本號使用。</summary>
+        public static string DeployedExePath => _targetExePath;
+
         /// <summary>
         /// 從使用者目錄啟動 PhantomKey。
         /// 若 MSIX 套件內的版本較新則先覆蓋，確保更新後自動部署新版。
-        /// 若已在執行中則不重複啟動。
+        /// 若已在執行中且健康（ping 通且主迴圈正在推進）則不重複啟動；
+        /// 若在執行中但不健康（卡住、凍結、舊版無 ping window）則先終止再啟動（自癒）。
         /// </summary>
         public static void Start()
         {
             if (!File.Exists(_sourceExePath))
             {
-                DebugLogger.Log($"[PhantomKeyService] Steam.exe not found in package: {_sourceExePath}");
+                DebugLogger.Log($"[PhantomKeyService] .exe not found in package: {_sourceExePath}");
                 return;
             }
 
@@ -48,8 +55,19 @@ namespace OmniConsole.Services
                 }
                 else if (IsRunning())
                 {
-                    DebugLogger.Log("[PhantomKeyService] Already running with current version, skipping.");
-                    return;
+                    // 健康檢查：透過 ping window 量測主迴圈推進狀況
+                    // 健康 → 跳過；不健康（卡住/凍結/舊版無 ping window）→ 終止並重啟（自癒）
+                    var health = AboutInfoService.GetPhantomKeyHealth();
+                    DebugLogger.Log($"[PhantomKeyService] Ping result: responsiveness={health.Responsiveness}, lag={health.PingLagMs}ms, uptime={health.Uptime}");
+
+                    if (IsHealthyResponsiveness(health.Responsiveness))
+                    {
+                        DebugLogger.Log("[PhantomKeyService] Existing instance healthy, skipping start.");
+                        return;
+                    }
+
+                    DebugLogger.Log($"[PhantomKeyService] Existing instance unhealthy ({health.Responsiveness}), self-healing: kill + restart.");
+                    Kill();
                 }
 
                 Process.Start(new ProcessStartInfo(_targetExePath) { UseShellExecute = true });
@@ -62,8 +80,17 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 終止從使用者目錄執行的 PhantomKey，不影響 Valve 的 Steam。
-        /// 透過比對行程完整路徑來精確區分。
+        /// 健康分級判定：Responsive / Busy 視為健康；Stuck / Hung / NoPingWindow / NotRunning 視為不健康。
+        /// NoPingWindow 包含「使用者裝著不支援 ping 服務的舊版 PhantomKey」這類情境，藉此次啟動順帶完成版本汰換。
+        /// </summary>
+        private static bool IsHealthyResponsiveness(AboutInfoService.PhantomKeyResponsiveness r)
+        {
+            return r == AboutInfoService.PhantomKeyResponsiveness.Responsive
+                || r == AboutInfoService.PhantomKeyResponsiveness.Busy;
+        }
+
+        /// <summary>
+        /// 終止從使用者目錄執行的 .exe。
         /// </summary>
         public static void Kill()
         {
@@ -108,7 +135,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 檢查是否有從使用者目錄執行的 PhantomKey 正在執行。
+        /// 檢查是否有從使用者目錄執行的 .exe 正在執行。
         /// </summary>
         public static bool IsRunning()
         {
