@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="350"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="350">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="350"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="350"><img src="docs/images/app-about.png" alt="OmniConsole About" height="350">
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@ A custom **WinUI 3 gaming platform launcher** designed to replace the default Wi
 
 ## 💡 What is OmniConsole?
 
-OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
+OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on your PC or handheld device (ROG Xbox Ally X, etc.), launching your chosen gaming platform automatically whenever FSE is activated. The default FSE Home only supports the Xbox App — OmniConsole removes this limitation, letting you choose from:
 
 - **On boot**: With "Enter full screen experience on startup" enabled, your gaming platform launches automatically at boot.
 - **During use**: Press the **Xbox button**, then select **"Home"** in Game Bar to launch your gaming platform, or **"Library"** to open OmniConsole Settings by default.
@@ -48,9 +48,10 @@ OmniConsole serves as the Windows 11 Full Screen Experience (FSE) Home shell on 
 - **Card-Grid Settings UI** – Large icon cards designed for large-screen and handheld use, operable with mouse, touch, or Xbox controller.
 - **Game Bar Integration** – Configures how Game Bar's **"Home"** and **"Library"** buttons behave: **"Home"** launches your gaming platform, **"Library"** opens OmniConsole Settings by default, or passes through directly to a platform like Xbox App.
 - **Troubleshoot Page** – A dedicated page for emergency FSE recovery: terminates Game Bar and enters FSE directly, bypassing the FSE confirmation dialog.
+- **Environment Snapshot** – An "About" page that captures your system, hardware, and OmniConsole health status, allowing you to copy a Markdown report with one click for easy bug reporting.
 - **Gamepad Support** – Navigate with **D-Pad** or **Left Stick**, press **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (in FSE mode).
 - **Gamepad Mouse Mode** – Uses your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store), and **Force On** (all apps except an exclusion list). Two controller layouts: **OmniNav** and **Classic**, with adjustable cursor speed.
-- **OmniCharm Widget** – A Game Bar widget for in-game quick access to **Task View**, the **Xbox Library**, and the **Steam Overlay**, as well as toggling long-press ☰ to open Steam In-Game Overlay, Gamepad Mouse Mode, controller layouts, and cursor speed.
+- **OmniCharm Widget** – A Game Bar widget for in-game quick access — open **Task View**, the **Xbox Library**, or the **Steam Overlay** in one tap. Also toggles **Gamepad Mouse Mode**, controller layout, cursor speed, and long-press ☰ for the **Steam In-Game Overlay**.
 - **Gamepad Steam Shortcuts** – Gamepad **⧉** button support for Steam Big Picture mode: short press to open the **Steam Menu**, long press for the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings Entry** – A separate "**OmniConsole Settings**" entry appears in All Apps, so you can change your default platform anytime.
 - **Native FSE Integration** – Registers as a Windows 11 Full Screen Experience Home App through the official FSE API.
@@ -77,14 +78,15 @@ Download the latest release from the [**Releases Page**](https://github.com/8bit
 
 **Option A: Install.bat (Recommended)**
 
-1.  Extract the `OmniConsole_*_x64.zip` file and run `Install.bat`. It will enable Developer Mode, install the certificate, and install both MSIX packages automatically.
+1.  Extract the `OmniConsole_*_x64.zip` file and run `Install.bat`. It will enable Developer Mode, install the certificate, install any missing framework dependencies, and install both MSIX packages automatically.
 
 **Option B: Manual Install**
 
 1.  **[Critical]** Go to **Windows Settings → System → Advanced** and enable **Developer Mode**.
 2.  **[Critical]** Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
-3.  Double-click `OmniConsole_*_x64.msix` to install the main app.
-4.  Double-click `OmniConsole.PhantomLink_*_x64-widget.msix` to install the OmniCharm widget.
+3.  *(Optional — only needed on fresh/offline systems; online systems fetch these automatically)* Double-click each file inside `Dependencies\` to install the bundled framework packages (skip any that report an equal or newer version already installed).
+4.  Double-click `OmniConsole_*_x64.msix` to install the main app.
+5.  Double-click `OmniConsole.PhantomLink_*_x64-widget.msix` to install the OmniCharm widget.
 
 ### 2. Configure Your Default Platform
 
