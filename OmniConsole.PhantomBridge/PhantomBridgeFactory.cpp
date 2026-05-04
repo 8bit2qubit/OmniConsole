@@ -305,12 +305,25 @@ namespace winrt::PhantomBridge::implementation
         if (fseActive)
         {
             // ── FSE 路徑 ──
+            // 前景已是 Xbox App 時略過最小化，否則會出現「縮小再放大」的回彈動畫。
             HWND fg = ::GetForegroundWindow();
             if (fg != nullptr)
             {
                 WCHAR className[256] = {};
                 ::GetClassNameW(fg, className, ARRAYSIZE(className));
-                if (_wcsicmp(className, L"Progman") != 0 &&
+
+                // Xbox App 為 UWP，視窗由 ApplicationFrameHost 代管，class=ApplicationFrameWindow + title="Xbox"。
+                // 前景已是 Xbox App 時略過最小化，否則會出現「縮小再放大」的回彈動畫。
+                bool fgIsXboxApp = false;
+                if (_wcsicmp(className, L"ApplicationFrameWindow") == 0)
+                {
+                    WCHAR title[256] = {};
+                    ::GetWindowTextW(fg, title, ARRAYSIZE(title));
+                    fgIsXboxApp = (_wcsicmp(title, L"Xbox") == 0);
+                }
+
+                if (!fgIsXboxApp &&
+                    _wcsicmp(className, L"Progman") != 0 &&
                     _wcsicmp(className, L"WorkerW") != 0)
                 {
                     ::ShowWindow(fg, SW_MINIMIZE);

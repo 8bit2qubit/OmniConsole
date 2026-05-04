@@ -262,13 +262,13 @@ namespace {
         }
     }
 
-    }  // anonymous namespace
+}  // anonymous namespace
 
-    // ============================================================================
-    // 公開介面
-    // ============================================================================
+// ============================================================================
+// 公開介面
+// ============================================================================
 
-    namespace MouseMode {
+namespace MouseMode {
 
     void Tick(const XINPUT_GAMEPAD& pad, const AppConfig& cfg, bool skipDpad) {
         bool classic = (_wcsicmp(cfg.mouseModeLayout.c_str(), L"Classic") == 0);
