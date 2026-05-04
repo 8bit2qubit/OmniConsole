@@ -238,8 +238,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         menuWasPressed = menuPressed;
 
         // ── Mouse Mode：前景為目標程式時將手把映射為滑鼠+鍵盤 ──
+        // 檔案總管對 D-pad 已有原生反應，跳過 D-pad 映射避免雙跳；其他鍵仍由 Mouse Mode 處理
         if (mouseModeActive) {
-            MouseMode::Tick(activePad, config);
+            MouseMode::Tick(activePad, config, ForegroundHandlesDpadNatively(currentFg));
         }
     }
 

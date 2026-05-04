@@ -32,3 +32,7 @@ bool IsMouseModeForceExcluded(const std::wstring& processName);
 // 診斷：記錄前景視窗的 proc / class / title / coversMonitor / cloaked 狀態，
 // 用以辨識 explorer 子類（檔案總管 vs FSE Task View）與 Steam 模式（桌面 vs Big Picture）
 void LogForegroundWindowDiagnostics();
+
+// 判定前景對 XInput D-pad 是否已有原生反應（送方向鍵會雙跳）
+// 目前已知：Windows 11 檔案總管（explorer + 非 FSE Task View）
+bool ForegroundHandlesDpadNatively(const std::wstring& processName);

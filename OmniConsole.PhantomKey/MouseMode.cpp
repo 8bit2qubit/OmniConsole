@@ -270,7 +270,7 @@ namespace {
 
     namespace MouseMode {
 
-    void Tick(const XINPUT_GAMEPAD& pad, const AppConfig& cfg) {
+    void Tick(const XINPUT_GAMEPAD& pad, const AppConfig& cfg, bool skipDpad) {
         bool classic = (_wcsicmp(cfg.mouseModeLayout.c_str(), L"Classic") == 0);
 
         // 搖桿分配
@@ -286,7 +286,13 @@ namespace {
 
         HandleCursor(cursorX, cursorY, cfg.cursorSpeedPercent);
         HandleScroll(scrollX, scrollY);
-        HandleDpad(pad.wButtons);
+        if (skipDpad) {
+            // 前景對 D-pad 已有原生反應（如 Windows 11 檔案總管），不送方向鍵避免雙跳；
+            // 同時清掉連發狀態，避免下次跨前景時殘留。
+            for (auto& s : dpadRepeat) s = {};
+        } else {
+            HandleDpad(pad.wButtons);
+        }
         HandleButtons(pad.wButtons, classic);
         HandleTriggers(pad.bLeftTrigger, pad.bRightTrigger, classic);
 

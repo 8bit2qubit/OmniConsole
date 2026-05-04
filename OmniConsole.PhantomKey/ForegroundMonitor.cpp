@@ -175,6 +175,16 @@ void LogForegroundWindowDiagnostics() {
         procName.c_str(), cls, title, coversMonitor ? 1 : 0, cloaked);
 }
 
+// Windows 11 檔案總管對 XInput D-pad 已有原生方向鍵反應，Mouse Mode 再送一次會雙跳。
+// FSE Task View 同為 explorer 但 class=XamlExplorerHostIslandWindow，不適用 D-pad 跳過。
+// 其他鍵（ABXY、滾輪、游標、LB/RB 等）仍由 Mouse Mode 處理，因此只擋 D-pad 而非整個 Mouse Mode。
+bool ForegroundHandlesDpadNatively(const std::wstring& processName) {
+    if (processName.empty()) return false;
+    if (_wcsicmp(processName.c_str(), L"explorer") == 0 && !IsExplorerTaskView())
+        return true;
+    return false;
+}
+
 bool IsMouseModeForceExcluded(const std::wstring& processName) {
     if (processName.empty()) return false;
     for (auto t : g_mouseModeForceExclusions)
