@@ -10,6 +10,38 @@
         <!-- Phantom 配色：設定卡片背景 #25282C -->
         <!-- 預設 #0DFFFFFF（半透白）疊在 #1A1B1E 上會合成 #262729，需直接以實色覆寫 -->
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
+
+        <!-- 關於頁卡片群組可聚焦容器：D-pad 焦點可落在資訊區塊上，
+             ScrollViewer 收到焦點變更時呼叫 BringIntoView 將其捲入可視範圍。
+             焦點視覺由 system focus visual（白色 3px 外框）提供。 -->
+        <Style x:Key="AboutCardFocusStyle" TargetType="ContentControl">
+            <Setter Property="IsTabStop" Value="True"/>
+            <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
+            <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
+            <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
+            <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
+            <Setter Property="FocusVisualMargin" Value="-3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Border CornerRadius="8"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -859,11 +891,7 @@
                             <TextBlock x:Uid="AboutSection_Suite" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -886,7 +914,7 @@
                                         <TextBlock x:Name="AboutPhantomLinkVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </ContentControl>
                         </StackPanel>
 
                         <!-- PhantomKey 健康狀況群組（WideState：Row 3 col 0） -->
@@ -894,11 +922,7 @@
                             <TextBlock x:Uid="AboutSection_PhantomKey" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -921,7 +945,7 @@
                                         <TextBlock x:Name="AboutPhantomKeyResponsivenessText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </ContentControl>
                         </StackPanel>
 
                         <!-- XFSET 群組（WideState：Row 4 col 0） -->
@@ -929,11 +953,7 @@
                             <TextBlock x:Uid="AboutSection_Xfset" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -946,7 +966,7 @@
                                         <TextBlock x:Name="AboutXfsetPhysPanelStatus" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </ContentControl>
                         </StackPanel>
 
                         <!-- 硬體群組（WideState：Row 2 col 1） -->
@@ -954,11 +974,7 @@
                             <TextBlock x:Uid="AboutSection_Hardware" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -986,7 +1002,7 @@
                                         <TextBlock x:Name="AboutGpuText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </ContentControl>
                         </StackPanel>
 
                         <!-- 系統群組（WideState：Row 3 col 1） -->
@@ -994,11 +1010,7 @@
                             <TextBlock x:Uid="AboutSection_System" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -1021,7 +1033,7 @@
                                         <TextBlock x:Name="AboutLocaleText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </ContentControl>
                         </StackPanel>
 
                     </Grid>
