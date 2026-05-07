@@ -99,17 +99,17 @@ namespace OmniConsole.Services
         /// 回傳系統是否支援 FSE（需透過 Xbox Full Screen Experience Tool 啟用或原生 FSE 掌機）。
         /// 與 CanActivate() 的差異：IsSupported() 不受 Home App 設定影響。
         /// </summary>
-        public static bool IsSupported()
+        public static bool IsSupported([CallerMemberName] string caller = "")
         {
             try
             {
                 bool result = IsGamingFullScreenExperienceSupported();
-                DebugLogger.Log($"[FseService] IsSupported = {result}");
+                DebugLogger.Log($"[FseService] IsSupported = {result} (caller: {caller})");
                 return result;
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"[FseService] IsSupported failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsSupported failed: {ex.Message} (caller: {caller})");
                 return false;
             }
         }
@@ -119,8 +119,10 @@ namespace OmniConsole.Services
         /// 需 IsSupported()=true 且 HKLM\...\OEM\DeviceForm == 0x2E (46)。
         /// 微軟推出的「PC 限制版 FSE」不符此條件（IsSupported=true 但 DeviceForm≠46），
         /// 不支援 Home App 設定與開機啟動，需引導使用者透過 XFSET 取得掌機完整版。
+        /// 內部會獨立呼叫一次 IsSupported() 形成保護（防範 OEM 寫了 DeviceForm 但系統實際無 FSE 支援的邊緣情境），
+        /// 呼叫者不需先檢查 IsSupported()。
         /// </summary>
-        public static bool IsHandheldFseAvailable()
+        public static bool IsHandheldFseAvailable([CallerMemberName] string caller = "")
         {
             if (!IsSupported()) return false;
             try
@@ -128,12 +130,12 @@ namespace OmniConsole.Services
                 using var key = Registry.LocalMachine.OpenSubKey(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\OEM");
                 bool result = key?.GetValue("DeviceForm") is int form && form == 0x2E;
-                DebugLogger.Log($"[FseService] IsHandheldFseAvailable = {result}");
+                DebugLogger.Log($"[FseService] IsHandheldFseAvailable = {result} (caller: {caller})");
                 return result;
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"[FseService] IsHandheldFseAvailable failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsHandheldFseAvailable failed: {ex.Message} (caller: {caller})");
                 return false;
             }
         }
@@ -159,17 +161,17 @@ namespace OmniConsole.Services
         /// <summary>
         /// 回傳目前是否可以觸發 FSE。需要 IsSupported()=true 且 Home App 已設定（非「無」）。
         /// </summary>
-        public static bool CanActivate()
+        public static bool CanActivate([CallerMemberName] string caller = "")
         {
             try
             {
                 bool result = CanSetGamingFullScreenExperience();
-                DebugLogger.Log($"[FseService] CanActivate = {result}");
+                DebugLogger.Log($"[FseService] CanActivate = {result} (caller: {caller})");
                 return result;
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"[FseService] CanActivate failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] CanActivate failed: {ex.Message} (caller: {caller})");
                 return false;
             }
         }
@@ -217,20 +219,26 @@ namespace OmniConsole.Services
         /// 檢查 GamingHomeApp 是否設為 OmniConsole（比對動態取得的 AUMID）。
         /// 僅在 CanActivate()=true 後呼叫；CanActivate()=false 時不適用。
         /// </summary>
-        public static bool IsOmniConsoleSetAsHomeApp()
+        public static bool IsOmniConsoleSetAsHomeApp([CallerMemberName] string caller = "")
         {
             try
             {
                 string aumid = Windows.ApplicationModel.Package.Current.Id.FamilyName + "!App";
                 using var key = Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\GamingConfiguration");
-                if (key is null) return false;
-                return key.GetValue("GamingHomeApp") is string value &&
-                       value.Equals(aumid, StringComparison.OrdinalIgnoreCase);
+                if (key is null)
+                {
+                    DebugLogger.Log($"[FseService] IsOmniConsoleSetAsHomeApp = false (no key) (caller: {caller})");
+                    return false;
+                }
+                bool result = key.GetValue("GamingHomeApp") is string value &&
+                              value.Equals(aumid, StringComparison.OrdinalIgnoreCase);
+                DebugLogger.Log($"[FseService] IsOmniConsoleSetAsHomeApp = {result} (caller: {caller})");
+                return result;
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"[FseService] IsOmniConsoleSetAsHomeApp failed: {ex.Message}");
+                DebugLogger.Log($"[FseService] IsOmniConsoleSetAsHomeApp failed: {ex.Message} (caller: {caller})");
                 return false;
             }
         }
