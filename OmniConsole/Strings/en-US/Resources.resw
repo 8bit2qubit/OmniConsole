@@ -662,6 +662,36 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   <data name="UpdateDownload_Failed" xml:space="preserve">
     <value>Download failed. Please try again.</value>
   </data>
+  <data name="UpdateProgressDialog_Title" xml:space="preserve">
+    <value>Updating OmniConsole</value>
+  </data>
+  <data name="UpdateProgressDialog_Hint" xml:space="preserve">
+    <value>Do not close the app or shut down the console until the update finishes.</value>
+  </data>
+  <data name="UpdateProgress_Phase1Download" xml:space="preserve">
+    <value>Downloading OmniCharm widget (1 of 2)...</value>
+  </data>
+  <data name="UpdateProgress_Phase1Install" xml:space="preserve">
+    <value>Installing OmniCharm widget (1 of 2)...</value>
+  </data>
+  <data name="UpdateProgress_Phase2Download" xml:space="preserve">
+    <value>Downloading OmniConsole (2 of 2)...</value>
+  </data>
+  <data name="UpdateProgress_Phase2Install" xml:space="preserve">
+    <value>Installing OmniConsole (2 of 2). The app will restart...</value>
+  </data>
+  <data name="ResumeUpdateDialog_Title" xml:space="preserve">
+    <value>Resume update?</value>
+  </data>
+  <data name="ResumeUpdateDialog_Content" xml:space="preserve">
+    <value>The previous update to v{0} did not finish. Resume now to keep the OmniCharm widget and OmniConsole on the same version.</value>
+  </data>
+  <data name="ResumeUpdateDialog_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="ResumeUpdateDialog_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
   <data name="DeveloperMode_Warning" xml:space="preserve">
     <value>Developer Mode is off. Enable it before updating.</value>
   </data>

@@ -576,9 +576,7 @@ namespace OmniConsole.Services
             try
             {
                 var focusedElement = FocusManager.GetFocusedElement(_searchRoot.XamlRoot);
-
                 bool isDescendant = focusedElement is DependencyObject d && IsDescendantOf(_searchRoot, d);
-                DebugLogger.Log($"[GamepadNav] EnsureFocus: focusedElement={focusedElement?.GetType().Name ?? "null"}, isDescendant={isDescendant}, activeComboBox={_activeComboBox != null}");
 
                 // ComboBox 下拉選單開啟中 → 不干預（ComboBoxItem 在 Popup 獨立視覺樹，不在 _searchRoot 內）
                 if (_activeComboBox != null)
@@ -594,7 +592,7 @@ namespace OmniConsole.Services
 
                 // 焦點遺失或落在非互動元件 → 還原至 SearchRoot 第一個可聚焦項目
                 var firstElement = FocusManager.FindFirstFocusableElement(_searchRoot);
-                DebugLogger.Log($"[GamepadNav] EnsureFocus: restoring to {firstElement?.GetType().Name ?? "null"}");
+                DebugLogger.Log($"[GamepadNav] EnsureFocus: focused={focusedElement?.GetType().Name ?? "null"} → restoring to {firstElement?.GetType().Name ?? "null"}");
                 if (firstElement is Control firstControl)
                     firstControl.Focus(FocusState.Keyboard);
             }

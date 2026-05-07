@@ -662,6 +662,36 @@
   <data name="UpdateDownload_Failed" xml:space="preserve">
     <value>下載失敗，請再試一次。</value>
   </data>
+  <data name="UpdateProgressDialog_Title" xml:space="preserve">
+    <value>正在更新 OmniConsole</value>
+  </data>
+  <data name="UpdateProgressDialog_Hint" xml:space="preserve">
+    <value>請勿關閉應用程式或主機，直到更新完成。</value>
+  </data>
+  <data name="UpdateProgress_Phase1Download" xml:space="preserve">
+    <value>正在下載 OmniCharm 小工具（1 / 2）...</value>
+  </data>
+  <data name="UpdateProgress_Phase1Install" xml:space="preserve">
+    <value>正在安裝 OmniCharm 小工具（1 / 2）...</value>
+  </data>
+  <data name="UpdateProgress_Phase2Download" xml:space="preserve">
+    <value>正在下載 OmniConsole（2 / 2）...</value>
+  </data>
+  <data name="UpdateProgress_Phase2Install" xml:space="preserve">
+    <value>正在安裝 OmniConsole（2 / 2），即將重新啟動...</value>
+  </data>
+  <data name="ResumeUpdateDialog_Title" xml:space="preserve">
+    <value>是否繼續更新？</value>
+  </data>
+  <data name="ResumeUpdateDialog_Content" xml:space="preserve">
+    <value>上次更新到 v{0} 未完成。立即繼續以確保 OmniCharm 小工具與 OmniConsole 版本一致。</value>
+  </data>
+  <data name="ResumeUpdateDialog_Resume" xml:space="preserve">
+    <value>繼續</value>
+  </data>
+  <data name="ResumeUpdateDialog_Later" xml:space="preserve">
+    <value>稍後</value>
+  </data>
   <data name="DeveloperMode_Warning" xml:space="preserve">
     <value>開發人員模式未啟用，更新前請先開啟。</value>
   </data>

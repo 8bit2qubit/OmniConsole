@@ -73,7 +73,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// Game Bar 主題變更事件可能來自非 UI thread，marshal 回 UI 執行緒再套用。
+        /// Game Bar 主題變更事件可能來自非 UI 執行緒，marshal 回 UI 執行緒再套用。
         /// </summary>
         private async void OnGameBarThemeChanged(Microsoft.Gaming.XboxGameBar.XboxGameBarWidget sender, object args)
         {

@@ -484,6 +484,80 @@ namespace OmniConsole.Services
             ApplicationData.Current.LocalSettings.Values["PendingSettingsRestart"] = value;
         }
 
+        // ── 中斷可恢復的更新狀態（拔電/強制重開後續做）────────────
+
+        /// <summary>
+        /// 取得目前的待續更新階段。空字串=無；"Phase1"=PhantomLink 尚未完成；"Phase2"=PhantomLink 已裝、OmniConsole 尚未完成。
+        /// </summary>
+        public static string GetPendingUpdatePhase()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("PendingUpdatePhase", out object? value) && value is string phase)
+                return phase;
+            return "";
+        }
+
+        /// <summary>設定待續更新階段。</summary>
+        public static void SetPendingUpdatePhase(string phase)
+        {
+            ApplicationData.Current.LocalSettings.Values["PendingUpdatePhase"] = phase;
+        }
+
+        /// <summary>清除待續更新狀態（包含 phase 與三個 URL/版本欄位）。</summary>
+        public static void ClearPendingUpdate()
+        {
+            var v = ApplicationData.Current.LocalSettings.Values;
+            v["PendingUpdatePhase"] = "";
+            v["PendingUpdatePhantomLinkUrl"] = "";
+            v["PendingUpdateMainUrl"] = "";
+            v["PendingUpdateTargetVersion"] = "";
+        }
+
+        /// <summary>取得待續更新的 PhantomLink 下載 URL。</summary>
+        public static string GetPendingUpdatePhantomLinkUrl()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("PendingUpdatePhantomLinkUrl", out object? value) && value is string url)
+                return url;
+            return "";
+        }
+
+        /// <summary>儲存待續更新的 PhantomLink 下載 URL。</summary>
+        public static void SetPendingUpdatePhantomLinkUrl(string url)
+        {
+            ApplicationData.Current.LocalSettings.Values["PendingUpdatePhantomLinkUrl"] = url;
+        }
+
+        /// <summary>取得待續更新的 OmniConsole 下載 URL。</summary>
+        public static string GetPendingUpdateMainUrl()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("PendingUpdateMainUrl", out object? value) && value is string url)
+                return url;
+            return "";
+        }
+
+        /// <summary>儲存待續更新的 OmniConsole 下載 URL。</summary>
+        public static void SetPendingUpdateMainUrl(string url)
+        {
+            ApplicationData.Current.LocalSettings.Values["PendingUpdateMainUrl"] = url;
+        }
+
+        /// <summary>取得待續更新的目標版本字串（與 GetAppVersion 同格式）。</summary>
+        public static string GetPendingUpdateTargetVersion()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("PendingUpdateTargetVersion", out object? value) && value is string version)
+                return version;
+            return "";
+        }
+
+        /// <summary>儲存待續更新的目標版本字串。</summary>
+        public static void SetPendingUpdateTargetVersion(string version)
+        {
+            ApplicationData.Current.LocalSettings.Values["PendingUpdateTargetVersion"] = version;
+        }
+
         /// <summary>
         /// 取得是否啟用 PhantomKey 手把輸入服務（⧉ 鍵開啟平台選單）。
         /// 預設為 true。

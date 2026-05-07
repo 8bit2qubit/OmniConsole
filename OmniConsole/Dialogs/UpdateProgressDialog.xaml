@@ -1,0 +1,41 @@
+<ContentDialog
+    x:Class="OmniConsole.Dialogs.UpdateProgressDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    RequestedTheme="Dark">
+
+    <ContentDialog.Resources>
+        <!-- Phantom 配色：與 PlatformEditDialog 行為相同 -->
+        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+    </ContentDialog.Resources>
+
+    <StackPanel Width="420" Spacing="12">
+
+        <TextBlock x:Name="StatusText" FontSize="14"
+                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                   TextWrapping="Wrap"/>
+
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ProgressBar x:Name="ProgressBarControl" Grid.Column="0"
+                         Minimum="0" Maximum="100" Value="0"
+                         VerticalAlignment="Center"/>
+            <TextBlock x:Name="ProgressText" Grid.Column="1"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       FontSize="14" VerticalAlignment="Center"/>
+        </Grid>
+
+        <TextBlock x:Name="HintText" FontSize="12"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                   TextWrapping="Wrap"/>
+
+    </StackPanel>
+</ContentDialog>

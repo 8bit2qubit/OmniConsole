@@ -38,8 +38,13 @@ namespace OmniConsole
                 SettingsService.SyncPhantomKeyStore();
             }
 
-            // 若從桌面環境啟動（非 FSE 模式、非設定模式），自動觸發 FSE
-            if (!_startWithSettings && !FseService.IsActive())
+            // 待續更新優先：偵測到中斷的更新時跳過整段 FSE 引導（不彈系統「重新啟動以提升效能」對話方塊），
+            // 直接開設定頁並彈出「是否繼續更新？」對話方塊。
+            var pending = UpdateCheckService.GetPendingUpdateState();
+            bool hasPendingUpdate = !string.IsNullOrEmpty(pending.Phase);
+
+            // 從桌面環境啟動（非 FSE 模式、非設定模式、非待續更新）時自動觸發 FSE
+            if (!_startWithSettings && !FseService.IsActive() && !hasPendingUpdate)
             {
                 if (!FseService.IsSupported())
                 {
@@ -96,10 +101,13 @@ namespace OmniConsole
             _dispatcherQueue = mainWindow.DispatcherQueue;
 
             // 設定模式：在 Activate 前標記，防止 Activated 事件觸發平台啟動
-            if (_startWithSettings)
+            if (_startWithSettings || hasPendingUpdate)
             {
                 mainWindow.PrepareForSettings();
                 mainWindow.ShowSettings();
+
+                if (hasPendingUpdate)
+                    _ = mainWindow.TryHandlePendingUpdateAsync();
             }
             else
             {

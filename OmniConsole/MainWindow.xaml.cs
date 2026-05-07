@@ -1,5 +1,6 @@
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using OmniConsole.Services;
 using System;
 using System.Runtime.InteropServices;
@@ -26,6 +27,15 @@ namespace OmniConsole
         private bool _isShowingSettings = false;
         private IntPtr _hwnd;
         private CancellationTokenSource? _fseExitCts;
+
+        // Content.Loaded 觸發時 SetResult，標記 XamlRoot 此後可用於 ContentDialog
+        private readonly TaskCompletionSource _visualTreeReady = new();
+
+        /// <summary>
+        /// 更新安裝期間設為 true，AppWindow.Closing 與 ESC/B 鍵退出路徑均拒絕關閉。
+        /// 由 SettingsPage.RunInstallBundleWithDialogAsync 在開始/結束時切換。
+        /// </summary>
+        public static bool IsUpdateInstallInProgress { get; set; }
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
 
@@ -63,6 +73,22 @@ namespace OmniConsole
             SettingsPageControl.LaunchPlatformDirectlyRequested += (_, _) => LaunchPlatformDirectly();
 
             this.Activated += MainWindow_Activated;
+
+            // 監聽 Content.Loaded 作為 XamlRoot 可用的訊號
+            if (this.Content is FrameworkElement rootElement)
+            {
+                rootElement.Loaded += (_, _) => _visualTreeReady.TrySetResult();
+            }
+
+            // 更新安裝期間 AppWindow 層級的關閉請求（X 鈕、Alt+F4 等）一律拒絕
+            this.AppWindow.Closing += (s, e) =>
+            {
+                if (IsUpdateInstallInProgress)
+                {
+                    DebugLogger.Log("[MainWindow] AppWindow.Closing blocked: update install in progress");
+                    e.Cancel = true;
+                }
+            };
         }
 
         /// <summary>
@@ -127,6 +153,86 @@ namespace OmniConsole
             SettingsPageControl.ShowSettings();
         }
 
+        /// <summary>
+        /// 偵測待續更新狀態，有未完成的階段時彈出確認對話方塊；使用者選擇續做時呼叫
+        /// SettingsPage.RunInstallBundleWithDialogAsync 從中斷的階段接續。
+        /// </summary>
+        public async Task TryHandlePendingUpdateAsync()
+        {
+            var (phase, plUrl, mainUrl, targetVersion) = UpdateCheckService.GetPendingUpdateState();
+            if (string.IsNullOrEmpty(phase)) return;
+
+            DebugLogger.Log($"[MainWindow] Pending update detected: phase={phase}, target={targetVersion}");
+
+            // 等待 Content.Loaded 取得有效 XamlRoot，再排到 UI 執行緒顯示對話方塊
+            await _visualTreeReady.Task;
+
+            var settingsPage = SettingsPageControl;
+            var tcs = new TaskCompletionSource<bool>();
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    var loader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+                    var dialog = new ContentDialog
+                    {
+                        XamlRoot = this.Content.XamlRoot,
+                        Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                        RequestedTheme = ElementTheme.Dark,
+                        Title = loader.GetString("ResumeUpdateDialog_Title"),
+                        Content = string.Format(
+                            loader.GetString("ResumeUpdateDialog_Content"),
+                            targetVersion),
+                        PrimaryButtonText = loader.GetString("ResumeUpdateDialog_Resume"),
+                        CloseButtonText = loader.GetString("ResumeUpdateDialog_Later"),
+                        DefaultButton = ContentDialogButton.Primary
+                    };
+
+                    // 對話方塊期間切換手把輪詢：暫停設定頁輪詢、啟動對話方塊自己的輪詢（A 啟用焦點按鈕、B 隱藏對話方塊）
+                    GamepadNavigationService? gamepadNav = null;
+                    dialog.Opened += (s, _) =>
+                    {
+                        settingsPage.StopGamepadPolling();
+                        gamepadNav = new GamepadNavigationService(
+                            searchRoot: s,
+                            dispatcherQueue: DispatcherQueue,
+                            onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(s.XamlRoot),
+                            onBButtonPressed: () => s.Hide());
+                        gamepadNav.Start();
+                    };
+                    dialog.Closed += (_, _) =>
+                    {
+                        gamepadNav?.Stop();
+                        gamepadNav = null;
+                        settingsPage.StartGamepadPolling();
+                    };
+
+                    var result = await dialog.ShowAsync();
+                    DebugLogger.Log($"[MainWindow] Resume dialog: result={result}");
+
+                    if (result != ContentDialogResult.Primary)
+                    {
+                        tcs.SetResult(false);
+                        return;
+                    }
+
+                    bool resumeFromPhase2 = phase == "Phase2";
+                    // 待續恢復路徑一律走完整 Phase 2 安裝；mainSkippable 僅用於同版本快速重啟
+                    await settingsPage.RunInstallBundleWithDialogAsync(
+                        plUrl, mainUrl, targetVersion,
+                        mainSkippable: false,
+                        resumeFromPhase2: resumeFromPhase2);
+                    tcs.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"[MainWindow] Resume dialog failed: {ex.Message}");
+                    tcs.SetException(ex);
+                }
+            });
+            await tcs.Task;
+        }
+
         // ── 平台啟動 ─────────────────────────────────────────────────────────
 
         /// <summary>
@@ -151,6 +257,13 @@ namespace OmniConsole
         /// </summary>
         private async void RequestExitApplication()
         {
+            // 更新安裝期間忽略所有退出請求（手把 B 鍵 / 設定頁退出按鈕等）
+            if (IsUpdateInstallInProgress)
+            {
+                DebugLogger.Log("[MainWindow] RequestExitApplication ignored: update install in progress");
+                return;
+            }
+
             bool fseActive = FseService.IsActive();
             DebugLogger.Log($"[MainWindow] RequestExitApplication: _isShowingSettings={_isShowingSettings}, fseActive={fseActive}");
 

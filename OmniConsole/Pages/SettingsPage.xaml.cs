@@ -1377,6 +1377,7 @@ namespace OmniConsole.Pages
 
             var mainUrl = SettingsService.GetCachedDownloadUrl();
             var phantomLinkUrl = SettingsService.GetCachedPhantomLinkUrl();
+            var targetVersion = SettingsService.GetCachedNewVersion();
 
             if (string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(phantomLinkUrl))
             {
@@ -1386,35 +1387,35 @@ namespace OmniConsole.Pages
                 return;
             }
 
-            DownloadProgressPanel.Visibility = Visibility.Visible;
-            DownloadProgressBar.IsIndeterminate = false;
-            DownloadProgressBar.Value = 0;
-            DownloadProgressText.Text = "0%";
-            UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_InProgress");
-            UpdateCheckStatusText.Visibility = Visibility.Visible;
+            bool mainSkippable = kind == UpdateCheckService.UpdateKind.MissingPhantomLink
+                && targetVersion == SettingsService.GetAppVersion();
+
+            await RunInstallBundleWithDialogAsync(phantomLinkUrl, mainUrl, targetVersion,
+                mainSkippable, resumeFromPhase2: false);
+        }
+
+        /// <summary>
+        /// 將 InstallBundleAsync 包進 UpdateProgressDialog，由對話方塊以模態方式擋住手把 B 鍵與 Esc，
+        /// 並在 MainWindow 端攔截視窗關閉。失敗後解除鎖定並顯示失敗訊息於原 InfoBar。
+        /// </summary>
+        internal async Task RunInstallBundleWithDialogAsync(
+            string phantomLinkUrl, string mainUrl, string targetVersion,
+            bool mainSkippable, bool resumeFromPhase2)
+        {
+            var dialog = new UpdateProgressDialog(this.XamlRoot, _resourceLoader);
 
             try
             {
                 _downloadCts = new CancellationTokenSource();
-                var progress = new Progress<double>(pct =>
+                var progress = new Progress<double>(pct => dialog.ReportProgress(pct));
+                var status = new Progress<string>(key =>
                 {
-                    if (pct < 0)
-                    {
-                        DownloadProgressBar.IsIndeterminate = true;
-                        DownloadProgressText.Text = "";
-                    }
-                    else
-                    {
-                        DownloadProgressBar.IsIndeterminate = false;
-                        DownloadProgressBar.Value = pct;
-                        DownloadProgressText.Text = $"{pct:F0}%";
-                    }
+                    dialog.ReportStatus(key);
+                    // Phase 2 末端兩條路徑（實際安裝 / mainSkippable 重啟）會由 OS 送 graceful close
+                    // 請求給本視窗，此時鬆開 AppWindow.Closing 鎖讓請求通過
+                    if (key == "Phase2Install" || key == "Phase2RequestingRestart")
+                        MainWindow.IsUpdateInstallInProgress = false;
                 });
-
-                bool mainSkippable = kind == UpdateCheckService.UpdateKind.MissingPhantomLink
-                    && SettingsService.GetCachedNewVersion() == SettingsService.GetAppVersion();
-
-                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_InProgress");
 
                 // 終止 PhantomKey，避免 MSIX 更新時因 .exe 佔用而拖慢進度
                 PhantomKeyService.Kill();
@@ -1425,17 +1426,30 @@ namespace OmniConsole.Pages
                 // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
                 RegisterApplicationRestart("", 0);
 
-                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Installing");
+                // 設定安裝鎖定旗標供 MainWindow 讀取
+                MainWindow.IsUpdateInstallInProgress = true;
+
+                // 對話方塊期間停掉設定頁的手把輪詢
+                StopGamepadPolling();
+
+                // 不 await ShowAsync，與 InstallBundleAsync 並行執行
+                var showTask = dialog.ShowAsync().AsTask();
 
                 await UpdateCheckService.InstallBundleAsync(
-                    phantomLinkUrl, mainUrl, mainSkippable, progress, _downloadCts.Token);
+                    phantomLinkUrl, mainUrl, targetVersion,
+                    mainSkippable, resumeFromPhase2,
+                    progress, status, _downloadCts.Token);
+
+                // ForceApplicationShutdown / RequestRestartAsync 路徑會結束本行程，此後程式碼為 fallback
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 DebugLogger.Log($"[SettingsPage] Download/install failed: {ex.Message}");
+                dialog.RequestClose();
+                MainWindow.IsUpdateInstallInProgress = false;
+                StartGamepadPolling();
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
-                DownloadProgressPanel.Visibility = Visibility.Collapsed;
             }
             finally
             {
