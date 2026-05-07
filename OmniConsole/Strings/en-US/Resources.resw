@@ -148,16 +148,16 @@
     <value>Return to Desktop</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Full Screen Experience is not enabled. Please enable it first, then manually restart OmniConsole.</value>
+    <value>Xbox Mode (FSE) is not enabled. Please enable it first, then manually restart OmniConsole.</value>
   </data>
   <data name="FseHandheldRequired" xml:space="preserve">
-    <value>Limited PC FSE detected, but OmniConsole requires Full Handheld FSE. Please enable it with Xbox Full Screen Experience Tool, then manually restart OmniConsole.</value>
+    <value>Limited PC Xbox Mode (FSE) detected, but OmniConsole requires the Full Handheld edition. Please enable it with Xbox Full Screen Experience Tool, then manually restart OmniConsole.</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>Please go to Windows Settings → Gaming → Full Screen Experience and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>
+    <value>Please go to Windows Settings → Gaming → Xbox mode (FSE) and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
-    <value>Enable Full Screen Experience</value>
+    <value>Enable Xbox Mode (FSE)</value>
   </data>
   <data name="OpenFseSettingsButton.Content" xml:space="preserve">
     <value>Set OmniConsole as Home App</value>
@@ -181,10 +181,10 @@
     <value>OmniConsole</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>Custom Windows 11 Full Screen Experience (FSE) Home shell for gaming PCs and handhelds.</value>
+    <value>Custom Windows 11 Xbox Mode (FSE) Home shell for gaming PCs and handhelds.</value>
   </data>
   <data name="AppExtensionDescription" xml:space="preserve">
-    <value>Custom Home Shell for Windows Full Screen Experience.</value>
+    <value>Custom Home Shell for Windows Xbox Mode (FSE).</value>
   </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole Settings</value>
@@ -208,13 +208,13 @@
     <value>Troubleshoot</value>
   </data>
   <data name="TroubleshootSection_Fse.Text" xml:space="preserve">
-    <value>Full Screen Experience (FSE)</value>
+    <value>Xbox Mode (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>Terminate Game Bar &amp; Enter FSE</value>
+    <value>Terminate Game Bar &amp; Enter Xbox Mode (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>Terminate Game Bar and enter FSE directly, bypassing the FSE confirmation dialog.</value>
+    <value>Terminate Game Bar and enter Xbox Mode (FSE) directly, bypassing the entry confirmation dialog.</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>On some Windows versions, a confirmation dialog may still appear.</value>
@@ -416,7 +416,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Invalid file path. Example: C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_ValidationPathConsoleApp" xml:space="preserve">
-    <value>Console applications are not supported. They may cause FSE to restart in a loop.</value>
+    <value>Console applications are not supported. They may cause Xbox Mode (FSE) to restart in a loop.</value>
   </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>Arguments contain potentially unsafe characters.</value>
@@ -428,7 +428,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>This feature allows you to add custom platform launch configurations. Please read the following carefully before proceeding:
 
 - This open-source software is provided "as-is", without warranty of any kind, express or implied; this experimental feature is provided with no assurances whatsoever.
-- Incorrectly configured platforms may fail to launch, which could crash the Full Screen Experience environment or even require an app reset to recover.
+- Incorrectly configured platforms may fail to launch, which could crash the Xbox Mode (FSE) environment or even require an app reset to recover.
 - The developer assumes no responsibility or liability for any damage, data loss, or issues arising from the use of this program or custom platform configurations.
 - You are solely responsible for ensuring the safety, correctness, and legitimacy of all configurations you create.
 
@@ -768,7 +768,7 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
     <value>OS</value>
   </data>
   <data name="Label_FseState.Text" xml:space="preserve">
-    <value>FSE State</value>
+    <value>Xbox Mode (FSE) State</value>
   </data>
   <data name="Label_DeviceForm.Text" xml:space="preserve">
     <value>DeviceForm</value>

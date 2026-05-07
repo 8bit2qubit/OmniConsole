@@ -148,16 +148,16 @@
     <value>返回桌面</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>全螢幕體驗尚未啟用，請先啟用後手動重啟 OmniConsole。</value>
+    <value>Xbox 模式 (FSE) 尚未啟用，請先啟用後手動重啟 OmniConsole。</value>
   </data>
   <data name="FseHandheldRequired" xml:space="preserve">
-    <value>偵測到 PC 限制版 FSE，但 OmniConsole 需要掌機完整版 FSE。請使用 Xbox Full Screen Experience Tool 啟用後，手動重啟 OmniConsole。</value>
+    <value>偵測到 PC 限制版 Xbox 模式 (FSE)，但 OmniConsole 需要掌機完整版。請使用 Xbox Full Screen Experience Tool 啟用後，手動重啟 OmniConsole。</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>請前往 Windows 設定 → 遊戲 → 全螢幕體驗，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟 OmniConsole。</value>
+    <value>請前往 Windows 設定 → 遊戲 → Xbox 模式 (FSE)，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟 OmniConsole。</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
-    <value>啟用全螢幕體驗</value>
+    <value>啟用 Xbox 模式 (FSE)</value>
   </data>
   <data name="OpenFseSettingsButton.Content" xml:space="preserve">
     <value>將 OmniConsole 設為主畫面應用程式</value>
@@ -181,10 +181,10 @@
     <value>OmniConsole</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>為遊戲 PC 與掌機設計的自訂 Windows 11 全螢幕體驗 (FSE) 首頁 Shell。</value>
+    <value>為遊戲 PC 與掌機設計的自訂 Windows 11 Xbox 模式 (FSE) 首頁 Shell。</value>
   </data>
   <data name="AppExtensionDescription" xml:space="preserve">
-    <value>為 Windows 全螢幕體驗設計的自訂首頁 Shell。</value>
+    <value>為 Windows Xbox 模式 (FSE) 設計的自訂首頁 Shell。</value>
   </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole 設定</value>
@@ -208,13 +208,13 @@
     <value>疑難排解</value>
   </data>
   <data name="TroubleshootSection_Fse.Text" xml:space="preserve">
-    <value>全螢幕體驗 (FSE)</value>
+    <value>Xbox 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>結束 Game Bar 並進入 FSE</value>
+    <value>結束 Game Bar 並進入 Xbox 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>結束 Game Bar 後將繞過 FSE 確認對話方塊，直接進入 FSE。</value>
+    <value>結束 Game Bar 後將繞過進入確認對話方塊，直接進入 Xbox 模式 (FSE)。</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>部分 Windows 版本仍可能顯示確認對話方塊。</value>
@@ -416,7 +416,7 @@
     <value>路徑格式無效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_ValidationPathConsoleApp" xml:space="preserve">
-    <value>不支援主控台應用程式，可能導致 FSE 循環重新啟動。</value>
+    <value>不支援主控台應用程式，可能導致 Xbox 模式 (FSE) 循環重新啟動。</value>
   </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>啟動參數包含不安全的字元。</value>
@@ -428,7 +428,7 @@
     <value>此功能允許您自行新增自訂平台啟動配置。請在繼續之前仔細閱讀以下內容：
 
 - 本開源軟體按「現狀」提供，不提供明示或默示的擔保；此自訂功能為實驗性質，更不提供任何保證。
-- 配置錯誤的平台可能無法正常啟動，進而導致全螢幕體驗環境崩潰，甚至必須重設應用程式才能恢復正常。
+- 配置錯誤的平台可能無法正常啟動，進而導致 Xbox 模式 (FSE) 環境崩潰，甚至必須重設應用程式才能恢復正常。
 - 開發者不對因使用本程式或自訂平台配置所造成的任何損害、資料遺失或其他問題承擔責任。
 - 您需自行確保所有配置的安全性、正確性及合法性。
 
@@ -681,7 +681,7 @@
     <value>OmniConsole Suite</value>
   </data>
   <data name="AboutSection_Xfset.Text" xml:space="preserve">
-    <value>XFSET（Xbox Full Screen Experience Tool）</value>
+    <value>XFSET (Xbox Full Screen Experience Tool)</value>
   </data>
   <data name="AboutSection_Hardware.Text" xml:space="preserve">
     <value>硬體</value>
@@ -762,13 +762,13 @@
     <value>PhantomKey</value>
   </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
-    <value>PhantomLink（OmniCharm）</value>
+    <value>PhantomLink (OmniCharm)</value>
   </data>
   <data name="Label_WindowsBuild.Text" xml:space="preserve">
     <value>OS</value>
   </data>
   <data name="Label_FseState.Text" xml:space="preserve">
-    <value>FSE 狀態</value>
+    <value>Xbox 模式 (FSE) 狀態</value>
   </data>
   <data name="Label_DeviceForm.Text" xml:space="preserve">
     <value>DeviceForm</value>
