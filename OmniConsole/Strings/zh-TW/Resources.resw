@@ -241,13 +241,13 @@
     <value>手把輸入服務</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>在 Steam Big Picture 模式中按 &#x29C9; 開啟 Steam 選單。</value>
+    <value>在 Steam Big Picture 模式中按 &#xEECA; 開啟 Steam 選單。</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
-    <value>短按 &#x29C9; 開啟 Steam 選單，長按 &#x29C9; 開啟快速存取選單。</value>
+    <value>短按 &#xEECA; 開啟 Steam 選單，長按 &#xEECA; 開啟快速存取選單。</value>
   </data>
   <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
-    <value>長按 &#x2630; 開啟 Steam 遊戲內嵌介面</value>
+    <value>長按 &#xEDE3; 開啟 Steam 遊戲內嵌介面</value>
   </data>
   <data name="SteamInGameOverlaySetting_Description.Text" xml:space="preserve">
     <value>需要在 Steam 中啟用遊戲內嵌介面。</value>
@@ -256,7 +256,7 @@
     <value>僅在預設平台設為 Steam Big Picture 時生效。</value>
   </data>
   <data name="SteamInGameOverlaySetting_ModifierNote.Text" xml:space="preserve">
-    <value>長按 &#x2630; 關閉內嵌介面，避免修飾鍵（如 Shift、Ctrl、Alt）卡住遊戲。
+    <value>長按 &#xEDE3; 關閉內嵌介面，避免修飾鍵（如 Shift、Ctrl、Alt）卡住遊戲。
 或至 Steam 設定 &gt; 遊戲中 &gt; 內嵌介面快捷鍵，改為非修飾鍵。</value>
   </data>
   <data name="MouseModeSetting_Title.Text" xml:space="preserve">

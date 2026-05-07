@@ -128,6 +128,7 @@
       <DependentUpon>PhantomLinkWidget.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\DebugLogger.cs" />
+    <Compile Include="Services\FluentIconTextHelper.cs" />
     <Compile Include="Services\FseStatus.cs" />
     <Compile Include="Services\HardwareDetection.cs" />
     <Compile Include="Services\PhantomBridgeHelper.cs" />

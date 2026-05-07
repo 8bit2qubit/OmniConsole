@@ -3,7 +3,8 @@
     x:Class="OmniConsole.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:models="using:OmniConsole.Models">
+    xmlns:models="using:OmniConsole.Models"
+    xmlns:services="using:OmniConsole.Services">
 
     <UserControl.Resources>
         <!-- Phantom 配色：設定卡片背景 #25282C -->
@@ -546,8 +547,8 @@
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="PhantomKeySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="PhantomKeySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Uid="PhantomKeySetting_Description" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="PhantomKeySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
                                     <!--
@@ -572,9 +573,9 @@
                                     <FontIcon Glyph="&#xEA5B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" FontSize="16" />
                                         <TextBlock x:Uid="SteamInGameOverlaySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
                                     <ToggleSwitch x:Name="UsePhantomKeySteamInGameOverlaySwitch"

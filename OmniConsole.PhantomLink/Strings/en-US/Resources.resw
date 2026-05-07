@@ -138,7 +138,7 @@
   </data>
   -->
   <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
-    <value>Long Press &#x2630; to Open Steam In-Game Overlay</value>
+    <value>Long Press &#xEDE3; to Open Steam In-Game Overlay</value>
   </data>
   <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
     <value>On</value>

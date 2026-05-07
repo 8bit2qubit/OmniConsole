@@ -138,7 +138,7 @@
   </data>
   -->
   <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
-    <value>长按 &#x2630; 打开 Steam 游戏叠加界面</value>
+    <value>长按 &#xEDE3; 打开 Steam 游戏叠加界面</value>
   </data>
   <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
     <value>开启</value>

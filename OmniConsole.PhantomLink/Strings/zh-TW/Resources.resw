@@ -138,7 +138,7 @@
   </data>
   -->
   <data name="Widget_SteamInGameOverlay_Title.Text" xml:space="preserve">
-    <value>長按 &#x2630; 開啟 Steam 遊戲內嵌介面</value>
+    <value>長按 &#xEDE3; 開啟 Steam 遊戲內嵌介面</value>
   </data>
   <data name="Widget_SteamInGameOverlay_On.Content" xml:space="preserve">
     <value>開啟</value>
