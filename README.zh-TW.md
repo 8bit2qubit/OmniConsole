@@ -11,62 +11,51 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat-square&color=blue" alt="最新版本"></a>
-<a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total" alt="總下載次數"></a>
-<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat-square" alt="技術堆疊"></a>
-<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/github/license/8bit2qubit/OmniConsole" alt="授權"></a>
+<a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat&color=blue" alt="最新版本"></a>
+<a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total?style=flat" alt="總下載次數"></a>
+<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="技術堆疊"></a>
+<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/github/license/8bit2qubit/OmniConsole?style=flat" alt="授權"></a>
 </p>
-
-一個自訂的 **WinUI 3 遊戲平台啟動器**，設計用來取代 Windows 11 預設的**全螢幕體驗 (FSE) 首頁殼層**，為遊戲 PC 和掌機提供無縫的主機風格開機體驗。
-
----
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 或掌機裝置（ROG Xbox Ally X 等）上，每當全螢幕體驗被觸發時自動啟動您選擇的遊戲平台。系統預設的全螢幕體驗首頁僅支援啟動 Xbox App，而 OmniConsole 解除了這項限制，讓您自由選擇要啟動的遊戲平台：
+OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 Xbox 模式 (FSE) 首頁殼層，並提供 OmniCharm Game Bar 小工具、滑鼠模式與 Steam 快捷鍵，讓一切操作都不離手把。只要觸發 Xbox 模式 (FSE)，OmniConsole 就會自動啟動你設定的遊戲平台。任何平台都能當你的 Xbox 模式 (FSE) 首頁 — Steam、Xbox、Epic、Armoury Crate SE、Playnite，或你自行新增的平台。
 
-- **開機時**：啟用「啟動時進入全螢幕體驗」後，開機即自動啟動您設定的遊戲平台。
-- **使用中**：按下 **Xbox 鍵**，點選 Game Bar 的「**首頁**」啟動遊戲平台，或點選「**媒體櫃**」預設開啟 OmniConsole 設定。
-
-### 運作方式
-
-> 觸發（開機 / Xbox 鍵 → Game Bar「首頁」或「媒體櫃」/ 開始功能表 → OmniConsole）  
-> → OmniConsole 啟動  
-> → 已在 FSE 中：啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束  
-> → FSE 模式外：FSE 進入對話方塊 → 確認 → 在 FSE 中重新啟動 → 啟動您選擇的遊戲平台 → OmniConsole 隱藏並結束
+- **開機時**：啟用「啟動時進入 Xbox 模式 (FSE)」後，開機即自動啟動你設定的遊戲平台。
+- **使用中**：按下 **Xbox 鍵**，點選 Game Bar 的「**首頁**」啟動遊戲平台，或點選「**媒體櫃**」開啟 OmniConsole 設定。
 
 ---
 
 ## ✨ 功能特色
 
-- **自動平台啟動** – 啟動時自動開啟已設定的遊戲平台。
-- **自動進入 FSE** – 在 FSE 模式外啟動（如從開始功能表），OmniConsole 會自動觸發 FSE 進入對話方塊。
-- **多平台支援** – 支援 **Steam Big Picture**、**Xbox App**、**Epic Games Store**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
-- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX / Bundle) 新增自訂平台，可選填卡片封面圖。啟動參數僅在使用執行檔路徑類型時可用。
+- **自動平台啟動** – Xbox 模式 (FSE) 啟用時，OmniConsole 自動啟動你設定的遊戲平台。
+- **自動進入 Xbox 模式 (FSE)** – 在 Xbox 模式 (FSE) 之外啟動（例如從開始功能表）時，OmniConsole 會自動觸發 Xbox 模式 (FSE) 進入對話方塊。
+- **多平台支援** – 內建支援 **Steam Big Picture**、**Xbox App**、**Epic Games Store**、**Armoury Crate SE** 與 **Playnite Fullscreen**。
+- **自訂平台支援（實驗性功能）** – 透過 Protocol URI、執行檔路徑或封裝套件 (MSIX / APPX) 新增自訂平台，可選填卡片封面圖。啟動參數僅在使用執行檔路徑類型時可用。
 - **平台匯入與匯出** – 以 JSON 格式分享自訂平台配置。對卡片按右鍵或長按即可匯出；透過匯入按鈕可匯入他人分享的配置。
-- **支援手把操作的檔案選擇器** – 自製檔案選擇器，取代不支援手把的系統 FileOpenPicker。瀏覽執行檔與封面圖片可完全透過控制器操作。同時提供「瀏覽 (Windows)」按鈕，供偏好舊式體驗的使用者開啟系統檔案選擇器。
-- **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過滑鼠、觸控或 Xbox 手把操作。
-- **Game Bar 整合** – 自訂 Game Bar「**首頁**」與「**媒體櫃**」按鈕的行為：「**首頁**」啟動遊戲平台、「**媒體櫃**」預設開啟 OmniConsole 設定，或直接導向 Xbox App 等平台。
-- **疑難排解頁面** – 專屬頁面提供緊急修復途徑：結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
-- **環境快照** – 「關於」頁面可擷取系統、硬體與 OmniConsole 健康狀態，並支援一鍵複製為 Markdown 格式，輕鬆協助問題回報。
-- **手把支援** – 使用**方向鍵**或**左搖桿**導覽，**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯、**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（在 FSE 模式中）。
-- **手把滑鼠模式** – 以手把作為滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store）與**強制開啟**（所有應用程式，排除清單除外）。提供兩種控制器版面配置：**OmniNav** 和 **Classic**，可調整游標速度。
-- **OmniCharm 小工具** – 遊戲中快速存取的 Game Bar 小工具 — 一鍵開啟**工作檢視**、**Xbox 媒體櫃**或 **Steam 內嵌介面**。並可切換**手把滑鼠模式**、控制器版面、游標速度，以及長按 ☰ 開啟 **Steam 遊戲內嵌介面**。
-- **手把 Steam 快捷鍵** – 為 Steam Big Picture 模式提供手把 **⧉** 按鍵支援：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
-- **專屬設定入口** – 在「所有應用程式」中獨立顯示「**OmniConsole 設定**」，隨時可更改預設平台。
-- **原生 FSE 整合** – 透過 Windows 11 全螢幕體驗 API 註冊為首頁應用程式。
-- **內建應用程式更新** – 支援自動檢查 GitHub 最新版本，可在「進階」設定頁面中直接下載與安裝。
-- **多語介面** – 支援英文、繁體中文與簡體中文。
+- **支援手把操作的檔案選擇器** – 自製檔案選擇器，取代不支援手把的系統 FileOpenPicker，可透過控制器瀏覽執行檔與封面圖片。同時提供「瀏覽 (Windows)」按鈕，供偏好系統檔案選擇器的使用者選用。
+- **卡片網格設定介面** – 大圖示卡片版型，適合大螢幕與掌機使用，可透過**滑鼠**、**觸控**或 **Xbox 手把**操作。
+- **Game Bar 整合** – Game Bar 的「**首頁**」按鈕啟動遊戲平台；「**媒體櫃**」開啟 OmniConsole 設定。
+- **疑難排解頁面** – Xbox 模式 (FSE) 緊急救援專屬頁面：結束 Game Bar 並繞過進入確認對話方塊，直接進入 Xbox 模式 (FSE)。
+- **環境快照** – 「關於」頁面擷取系統、硬體與 OmniConsole 健康狀態，並支援一鍵複製為 Markdown 格式，方便回報問題。
+- **手把支援** – 以**方向鍵**或**左搖桿**導覽；**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯，**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（僅在 OmniConsole 於 Xbox 模式 (FSE) 中執行時可用）。
+- **手把滑鼠模式** – 將手把當作滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store）與**強制開啟**（所有應用程式，排除清單除外）。游標速度可調，並提供兩種控制器版面配置：**OmniNav** 與 **Classic**。
+- **OmniCharm 小工具** – 遊戲中快速存取的 Game Bar 小工具：一鍵開啟**工作檢視**、**Xbox 媒體櫃**或 **Steam 遊戲內嵌介面**；切換**手把滑鼠模式**、控制器版面、游標速度；長按 ☰ 開啟 **Steam 遊戲內嵌介面**。
+- **手把 Steam 快捷鍵** – 手把 **⧉** 按鍵對應 Steam Big Picture 模式快捷：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
+- **專屬設定入口** – 「所有應用程式」中獨立的「**OmniConsole 設定**」項目，隨時可更改預設平台。
+- **原生 Xbox 模式 (FSE) 整合** – 透過 Windows 11 Xbox 模式 (FSE) 官方 API 註冊為主畫面應用程式。
+- **內建應用程式更新** – 自動檢查 GitHub 最新版本，可在「進階」設定頁面中直接下載與安裝。
+- **多語介面** – 英文、繁體中文與簡體中文。
 
 ---
 
 ## ⚙️ 前置條件
 
-在安裝 OmniConsole 之前，您需要先啟用 Windows 11 的全螢幕體驗功能：
+OmniConsole 需要**完整掌機版**的 Xbox 模式 (FSE)。Microsoft 正逐步將受限 PC 版推送至一般 PC，請使用 [Xbox Full Screen Experience Tool (XFSET)](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) 切換至完整掌機版。
 
-- **桌機、筆電、平板及未內建 FSE 的掌機**：請先使用 [Xbox Full Screen Experience Tool](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) 啟用 FSE 功能。
-- **原生 FSE 掌機裝置**（如 ROG Xbox Ally 系列）：已原生支援 FSE，可直接安裝 OmniConsole。
-- **需要 Xbox 手把**：Game Bar、FSE 以及所有手把功能皆需使用具備 Xbox 按鈕的 XInput 相容控制器。
+- **桌機、筆電、平板及未取得完整掌機版的掌機**：請先執行 XFSET。
+- **原生掌機裝置**（如 ROG Xbox Ally 系列）：原廠即為完整掌機版，可直接安裝 OmniConsole。
+- **需要 Xbox 手把**：Game Bar、Xbox 模式 (FSE) 以及所有手把功能皆需使用具備 Xbox 按鈕的 XInput 相容控制器。
 
 ---
 
@@ -78,7 +67,7 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 
 **方式 A：Install.bat（建議）**
 
-1.  解壓縮 `OmniConsole_*_x64.zip` 後執行 `Install.bat`，將自動開啟開發人員模式、安裝憑證、安裝缺少的框架相依套件，以及兩個 MSIX 套件。
+1.  解壓縮 `OmniConsole_*_x64.zip` 後執行 `Install.bat`，將自動開啟開發人員模式、安裝憑證、補齊框架相依套件，並安裝兩個 MSIX 套件。
 
 **方式 B：手動安裝**
 
@@ -90,10 +79,10 @@ OmniConsole 作為 Windows 11 全螢幕體驗 (FSE) 首頁殼層，在您的 PC 
 
 ### 2. 設定預設平台
 
-OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面。您也可以隨時手動開啟：
+OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面。你也可以隨時手動開啟：
 
 1.  從開始功能表（所有應用程式）中開啟「**OmniConsole 設定**」。
-2.  從卡片網格中選擇您偏好的遊戲平台。支援使用**滑鼠**、**觸控**或 **Xbox 手把**（**方向鍵/左搖桿**四向移動，**A 鍵**確認）：
+2.  從卡片網格中選擇你偏好的遊戲平台。支援使用**滑鼠**、**觸控**或 **Xbox 手把**（**方向鍵/左搖桿**四向移動，**A 鍵**確認）：
     - **Steam Big Picture**
     - **Xbox App**
     - **Epic Games Store**
@@ -102,32 +91,32 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
     選取後會自動儲存，完成後按下手把 **B 鍵**或點選**退出**即可。
 
-### 3. [重要] 設為 FSE 首頁應用程式
+### 3. [重要] 設為 Xbox 模式 (FSE) 主畫面應用程式
 
 <p>
-  <img src="docs/images/fse-settings.zh-TW.png" alt="Windows 全螢幕體驗設定" height="221">
+  <img src="docs/images/fse-settings.zh-TW.png" alt="Windows Xbox 模式 (FSE) 設定" height="221">
 </p>
 
-1.  前往 **Windows 設定 → 遊戲 → 全螢幕體驗**。
-2.  將「選擇首頁應用程式」設為 **OmniConsole**。
-3.  啟用「**啟動時進入全螢幕體驗**」。
+1.  前往 **Windows 設定 → 遊戲 → Xbox 模式 (FSE)**。
+2.  將「選擇主畫面應用程式」設為 **OmniConsole**。
+3.  啟用「**啟動時進入 Xbox 模式 (FSE)**」。
 
 ### 4. 完成！
 
-您的遊戲平台現在可透過以下任一方式啟動：
+你的遊戲平台現在可透過以下任一方式啟動：
 
-- **Game Bar**：按下 **Xbox 鍵**，點選「**首頁**」啟動遊戲平台，或點選「**媒體櫃**」預設開啟 OmniConsole 設定。
-- **開機**：啟用「**啟動時進入全螢幕體驗**」即可開機自動啟動。
-- **開始功能表**：直接啟動 OmniConsole 即可自動觸發進入全螢幕體驗 (FSE)。
+- **Game Bar**：按下 **Xbox 鍵**，點選「**首頁**」啟動遊戲平台，或點選「**媒體櫃**」開啟 OmniConsole 設定。
+- **開機**：啟用「**啟動時進入 Xbox 模式 (FSE)**」即可開機自動啟動。
+- **開始功能表**：直接啟動 OmniConsole 即可自動觸發進入 Xbox 模式 (FSE)。
 
 ---
 
 ## 🔄 如何還原
 
-> ⚠️ **解除安裝前，請務必先變更 FSE 首頁應用程式設定。** 若在 OmniConsole 仍設為 FSE 首頁應用程式的情況下直接解除安裝，部分 Windows 版本的**工作檢視將無法正常開啟**。這是 Windows 本身的 Bug。
+> ⚠️ **解除安裝前，請務必先變更 Xbox 模式 (FSE) 主畫面應用程式設定。** 若在 OmniConsole 仍設為 Xbox 模式 (FSE) 主畫面應用程式的情況下直接解除安裝，部分 Windows 版本的**工作檢視將無法正常開啟**。這是 Windows 本身的 Bug。
 
-1. 前往 **Windows 設定 → 遊戲 → 全螢幕體驗**。
-2. 將「選擇首頁應用程式」改為 **Xbox** 或 **無**。
+1. 前往 **Windows 設定 → 遊戲 → Xbox 模式 (FSE)**。
+2. 將「選擇主畫面應用程式」改為 **Xbox** 或 **無**。
 3. 在開始功能表中對 **OmniConsole** 按右鍵選擇**解除安裝**，或前往 **Windows 設定 → 應用程式 → 已安裝的應用程式**解除安裝。
 4. 前往 **Windows 設定 → 應用程式 → 已安裝的應用程式**解除安裝 **OmniCharm**（小工具不會出現在開始功能表）。
 
@@ -135,11 +124,11 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ## 🛠️ 疑難排解
 
-如果您遇到因 Windows 本身的 Bug 導致全螢幕體驗 (FSE) 進入對話方塊（「重新啟動以提升效能」）遲遲未出現的問題：
+如果你遇到因 Windows 本身的 Bug 導致 Xbox 模式 (FSE) 進入對話方塊（「重新啟動以提升效能」）遲遲未出現的問題：
 
 1. 從開始功能表開啟 **OmniConsole 設定**。
 2. 透過左側導覽選單切換至 **疑難排解** 頁面。
-3. 在 **「結束 Game Bar 並進入 FSE」** 旁點選 **「執行」** 按鈕。這將會結束 Game Bar 並繞過 FSE 確認對話方塊，直接進入 FSE。
+3. 在 **「結束 Game Bar 並進入 Xbox 模式 (FSE)」** 旁點選 **「執行」** 按鈕。這將會結束 Game Bar 並繞過進入確認對話方塊，直接進入 Xbox 模式 (FSE)。
 
 ---
 
@@ -162,11 +151,11 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 2.  **以 Visual Studio 開啟**
 
-    使用 Visual Studio 2026 (18.0+) 開啟 `OmniConsole.sln`。確保已安裝 **WinUI 應用程式開發** 工作負載。
+    使用 Visual Studio 2026 (18.0+) 開啟 `OmniConsole.sln`。確保已安裝 **WinUI 應用程式開發**工作負載。
 
 3.  **開發模式執行**
 
-    將組建設定設為 `Debug`，選擇平台（`x64` / `ARM64`），按 `F5` 建置並執行。
+    將組建設定設為 `Debug`，選擇平台（`x64`），按 `F5` 建置並執行。
 
 ---
 
@@ -186,4 +175,4 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 本專案採用 [GNU 通用公共授權條款第 3 版 (GPL-3.0)](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權。
 
-您可以自由使用、修改和散佈本軟體，但任何衍生作品必須以**相同的 GPL-3.0 授權條款散佈並提供完整原始碼**。詳情請參閱 [GPL-3.0 官方條款](https://www.gnu.org/licenses/gpl-3.0.html)。
+你可以自由使用、修改和散佈本軟體，但任何衍生作品必須以**相同的 GPL-3.0 授權條款散佈並提供完整原始碼**。詳情請參閱 [GPL-3.0 官方條款](https://www.gnu.org/licenses/gpl-3.0.html)。
