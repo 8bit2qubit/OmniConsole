@@ -276,6 +276,8 @@
                             <NavigationView.Resources>
                                 <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
                                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
+                                <!-- 移除 Top 模式 ContentGrid 與 pane 之間的 1px 分隔線 -->
+                                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent"/>
                             </NavigationView.Resources>
 
                             <NavigationView.MenuItems>
