@@ -17,6 +17,12 @@ body:
         - label: >-
             I have searched the [**existing Issues**](https://github.com/8bit2qubit/OmniConsole/issues) to ensure my problem is not already reported.
           required: true
+        - label: >-
+            I understand that OmniConsole is a **personal interest project**, written and maintained by a **solo developer** in their own free time. I have considered whether my request is **realistic** for a project of that scope before opening this.
+          required: true
+        - label: >-
+            I have **sanity-checked** this from the maintainer's side: it is a **real issue** or a **reasonable question**, not something that would make a tired hobbyist developer reach for more coffee.
+          required: true
   - type: markdown
     attributes:
       value: "---"
@@ -123,7 +129,7 @@ body:
     id: issue-description
     attributes:
       label: "5. Describe your issue or question:"
-      description: "(A clear and concise description of what the problem is.)"
+      description: "(A clear and concise description of what the problem is. Screenshots, a short clip, or relevant logs are welcome here — a picture often shows the problem more precisely than words.)"
       placeholder: "Type here..."
     validations:
       required: true
@@ -131,7 +137,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: "6. Steps to Reproduce (if applicable):"
-      description: "(If you are reporting a reproducible problem, list the steps.)"
+      description: "(If you are reporting a reproducible problem, list the steps. A short screen recording can capture this better than text.)"
       placeholder: |
         1. Boot the PC / Press Xbox button.
         2. Observed ...
@@ -142,7 +148,7 @@ body:
     id: expected-behavior
     attributes:
       label: "7. Expected Behavior:"
-      description: "(What did you expect to happen?)"
+      description: "(What did you expect to happen? A reference screenshot, if you have one, helps.)"
       placeholder: "Type here..."
     validations:
       required: true
@@ -150,7 +156,7 @@ body:
     id: actual-behavior
     attributes:
       label: "8. Actual Behavior:"
-      description: "(What actually happened?)"
+      description: "(What actually happened? A screenshot or clip of the result makes this clearer.)"
       placeholder: "Type here..."
     validations:
       required: true
@@ -158,15 +164,16 @@ body:
     id: environment-snapshot
     attributes:
       label: "9. Environment Snapshot"
-      description: "(PhantomKey only runs inside FSE. Capture your snapshot there via **OmniConsole Settings → About → Copy to Clipboard**.)"
+      description: >-
+        Paste the **full Markdown snapshot** here — it carries the OS build, FSE state, XFSET status, and hardware details needed to diagnose and analyze the problem. **PhantomKey only runs inside the Xbox Mode (FSE) shell — capture the snapshot from inside FSE, while PhantomKey is running; a snapshot taken from the desktop will always show "PhantomKey: not running" and isn't useful for diagnosis.** Get it via **OmniConsole Settings → navigation button (☰) → About → Copy to Clipboard**.
       placeholder: "Paste your Markdown snapshot here..."
     validations:
       required: true
-  - type: textarea
-    id: screenshots
+  - type: checkboxes
+    id: snapshot-confirm
     attributes:
-      label: "10. Screenshots / Videos / Additional Logs"
-      description: "(Attach any screenshots, videos, or extra error messages if they help explain the issue.)"
-      placeholder: "Drop files here or paste links..."
-    validations:
-      required: false
+      label: "Environment Snapshot — confirmation"
+      options:
+        - label: >-
+            What I pasted above is the **actual** environment snapshot — **not** "n/a", "N/A", or a hand-written summary. I understand that issues without a valid environment snapshot will be closed.
+          required: true
