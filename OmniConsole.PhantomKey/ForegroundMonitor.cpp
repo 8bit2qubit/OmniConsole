@@ -70,7 +70,7 @@ static bool IsExplorerTaskView();
 
 static const wchar_t* g_mouseModeTargets[] = {
     L"msedge", L"chrome", L"firefox", L"opera", L"brave",
-    L"EpicGamesLauncher"
+    L"EpicGamesLauncher", L"Discord"
 };
 
 bool IsMouseModeTarget(const std::wstring& processName) {

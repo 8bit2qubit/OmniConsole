@@ -211,10 +211,10 @@
     <value>Xbox Mode (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>Terminate Game Bar &amp; Enter Xbox Mode (FSE)</value>
+    <value>Restart Game Bar &amp; Enter Xbox Mode (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>Terminate Game Bar and enter Xbox Mode (FSE) directly, bypassing the entry confirmation dialog.</value>
+    <value>Restart Game Bar to fix issues such as Game Bar not opening, or the "Restart for better performance" dialog not appearing when entering Xbox Mode (FSE).</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>On some Windows versions, a confirmation dialog may still appear.</value>
@@ -275,7 +275,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Force On</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>When set to Auto, supports Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, and Steam.</value>
+    <value>When set to Auto, supports Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, Steam, and Discord.</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled — device has built-in gamepad mapping.</value>
@@ -468,7 +468,7 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
     <value>Delete</value>
   </data>
   <data name="PlatformDialog_PackagedApp" xml:space="preserve">
-    <value>Packaged App (MSIX / APPX / Bundle)</value>
+    <value>Packaged App (MSIX / APPX)</value>
   </data>
   <data name="PlatformDialog_PackagedAppLabel" xml:space="preserve">
     <value>Package Family Name</value>

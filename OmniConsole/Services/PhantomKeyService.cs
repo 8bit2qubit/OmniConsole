@@ -7,8 +7,6 @@ namespace OmniConsole.Services
     /// <summary>
     /// 管理 PhantomKey 背景手把輸入服務的啟動、停止與狀態查詢。
     /// PhantomKey 會自動偵測前景程式，將手把 View 按鈕映射為對應的鍵盤快速鍵。
-    /// MSIX 沙箱內的程式無法正常使用 SendInput，
-    /// 因此需複製到使用者目錄再啟動以脫離沙箱限制。
     /// </summary>
     public static class PhantomKeyService
     {

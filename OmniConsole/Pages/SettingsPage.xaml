@@ -794,7 +794,7 @@
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                     <TextBlock x:Uid="ResetGameBarSetting_Title" FontWeight="SemiBold" FontSize="16" />
                                     <TextBlock x:Uid="ResetGameBarSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                    <TextBlock x:Uid="ResetGameBarSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <!-- <TextBlock x:Uid="ResetGameBarSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/> -->
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">

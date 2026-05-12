@@ -211,10 +211,10 @@
     <value>Xbox 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>终止 Game Bar 并进入 Xbox 模式 (FSE)</value>
+    <value>重启 Game Bar 并进入 Xbox 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>终止 Game Bar 后将绕过进入确认对话框，直接进入 Xbox 模式 (FSE)。</value>
+    <value>重启 Game Bar，以修复 Game Bar 无法打开、或进入 Xbox 模式 (FSE) 时未显示“重启以提高性能”对话框等问题。</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>部分 Windows 版本仍可能显示确认对话框。</value>
@@ -275,7 +275,7 @@
     <value>强制开启</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>设为自动时，支持 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、文件资源管理器和 Steam。</value>
+    <value>设为自动时，支持 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、文件资源管理器、Steam 和 Discord。</value>
   </data>
   <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已禁用 — 设备具备内置手柄映射。</value>
@@ -468,7 +468,7 @@
     <value>删除</value>
   </data>
   <data name="PlatformDialog_PackagedApp" xml:space="preserve">
-    <value>应用包 (MSIX / APPX / Bundle)</value>
+    <value>应用包 (MSIX / APPX)</value>
   </data>
   <data name="PlatformDialog_PackagedAppLabel" xml:space="preserve">
     <value>包系列名称</value>
