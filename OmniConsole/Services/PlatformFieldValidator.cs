@@ -10,8 +10,11 @@ namespace OmniConsole.Services
     /// </summary>
     internal static class PlatformFieldValidator
     {
-        /// <summary>在 URI、路徑、參數中視為危險的字元（Shell 注入風險）。</summary>
-        internal static readonly char[] DangerousChars = ['|', '&', ';', '>', '<', '`', '$'];
+        /// <summary>執行檔路徑中拒絕的字元。</summary>
+        internal static readonly char[] DangerousPathChars = ['|', '&', ';', '>', '<', '`', '$'];
+
+        /// <summary>Protocol URI 與啟動參數中拒絕的字元；控制字元另由 <see cref="HasControlCharacters"/> 檢查。</summary>
+        internal static readonly char[] DangerousUriArgChars = ['|', '`', '$'];
 
         private static readonly Regex UriRegex =
             new(@"^[a-zA-Z][a-zA-Z0-9+\-.]*://\S*$", RegexOptions.Compiled);
@@ -27,13 +30,14 @@ namespace OmniConsole.Services
         // ── Protocol URI ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// 驗證 Protocol URI：不可空白、長度不超過 2048、符合 URI 格式、不含危險字元。
+        /// 驗證 Protocol URI：不可空白、長度不超過 2048、符合 URI 格式、不含控制字元、不含 <see cref="DangerousUriArgChars"/>。
         /// </summary>
         public static bool IsValidUri(string uri)
             => !string.IsNullOrWhiteSpace(uri)
             && uri.Length <= 2048
             && UriRegex.IsMatch(uri)
-            && uri.IndexOfAny(DangerousChars) < 0;
+            && !HasControlCharacters(uri)
+            && uri.IndexOfAny(DangerousUriArgChars) < 0;
 
         /// <summary>OmniConsole 自身登錄的 protocol scheme。</summary>
         internal const string OwnProtocolScheme = "omniconsole";
@@ -52,12 +56,12 @@ namespace OmniConsole.Services
         // ── 執行檔路徑 ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 驗證執行檔路徑：不可空白、長度不超過 260、不含危險字元或無效路徑字元、須以 .exe 結尾。
+        /// 驗證執行檔路徑：不可空白、長度不超過 260、不含 <see cref="DangerousPathChars"/> 或無效路徑字元、須以 .exe 結尾。
         /// </summary>
         public static bool IsValidExecutablePath(string path)
             => !string.IsNullOrWhiteSpace(path)
             && path.Length <= 260
-            && path.IndexOfAny(DangerousChars) < 0
+            && path.IndexOfAny(DangerousPathChars) < 0
             && path.IndexOfAny(Path.GetInvalidPathChars()) < 0
             && path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
 
@@ -116,11 +120,12 @@ namespace OmniConsole.Services
         // ── 啟動參數 ──────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 驗證啟動參數（可為空）：長度不超過 500、不含危險字元。
+        /// 驗證啟動參數（可為空）：長度不超過 500、不含控制字元、不含 <see cref="DangerousUriArgChars"/>。
         /// </summary>
         public static bool IsValidArguments(string args)
             => args.Length <= 500
-            && args.IndexOfAny(DangerousChars) < 0;
+            && !HasControlCharacters(args)
+            && args.IndexOfAny(DangerousUriArgChars) < 0;
 
         // ── 封裝應用程式識別名稱 ──────────────────────────────────────────────
 

@@ -26,7 +26,7 @@ bool IsMouseModeTarget(const std::wstring& processName);
 //   - OmniConsole 主程式、Playnite Fullscreen（依行程名比對）
 //   - Xbox App / Armoury Crate SE（UWP 由 ApplicationFrameHost 宿主，依視窗 title 比對）
 //   - explorer 的 FSE Task View 子模式（依視窗 class XamlExplorerHostIslandWindow 比對）
-//   - steamwebhelper 的 Steam Big Picture 子模式（依視窗 title 比對）
+//   - steamwebhelper 的 Steam Big Picture 子模式（依視窗 style 無 WS_CAPTION + 相對 monitor 尺寸判斷）
 bool IsMouseModeForceExcluded(const std::wstring& processName);
 
 // 診斷：記錄前景視窗的 proc / class / title / coversMonitor / cloaked 狀態，

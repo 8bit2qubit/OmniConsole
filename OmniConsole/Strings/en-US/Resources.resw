@@ -241,7 +241,7 @@
     <value>Gamepad Input Service</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>Press &#xEECA; to open the Steam Menu in Steam Big Picture mode.</value>
+    <value>Press &#xEECA; to open Steam's menus in Steam Big Picture mode.</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>Short press &#xEECA; to open Steam Menu, long press &#xEECA; to open Quick Access Menu.</value>

@@ -8,8 +8,8 @@
 // 規則表
 // ============================================================================
 
-// steamwebhelper 是 Steam Big Picture 模式下的前景行程名
-// Ctrl+1 = Steam 選單、Ctrl+2 = 快速存取選單
+// steamwebhelper.exe 為 Big Picture 與桌面 Steam 共用；此規則僅在前景判定為 Big Picture 時套用
+// （見 FindRuleForForeground 內的 IsSteamBigPicture() 過濾）。Ctrl+1 = Steam 選單、Ctrl+2 = 快速存取選單。
 static const InputRule g_rules[] = {
     { L"steamwebhelper", L"Ctrl+1", L"Ctrl+2" },
 };
@@ -80,7 +80,7 @@ bool IsMouseModeTarget(const std::wstring& processName) {
     // 檔案總管納入 Auto，但 FSE Task View 同行程需排除
     if (_wcsicmp(processName.c_str(), L"explorer") == 0 && !IsExplorerTaskView())
         return true;
-    // Steam 桌面模式（steamwebhelper, title=="Steam"）納入 Auto；Big Picture 不介入
+    // 桌面 Steam（steamwebhelper，非 Big Picture）納入 Auto；Big Picture 不介入
     if (_wcsicmp(processName.c_str(), L"steamwebhelper") == 0 && !IsSteamBigPicture())
         return true;
     return false;
