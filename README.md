@@ -36,11 +36,11 @@ OmniConsole serves as your Windows 11 Xbox Mode (FSE) Home shell on PCs and hand
 - **Gamepad-compatible file picker** – A custom-built file picker that replaces the system FileOpenPicker (which does not support gamepad input), letting you browse for executables and cover images with a controller. A "Browse (Windows)" button is also available for users who prefer the system file picker.
 - **Card-grid settings UI** – Large icon cards designed for large-screen and handheld use, operable with **mouse**, **touch**, or **Xbox controller**.
 - **Game Bar integration** – Game Bar's **"Home"** button launches your gaming platform; **"Library"** opens OmniConsole Settings.
-- **Troubleshoot page** – A dedicated page for emergency Xbox Mode (FSE) recovery: terminates Game Bar and enters Xbox Mode (FSE) directly, bypassing the entry confirmation dialog.
+- **Troubleshoot page** – A dedicated page for Xbox Mode (FSE) recovery: restarts Game Bar to fix issues such as the "Restart for better performance" dialog not appearing, then enters Xbox Mode (FSE).
 - **Environment snapshot** – An "About" page that captures your system, hardware, and OmniConsole health status, with one-click copy as a Markdown report for easy bug reporting.
 - **Gamepad support** – Navigate with **D-Pad** or **Left Stick**; **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (when running inside Xbox Mode (FSE)).
-- **Gamepad Mouse Mode** – Use your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store), and **Force On** (all apps except an exclusion list). Cursor speed is adjustable, with two controller layouts to choose from: **OmniNav** and **Classic**.
-- **OmniCharm widget** – A Game Bar widget for in-game quick access. Open **Task View**, the **Xbox Library**, or the **Steam Overlay** in one tap; toggle **Gamepad Mouse Mode**, controller layout, and cursor speed; long-press ☰ to open the **Steam In-Game Overlay**.
+- **Gamepad Mouse Mode** – Use your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store, Discord), and **Force On** (all apps except an exclusion list). Cursor speed is adjustable, with two controller layouts to choose from: **OmniNav** and **Classic**.
+- **OmniCharm widget** – A Game Bar widget for in-game quick access. Open **Task View**, the **Xbox Library**, or the **Steam Overlay** in one tap; toggle **Gamepad Mouse Mode**, controller layout, cursor speed, and the **Steam In-Game Overlay** (long-press ☰).
 - **Gamepad Steam shortcuts** – The gamepad **⧉** button controls Steam Big Picture shortcuts: short press opens the **Steam Menu**, long press opens the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings entry** – A separate "**OmniConsole Settings**" entry in All Apps lets you change your default platform anytime.
 - **Native Xbox Mode (FSE) integration** – Registered as a Windows 11 Xbox Mode (FSE) Home App through the official API.
@@ -54,7 +54,7 @@ OmniConsole serves as your Windows 11 Xbox Mode (FSE) Home shell on PCs and hand
 OmniConsole requires the **Full Handheld edition** of Xbox Mode (FSE). Microsoft is gradually rolling out a Limited PC edition to regular PCs — use [Xbox Full Screen Experience Tool (XFSET)](https://github.com/8bit2qubit/XboxFullScreenExperienceTool) to switch to the Full Handheld edition.
 
 - **Desktops, Laptops, Tablets & Handhelds without the Full Handheld edition**: Run XFSET first.
-- **Native handheld devices** (e.g., ROG Xbox Ally series): Already on the Full Handheld edition — install OmniConsole directly.
+- **Native Handheld Devices** (e.g., ROG Xbox Ally series): Already on the Full Handheld edition — install OmniConsole directly.
 - **Xbox Controller Required**: Game Bar, Xbox Mode (FSE), and all gamepad features require an Xbox-compatible (XInput) controller with an Xbox button.
 
 ---
@@ -124,11 +124,11 @@ Your gaming platform now launches via any of these entry points:
 
 ## 🛠️ Troubleshooting
 
-If you experience an issue where the Windows Xbox Mode (FSE) entry dialog ("Restart for better performance") fails to appear due to a Windows bug:
+If you run into issues caused by a Windows bug, such as Game Bar failing to open or the "Restart for better performance" dialog not appearing when entering Xbox Mode (FSE):
 
 1. Open **OmniConsole Settings** from the Start Menu.
 2. Navigate to the **Troubleshoot** tab using the left menu.
-3. Click the **"Run"** button next to **"Terminate Game Bar & Enter Xbox Mode (FSE)"**. This will force-close Game Bar and enter Xbox Mode (FSE) directly, bypassing the entry confirmation dialog.
+3. Click the **"Run"** button next to **"Restart Game Bar & Enter Xbox Mode (FSE)"**. This restarts Game Bar and enters Xbox Mode (FSE); once Game Bar is restarted, the dialog appears as expected.
 
 ---
 
