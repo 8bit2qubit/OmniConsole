@@ -14,7 +14,7 @@
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat&color=blue" alt="Latest Release"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total?style=flat" alt="Total Downloads"></a>
 <a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="Tech"></a>
-<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/github/license/8bit2qubit/OmniConsole?style=flat" alt="License"></a>
+<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue?style=flat" alt="License"></a>
 </p>
 
 ## 💡 What is OmniConsole?
@@ -173,6 +173,6 @@ If you run into issues caused by a Windows bug, such as Game Bar failing to open
 
 ## 📄 License
 
-This project is licensed under the [GNU General Public License v3.0 (GPL-3.0)](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE).
+OmniConsole is licensed under the [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE).
 
-You are free to use, modify, and distribute this software, but any derivative works must also be distributed under the **same GPL-3.0 license and provide the complete source code**. For more details, see the [official GPL-3.0 terms](https://www.gnu.org/licenses/gpl-3.0.html).
+You are free to use, modify, and redistribute OmniConsole for personal and nonprofit use under the same license. For the full terms, see the [official PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).

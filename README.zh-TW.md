@@ -14,7 +14,7 @@
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat&color=blue" alt="最新版本"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total?style=flat" alt="總下載次數"></a>
 <a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="技術堆疊"></a>
-<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/github/license/8bit2qubit/OmniConsole?style=flat" alt="授權"></a>
+<a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue?style=flat" alt="授權"></a>
 </p>
 
 ## 💡 什麼是 OmniConsole？
@@ -173,6 +173,6 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ## 📄 授權
 
-本專案採用 [GNU 通用公共授權條款第 3 版 (GPL-3.0)](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權。
+OmniConsole 採用 [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權。
 
-你可以自由使用、修改和散佈本軟體，但任何衍生作品必須以**相同的 GPL-3.0 授權條款散佈並提供完整原始碼**。詳情請參閱 [GPL-3.0 官方條款](https://www.gnu.org/licenses/gpl-3.0.html)。
+在個人與非營利用途下，你可以自由使用、修改與散布 OmniConsole；衍生作須採同樣授權。完整條款請參閱 [PolyForm Noncommercial License 1.0.0 官方條款](https://polyformproject.org/licenses/noncommercial/1.0.0)。
