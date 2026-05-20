@@ -41,8 +41,7 @@ namespace OmniConsole.Services
         }
 
         // ── IFrameworkInputPane 直接 vtable 呼叫（用於查詢遊戲控制器鍵盤位置）──────────
-        // CoreInputView.OcclusionsChanged 對遊戲控制器鍵盤回傳 count=0，無法使用。
-        // IFrameworkInputPane::Location() 是目前能取得遊戲控制器鍵盤實體像素位置 API 的方法之一。
+        // 改以 vtable slot 6 直呼 IFrameworkInputPane::Location() 取得鍵盤位置。
         //
         // 不使用 [ComImport] 介面 + Marshal.GetObjectForIUnknown：Release 建置啟用 trimming 後，
         // 介面資訊被裁剪導致 cast 回傳 null。改以 unsafe vtable 直呼完全繞過 COM marshalling 層。
@@ -72,8 +71,7 @@ namespace OmniConsole.Services
         /// 為 ContentDialog 啟用螢幕鍵盤迴避：遊戲控制器鍵盤彈出時自動將對話方塊上移，收起後復位。
         /// 使用方式：在 Opened 事件中以 <c>GetTemplateChild("BackgroundElement") as FrameworkElement</c> 取得對話方塊 Border 並傳入；
         /// 將回傳的清除委派存起來，於 Closed 事件中呼叫以停止輪詢。
-        /// 注意：CoreInputView.OcclusionsChanged 對遊戲控制器鍵盤回傳 count=0，無法用於偵測，
-        /// 因此改以 100ms 計時器輪詢 IFrameworkInputPane::Location() 取得鍵盤位置。
+        /// 以 100ms 計時器輪詢 IFrameworkInputPane::Location() 取得鍵盤位置。
         /// 注意：必須傳入 "BackgroundElement"（實際對話方塊 Border），而非 "Container"（全螢幕 overlay）；
         /// 傳入 Container 時 ActualHeight == screenHeight，上移計算會完全錯誤。
         /// </summary>
@@ -103,7 +101,7 @@ namespace OmniConsole.Services
 
             // 改用 layout 定位（VerticalAlignment=Top + Margin.Top）取代 TranslateTransform：
             // BackgroundElement 預設 VerticalAlignment=Center，設 MaxHeight 後元素縮小會重新置中，
-            // 導致 TranslateTransform 偏移量失準。Layout 定位是可靠的解法之一。
+            // 導致 TranslateTransform 偏移量失準。
             var originalVAlignment = dialogContainer.VerticalAlignment;
             var originalMargin = dialogContainer.Margin;
             bool wasVisible = false;
@@ -259,6 +257,29 @@ namespace OmniConsole.Services
                 // CoreInputViewKind.Gamepad = 7，Windows 11 SDK 26100.3624+ 正式命名；
                 // 較舊 SDK 以 int cast 存取，行為相同
                 CoreInputView.GetForCurrentView().TryShow((CoreInputViewKind)7);
+                PlaySound(ElementSoundKind.Show);
+            }
+            catch { }
+        }
+
+        // 相同 kind 在 50ms 內重複觸發只播一次，避免「手把 A → InvokeElement → NavigationView SelectionChanged →
+        // 補播一次」這類事件鏈雙觸發。SettingsNav_SelectionChanged 內也走 ElementSoundPlayer.Play，需共用同一張去重表。
+        private static readonly Dictionary<ElementSoundKind, long> s_lastPlayTicks = [];
+        private const int PlayDedupWindowMs = 50;
+
+        /// <summary>
+        /// 包一層 try/catch 的 ElementSoundPlayer.Play；State=Off 時為 no-op，不需自行檢查旗標。
+        /// 同一 ElementSoundKind 在 50ms 內重複呼叫只播一次。
+        /// </summary>
+        public static void PlaySound(ElementSoundKind kind)
+        {
+            try
+            {
+                long now = Environment.TickCount64;
+                if (s_lastPlayTicks.TryGetValue(kind, out var last) && now - last < PlayDedupWindowMs)
+                    return;
+                s_lastPlayTicks[kind] = now;
+                ElementSoundPlayer.Play(kind);
             }
             catch { }
         }
@@ -290,6 +311,12 @@ namespace OmniConsole.Services
         private ComboBox? _activeComboBox;
         private InputInjector? _inputInjector;
 
+        /// <summary>
+        /// Start() 後第一輪只快取 _previousReadings 不觸發任何動作；
+        /// 開對話方塊時 A 鍵還按著會被新導覽服務當成 A 邊緣觸發誤觸 ComboBox 展開。
+        /// </summary>
+        private bool _priming;
+
         // ── D-pad / 搖桿長按連續移動（Key Repeat） ────────────────────────────
         private const int RepeatInitialDelayMs = 400;  // 長按後開始重複前的等待時間
         private const int RepeatIntervalMs = 80;       // 重複移動的間隔
@@ -302,6 +329,7 @@ namespace OmniConsole.Services
             public long SinceTick;
             public long LastRepeatTick;
         }
+
 
         private readonly UIElement _searchRoot;
         private readonly Action _onAButtonPressed;
@@ -347,6 +375,10 @@ namespace OmniConsole.Services
         /// </summary>
         public void Start()
         {
+            // 重設輪詢狀態：對話方塊開啟時 A 鍵可能還按著，priming 期不觸發邊緣事件，
+            // 等放開 A 後新的 press 才被視為新事件
+            _priming = true;
+            _previousReadings.Clear();
             _gamepadTimer?.Start();
         }
 
@@ -370,6 +402,20 @@ namespace OmniConsole.Services
 
                 var gamepads = Gamepad.Gamepads;
                 if (gamepads.Count == 0) return;
+
+                // Priming：第一輪只快取 _previousReadings，直到所有按鍵釋放後才解除 priming
+                if (_priming)
+                {
+                    bool anyPressed = false;
+                    foreach (var gamepad in gamepads)
+                    {
+                        var r = gamepad.GetCurrentReading();
+                        _previousReadings[gamepad] = r;
+                        if (IsAnyInputActive(r)) anyPressed = true;
+                    }
+                    if (!anyPressed) _priming = false;
+                    return;
+                }
 
                 foreach (var gamepad in gamepads)
                 {
@@ -398,6 +444,7 @@ namespace OmniConsole.Services
                             _activeComboBox.IsDropDownOpen = false;
                             _activeComboBox.Focus(FocusState.Keyboard);
                             _activeComboBox = null;
+                            PlaySound(ElementSoundKind.Invoke);
                             inputHandled = true;
                         }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.B))
@@ -406,22 +453,17 @@ namespace OmniConsole.Services
                             _activeComboBox.IsDropDownOpen = false;
                             _activeComboBox.Focus(FocusState.Keyboard);
                             _activeComboBox = null;
+                            PlaySound(ElementSoundKind.GoBack);
                             inputHandled = true;
                         }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.DPadDown))
                         {
-                            int from = focusedIdx == -1 ? Math.Max(0, _activeComboBox.SelectedIndex) : focusedIdx;
-                            if (from < _activeComboBox.Items.Count - 1
-                                && _activeComboBox.ContainerFromIndex(from + 1) is Control next)
-                                next.Focus(FocusState.Keyboard);
+                            MoveComboBoxFocus(_activeComboBox, focusedIdx, +1);
                             inputHandled = true;
                         }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.DPadUp))
                         {
-                            int from = focusedIdx == -1 ? Math.Max(0, _activeComboBox.SelectedIndex) : focusedIdx;
-                            if (from > 0
-                                && _activeComboBox.ContainerFromIndex(from - 1) is Control prev2)
-                                prev2.Focus(FocusState.Keyboard);
+                            MoveComboBoxFocus(_activeComboBox, focusedIdx, -1);
                             inputHandled = true;
                         }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.DPadLeft)
@@ -429,6 +471,7 @@ namespace OmniConsole.Services
                         {
                             inputHandled = true; // 封鎖左右，避免離開清單
                         }
+                        // 長按連發走下方主 _heldStates 路徑，由那邊判斷 _activeComboBox 改走 MoveComboBoxFocus
                     }
                     else
                     {
@@ -440,6 +483,7 @@ namespace OmniConsole.Services
                         {
                             comboBox.IsDropDownOpen = true;
                             _activeComboBox = comboBox;
+                            PlaySound(ElementSoundKind.Invoke);
                             inputHandled = true;
                         }
                         // AutoSuggestBox：焦點可能落在 ASB 內部的 TextBox，用 FindParent 向上確認
@@ -475,19 +519,40 @@ namespace OmniConsole.Services
                         else if (IsButtonPressed(reading, prev, GamepadButtons.DPadRight))
                             TryMoveGamepadFocus(FocusNavigationDirection.Right);
                         else if (IsButtonPressed(reading, prev, GamepadButtons.A))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onAButtonPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.B))
+                        {
+                            PlaySound(ElementSoundKind.GoBack);
                             _onBButtonPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.LeftShoulder))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onLBPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.RightShoulder))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onRBPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.X))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onXButtonPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.Y))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onYButtonPressed?.Invoke();
+                        }
                         else if (IsButtonPressed(reading, prev, GamepadButtons.Menu))
+                        {
+                            PlaySound(ElementSoundKind.Invoke);
                             _onMenuButtonPressed?.Invoke();
+                        }
                     }
 
                     // 也將左搖桿映射到上下左右（支援橫向卡片網格導覽）
@@ -505,8 +570,8 @@ namespace OmniConsole.Services
                     }
 
                     // ── D-pad / 搖桿長按連續移動（每支手把獨立追蹤） ──────────────
+                    // ComboBox 展開時走清單內導航；否則走外部焦點導航。
                     _heldStates.TryGetValue(gamepad, out var held);
-                    if (!inputHandled)
                     {
                         var currentDir = GetHeldDirection(reading);
                         long now = Environment.TickCount64;
@@ -529,13 +594,20 @@ namespace OmniConsole.Services
                             if (now - held.LastRepeatTick >= RepeatIntervalMs)
                             {
                                 held.LastRepeatTick = now;
-                                TryMoveGamepadFocus(currentDir.Value);
+                                if (_activeComboBox != null)
+                                {
+                                    int beforeIdx = GetFocusedComboBoxItemIndex(_activeComboBox);
+                                    if (currentDir == FocusNavigationDirection.Down)
+                                        MoveComboBoxFocus(_activeComboBox, beforeIdx, +1);
+                                    else if (currentDir == FocusNavigationDirection.Up)
+                                        MoveComboBoxFocus(_activeComboBox, beforeIdx, -1);
+                                }
+                                else if (!inputHandled)
+                                {
+                                    TryMoveGamepadFocus(currentDir.Value);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        held.Direction = null;
                     }
                     _heldStates[gamepad] = held;
 
@@ -633,16 +705,20 @@ namespace OmniConsole.Services
                     var options = new FindNextElementOptions { SearchRoot = _searchRoot };
                     var candidate = FocusManager.FindNextElement(direction, options);
 
-                    // 撞牆防護：候選目標不是可互動控制項時，不移動焦點
-                    if (candidate is Control c && !c.IsTabStop) return;
-                    if (candidate == null) return;
+                    // 撞牆防護：候選目標不是可互動控制項或無候選 → 播撞牆音、不移動焦點
+                    if (candidate is Control c && !c.IsTabStop) { PlaySound(ElementSoundKind.GoBack); return; }
+                    if (candidate == null) { PlaySound(ElementSoundKind.GoBack); return; }
 
                     _ = FocusManager.TryMoveFocusAsync(direction, options);
+                    PlaySound(ElementSoundKind.Focus);
                 }
                 else
                 {
                     // 焦點在 SearchRoot 外（如下拉選單 Popup）→ 自由導航，讓 Popup 內項目可移動
-                    FocusManager.TryMoveFocus(direction);
+                    if (FocusManager.TryMoveFocus(direction))
+                        PlaySound(ElementSoundKind.Focus);
+                    else
+                        PlaySound(ElementSoundKind.GoBack);
                 }
             }
             catch
@@ -709,6 +785,67 @@ namespace OmniConsole.Services
                     return i;
             }
             return -1;
+        }
+
+        /// <summary>
+        /// 把 ComboBox 下拉清單的鍵盤焦點往 step 方向移動，跳過 IsEnabled=false 的項目（分組標題）
+        /// 直到找到可聚焦的目標。聚焦後手動以 popup ScrollViewer.ChangeView 把目標捲進可視範圍。
+        /// ComboBox popup 的 ScrollViewer 是 item-units 模式
+        /// （VerticalOffset / ViewportHeight / ExtentHeight 單位是 item 數而非像素），
+        /// 所以 ChangeView 也要傳 item index 而不是像素 offset。
+        /// </summary>
+        private void MoveComboBoxFocus(ComboBox comboBox, int focusedIdx, int step)
+        {
+            int from = focusedIdx == -1 ? Math.Max(0, comboBox.SelectedIndex) : focusedIdx;
+            int count = comboBox.Items.Count;
+            for (int next = from + step; next >= 0 && next < count; next += step)
+            {
+                if (comboBox.ContainerFromIndex(next) is Control candidate &&
+                    candidate.IsEnabled && candidate.Visibility == Visibility.Visible)
+                {
+                    candidate.Focus(FocusState.Keyboard);
+                    ScrollComboBoxToIndex(candidate, next);
+                    PlaySound(ElementSoundKind.Focus);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 把 ComboBox popup 捲動到指定 item index。
+        /// popup ScrollViewer 是 item-units 模式（ViewportHeight / ExtentHeight 單位 = item 數），所以 ChangeView 傳 item index。
+        /// 邏輯：目標 index 小於目前 VerticalOffset 時捲到頂（VerticalOffset = target）；
+        /// 大於 VerticalOffset + ViewportHeight - 1 時推到底（VerticalOffset = target - ViewportHeight + 1）；
+        /// 中間範圍不動，維持使用者目前看到的範圍。
+        /// </summary>
+        private static void ScrollComboBoxToIndex(Control item, int targetIndex)
+        {
+            // 從 item ancestor chain 找 popup ScrollViewer（item-units 模式，VPH/ExtH 是 item 數）
+            DependencyObject? node = item;
+            ScrollViewer? sv = null;
+            while (node != null)
+            {
+                node = VisualTreeHelper.GetParent(node);
+                if (node is ScrollViewer found) { sv = found; break; }
+            }
+            if (sv == null) return;
+
+            double vph = sv.ViewportHeight;
+            double voff = sv.VerticalOffset;
+
+            double? newOff = null;
+            if (targetIndex < voff)
+            {
+                newOff = targetIndex;
+            }
+            else if (targetIndex >= voff + vph - 1)
+            {
+                newOff = Math.Max(0, targetIndex - vph + 1);
+            }
+            if (newOff.HasValue)
+            {
+                sv.ChangeView(null, newOff.Value, null, disableAnimation: true);
+            }
         }
 
         /// <summary>

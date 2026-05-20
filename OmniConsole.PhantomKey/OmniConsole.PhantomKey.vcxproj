@@ -148,6 +148,7 @@
     <ClCompile Include="VdfParser.cpp" />
     <ClCompile Include="SteamConfig.cpp" />
     <ClCompile Include="MouseMode.cpp" />
+    <ClCompile Include="GamepadProfiles.cpp" />
     <ClCompile Include="PingService.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +159,8 @@
     <ClInclude Include="VdfParser.h" />
     <ClInclude Include="SteamConfig.h" />
     <ClInclude Include="MouseMode.h" />
+    <ClInclude Include="Bindings.h" />
+    <ClInclude Include="GamepadProfiles.h" />
     <ClInclude Include="PingService.h" />
   </ItemGroup>
   <ItemGroup>

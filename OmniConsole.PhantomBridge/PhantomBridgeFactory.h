@@ -20,6 +20,8 @@ namespace winrt::PhantomBridge::implementation
         void OpenSettings();
         void TriggerSteamInGameOverlay(winrt::hstring const& shortcut);
         void OpenXboxLibrary();
+        void GetForegroundAppInfo(winrt::hstring& title, winrt::hstring& processName, winrt::hstring& aumid, winrt::hstring& displayName, bool& isElevated);
+        void OpenProfileEditor(winrt::hstring const& appId, winrt::hstring const& name);
     };
 }
 

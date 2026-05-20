@@ -33,6 +33,16 @@
 		<Content Include="Assets\Platforms\*.png" />
 	</ItemGroup>
 
+	<!-- Mascot 立繪 -->
+	<ItemGroup>
+		<Content Remove="Assets\Mascots\**" />
+		<PRIResource Remove="Assets\Mascots\**" />
+		<None Remove="Assets\Mascots\**" />
+		<EmbeddedResource Include="Assets\Mascots\Nekomata.jpg" Condition="Exists('$(MSBuildProjectDirectory)\Assets\Mascots\Nekomata.jpg')">
+			<LogicalName>OmniConsole.Embedded.Nekomata.jpg</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+
 	<!-- PhantomKey：建置 C++ 專案並封裝進 MSIX -->
 	<!-- OmniConsole 建置時自動觸發 PhantomKey 建置，跟隨 OmniConsole 的 Configuration -->
 	<!-- Debug 版會輸出 PhantomKeyTrace.log，Release 版日誌完全移除 -->

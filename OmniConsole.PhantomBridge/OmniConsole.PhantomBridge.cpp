@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PhantomBridgeFactoryClsid.h"
 #include "PhantomBridgeFactory.h"
+#include "Log.h"
 
 #pragma comment(lib, "Rpcrt4.lib")
 
@@ -9,7 +10,7 @@
 // ============================================================================
 //
 // 生命週期由 client（PhantomLink Widget）持有的 COM reference 決定：
-// Windows 於首次 CoCreateInstance 時 spawn 本行程，client 結束後本行程自動退出。
+// Windows 於首次 CoCreateInstance 時啟動本行程，client 結束後本行程自動退出。
 //
 // 架構（事件驅動，無輪詢，主執行緒不耗 CPU）：
 //   1. init_apartment / CoRegisterClassObject / CoResumeClassObjects
@@ -145,6 +146,9 @@ struct FactoryClassObject : implements<FactoryClassObject, IClassFactory>
 int APIENTRY wWinMain(
     _In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
 {
+    InitLog();
+    Log(L"[PhantomBridge] started.");
+
     // ── 初始化 ──
     // shutdownEvent 在任何 module_lock 變動之前建立，確保 operator-- 歸零時
     // SetEvent 對象已存在。
@@ -200,5 +204,6 @@ int APIENTRY wWinMain(
     CoRevokeClassObject(registration);
     ::CloseHandle(g_shutdownEvent);
     g_shutdownEvent = nullptr;
+    Log(L"[PhantomBridge] ended.");
     return 0;
 }

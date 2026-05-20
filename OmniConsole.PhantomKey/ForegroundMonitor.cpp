@@ -1,5 +1,7 @@
 #include "ForegroundMonitor.h"
+#include "GamepadProfiles.h"
 #include "Log.h"
+#include <cwctype>
 #include <dwmapi.h>
 
 #pragma comment(lib, "dwmapi.lib")
@@ -18,6 +20,10 @@ static const int g_ruleCount = _countof(g_rules);
 // ============================================================================
 // 前景程式偵測
 // ============================================================================
+
+HWND GetForegroundHwnd() {
+    return GetForegroundWindow();
+}
 
 std::wstring GetForegroundProcessName() {
     HWND hwnd = GetForegroundWindow();
@@ -88,24 +94,63 @@ bool IsMouseModeTarget(const std::wstring& processName) {
 
 // ForceOn 模式排除清單：即使強制也不該介入（本身用手把操作或會撞到 Shell）
 // explorer 由 IsExplorerTaskView() 動態判斷：FSE Task View 才排除，一般檔案總管不排除
-// UWP app（Xbox App / Armoury Crate SE）實際 proc 為 ApplicationFrameHost，
-// 靠視窗 title 判斷，見 IsExcludedAppFrame()
+// packaged app（Xbox App / Armoury Crate SE / Windows 設定 / Microsoft Store）由 IsExcludedPackagedApp() 動態判斷
 static const wchar_t* g_mouseModeForceExclusions[] = {
     L"OmniConsole",              // 主程式本身用手把導航
     L"Playnite.FullscreenApp",   // Playnite Fullscreen 內建手把導覽
     // steamwebhelper 由 IsSteamBigPicture() 動態判斷：Big Picture 排除，桌面 Steam 不排除
-    // ApplicationFrameHost 由 IsExcludedAppFrame() 動態判斷（Xbox / Armoury Crate SE）
+    // packaged app 由 IsExcludedPackagedApp() 動態判斷（雙清單 title + PFN 子字串）
 };
 
-// UWP app 由 ApplicationFrameHost 宿主，靠視窗 title 識別
-// Xbox App title="Xbox"（不隨語系變動），Armoury Crate SE title="Armoury Crate SE"
-static bool IsExcludedAppFrame() {
+// Packaged UWP / Store app — title 清單
+// 適用於官方名稱不隨語系變動的 app（Xbox App title="Xbox"，Armoury Crate SE title="Armoury Crate SE"）
+static const wchar_t* g_excludedPackagedAppTitles[] = {
+    L"Xbox",                // Xbox App
+    L"Armoury Crate SE",
+};
+
+// Packaged UWP / Store app — AUMID 比對用的 PFN 子字串集合
+// title 隨系統語系變動的 app 改走「對 AUMID 整段做 PFN 子字串比對」
+// （AUMID 形如 <PFN>!<AppId>，搜尋的目標子字串實質為 PFN）
+static const wchar_t* g_excludedPackagedAppPfnSubstrings[] = {
+    L"windows.immersivecontrolpanel",               // Windows 設定（SystemSettings.exe，packaged 但自跑 exe）
+    L"Microsoft.WindowsStore",                      // Microsoft Store（WinStore.App.exe，packaged 但自跑 exe）
+    L"b5fbce6b-2d7d-4da0-b419-4beb30e2b808",        // OmniConsole 主程式自己
+};
+
+// 大小寫不敏感的子字串搜尋；自寫實作（CRT 無 case-insensitive 版的 wcsstr）
+static bool ContainsIgnoreCase(const std::wstring& haystack, const wchar_t* needle) {
+    if (!needle || !*needle) return false;
+    auto toLower = [](const std::wstring& s) {
+        std::wstring r; r.reserve(s.size());
+        for (wchar_t c : s) r.push_back((wchar_t)std::towlower(c));
+        return r;
+    };
+    std::wstring h = toLower(haystack);
+    std::wstring n = toLower(std::wstring(needle));
+    return h.find(n) != std::wstring::npos;
+}
+
+// 前景視窗是否屬於 packaged app 硬性排除清單
+// title 表處理官方名稱穩定的 app； PFN 表處理 title 隨語系變動的 app
+// 適用：ApplicationFrameHost 宿主的 UWP（Xbox / Armoury Crate SE）與 packaged 但自跑 exe 的 app（Windows 設定 / Microsoft Store）
+static bool IsExcludedPackagedApp() {
     HWND hwnd = GetForegroundWindow();
     if (!hwnd) return false;
+
     WCHAR title[256] = {};
     GetWindowTextW(hwnd, title, _countof(title));
-    return _wcsicmp(title, L"Xbox") == 0
-        || _wcsicmp(title, L"Armoury Crate SE") == 0;
+    for (auto t : g_excludedPackagedAppTitles) {
+        if (_wcsicmp(title, t) == 0) return true;
+    }
+
+    std::wstring aumid = GetForegroundAumid(hwnd);
+    if (!aumid.empty()) {
+        for (auto p : g_excludedPackagedAppPfnSubstrings) {
+            if (ContainsIgnoreCase(aumid, p)) return true;
+        }
+    }
+    return false;
 }
 
 // FSE Task View 與檔案總管同為 explorer.exe，靠視窗 class 區分
@@ -177,7 +222,7 @@ void LogForegroundWindowDiagnostics() {
 
 // Windows 11 檔案總管對 XInput D-pad 已有原生方向鍵反應，Mouse Mode 再送一次會雙跳。
 // FSE Task View 同為 explorer 但 class=XamlExplorerHostIslandWindow，不適用 D-pad 跳過。
-// 其他鍵（ABXY、滾輪、游標、LB/RB 等）仍由 Mouse Mode 處理，因此只擋 D-pad 而非整個 Mouse Mode。
+// 只擋 D-pad；ABXY / 滾輪 / 搖桿 / LB / RB 等其他鍵的檔案總管原生反應未實測，照常由 Mouse Mode 處理。
 bool ForegroundHandlesDpadNatively(const std::wstring& processName) {
     if (processName.empty()) return false;
     if (_wcsicmp(processName.c_str(), L"explorer") == 0 && !IsExplorerTaskView())
@@ -194,8 +239,10 @@ bool IsMouseModeForceExcluded(const std::wstring& processName) {
     // Steam Big Picture 內建手把導覽，ForceOn 也不該介入
     if (_wcsicmp(processName.c_str(), L"steamwebhelper") == 0 && IsSteamBigPicture())
         return true;
-    // Xbox App / Armoury Crate SE 由 ApplicationFrameHost 宿主，靠視窗 title 辨識
-    if (_wcsicmp(processName.c_str(), L"ApplicationFrameHost") == 0 && IsExcludedAppFrame())
+    // Packaged app 雙清單（title + PFN 子字串）判斷：
+    // ApplicationFrameHost 宿主的 UWP（Xbox / Armoury Crate SE）與 packaged 但自跑 exe 的 app
+    // （Windows 設定 SystemSettings.exe / Microsoft Store WinStore.App.exe）皆涵蓋
+    if (IsExcludedPackagedApp())
         return true;
     return false;
 }

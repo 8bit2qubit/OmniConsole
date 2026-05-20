@@ -10,6 +10,7 @@
 #include "ForegroundMonitor.h"
 #include "InputSender.h"
 #include "MouseMode.h"
+#include "GamepadProfiles.h"
 #include "PingService.h"
 
 // ============================================================================
@@ -62,7 +63,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
     unsigned long long lastIniMTime = GetSharedIniLastWriteTime();
     unsigned long long lastSteamVdfMTime = GetSteamLocalConfigLastWriteTime();
 
-    // FSE 狀態查詢函式（載入失敗時不阻擋啟動，僅跳過退出檢查）
+    // 載入玩家自訂 per-App profile（GamepadProfiles.json，與 Shared.ini 同目錄）
+    std::vector<GamepadProfile> appProfiles = LoadGamepadProfiles();
+    unsigned long long lastProfilesMTime = GetGamepadProfilesLastWriteTime();
+
+    // FSE 狀態查詢函式：載入成功時主迴圈會在偵測到 FSE 退出時結束 PhantomKey；
+    // 載入失敗（API 不存在）時 pfnIsFseActive 為 nullptr，主迴圈跳過該檢查、繼續執行
     auto pfnIsFseActive = LoadIsGamingFseActive();
     if (!pfnIsFseActive)
         Log(L"[PhantomKey] WARNING: Failed to load IsGamingFullScreenExperienceActive.");
@@ -131,7 +137,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
                 break;
             }
 
-            // 切到 steamwebhelper 時重讀 SteamConfig：涵蓋首次登入（vdf 路徑尚未確立）與帳號切換
+            // 切到 steamwebhelper 時重讀 SteamConfig：涵蓋首次登入（Steam 未安裝 / 未登入時 vdf 不存在）與帳號切換
             // Overlay 快捷鍵改動的同步走下方 localconfig.vdf mtime 監看，不依賴前景切換
             if (_wcsicmp(currentFg.c_str(), L"steamwebhelper") == 0) {
                 steamCfg = ReadSteamOverlayConfig();
@@ -151,6 +157,16 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             MouseMode::Reset();
         }
 
+        // GamepadProfiles.json 被改寫（主程式編輯器存檔）→ 即時重載 profile
+        // 每 tick 比對 mtime，變動才重讀整檔
+        unsigned long long curProfilesMTime = GetGamepadProfilesLastWriteTime();
+        if (curProfilesMTime != lastProfilesMTime) {
+            Log(L"[PhantomKey] GamepadProfiles.json changed, reloading profiles.");
+            lastProfilesMTime = curProfilesMTime;
+            appProfiles = LoadGamepadProfiles();
+            MouseMode::Reset();
+        }
+
         // localconfig.vdf 被改寫（使用者在 SteamBigPicture 調整 overlay 快捷鍵或開關）→ 即時重讀 SteamConfig
         // 涵蓋「SteamBigPicture 改快捷鍵 → 直接啟動遊戲、未回 SteamBigPicture」這條路徑（前景切換偵測點抓不到）
         // Steam 未安裝 / 未登入 / 路徑尚未確立 → GetSteamLocalConfigLastWriteTime() 回 0
@@ -162,13 +178,27 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
             WriteSteamInGameOverlayShortcut(steamCfg.overlayShortcut);
         }
 
-        // Mouse Mode 啟用條件：模式非 Off、無內建廠商映射；Auto 需前景符合白名單，ForceOn 除排除清單外皆生效
+        // Mouse Mode 決策順序（每 tick）：
+        //   1. MouseMode==Off / 內建廠商映射       → 不介入
+        //   2. IsMouseModeForceExcluded(P)         → 不介入（OmniConsole 自己 / Playnite / SteamBigPicture / Xbox / Armoury / Windows 設定 / Microsoft Store / FSE Task View）
+        //   3. 玩家自訂 profile 命中               → 啟用，走 TickWithBindings（DPad 純鏡像按住，給遊戲）
+        //   4. MouseMode==Auto && 內建白名單       → 啟用，走 Tick（內建版面，DPad 補 keydown，給導覽）
+        //   5. MouseMode==ForceOn                  → 啟用，走 Tick（內建版面，DPad 補 keydown，給導覽）
+        //   6. 否則                                → 不介入
         bool mouseModeActive = false;
-        if (!config.hasBuiltInGamepadMapping) {
-            switch (config.mouseMode) {
-                case MouseModeState::Off:     break;
-                case MouseModeState::Auto:    mouseModeActive = IsMouseModeTarget(currentFg); break;
-                case MouseModeState::ForceOn: mouseModeActive = !IsMouseModeForceExcluded(currentFg); break;
+        const GamepadProfile* matchedProfile = nullptr;
+        bool useProfile = false;
+        if (!config.hasBuiltInGamepadMapping &&
+            config.mouseMode != MouseModeState::Off &&
+            !IsMouseModeForceExcluded(currentFg)) {
+            matchedProfile = FindGamepadProfileForForeground(appProfiles, currentFg, GetForegroundHwnd());
+            if (matchedProfile) {
+                mouseModeActive = true;
+                useProfile = true;
+            } else if (config.mouseMode == MouseModeState::Auto && IsMouseModeTarget(currentFg)) {
+                mouseModeActive = true;
+            } else if (config.mouseMode == MouseModeState::ForceOn) {
+                mouseModeActive = true;
             }
         }
 
@@ -240,7 +270,13 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         // ── Mouse Mode：前景為目標程式時將手把映射為滑鼠+鍵盤 ──
         // 檔案總管對 D-pad 已有原生反應，跳過 D-pad 映射避免雙跳；其他鍵仍由 Mouse Mode 處理
         if (mouseModeActive) {
-            MouseMode::Tick(activePad, config, ForegroundHandlesDpadNatively(currentFg));
+            bool skipDpad = ForegroundHandlesDpadNatively(currentFg);
+            if (useProfile && matchedProfile) {
+                MouseMode::TickWithBindings(activePad, matchedProfile->bindings,
+                                            config.cursorSpeedPercent, skipDpad);
+            } else {
+                MouseMode::Tick(activePad, config, skipDpad);
+            }
         }
     }
 

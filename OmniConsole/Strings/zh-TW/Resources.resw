@@ -427,7 +427,7 @@
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
     <value>此功能允許您自行新增自訂平台啟動配置。請在繼續之前仔細閱讀以下內容：
 
-- 本開源軟體按「現狀」提供，不提供明示或默示的擔保；此自訂功能為實驗性質，更不提供任何保證。
+- 本軟體按「現狀」提供，不提供明示或默示的擔保；此自訂功能為實驗性質，更不提供任何保證。
 - 配置錯誤的平台可能無法正常啟動，進而導致 Xbox 模式 (FSE) 環境崩潰，甚至必須重設應用程式才能恢復正常。
 - 開發者不對因使用本程式或自訂平台配置所造成的任何損害、資料遺失或其他問題承擔責任。
 - 您需自行確保所有配置的安全性、正確性及合法性。
@@ -841,5 +841,431 @@
   </data>
   <data name="AboutCopyConfirmTeachingTip.Subtitle" xml:space="preserve">
     <value>可直接貼到 GitHub Issue。</value>
+  </data>
+  <data name="Nav_GamepadMapping.Content" xml:space="preserve">
+    <value>貓又</value>
+  </data>
+  <data name="GamepadMappingTitle.Text" xml:space="preserve">
+    <value>貓又</value>
+  </data>
+  <data name="GamepadMappingDescription.Text" xml:space="preserve">
+    <value>貓又願意為你的手把施一道咒，為每個程式召喚出最順手的設定。</value>
+  </data>
+  <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
+    <value>還沒有施過咒的程式呢～在 Game Bar 的 OmniCharm 小工具中選擇「自訂此程式的手把映射」，貓又就會為它編一道新咒。</value>
+  </data>
+  <data name="GamepadMappingToolsSection.Text" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
+    <value>清除全部</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmTitle" xml:space="preserve">
+    <value>清除全部按鍵配置？</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmBody" xml:space="preserve">
+    <value>輸入位將全部設為「無」。</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmYes" xml:space="preserve">
+    <value>清除全部</value>
+  </data>
+  <data name="GamepadMappingResetButton.Content" xml:space="preserve">
+    <value>OmniNav 預設</value>
+  </data>
+  <data name="GamepadMappingResetConfirmTitle" xml:space="preserve">
+    <value>重設為 OmniNav 預設？</value>
+  </data>
+  <data name="GamepadMappingResetConfirmBody" xml:space="preserve">
+    <value>目前所有按鍵配置將被覆寫為 OmniNav 預設。</value>
+  </data>
+  <data name="GamepadMappingResetConfirmYes" xml:space="preserve">
+    <value>重設</value>
+  </data>
+  <data name="GamepadMappingResetClassicButton.Content" xml:space="preserve">
+    <value>Classic 預設</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmTitle" xml:space="preserve">
+    <value>重設為 Classic 預設？</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmBody" xml:space="preserve">
+    <value>目前所有按鍵配置將被覆寫為 Classic 預設。</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
+    <value>重設</value>
+  </data>
+  <data name="GamepadMappingCopyFromButton.Content" xml:space="preserve">
+    <value>從其他程式讀入…</value>
+  </data>
+  <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
+    <value>改鍵…</value>
+  </data>
+  <data name="AppIdUwp" xml:space="preserve">
+    <value>封裝程式</value>
+  </data>
+  <data name="AppIdProcessPrefix" xml:space="preserve">
+    <value>行程: </value>
+  </data>
+  <data name="AppIdAumidPrefix" xml:space="preserve">
+    <value>AUMID: </value>
+  </data>
+  <data name="GamepadAction_None" xml:space="preserve">
+    <value>無</value>
+  </data>
+  <data name="GamepadAction_KeyTap" xml:space="preserve">
+    <value>鍵盤按鍵</value>
+  </data>
+  <data name="GamepadAction_KeyCombo" xml:space="preserve">
+    <value>組合鍵</value>
+  </data>
+  <data name="GamepadAction_MouseLeft" xml:space="preserve">
+    <value>滑鼠左鍵</value>
+  </data>
+  <data name="GamepadAction_MouseRight" xml:space="preserve">
+    <value>滑鼠右鍵</value>
+  </data>
+  <data name="GamepadAction_MouseMiddle" xml:space="preserve">
+    <value>滑鼠中鍵</value>
+  </data>
+  <data name="GamepadAction_WheelUp" xml:space="preserve">
+    <value>滾輪向上</value>
+  </data>
+  <data name="GamepadAction_WheelDown" xml:space="preserve">
+    <value>滾輪向下</value>
+  </data>
+  <data name="GamepadAction_WheelLeft" xml:space="preserve">
+    <value>滾輪向左</value>
+  </data>
+  <data name="GamepadAction_WheelRight" xml:space="preserve">
+    <value>滾輪向右</value>
+  </data>
+  <data name="GamepadAction_StickCursor" xml:space="preserve">
+    <value>游標移動</value>
+  </data>
+  <data name="GamepadAction_StickScroll" xml:space="preserve">
+    <value>捲動</value>
+  </data>
+  <data name="GamepadAction_StickArrows" xml:space="preserve">
+    <value>方向鍵</value>
+  </data>
+  <data name="GamepadAction_StickWasd" xml:space="preserve">
+    <value>WASD 鍵</value>
+  </data>
+  <data name="GamepadAction_DpadArrows" xml:space="preserve">
+    <value>方向鍵</value>
+  </data>
+  <data name="GamepadAction_DpadWasd" xml:space="preserve">
+    <value>WASD 鍵</value>
+  </data>
+  <data name="GamepadAction_DpadNumpad" xml:space="preserve">
+    <value>數字鍵盤 8246</value>
+  </data>
+  <data name="GamepadAction_DpadCustom" xml:space="preserve">
+    <value>自訂</value>
+  </data>
+  <data name="GamepadInput_A.Text" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="GamepadInput_B.Text" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="GamepadInput_X.Text" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="GamepadInput_Y.Text" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="GamepadInput_LB.Text" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="GamepadInput_RB.Text" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="GamepadInput_LT.Text" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="GamepadInput_RT.Text" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="GamepadInput_LS.Text" xml:space="preserve">
+    <value>LS (按下)</value>
+  </data>
+  <data name="GamepadInput_RS.Text" xml:space="preserve">
+    <value>RS (按下)</value>
+  </data>
+  <data name="GamepadInput_DPad.Text" xml:space="preserve">
+    <value>十字鍵</value>
+  </data>
+  <data name="GamepadInput_DPadUp.Text" xml:space="preserve">
+    <value>上</value>
+  </data>
+  <data name="GamepadInput_DPadDown.Text" xml:space="preserve">
+    <value>下</value>
+  </data>
+  <data name="GamepadInput_DPadLeft.Text" xml:space="preserve">
+    <value>左</value>
+  </data>
+  <data name="GamepadInput_DPadRight.Text" xml:space="preserve">
+    <value>右</value>
+  </data>
+  <data name="GamepadInput_LStick.Text" xml:space="preserve">
+    <value>左搖桿</value>
+  </data>
+  <data name="GamepadInput_RStick.Text" xml:space="preserve">
+    <value>右搖桿</value>
+  </data>
+  <data name="GamepadGroup_FaceButtons.Text" xml:space="preserve">
+    <value>面鍵</value>
+  </data>
+  <data name="GamepadGroup_Shoulders.Text" xml:space="preserve">
+    <value>肩鍵 / 板機</value>
+  </data>
+  <data name="GamepadGroup_ThumbButtons.Text" xml:space="preserve">
+    <value>搖桿按下</value>
+  </data>
+  <data name="GamepadGroup_Sticks.Text" xml:space="preserve">
+    <value>搖桿 / 十字鍵</value>
+  </data>
+  <data name="GamepadModifier_Ctrl.Content" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="GamepadModifier_Shift.Content" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="GamepadModifier_Alt.Content" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="GamepadModifier_Win.Content" xml:space="preserve">
+    <value>Win</value>
+  </data>
+  <data name="GamepadModifiersLabel.Text" xml:space="preserve">
+    <value>修飾鍵</value>
+  </data>
+  <data name="GamepadKeyLabel.Text" xml:space="preserve">
+    <value>按鍵</value>
+  </data>
+  <data name="GamepadMappingChangeKeyTitle" xml:space="preserve">
+    <value>選擇按鍵</value>
+  </data>
+  <data name="GamepadMappingChangeComboTitle" xml:space="preserve">
+    <value>選擇組合鍵</value>
+  </data>
+  <data name="GamepadKeyPickerOk" xml:space="preserve">
+    <value>確定</value>
+  </data>
+  <data name="GamepadKeyPickerCancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="GamepadMappingCopyFromTitle" xml:space="preserve">
+    <value>從其他程式讀入</value>
+  </data>
+  <data name="GamepadMappingCopyFromHint" xml:space="preserve">
+    <value>選一個現有配置，將其按鍵設定複製過來。</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmTitle" xml:space="preserve">
+    <value>刪除此配置？</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
+    <value>此程式的自訂按鍵配置將被移除，改由內建配置接手。</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
+    <value>刪除</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmNo" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="GamepadMappingEmptyConfirmTitle" xml:space="preserve">
+    <value>儲存為空配置？</value>
+  </data>
+  <data name="GamepadMappingEmptyConfirmBody" xml:space="preserve">
+    <value>所有輸入位皆設為「無」。此程式將改由內建配置接手。</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveTitle" xml:space="preserve">
+    <value>移除此程式的自訂配置？</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveBody" xml:space="preserve">
+    <value>所有輸入位皆設為「無」，等同於沒有自訂配置。此程式將改由內建配置接手。</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveYes" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="GamepadMappingBlacklistedTitle" xml:space="preserve">
+    <value>此程式無法自訂</value>
+  </data>
+  <data name="GamepadMappingBlacklistedBody" xml:space="preserve">
+    <value>此程式不支援自訂手把映射。</value>
+  </data>
+  <data name="GamepadKeyGroup_Letters" xml:space="preserve">
+    <value>字母</value>
+  </data>
+  <data name="GamepadKeyGroup_Digits" xml:space="preserve">
+    <value>數字</value>
+  </data>
+  <data name="GamepadKeyGroup_FunctionKeys" xml:space="preserve">
+    <value>功能鍵</value>
+  </data>
+  <data name="GamepadKeyGroup_EditNav" xml:space="preserve">
+    <value>編輯 / 導覽</value>
+  </data>
+  <data name="GamepadKeyGroup_Control" xml:space="preserve">
+    <value>控制鍵</value>
+  </data>
+  <data name="GamepadKeyGroup_Symbols" xml:space="preserve">
+    <value>符號</value>
+  </data>
+  <data name="GamepadKeyGroup_Numpad" xml:space="preserve">
+    <value>數字鍵盤</value>
+  </data>
+  <data name="GamepadKeyGroup_Media" xml:space="preserve">
+    <value>媒體</value>
+  </data>
+  <data name="GamepadKeyGroup_Modifiers" xml:space="preserve">
+    <value>修飾鍵</value>
+  </data>
+  <data name="Vk_Insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="Vk_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Vk_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Vk_End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Vk_PageUp" xml:space="preserve">
+    <value>Page Up</value>
+  </data>
+  <data name="Vk_PageDown" xml:space="preserve">
+    <value>Page Down</value>
+  </data>
+  <data name="Vk_ArrowUp" xml:space="preserve">
+    <value>上方向鍵</value>
+  </data>
+  <data name="Vk_ArrowDown" xml:space="preserve">
+    <value>下方向鍵</value>
+  </data>
+  <data name="Vk_ArrowLeft" xml:space="preserve">
+    <value>左方向鍵</value>
+  </data>
+  <data name="Vk_ArrowRight" xml:space="preserve">
+    <value>右方向鍵</value>
+  </data>
+  <data name="Vk_Enter" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="Vk_Escape" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="Vk_Tab" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="Vk_Backspace" xml:space="preserve">
+    <value>Backspace</value>
+  </data>
+  <data name="Vk_Space" xml:space="preserve">
+    <value>空白鍵</value>
+  </data>
+  <data name="Vk_PrintScreen" xml:space="preserve">
+    <value>PrtSc</value>
+  </data>
+  <data name="Vk_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Vk_CapsLock" xml:space="preserve">
+    <value>Caps Lock</value>
+  </data>
+  <data name="Vk_Apps" xml:space="preserve">
+    <value>功能表鍵</value>
+  </data>
+  <data name="Vk_NumpadDecimal" xml:space="preserve">
+    <value>數字鍵盤 .</value>
+  </data>
+  <data name="Vk_VolumeUp" xml:space="preserve">
+    <value>調高音量</value>
+  </data>
+  <data name="Vk_VolumeDown" xml:space="preserve">
+    <value>調低音量</value>
+  </data>
+  <data name="Vk_VolumeMute" xml:space="preserve">
+    <value>靜音</value>
+  </data>
+  <data name="Vk_MediaPlayPause" xml:space="preserve">
+    <value>播放 / 暫停</value>
+  </data>
+  <data name="Vk_MediaStop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="Vk_MediaNext" xml:space="preserve">
+    <value>下一首曲目</value>
+  </data>
+  <data name="Vk_MediaPrev" xml:space="preserve">
+    <value>上一首曲目</value>
+  </data>
+  <data name="Vk_BrowserBack" xml:space="preserve">
+    <value>瀏覽器上一頁</value>
+  </data>
+  <data name="Vk_BrowserForward" xml:space="preserve">
+    <value>瀏覽器下一頁</value>
+  </data>
+  <data name="Vk_BrowserRefresh" xml:space="preserve">
+    <value>瀏覽器重新整理</value>
+  </data>
+  <data name="Vk_BrowserHome" xml:space="preserve">
+    <value>瀏覽器首頁</value>
+  </data>
+  <data name="Vk_LaunchMail" xml:space="preserve">
+    <value>啟動郵件</value>
+  </data>
+  <data name="Vk_LaunchMediaSelect" xml:space="preserve">
+    <value>啟動媒體</value>
+  </data>
+  <data name="Vk_Shift" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="Vk_Ctrl" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="Vk_Alt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="Vk_Win" xml:space="preserve">
+    <value>Win</value>
+  </data>
+  <data name="Vk_LShift" xml:space="preserve">
+    <value>左 Shift</value>
+  </data>
+  <data name="Vk_RShift" xml:space="preserve">
+    <value>右 Shift</value>
+  </data>
+  <data name="Vk_LCtrl" xml:space="preserve">
+    <value>左 Ctrl</value>
+  </data>
+  <data name="Vk_RCtrl" xml:space="preserve">
+    <value>右 Ctrl</value>
+  </data>
+  <data name="Vk_LAlt" xml:space="preserve">
+    <value>左 Alt</value>
+  </data>
+  <data name="Vk_RAlt" xml:space="preserve">
+    <value>右 Alt</value>
+  </data>
+  <data name="Vk_RWin" xml:space="preserve">
+    <value>右 Win</value>
+  </data>
+  <data name="GamepadHint_DeleteProfile.Text" xml:space="preserve">
+    <value>刪除此配置</value>
+  </data>
+  <data name="GamepadHint_SaveReturn.Text" xml:space="preserve">
+    <value>儲存並返回</value>
+  </data>
+  <data name="AdvancedSection_Sound.Text" xml:space="preserve">
+    <value>介面音效</value>
+  </data>
+  <data name="NavigationSoundsSetting_Title.Text" xml:space="preserve">
+    <value>導覽音效</value>
+  </data>
+  <data name="NavigationSoundsSetting_Description.Text" xml:space="preserve">
+    <value>操作時播放導覽音效。</value>
   </data>
 </root>

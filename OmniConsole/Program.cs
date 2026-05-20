@@ -45,6 +45,13 @@ namespace OmniConsole
                             isSettingsEntry = true;
                             DebugLogger.Log("→ show-settings matched");
                         }
+                        // PhantomLink widget「自訂此 App」走此 URI；視為設定入口並暫存待編輯的 appId / displayName
+                        else if (protocolArgs.Uri.Host == "edit-gamepad-profile")
+                        {
+                            isSettingsEntry = true;
+                            PendingEditProfileService.Stash(protocolArgs.Uri);
+                            DebugLogger.Log("→ edit-gamepad-profile matched");
+                        }
                         // Game Bar 媒體櫃按鈕
                         else if (uriStr.Equals("windows.gaming:///library", StringComparison.OrdinalIgnoreCase))
                         {
@@ -136,7 +143,7 @@ namespace OmniConsole
                 DebugLogger.Log("→ Not current instance, redirecting...");
                 // 副實例：重導訊號給主實例後退出。
                 // Protocol 啟動 → 直接 Redirect，OnRedirectedActivation 會處理。
-                // Settings 入口 (AUMID) → 手動發送 Protocol 訊號以利統一處理。
+                // Settings 入口 (AUMID) → 手動發送 Protocol 訊號。
                 try
                 {
                     if (isSettingsEntry && activationArgs.Kind != ExtendedActivationKind.Protocol)
@@ -197,6 +204,13 @@ namespace OmniConsole
                         App.ShowSettingsFromRedirect();
                         return;
                     }
+                    else if (protocolArgs.Uri.Host == "edit-gamepad-profile")
+                    {
+                        DebugLogger.Log("→ Redirect: edit-gamepad-profile");
+                        PendingEditProfileService.Stash(protocolArgs.Uri);
+                        App.ShowSettingsFromRedirect();
+                        return;
+                    }
                     // Game Bar 媒體櫃按鈕
                     else if (uriStr.Equals("windows.gaming:///library", StringComparison.OrdinalIgnoreCase))
                     {
@@ -250,5 +264,6 @@ namespace OmniConsole
             DebugLogger.Log("→ Redirect: ReactivateFromRedirect()");
             App.ReactivateFromRedirect();
         }
+
     }
 }

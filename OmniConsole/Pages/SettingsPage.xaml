@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:OmniConsole.Models"
-    xmlns:services="using:OmniConsole.Services">
+    xmlns:services="using:OmniConsole.Services"
+    xmlns:controls="using:OmniConsole.Controls">
 
     <UserControl.Resources>
         <!-- Phantom 配色：設定卡片背景 #25282C -->
@@ -46,7 +47,7 @@
 
     <Grid>
         <VisualStateManager.VisualStateGroups>
-            <!-- 群組 1：設定導覽頁面切換（General / Advanced / Troubleshoot / About 四選一） -->
+            <!-- 群組 1：設定導覽頁面切換（General / Advanced / Troubleshoot / About / GamepadMapping 五選一） -->
             <VisualStateGroup x:Name="SettingsNavPage">
                 <!-- General：預設狀態，GeneralPage 預設 Visible，其餘預設 Collapsed -->
                 <VisualState x:Name="General"/>
@@ -68,9 +69,26 @@
                         <Setter Target="AboutPage.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
+                <VisualState x:Name="GamepadMapping">
+                    <VisualState.Setters>
+                        <Setter Target="GeneralPage.Visibility" Value="Collapsed"/>
+                        <Setter Target="GamepadMappingPage.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
             </VisualStateGroup>
 
-            <!-- 群組 2：General 頁內容（系統平台卡片 vs 自訂平台卡片+免責聲明，二選一） -->
+            <!-- 群組 2：手把映射分頁內容（清單 vs 編輯器，二選一） -->
+            <VisualStateGroup x:Name="GamepadMappingContent">
+                <VisualState x:Name="GamepadMappingListVisible"/>
+                <VisualState x:Name="GamepadMappingEditorVisible">
+                    <VisualState.Setters>
+                        <Setter Target="GamepadProfileList.Visibility" Value="Collapsed"/>
+                        <Setter Target="GamepadProfileEditor.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <!-- 群組 3：General 頁內容（系統平台卡片 vs 自訂平台卡片+免責聲明，二選一） -->
             <VisualStateGroup x:Name="GeneralContent">
                 <!-- GridViewVisible：預設狀態，PlatformGridView 預設 Visible，CustomConsentPanel 預設 Collapsed -->
                 <VisualState x:Name="GridViewVisible"/>
@@ -107,7 +125,7 @@
                 </VisualState>
             </VisualStateGroup>
 
-            <!-- 群組 3：底部手把提示列的按鍵圖示（依頁面與索引標籤狀態組合） -->
+            <!-- 群組 5：底部手把提示列的按鍵圖示（依頁面與索引標籤狀態組合） -->
             <VisualStateGroup x:Name="GamepadHints">
                 <!-- NonGeneralPage：預設狀態，LBRB/Y/X 提示預設均 Collapsed -->
                 <VisualState x:Name="NonGeneralPage"/>
@@ -132,6 +150,15 @@
                         <Setter Target="GamepadHintY.Visibility" Value="Visible"/>
                         <Setter Target="GamepadHintX.Visibility" Value="Visible"/>
                         <Setter Target="ImportPlatformButton.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <!-- GamepadMappingListTab：清單頁的提示列狀態（X 刪除由 code-behind 依 HasItems 控制） -->
+                <VisualState x:Name="GamepadMappingListTab"/>
+                <!-- GamepadMappingEditorTab：編輯器頁，B 改為「儲存並返回」，隱藏一般退出提示 -->
+                <VisualState x:Name="GamepadMappingEditorTab">
+                    <VisualState.Setters>
+                        <Setter Target="GamepadHintExit.Visibility" Value="Collapsed"/>
+                        <Setter Target="GamepadHintBSaveReturn.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -226,6 +253,11 @@
                 <NavigationViewItem x:Uid="Nav_Advanced" Tag="Advanced" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Nav_GamepadMapping" Tag="GamepadMapping" FontSize="24">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xF191;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="Nav_Troubleshoot" Tag="Troubleshoot" FontSize="24">
@@ -691,6 +723,42 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- 介面音效分類標題 -->
+                        <TextBlock x:Uid="AdvancedSection_Sound" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="2,0,0,0"/>
+
+                        <!-- 介面音效群組卡片 -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="700">
+                            <StackPanel>
+                                <!-- 導覽音效 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE995;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="NavigationSoundsSetting_Title" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Uid="NavigationSoundsSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <ToggleSwitch x:Name="NavigationSoundsSwitch"
+                                                  Toggled="NavigationSoundsSwitch_Toggled"
+                                                  FlowDirection="RightToLeft"
+                                                  Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <!--
                             Game Bar 進階設定（媒體櫃按鈕開啟設定 / Passthrough）暫時隱藏：
                             自 v1.9.0.0 起，OmniCharm 小工具按鈕已可直接進入 Xbox 媒體櫃；
@@ -1040,6 +1108,13 @@
 
                     </Grid>
                     </ScrollViewer>
+
+                    <!-- 手把映射頁面：清單與編輯器二選一切換（由 GamepadMappingContent VSM 控制） -->
+                    <Grid x:Name="GamepadMappingPage" Grid.Row="1" Visibility="Collapsed"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <controls:GamepadProfileListView x:Name="GamepadProfileList"/>
+                        <controls:GamepadProfileEditor x:Name="GamepadProfileEditor" Visibility="Collapsed"/>
+                    </Grid>
                 </Grid>
             </NavigationView.Content>
 
@@ -1133,8 +1208,38 @@
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
+            <!-- X 鍵：刪除（清單頁=刪選中項；編輯器頁=刪目前 profile）。Visibility 由 code-behind 控制 -->
+            <Button x:Name="GamepadHintXDelete" Visibility="Collapsed"
+                    Click="DeleteProfileHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xF096;" FontSize="22"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock x:Uid="GamepadHint_DeleteProfile" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <!-- B 鍵：編輯器頁的「儲存並返回」（取代一般退出提示） -->
+            <Button x:Name="GamepadHintBSaveReturn" Visibility="Collapsed"
+                    Click="SaveProfileHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xF094;" FontSize="22"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock x:Uid="GamepadHint_SaveReturn" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
             <!-- 滑鼠可點選退出，手把 B 鍵也觸發同一動作 -->
-            <Button Click="ExitHintButton_Click"
+            <Button x:Name="GamepadHintExit" Click="ExitHintButton_Click"
                     Background="Transparent" BorderBrush="Transparent"
                     Padding="0" MinWidth="0" MinHeight="0"
                     IsTabStop="False">

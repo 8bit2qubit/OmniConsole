@@ -699,6 +699,25 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
+        /// 取得是否啟用手把導航音效。預設 true。
+        /// </summary>
+        public static bool GetEnableNavigationSounds()
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            if (settings.Values.TryGetValue("EnableNavigationSounds", out object? value) && value is bool enabled)
+                return enabled;
+            return true;
+        }
+
+        /// <summary>
+        /// 儲存是否啟用手把導航音效。
+        /// </summary>
+        public static void SetEnableNavigationSounds(bool enabled)
+        {
+            ApplicationData.Current.LocalSettings.Values["EnableNavigationSounds"] = enabled;
+        }
+
+        /// <summary>
         /// 偵測裝置是否內建廠商手把映射軟體（與 Mouse Mode 衝突需停用）。
         /// 目前清單僅包含 ROG Ally 家族（Armoury Crate SE）；未來可擴充其他掌機。
         /// HKLM 讀取不受 MSIX 虛擬化影響。

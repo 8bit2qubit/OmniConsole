@@ -23,7 +23,7 @@
       </uap:VisualElements>
       <Extensions>
         <!-- Full Trust COM Server：Widget 以 CoCreateInstance(CLSCTX_LOCAL_SERVER) 呼叫，
-             Windows 按需 spawn OmniConsole.PhantomBridge.exe 執行受 UWP 限制的桌面動作
+             Windows 按需啟動 OmniConsole.PhantomBridge.exe 執行受 UWP 限制的桌面動作
              （SendInput、ShellExecute 等）。CLSID 須與 PhantomBridgeFactoryClsid.h 一致。
              LaunchAndActivationPermission SDDL：
                O:PS              Owner = Personal Self
@@ -48,9 +48,9 @@
                 <ActivateAfterInstall>true</ActivateAfterInstall>
                 <Window>
                   <Size>
-                    <Height>400</Height>
+                    <Height>484</Height>
                     <Width>464</Width>
-                    <MinHeight>400</MinHeight>
+                    <MinHeight>484</MinHeight>
                     <MinWidth>464</MinWidth>
                     <MaxHeight>670</MaxHeight>
                     <MaxWidth>464</MaxWidth>

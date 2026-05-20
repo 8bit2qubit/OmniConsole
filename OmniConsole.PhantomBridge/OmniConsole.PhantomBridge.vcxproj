@@ -149,11 +149,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Log.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PhantomBridgeFactory.h" />
     <ClInclude Include="PhantomBridgeFactoryClsid.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="OmniConsole.PhantomBridge.cpp" />
     <ClCompile Include="PhantomBridgeFactory.cpp" />

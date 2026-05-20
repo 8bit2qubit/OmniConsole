@@ -80,6 +80,10 @@ namespace OmniConsole.Pages
 
         private const int SW_HIDE = 0;
 
+        // 手把映射編輯器待辦：從 Protocol 進來時暫存 appId / displayName，ShowSettings 取出
+        private OmniConsole.Models.AppId? _pendingEditAppId;
+        private string _pendingEditDisplayName = string.Empty;
+
         public SettingsPage()
         {
             InitializeComponent();
@@ -93,6 +97,133 @@ namespace OmniConsole.Pages
                 _aboutCopyConfirmTimer.Stop();
                 AboutCopyConfirmTeachingTip.IsOpen = false;
             };
+            WireGamepadMappingControls();
+        }
+
+        /// <summary>掛 GamepadProfileListView / GamepadProfileEditor 的事件路由（編輯／關閉／刪除／子對話方塊通知）。</summary>
+        private void WireGamepadMappingControls()
+        {
+            GamepadProfileList.EditRequested += (s, appId) => OpenEditorFor(appId, string.Empty);
+            GamepadProfileEditor.Closed += (s, e) => CloseEditor();
+            GamepadProfileEditor.Deleted += (s, e) => CloseEditor();
+
+            EventHandler<bool> onDialogActive = (s, active) =>
+            {
+                if (active) StopGamepadPolling();
+                else StartGamepadPolling();
+            };
+            GamepadProfileEditor.DialogActiveChanged += onDialogActive;
+            GamepadProfileList.DialogActiveChanged += onDialogActive;
+        }
+
+        /// <summary>從 LocalSettings 取 Protocol 進來時暫存的 appId / displayName；取出後立刻刪除。</summary>
+        private void ConsumePendingEditProfileRequest()
+        {
+            PendingEditProfileService.TryConsume(out _pendingEditAppId, out _pendingEditDisplayName);
+        }
+
+        /// <summary>進入手把映射分頁的初始化：更新清單 → 若有 Protocol 帶入則直接開編輯器、否則顯清單。</summary>
+        private void InitGamepadMappingPage()
+        {
+            try { GamepadProfileList.Refresh(); } catch { }
+
+            if (_pendingEditAppId != null && !OmniConsole.Services.GamepadProfileStore.IsBlacklisted(_pendingEditAppId))
+            {
+                var id = _pendingEditAppId;
+                var name = _pendingEditDisplayName;
+                _pendingEditAppId = null;
+                _pendingEditDisplayName = string.Empty;
+                OpenEditorFor(id, name);
+                return;
+            }
+
+            VisualStateManager.GoToState(this, "GamepadMappingListVisible", false);
+            UpdateGamepadHints();
+            GamepadProfileList.FocusList();
+        }
+
+        /// <summary>切到編輯器：載入目標 profile（不存在則新建套 OmniNav）→ 切 VSM → 更新提示按鈕。</summary>
+        private void OpenEditorFor(OmniConsole.Models.AppId appId, string displayName)
+        {
+            try
+            {
+                GamepadProfileEditor.Load(appId, displayName);
+                VisualStateManager.GoToState(this, "GamepadMappingEditorVisible", false);
+                UpdateGamepadHints();
+            }
+            catch
+            {
+                VisualStateManager.GoToState(this, "GamepadMappingListVisible", false);
+                UpdateGamepadHints();
+            }
+        }
+
+        /// <summary>退出編輯器回清單頁；更新清單並把焦點還給它。</summary>
+        private void CloseEditor()
+        {
+            VisualStateManager.GoToState(this, "GamepadMappingListVisible", false);
+            UpdateGamepadHints();
+            try { GamepadProfileList.Refresh(); } catch { }
+            GamepadProfileList.FocusList();
+        }
+
+        /// <summary>目前是否在手把映射編輯器頁。</summary>
+        private bool IsGamepadMappingEditorVisible =>
+            _currentNavTag == "GamepadMapping" && GamepadProfileEditor.Visibility == Visibility.Visible;
+
+        /// <summary>目前是否在手把映射清單頁。</summary>
+        private bool IsGamepadMappingListVisible =>
+            _currentNavTag == "GamepadMapping" && GamepadProfileEditor.Visibility != Visibility.Visible;
+
+        /// <summary>處理 B 鍵：編輯器頁 = 儲存並返回，清單頁交給一般退出邏輯。</summary>
+        private bool TryHandleGamepadMappingBackKey()
+        {
+            if (IsGamepadMappingEditorVisible)
+            {
+                GamepadProfileEditor.Save();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>處理 X 鍵：編輯器頁=刪目前 profile；清單頁=刪選中項。</summary>
+        private bool TryHandleGamepadMappingDeleteKey()
+        {
+            if (IsGamepadMappingEditorVisible)
+            {
+                if (GamepadProfileEditor.CanDelete) GamepadProfileEditor.DeleteCurrent();
+                return true;
+            }
+            if (IsGamepadMappingListVisible)
+            {
+                _ = GamepadProfileList.DeleteSelectedAsync();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>X 鍵提示按鈕的滑鼠點選處理（清單頁 / 編輯器頁都共用）。</summary>
+        private void DeleteProfileHintButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsGamepadMappingEditorVisible) GamepadProfileEditor.DeleteCurrent();
+            else if (IsGamepadMappingListVisible) _ = GamepadProfileList.DeleteSelectedAsync();
+        }
+
+        /// <summary>B 鍵儲存並返回的提示按鈕滑鼠點選處理（編輯器頁專用）。</summary>
+        private void SaveProfileHintButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsGamepadMappingEditorVisible) GamepadProfileEditor.Save();
+        }
+
+        /// <summary>判斷節點是否為祖先元素的子孫（含自身）。用於辨識焦點是否落在清單範圍內。</summary>
+        private static bool IsDescendantOf(DependencyObject? node, DependencyObject ancestor)
+        {
+            while (node != null)
+            {
+                if (ReferenceEquals(node, ancestor)) return true;
+                node = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(node);
+            }
+            return false;
         }
 
         // ── 設定介面初始化 ────────────────────────────────────────────────────
@@ -103,6 +234,9 @@ namespace OmniConsole.Pages
         /// </summary>
         public void ShowSettings()
         {
+            // Protocol 帶入的待編輯 appId / displayName 在這裡先取出，下方視情況用來自動跳到手把映射編輯器
+            ConsumePendingEditProfileRequest();
+
             // PhantomLink 可能已直接改動 Shared.ini，先從共用儲存同步回 LocalSettings
             SettingsService.ReloadFromSharedStore();
 
@@ -174,6 +308,9 @@ namespace OmniConsole.Pages
 
             ApplyMouseModeEnabledState(builtInMapping);
 
+            // 還原導覽音效開關狀態
+            NavigationSoundsSwitch.IsOn = SettingsService.GetEnableNavigationSounds();
+
             // Game Bar 媒體櫃 / Passthrough 開關 UI 暫時隱藏（見 SettingsPage.xaml 註解），強制走 SettingsService 預設值。
             //
             // // 還原 Game Bar 媒體櫃的開關狀態
@@ -196,6 +333,20 @@ namespace OmniConsole.Pages
                 _ = AutoCheckForUpdatesAsync();
 
             StartGamepadPolling();
+
+            // 由 Protocol 帶入待編輯 appId 時，把 NavigationView 切到「手把映射」分頁
+            //（SelectionChanged → InitGamepadMappingPage 會處理 _pendingEditAppId 開編輯器）
+            if (_pendingEditAppId != null)
+            {
+                foreach (var item in SettingsNav.MenuItems)
+                {
+                    if (item is NavigationViewItem nav && nav.Tag?.ToString() == "GamepadMapping")
+                    {
+                        SettingsNav.SelectedItem = nav;
+                        break;
+                    }
+                }
+            }
         }
 
         // ── VSM 狀態輔助方法 ─────────────────────────────────────────────────────
@@ -206,12 +357,32 @@ namespace OmniConsole.Pages
         /// </summary>
         private void UpdateGamepadHints()
         {
+            if (_currentNavTag == "GamepadMapping")
+            {
+                // 先把 General 頁的 Y/X/LBRB 等 setter 清回基礎狀態，再套用編輯器/清單頁專屬手把提示列
+                VisualStateManager.GoToState(this, "NonGeneralPage", false);
+                bool editor = IsGamepadMappingEditorVisible;
+                VisualStateManager.GoToState(this, editor ? "GamepadMappingEditorTab" : "GamepadMappingListTab", false);
+                GamepadHintMenu.Visibility = Visibility.Collapsed;
+                GamepadHintXDelete.Visibility = (editor ? GamepadProfileEditor.CanDelete : GamepadProfileList.HasItems)
+                    ? Visibility.Visible : Visibility.Collapsed;
+                return;
+            }
             if (_currentNavTag != "General")
             {
                 VisualStateManager.GoToState(this, "NonGeneralPage", false);
                 GamepadHintMenu.Visibility = Visibility.Collapsed;
+                // 還原映射頁可能留下的特殊提示按鈕（離開時要藏回去；Exit 要顯示）
+                GamepadHintXDelete.Visibility = Visibility.Collapsed;
+                GamepadHintBSaveReturn.Visibility = Visibility.Collapsed;
+                GamepadHintExit.Visibility = Visibility.Visible;
                 return;
             }
+            // 從手把映射回到 General 時也還原特殊提示按鈕
+            GamepadHintXDelete.Visibility = Visibility.Collapsed;
+            GamepadHintBSaveReturn.Visibility = Visibility.Collapsed;
+            GamepadHintExit.Visibility = Visibility.Visible;
+
             bool showYX = _currentCategoryTag == "User" && SettingsService.GetCustomPlatformConsentAccepted();
             string state = showYX ? "UserTabWithConsent"
                 : _currentCategoryTag == "User" ? "UserTabNoConsent"
@@ -235,15 +406,21 @@ namespace OmniConsole.Pages
             {
                 if (selectedItem.Tag?.ToString() is not string tag) return;
 
-                // 切換頁面並更新提示列
+                // 切換頁面並更新提示列；NavigationViewItem 預設無 Sound 觸發，補 Invoke 音讓滑鼠路徑也有回饋。
+                // 走 GamepadNavigationService.PlaySound 共用 50ms 去重表，避免手把 A 鍵主路徑與本事件雙觸發。
                 _currentNavTag = tag;
                 VisualStateManager.GoToState(this, tag, false);
                 UpdateGamepadHints();
+                GamepadNavigationService.PlaySound(Microsoft.UI.Xaml.ElementSoundKind.Invoke);
 
                 // 切到關於頁時，每次都重新擷取一次環境快照（PhantomKey 狀態在工作階段中變動）
                 if (tag == "About")
                 {
                     LoadAboutPageContent();
+                }
+                else if (tag == "GamepadMapping")
+                {
+                    InitGamepadMappingPage();
                 }
             }
         }
@@ -703,6 +880,19 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
+        /// 導覽音效 ToggleSwitch 切換時立即儲存，並即時切換 ElementSoundPlayer 全域狀態。
+        /// </summary>
+        private void NavigationSoundsSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            bool enabled = NavigationSoundsSwitch.IsOn;
+            SettingsService.SetEnableNavigationSounds(enabled);
+            Microsoft.UI.Xaml.ElementSoundPlayer.State =
+                enabled
+                    ? Microsoft.UI.Xaml.ElementSoundPlayerState.On
+                    : Microsoft.UI.Xaml.ElementSoundPlayerState.Off;
+        }
+
+        /// <summary>
         /// Cursor Speed 下拉選單選取變更時儲存百分比。
         /// </summary>
         private void CursorSpeedCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -805,6 +995,9 @@ namespace OmniConsole.Pages
 
             LoadPlatformCards();
             UpdateGamepadHints();
+            // NavigationViewItem 預設無 Sound 觸發，補 Invoke 音；走 PlaySound 共用 50ms 去重表，
+            // 避免「手把 LB/RB → SwitchCategoryTab → PlatformCategoryNav.SelectedItem 賦值 → SelectionChanged → 再進 SwitchCategoryTab」連鎖播兩次
+            GamepadNavigationService.PlaySound(Microsoft.UI.Xaml.ElementSoundKind.Invoke);
         }
 
         /// <summary>
@@ -1106,9 +1299,29 @@ namespace OmniConsole.Pages
         {
             var focused = FocusManager.GetFocusedElement(this.XamlRoot);
 
+            // 手把映射分頁有自己的 A 鍵語意：焦點在內容區時才走專屬邏輯，
+            // 焦點在左側 NavigationView / 漢堡 / 返回鈕 時讓 switch 走預設處理(切 NavigationView / 開合 pane)
+            if (_currentNavTag == "GamepadMapping" &&
+                focused is DependencyObject focusedDep && IsDescendantOf(focusedDep, GamepadMappingPage))
+            {
+                if (IsGamepadMappingEditorVisible)
+                {
+                    GamepadNavigationService.ActivateFocusedElement(this.XamlRoot);
+                    return;
+                }
+                // 清單頁：焦點落在 ListView / 列項時呼叫 EditSelected，垃圾桶 Button 走一般觸發
+                if (focused is ListView || focused is ListViewItem)
+                {
+                    GamepadProfileList.EditSelected();
+                    return;
+                }
+                GamepadNavigationService.ActivateFocusedElement(this.XamlRoot);
+                return;
+            }
+
             switch (focused)
             {
-                // 平台卡片：確認選取（不可用卡片不響應，避免意外切換預設平台）
+                // 平台卡片：確認選取（不可用卡片不處理）
                 case GridViewItem { Content: PlatformCardItem { IsAvailable: true } card }:
                     PlatformGridView.SelectedItem = card;
                     _selectedPlatformId = card.Id;
@@ -1126,7 +1339,7 @@ namespace OmniConsole.Pages
                     SettingsNav.IsPaneOpen = false;
                     break;
 
-                // NavigationView 內建返回按鈕：無操作（避免誤觸觸發系統行為）
+                // NavigationView 內建返回按鈕：無操作
                 case Button { Name: "NavigationViewBackButton" }:
                     break;
 
@@ -1165,6 +1378,11 @@ namespace OmniConsole.Pages
                 // Mouse Mode 版面配置切換 (OmniNav / Classic)
                 case ToggleSwitch sw when ReferenceEquals(sw, MouseModeLayoutSwitch):
                     if (sw.IsEnabled) MouseModeLayoutSwitch.IsOn = !sw.IsOn;
+                    break;
+
+                // 導覽音效開關
+                case ToggleSwitch sw when ReferenceEquals(sw, NavigationSoundsSwitch):
+                    NavigationSoundsSwitch.IsOn = !sw.IsOn;
                     break;
 
                 // Game Bar 媒體櫃 / Passthrough 開關 UI 暫時隱藏（見 SettingsPage.xaml 註解），手把 A 鍵切換 case 一併停用。
@@ -1217,6 +1435,9 @@ namespace OmniConsole.Pages
         /// </summary>
         private void OnGamepadBButtonPressed()
         {
+            // 手把映射編輯器頁的 B 鍵 = 儲存並返回
+            if (TryHandleGamepadMappingBackKey()) return;
+
             if (SettingsNav.IsPaneOpen)
             {
                 SettingsNav.IsPaneOpen = false;
@@ -1261,6 +1482,8 @@ namespace OmniConsole.Pages
         /// </summary>
         private void OnGamepadXButtonPressed()
         {
+            // 手把映射分頁的 X 鍵 = 刪除（清單頁刪選中項；編輯器頁刪目前 profile）
+            if (TryHandleGamepadMappingDeleteKey()) return;
             if (_currentNavTag != "General") return;
             if (_currentCategoryTag != "User") return;
             if (!SettingsService.GetCustomPlatformConsentAccepted()) return;
@@ -1440,7 +1663,7 @@ namespace OmniConsole.Pages
                     mainSkippable, resumeFromPhase2,
                     progress, status, _downloadCts.Token);
 
-                // ForceApplicationShutdown / RequestRestartAsync 路徑會結束本行程，此後程式碼為 fallback
+                // ForceApplicationShutdown / RequestRestartAsync 路徑會結束本行程，此後程式碼為回退路徑
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

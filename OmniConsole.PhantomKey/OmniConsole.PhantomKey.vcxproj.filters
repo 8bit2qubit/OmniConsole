@@ -39,6 +39,9 @@
     <ClCompile Include="MouseMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GamepadProfiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="PingService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,6 +66,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MouseMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bindings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GamepadProfiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PingService.h">

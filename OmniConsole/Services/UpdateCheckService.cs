@@ -342,7 +342,7 @@ namespace OmniConsole.Services
         /// mainSkippable 為 true 時跳過 OmniConsole 重裝，改用 RequestRestartAsync 重啟。
         /// resumeFromPhase2 為 true 時跳過 Phase 1（拔電/強制重開後續做用）。
         /// 各階段會寫入 SettingsService.SetPendingUpdatePhase 以利中斷後續做。
-        /// status 回呼回報當前階段文字（下載/安裝），供 UI 顯示。
+        /// status 回呼回報目前階段文字（下載/安裝），供 UI 顯示。
         /// </summary>
         public static async Task InstallBundleAsync(
             string phantomLinkUrl,

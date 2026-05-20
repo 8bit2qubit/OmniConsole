@@ -11,10 +11,18 @@ using Windows.UI.Xaml.Media;
 
 namespace OmniConsole.PhantomLink
 {
+    /// <summary>
+    /// PhantomLink Game Bar widget 主面板：顯示前景程式資訊、Quick Actions、Mouse Mode / Layout / CursorSpeed 設定。
+    /// 設定值透過 PhantomKeyStore 寫入 Shared.ini，動作委派給 PhantomBridge Full Trust COM Server 執行。
+    /// </summary>
     public sealed partial class PhantomLinkWidget : Page
     {
         private bool _loading;
         private bool _builtInMapping;
+
+        // 前景程式狀態：顯示文字 + 「自訂此 App」按鈕傳給 PhantomBridge.OpenProfileEditor 的 appId / name
+        private string _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
+        private string _foregroundAppName;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
 
         // 焦點剛從外部進入 Widget → 吞掉緊接著的一顆 D-pad Down，避免雙跳（OnGettingFocus 把焦點重導到選中態按鈕 + OnPreviewKeyDown 又推進一 section）
         private DateTime _swallowNextDownUntil;
@@ -73,7 +81,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// Game Bar 主題變更事件可能來自非 UI 執行緒，marshal 回 UI 執行緒再套用。
+        /// Game Bar 主題變更事件：marshal 回 UI 執行緒套用 SyncThemeFromGameBar。
         /// </summary>
         private async void OnGameBarThemeChanged(Microsoft.Gaming.XboxGameBar.XboxGameBarWidget sender, object args)
         {
@@ -167,7 +175,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// 走到 RootPanel 的直屬 child，作為「section」代表。
+        /// 走到 RootPanel 的直屬子元素，作為「section」代表。
         /// </summary>
         private FrameworkElement FindSection(DependencyObject node)
         {
@@ -278,10 +286,144 @@ namespace OmniConsole.PhantomLink
                 CursorSpeedValueText.Text = $"{pct}%";
 
                 ApplyEnabledState(mode);
+
+                // 前景程式區塊（每次 reload 同步重抓一次）
+                RefreshForegroundApp();
             }
             finally
             {
                 _loading = false;
+            }
+        }
+
+        /// <summary>
+        /// 呼叫 PhantomBridge.GetForegroundAppInfo 取前景 title / proc / aumid / displayName / isElevated，
+        /// 更新 ForegroundAppLineText 與 _foregroundAppId / _foregroundAppName，並依黑名單、內建廠商映射、
+        /// elevated 狀態決定 CustomizeAppBtn 與 CustomizeAppNoteText 的可見性與啟用狀態。
+        /// </summary>
+        private void RefreshForegroundApp()
+        {
+            var resw = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            string title = string.Empty;
+            string proc = string.Empty;
+            string aumid = string.Empty;
+            string displayName = string.Empty;
+            bool isElevated = false;
+            try
+            {
+                var bridge = PhantomBridgeHelper.CreateFactory();
+                bridge.GetForegroundAppInfo(out title, out proc, out aumid, out displayName, out isElevated);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log("[Widget] GetForegroundAppInfo failed: " + ex.Message);
+                ForegroundAppLineText.Text = LocSafe(resw, "Widget_ForegroundApp_None", "Current: —");
+                _foregroundAppId = null;
+                _foregroundAppName = string.Empty;
+                CustomizeAppBtn.IsEnabled = false;
+                CustomizeAppNoteText.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // 一行式顯示「目前: <displayName> (<proc>)」；displayName 為空回退 proc，與 proc 相等或 proc 為空時改走 NoDesc 格式
+            string identifier = !string.IsNullOrEmpty(displayName) ? displayName : (!string.IsNullOrEmpty(proc) ? proc : "—");
+            string desc = proc ?? string.Empty;
+
+            string lineText;
+            if (string.IsNullOrEmpty(identifier) || identifier == "—")
+            {
+                lineText = LocSafe(resw, "Widget_ForegroundApp_None", "Current: —");
+            }
+            else if (string.IsNullOrEmpty(desc) ||
+                     string.Equals(desc, identifier, StringComparison.OrdinalIgnoreCase))
+            {
+                string fmt = LocSafe(resw, "Widget_ForegroundApp_LineFormat_NoDesc", "Current: {0}");
+                lineText = string.Format(fmt, identifier);
+            }
+            else
+            {
+                string fmt = LocSafe(resw, "Widget_ForegroundApp_LineFormat", "Current: {0} ({1})");
+                lineText = string.Format(fmt, identifier, desc);
+            }
+            ForegroundAppLineText.Text = lineText;
+
+            bool isUwp = !string.IsNullOrEmpty(aumid);
+
+            // 黑名單比對：process 名單命中或 AUMID 內含任一 PFN 子字串即擋
+            bool blocked = false;
+            if (!string.IsNullOrEmpty(proc))
+                blocked = IsBlacklistedProcess(proc);
+            if (!blocked && isUwp)
+            {
+                blocked = aumid.IndexOf("Microsoft.GamingApp", StringComparison.OrdinalIgnoreCase) >= 0
+                       || aumid.IndexOf("B9ECED6F.ArmouryCrateSE", StringComparison.OrdinalIgnoreCase) >= 0
+                       || aumid.IndexOf("windows.immersivecontrolpanel", StringComparison.OrdinalIgnoreCase) >= 0
+                       || aumid.IndexOf("Microsoft.WindowsStore", StringComparison.OrdinalIgnoreCase) >= 0
+                       || aumid.IndexOf("b5fbce6b-2d7d-4da0-b419-4beb30e2b808", StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+
+            // packaged 優先用 aumid: 前綴，桌面 process 用 process: 前綴
+            if (blocked)
+                _foregroundAppId = null;
+            else if (isUwp)
+                _foregroundAppId = "aumid:" + aumid;
+            else if (!string.IsNullOrEmpty(proc))
+                _foregroundAppId = "process:" + proc;
+            else
+                _foregroundAppId = null;
+            _foregroundAppName = !string.IsNullOrEmpty(displayName) ? displayName : (title ?? string.Empty);
+
+            CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !isElevated;
+            CustomizeAppNoteText.Visibility =
+                (isElevated && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>resw 安全查詢：不存在或擲例外時回退到 `fallback` 參數值。</summary>
+        private static string LocSafe(Windows.ApplicationModel.Resources.ResourceLoader resw, string key, string fallback)
+        {
+            try
+            {
+                var s = resw.GetString(key);
+                return string.IsNullOrEmpty(s) ? fallback : s;
+            }
+            catch { return fallback; }
+        }
+
+        /// <summary>
+        /// 行程名稱比對（大小寫不敏感）是否為 IsBlacklisted 條目 (a)/(b) 涵蓋的程式。
+        /// 跟 OmniConsole/Services/GamepadProfileStore 同一份名單。
+        /// </summary>
+        private static bool IsBlacklistedProcess(string proc)
+        {
+            string[] names =
+            {
+                // (a) 自家 / 內建手把導覽
+                "OmniConsole", "Playnite.FullscreenApp", "steamwebhelper",
+                // (b) Mouse Mode Auto 白名單
+                "msedge", "chrome", "firefox", "opera", "brave",
+                "EpicGamesLauncher", "Discord", "explorer",
+            };
+            foreach (var n in names)
+                if (string.Equals(proc, n, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 「自訂此 App 的手把映射」按鈕：透過 PhantomBridge.OpenProfileEditor 喚起主程式
+        /// （Win+G 收 Game Bar → omniconsole://edit-gamepad-profile?appId=...&displayName=...）。
+        /// </summary>
+        private void CustomizeAppBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_foregroundAppId)) return;
+            DebugLogger.Log("[Widget] CustomizeAppBtn_Click → PhantomBridge.OpenProfileEditor: " + _foregroundAppId);
+            try
+            {
+                var bridge = PhantomBridgeHelper.CreateFactory();
+                bridge.OpenProfileEditor(_foregroundAppId, _foregroundAppName ?? string.Empty);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log("[Widget] OpenProfileEditor failed: " + ex.Message);
             }
         }
 
@@ -309,7 +451,7 @@ namespace OmniConsole.PhantomLink
         //
         // 委派給 PhantomBridge Full Trust COM Server 執行；Widget 受 UWP AppContainer 限制，
         // SendInput 會被靜默封鎖，LaunchUriAsync 跨套件 protocol 不可靠。
-        // Bridge 為獨立的 fulltrust 桌面行程，Windows 於 CoCreateInstance 時按需 spawn。
+        // Bridge 為獨立的 full trust 桌面行程，Windows 於 CoCreateInstance 時按需啟動。
 
         /// <summary>透過 PhantomBridge 送 Win+Tab 開啟 Windows 工作檢視。</summary>
         private void TaskViewBtn_Click(object sender, RoutedEventArgs e)
@@ -344,8 +486,8 @@ namespace OmniConsole.PhantomLink
         }
 
         /*
-        // SettingsBtn 暫時註解保留 —— 桌面模式啟動有焦點 quirk 無法解決；
-        // 使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
+        // SettingsBtn 暫時註解保留 —— 使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
+        /// <summary>透過 PhantomBridge 喚起 OmniConsole 主程式設定頁。</summary>
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
             DebugLogger.Log("[Widget] SettingsBtn_Click → PhantomBridge.OpenSettings");

@@ -170,4 +170,19 @@
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled — device has built-in gamepad mapping.</value>
   </data>
+  <data name="Widget_ForegroundApp_LineFormat" xml:space="preserve">
+    <value>Current: {0} ({1})</value>
+  </data>
+  <data name="Widget_ForegroundApp_LineFormat_NoDesc" xml:space="preserve">
+    <value>Current: {0}</value>
+  </data>
+  <data name="Widget_ForegroundApp_None" xml:space="preserve">
+    <value>Current: —</value>
+  </data>
+  <data name="Widget_CustomizeApp.Content" xml:space="preserve">
+    <value>Customize gamepad mapping for this app…</value>
+  </data>
+  <data name="Widget_CustomizeApp_ElevatedNote.Text" xml:space="preserve">
+    <value>This app runs as administrator. Gamepad mappings cannot reach it.</value>
+  </data>
 </root>

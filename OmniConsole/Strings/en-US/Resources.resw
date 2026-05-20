@@ -154,7 +154,7 @@
     <value>Limited PC Xbox Mode (FSE) detected, but OmniConsole requires the Full Handheld edition. Please enable it with Xbox Full Screen Experience Tool, then manually restart OmniConsole.</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>Please go to Windows Settings → Gaming → Xbox mode (FSE) and select OmniConsole from the "Choose home app" dropdown, then manually restart OmniConsole.</value>
+    <value>Please go to Windows Settings → Gaming → Xbox mode (FSE) and select OmniConsole from the “Choose home app” dropdown, then manually restart OmniConsole.</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
     <value>Enable Xbox Mode (FSE)</value>
@@ -214,7 +214,7 @@
     <value>Restart Game Bar &amp; Enter Xbox Mode (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>Restart Game Bar to fix issues such as Game Bar not opening, or the "Restart for better performance" dialog not appearing when entering Xbox Mode (FSE).</value>
+    <value>Restart Game Bar to fix issues such as Game Bar not opening, or the “Restart for better performance” dialog not appearing when entering Xbox Mode (FSE).</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>On some Windows versions, a confirmation dialog may still appear.</value>
@@ -241,7 +241,7 @@
     <value>Gamepad Input Service</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>Press &#xEECA; to open Steam's menus in Steam Big Picture mode.</value>
+    <value>Press &#xEECA; to open Steam’s menus in Steam Big Picture mode.</value>
   </data>
   <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>Short press &#xEECA; to open Steam Menu, long press &#xEECA; to open Quick Access Menu.</value>
@@ -305,16 +305,16 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Library Button Opens Settings</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>Choose the action for the "Library" button in Game Bar.</value>
+    <value>Choose the action for the “Library” button in Game Bar.</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>Direct to Platform</value>
   </data>
   <data name="PassthroughSetting_Description.Text" xml:space="preserve">
-    <value>Navigate "Home" and "Library" directly to the default platform instead of OmniConsole.</value>
+    <value>Navigate “Home” and “Library” directly to the default platform instead of OmniConsole.</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
-    <value>Currently only supports Xbox App. "Library" button setting above takes priority.</value>
+    <value>Currently only supports Xbox App. “Library” button setting above takes priority.</value>
   </data>
   <data name="EnablePassthroughSwitch.OffContent" xml:space="preserve">
     <value>Normal</value>
@@ -427,12 +427,12 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
     <value>This feature allows you to add custom platform launch configurations. Please read the following carefully before proceeding:
 
-- This open-source software is provided "as-is", without warranty of any kind, express or implied; this experimental feature is provided with no assurances whatsoever.
+- The software is provided “as-is”, without warranty of any kind, express or implied; this feature is experimental and provided with no assurances whatsoever.
 - Incorrectly configured platforms may fail to launch, which could crash the Xbox Mode (FSE) environment or even require an app reset to recover.
 - The developer assumes no responsibility or liability for any damage, data loss, or issues arising from the use of this program or custom platform configurations.
 - You are solely responsible for ensuring the safety, correctness, and legitimacy of all configurations you create.
 
-By clicking "I Understand and Accept", you acknowledge these risks and agree to use this feature entirely at your own discretion and responsibility.</value>
+By clicking “I Understand and Accept”, you acknowledge these risks and agree to use this feature entirely at your own discretion and responsibility.</value>
   </data>
   <data name="CustomPlatform_ConsentAccept.Content" xml:space="preserve">
     <value>I Understand and Accept</value>
@@ -477,7 +477,7 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
     <value>Type to search installed packages...</value>
   </data>
   <data name="PlatformDialog_PackagedAppWarning" xml:space="preserve">
-    <value>Caution: Not all packages support launching (e.g., extensions or background services). Ensure you select an app with a "user interface."</value>
+    <value>Caution: Not all packages support launching (e.g., extensions or background services). Ensure you select an app with a “user interface.”</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppEmpty" xml:space="preserve">
     <value>Please select a packaged app.</value>
@@ -841,5 +841,431 @@ By clicking "I Understand and Accept", you acknowledge these risks and agree to 
   </data>
   <data name="AboutCopyConfirmTeachingTip.Subtitle" xml:space="preserve">
     <value>Paste it into a GitHub Issue.</value>
+  </data>
+  <data name="Nav_GamepadMapping.Content" xml:space="preserve">
+    <value>Nekomata</value>
+  </data>
+  <data name="GamepadMappingTitle.Text" xml:space="preserve">
+    <value>Nekomata</value>
+  </data>
+  <data name="GamepadMappingDescription.Text" xml:space="preserve">
+    <value>Nekomata will weave a charm for your gamepad, conjuring the perfect bindings for each app.</value>
+  </data>
+  <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
+    <value>No charmed apps yet~ Open the OmniCharm widget on the Game Bar and choose “Customize gamepad mapping for this app” — Nekomata will weave a new charm for it.</value>
+  </data>
+  <data name="GamepadMappingToolsSection.Text" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
+    <value>Clear all</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmTitle" xml:space="preserve">
+    <value>Clear all bindings?</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmBody" xml:space="preserve">
+    <value>All inputs will be set to None.</value>
+  </data>
+  <data name="GamepadMappingClearAllConfirmYes" xml:space="preserve">
+    <value>Clear all</value>
+  </data>
+  <data name="GamepadMappingResetButton.Content" xml:space="preserve">
+    <value>OmniNav defaults</value>
+  </data>
+  <data name="GamepadMappingResetConfirmTitle" xml:space="preserve">
+    <value>Reset to OmniNav defaults?</value>
+  </data>
+  <data name="GamepadMappingResetConfirmBody" xml:space="preserve">
+    <value>All current bindings will be overwritten with the OmniNav defaults.</value>
+  </data>
+  <data name="GamepadMappingResetConfirmYes" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="GamepadMappingResetClassicButton.Content" xml:space="preserve">
+    <value>Classic defaults</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmTitle" xml:space="preserve">
+    <value>Reset to Classic defaults?</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmBody" xml:space="preserve">
+    <value>All current bindings will be overwritten with the Classic defaults.</value>
+  </data>
+  <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="GamepadMappingCopyFromButton.Content" xml:space="preserve">
+    <value>Copy from app…</value>
+  </data>
+  <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
+    <value>Change key…</value>
+  </data>
+  <data name="AppIdUwp" xml:space="preserve">
+    <value>Packaged app</value>
+  </data>
+  <data name="AppIdProcessPrefix" xml:space="preserve">
+    <value>Process: </value>
+  </data>
+  <data name="AppIdAumidPrefix" xml:space="preserve">
+    <value>AUMID: </value>
+  </data>
+  <data name="GamepadAction_None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="GamepadAction_KeyTap" xml:space="preserve">
+    <value>Keyboard key</value>
+  </data>
+  <data name="GamepadAction_KeyCombo" xml:space="preserve">
+    <value>Key combo</value>
+  </data>
+  <data name="GamepadAction_MouseLeft" xml:space="preserve">
+    <value>Mouse left</value>
+  </data>
+  <data name="GamepadAction_MouseRight" xml:space="preserve">
+    <value>Mouse right</value>
+  </data>
+  <data name="GamepadAction_MouseMiddle" xml:space="preserve">
+    <value>Mouse middle</value>
+  </data>
+  <data name="GamepadAction_WheelUp" xml:space="preserve">
+    <value>Scroll up</value>
+  </data>
+  <data name="GamepadAction_WheelDown" xml:space="preserve">
+    <value>Scroll down</value>
+  </data>
+  <data name="GamepadAction_WheelLeft" xml:space="preserve">
+    <value>Scroll left</value>
+  </data>
+  <data name="GamepadAction_WheelRight" xml:space="preserve">
+    <value>Scroll right</value>
+  </data>
+  <data name="GamepadAction_StickCursor" xml:space="preserve">
+    <value>Cursor move</value>
+  </data>
+  <data name="GamepadAction_StickScroll" xml:space="preserve">
+    <value>Scroll</value>
+  </data>
+  <data name="GamepadAction_StickArrows" xml:space="preserve">
+    <value>Arrow keys</value>
+  </data>
+  <data name="GamepadAction_StickWasd" xml:space="preserve">
+    <value>WASD keys</value>
+  </data>
+  <data name="GamepadAction_DpadArrows" xml:space="preserve">
+    <value>Arrow keys</value>
+  </data>
+  <data name="GamepadAction_DpadWasd" xml:space="preserve">
+    <value>WASD keys</value>
+  </data>
+  <data name="GamepadAction_DpadNumpad" xml:space="preserve">
+    <value>Numpad 8246</value>
+  </data>
+  <data name="GamepadAction_DpadCustom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="GamepadInput_A.Text" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="GamepadInput_B.Text" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="GamepadInput_X.Text" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="GamepadInput_Y.Text" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="GamepadInput_LB.Text" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="GamepadInput_RB.Text" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="GamepadInput_LT.Text" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="GamepadInput_RT.Text" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="GamepadInput_LS.Text" xml:space="preserve">
+    <value>LS (Press)</value>
+  </data>
+  <data name="GamepadInput_RS.Text" xml:space="preserve">
+    <value>RS (Press)</value>
+  </data>
+  <data name="GamepadInput_DPad.Text" xml:space="preserve">
+    <value>D-pad</value>
+  </data>
+  <data name="GamepadInput_DPadUp.Text" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="GamepadInput_DPadDown.Text" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="GamepadInput_DPadLeft.Text" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="GamepadInput_DPadRight.Text" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="GamepadInput_LStick.Text" xml:space="preserve">
+    <value>Left stick</value>
+  </data>
+  <data name="GamepadInput_RStick.Text" xml:space="preserve">
+    <value>Right stick</value>
+  </data>
+  <data name="GamepadGroup_FaceButtons.Text" xml:space="preserve">
+    <value>Face buttons</value>
+  </data>
+  <data name="GamepadGroup_Shoulders.Text" xml:space="preserve">
+    <value>Shoulders / triggers</value>
+  </data>
+  <data name="GamepadGroup_ThumbButtons.Text" xml:space="preserve">
+    <value>Stick presses</value>
+  </data>
+  <data name="GamepadGroup_Sticks.Text" xml:space="preserve">
+    <value>Sticks / D-pad</value>
+  </data>
+  <data name="GamepadModifier_Ctrl.Content" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="GamepadModifier_Shift.Content" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="GamepadModifier_Alt.Content" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="GamepadModifier_Win.Content" xml:space="preserve">
+    <value>Win</value>
+  </data>
+  <data name="GamepadModifiersLabel.Text" xml:space="preserve">
+    <value>Modifiers</value>
+  </data>
+  <data name="GamepadKeyLabel.Text" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="GamepadMappingChangeKeyTitle" xml:space="preserve">
+    <value>Choose a key</value>
+  </data>
+  <data name="GamepadMappingChangeComboTitle" xml:space="preserve">
+    <value>Choose a key combo</value>
+  </data>
+  <data name="GamepadKeyPickerOk" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="GamepadKeyPickerCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GamepadMappingCopyFromTitle" xml:space="preserve">
+    <value>Copy from another app</value>
+  </data>
+  <data name="GamepadMappingCopyFromHint" xml:space="preserve">
+    <value>Pick an existing profile to copy its bindings.</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmTitle" xml:space="preserve">
+    <value>Delete this profile?</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
+    <value>The customized bindings for this app will be removed and the built-in layout will take over again.</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="GamepadMappingDeleteConfirmNo" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GamepadMappingEmptyConfirmTitle" xml:space="preserve">
+    <value>Save with no bindings?</value>
+  </data>
+  <data name="GamepadMappingEmptyConfirmBody" xml:space="preserve">
+    <value>All inputs are set to None. The built-in layout will take over for this app.</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveTitle" xml:space="preserve">
+    <value>Remove custom mapping for this app?</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveBody" xml:space="preserve">
+    <value>All inputs are set to None, which is the same as having no custom mapping. The built-in layout will take over for this app.</value>
+  </data>
+  <data name="GamepadMappingEmptyRemoveYes" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="GamepadMappingBlacklistedTitle" xml:space="preserve">
+    <value>This app cannot be customized</value>
+  </data>
+  <data name="GamepadMappingBlacklistedBody" xml:space="preserve">
+    <value>This app does not support custom gamepad mapping.</value>
+  </data>
+  <data name="GamepadKeyGroup_Letters" xml:space="preserve">
+    <value>Letters</value>
+  </data>
+  <data name="GamepadKeyGroup_Digits" xml:space="preserve">
+    <value>Digits</value>
+  </data>
+  <data name="GamepadKeyGroup_FunctionKeys" xml:space="preserve">
+    <value>Function keys</value>
+  </data>
+  <data name="GamepadKeyGroup_EditNav" xml:space="preserve">
+    <value>Edit / navigation</value>
+  </data>
+  <data name="GamepadKeyGroup_Control" xml:space="preserve">
+    <value>Control</value>
+  </data>
+  <data name="GamepadKeyGroup_Symbols" xml:space="preserve">
+    <value>Symbols</value>
+  </data>
+  <data name="GamepadKeyGroup_Numpad" xml:space="preserve">
+    <value>Numpad</value>
+  </data>
+  <data name="GamepadKeyGroup_Media" xml:space="preserve">
+    <value>Media</value>
+  </data>
+  <data name="GamepadKeyGroup_Modifiers" xml:space="preserve">
+    <value>Modifiers</value>
+  </data>
+  <data name="Vk_Insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="Vk_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Vk_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Vk_End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Vk_PageUp" xml:space="preserve">
+    <value>Page Up</value>
+  </data>
+  <data name="Vk_PageDown" xml:space="preserve">
+    <value>Page Down</value>
+  </data>
+  <data name="Vk_ArrowUp" xml:space="preserve">
+    <value>Arrow Up</value>
+  </data>
+  <data name="Vk_ArrowDown" xml:space="preserve">
+    <value>Arrow Down</value>
+  </data>
+  <data name="Vk_ArrowLeft" xml:space="preserve">
+    <value>Arrow Left</value>
+  </data>
+  <data name="Vk_ArrowRight" xml:space="preserve">
+    <value>Arrow Right</value>
+  </data>
+  <data name="Vk_Enter" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="Vk_Escape" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="Vk_Tab" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="Vk_Backspace" xml:space="preserve">
+    <value>Backspace</value>
+  </data>
+  <data name="Vk_Space" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="Vk_PrintScreen" xml:space="preserve">
+    <value>PrtSc</value>
+  </data>
+  <data name="Vk_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Vk_CapsLock" xml:space="preserve">
+    <value>Caps Lock</value>
+  </data>
+  <data name="Vk_Apps" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="Vk_NumpadDecimal" xml:space="preserve">
+    <value>Numpad .</value>
+  </data>
+  <data name="Vk_VolumeUp" xml:space="preserve">
+    <value>Volume Up</value>
+  </data>
+  <data name="Vk_VolumeDown" xml:space="preserve">
+    <value>Volume Down</value>
+  </data>
+  <data name="Vk_VolumeMute" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="Vk_MediaPlayPause" xml:space="preserve">
+    <value>Play / Pause</value>
+  </data>
+  <data name="Vk_MediaStop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Vk_MediaNext" xml:space="preserve">
+    <value>Next Track</value>
+  </data>
+  <data name="Vk_MediaPrev" xml:space="preserve">
+    <value>Previous Track</value>
+  </data>
+  <data name="Vk_BrowserBack" xml:space="preserve">
+    <value>Browser Back</value>
+  </data>
+  <data name="Vk_BrowserForward" xml:space="preserve">
+    <value>Browser Forward</value>
+  </data>
+  <data name="Vk_BrowserRefresh" xml:space="preserve">
+    <value>Browser Refresh</value>
+  </data>
+  <data name="Vk_BrowserHome" xml:space="preserve">
+    <value>Browser Home</value>
+  </data>
+  <data name="Vk_LaunchMail" xml:space="preserve">
+    <value>Launch Mail</value>
+  </data>
+  <data name="Vk_LaunchMediaSelect" xml:space="preserve">
+    <value>Launch Media</value>
+  </data>
+  <data name="Vk_Shift" xml:space="preserve">
+    <value>Shift</value>
+  </data>
+  <data name="Vk_Ctrl" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="Vk_Alt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="Vk_Win" xml:space="preserve">
+    <value>Win</value>
+  </data>
+  <data name="Vk_LShift" xml:space="preserve">
+    <value>Left Shift</value>
+  </data>
+  <data name="Vk_RShift" xml:space="preserve">
+    <value>Right Shift</value>
+  </data>
+  <data name="Vk_LCtrl" xml:space="preserve">
+    <value>Left Ctrl</value>
+  </data>
+  <data name="Vk_RCtrl" xml:space="preserve">
+    <value>Right Ctrl</value>
+  </data>
+  <data name="Vk_LAlt" xml:space="preserve">
+    <value>Left Alt</value>
+  </data>
+  <data name="Vk_RAlt" xml:space="preserve">
+    <value>Right Alt</value>
+  </data>
+  <data name="Vk_RWin" xml:space="preserve">
+    <value>Right Win</value>
+  </data>
+  <data name="GamepadHint_DeleteProfile.Text" xml:space="preserve">
+    <value>Delete this profile</value>
+  </data>
+  <data name="GamepadHint_SaveReturn.Text" xml:space="preserve">
+    <value>Save &amp; back</value>
+  </data>
+  <data name="AdvancedSection_Sound.Text" xml:space="preserve">
+    <value>Interface Sound</value>
+  </data>
+  <data name="NavigationSoundsSetting_Title.Text" xml:space="preserve">
+    <value>Navigation Sounds</value>
+  </data>
+  <data name="NavigationSoundsSetting_Description.Text" xml:space="preserve">
+    <value>Play sounds when navigating.</value>
   </data>
 </root>

@@ -11,13 +11,83 @@ namespace OmniConsole
     /// </summary>
     public partial class App : Application
     {
+        // ── P/Invoke：視窗狀態與 z-order 控制 ──
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hWnd);
+
+        // ── P/Invoke：輸入注入（SendInput + INPUT 結構） ──
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+
+        /// <summary>SendInput 用的輸入事件容器，type 對應事件種類（鍵盤／滑鼠／硬體）。</summary>
+        [StructLayout(LayoutKind.Sequential)]
+        private struct INPUT
+        {
+            public uint type;
+            public InputUnion U;
+        }
+
+        /// <summary>INPUT 內各事件型別的 union；本檔僅使用鍵盤事件。</summary>
+        [StructLayout(LayoutKind.Explicit)]
+        private struct InputUnion
+        {
+            [FieldOffset(0)] public KEYBDINPUT ki;
+        }
+
+        /// <summary>鍵盤輸入事件欄位：wVk 虛擬鍵碼、dwFlags 用 KEYEVENTF_KEYUP 區分按下／放開。</summary>
+        [StructLayout(LayoutKind.Sequential)]
+        private struct KEYBDINPUT
+        {
+            public ushort wVk;
+            public ushort wScan;
+            public uint dwFlags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        // ── 常數：ShowWindow nCmdShow ──
+        private const int SW_RESTORE = 9;
+        private const int SW_SHOW = 5;
+
+        // ── 常數：SetWindowPos hWndInsertAfter 與 uFlags ──
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOMOVE = 0x0002;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_SHOWWINDOW = 0x0040;
+
+        // ── 常數：SendInput INPUT.type 與 KEYBDINPUT 欄位 ──
+        private const uint INPUT_KEYBOARD = 1;
+        private const uint KEYEVENTF_KEYUP = 0x0002;
+        private const ushort VK_MENU = 0x12;
 
         private static Window? _window;
         private static DispatcherQueue? _dispatcherQueue;
         private readonly bool _startWithSettings;
 
+        /// <summary>建立 App 實例；showSettings=true 表示由設定入口啟動，跳過 FSE 引導直接顯示設定介面。</summary>
         public App(bool showSettings = false)
         {
             _startWithSettings = showSettings;
@@ -96,6 +166,8 @@ namespace OmniConsole
                 return;
             }
 
+            ApplyNavigationSoundsSetting();
+
             var mainWindow = new MainWindow();
             _window = mainWindow;
             _dispatcherQueue = mainWindow.DispatcherQueue;
@@ -108,6 +180,9 @@ namespace OmniConsole
 
                 if (hasPendingUpdate)
                     _ = mainWindow.TryHandlePendingUpdateAsync();
+
+                // 設定模式啟動時主動搶前景，避免被其他應用程式蓋住
+                BringWindowToForeground(mainWindow);
             }
             else
             {
@@ -121,6 +196,7 @@ namespace OmniConsole
         /// </summary>
         private void ShowGuidanceWindow(Action<MainWindow> show)
         {
+            ApplyNavigationSoundsSetting();
             var win = new MainWindow();
             _window = win;
             _dispatcherQueue = win.DispatcherQueue;
@@ -130,7 +206,8 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 從設定入口重導時呼叫，在 UI 執行緒上顯示設定介面。
+        /// 主實例收到 show-settings / edit-gamepad-profile redirect 時的進入點，在 UI 執行緒上
+        /// 切到設定介面並呼叫 BringWindowToForeground 把主視窗搶到前景。
         /// </summary>
         public static void ShowSettingsFromRedirect()
         {
@@ -139,8 +216,59 @@ namespace OmniConsole
                 if (_window is MainWindow mainWindow)
                 {
                     mainWindow.ShowSettings();
+                    BringWindowToForeground(mainWindow);
                 }
             });
+        }
+
+        /// <summary>
+        /// 把指定視窗拉到 OS 前景，兩段策略 + 短路 return：
+        ///   第 1 段 SendInput ALT + SetForegroundWindow — 搶到前景就 return
+        ///   第 2 段 SetWindowPos HWND_TOPMOST → NOTOPMOST + BringWindowToTop + SetForegroundWindow
+        ///     — 在 non-TOPMOST group 內把視窗排到其他普通視窗之上的防禦補位
+        /// </summary>
+        private static void BringWindowToForeground(Window window)
+        {
+            try
+            {
+                IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                if (hwnd == IntPtr.Zero) return;
+
+                IntPtr fgBefore = GetForegroundWindow();
+                uint fgPidBefore = 0;
+                if (fgBefore != IntPtr.Zero) GetWindowThreadProcessId(fgBefore, out fgPidBefore);
+                DebugLogger.Log($"[BWF] enter hwnd=0x{hwnd.ToInt64():X} visible={IsWindowVisible(hwnd)} iconic={IsIconic(hwnd)} fgHwnd=0x{fgBefore.ToInt64():X} fgPid={fgPidBefore}");
+
+                // FSE 啟動成功後主視窗會被設成 WS_EX_TOOLWINDOW + ShowWindow(0) 隱藏狀態；
+                // IsIconic 只判 minimize 不判 hidden，需另外用 IsWindowVisible 補 SW_SHOW
+                if (!IsWindowVisible(hwnd)) ShowWindow(hwnd, SW_SHOW);
+                if (IsIconic(hwnd)) ShowWindow(hwnd, SW_RESTORE);
+
+                // 第 1 段：送一組 ALT down + up keystroke 再 SetForegroundWindow
+                var inputs = new INPUT[]
+                {
+                    new INPUT { type = INPUT_KEYBOARD, U = new InputUnion { ki = new KEYBDINPUT { wVk = VK_MENU } } },
+                    new INPUT { type = INPUT_KEYBOARD, U = new InputUnion { ki = new KEYBDINPUT { wVk = VK_MENU, dwFlags = KEYEVENTF_KEYUP } } },
+                };
+                SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<INPUT>());
+                bool sfw1 = SetForegroundWindow(hwnd);
+                IntPtr fgAfter1 = GetForegroundWindow();
+                DebugLogger.Log($"[BWF] ALT+SFW ret={sfw1} fgHwnd=0x{fgAfter1.ToInt64():X} hit={fgAfter1 == hwnd}");
+                if (sfw1 && fgAfter1 == hwnd) return;
+
+                // 第 2 段：SetWindowPos HWND_TOPMOST 把視窗拉到 z-order 頂端，立刻降回 HWND_NOTOPMOST
+                // 解除 always-on-top 屬性、保留剛升上去的 z-order 位置；BringWindowToTop + SetForegroundWindow 補一次
+                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+                SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                BringWindowToTop(hwnd);
+                bool sfw2 = SetForegroundWindow(hwnd);
+                IntPtr fgAfter2 = GetForegroundWindow();
+                DebugLogger.Log($"[BWF] TOPMOST+SFW ret={sfw2} fgHwnd=0x{fgAfter2.ToInt64():X} hit={fgAfter2 == hwnd}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[App] BringWindowToForeground failed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -155,6 +283,18 @@ namespace OmniConsole
                     mainWindow.Reactivate();
                 }
             });
+        }
+
+        /// <summary>
+        /// 依使用者設定將 ElementSoundPlayer 全域狀態切到 On/Off，供內建控制項自動播音；
+        /// 手把自訂路徑（GamepadNavigationService）的 Play() 在 State=Off 時為 no-op。
+        /// </summary>
+        private static void ApplyNavigationSoundsSetting()
+        {
+            Microsoft.UI.Xaml.ElementSoundPlayer.State =
+                SettingsService.GetEnableNavigationSounds()
+                    ? Microsoft.UI.Xaml.ElementSoundPlayerState.On
+                    : Microsoft.UI.Xaml.ElementSoundPlayerState.Off;
         }
 
         /// <summary>

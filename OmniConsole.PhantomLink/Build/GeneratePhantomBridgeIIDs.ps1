@@ -26,7 +26,7 @@ if (-not (Test-Path $HeaderPath)) {
 
 $content = Get-Content -Raw -LiteralPath $HeaderPath
 
-# 介面名 → 期望輸出常數名（C# 端 [Guid("...")] 用）
+# 介面名稱 → 期望輸出常數名稱（C# 端 [Guid("...")] 用）
 $interfaces = @{
     'IPhantomBridgeFactory' = 'IPhantomBridgeFactory'
 }
