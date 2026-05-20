@@ -170,20 +170,30 @@ namespace OmniConsole.Controls
             _isNew = existing == null;
             _editing = existing?.Clone() ?? new GamepadProfile
             {
-                AppId = new AppId { Kind = appId.Kind, Value = appId.Value },
+                AppId = new AppId { Kind = appId.Kind, Value = appId.Value, FullPath = appId.FullPath },
                 DisplayName = displayName,
                 Bindings = GamepadBuiltInLayouts.OmniNav()
             };
             if (!_isNew && !string.IsNullOrEmpty(displayName))
                 _editing.DisplayName = displayName;
 
+            // protocol / widget 帶進來的 path 寫入未綁定路徑的 _editing；已 path-bound profile 不被覆寫
+            if (appId.Kind == IdKind.Process
+                && !string.IsNullOrEmpty(appId.FullPath)
+                && string.IsNullOrEmpty(_editing.AppId.FullPath))
+            {
+                _editing.AppId.FullPath = appId.FullPath;
+            }
+
             AppNameText.Text = !string.IsNullOrEmpty(_editing.DisplayName) ? _editing.DisplayName : (_editing.AppId.Value ?? string.Empty);
             AppIdText.Text = AppIdSubtitle(_editing.AppId);
 
-            // CopyFrom 只在有其他 profile 時 enable
+            RefreshPathDisplay();
+
+            // CopyFrom 只在有其他 profile 時 enable（撞名不同 path 視為不同 profile，仍可互相 CopyFrom）
             try
             {
-                var others = GamepadProfileStore.Load().Where(p => !p.AppId.Matches(_editing.AppId)).ToList();
+                var others = GamepadProfileStore.Load().Where(p => !IsSameProfileSlot(p.AppId, _editing.AppId)).ToList();
                 CopyFromButton.IsEnabled = others.Count > 0;
             }
             catch
@@ -526,7 +536,7 @@ namespace OmniConsole.Controls
             List<GamepadProfile> others;
             try
             {
-                others = GamepadProfileStore.Load().Where(p => !p.AppId.Matches(_editing.AppId)).ToList();
+                others = GamepadProfileStore.Load().Where(p => !IsSameProfileSlot(p.AppId, _editing.AppId)).ToList();
             }
             catch { return; }
             if (others.Count == 0) return;
@@ -653,6 +663,34 @@ namespace OmniConsole.Controls
             if ((a.Mods & GamepadModifier.Win) != 0) parts.Add(Loc("GamepadModifier_Win"));
             parts.Add(KeyName(a.Vk));
             return string.Join("+", parts);
+        }
+
+        /// <summary>
+        /// 判定兩個 AppId 是否指向同一個 profile 槽（Editor CopyFrom 排除自己用）。
+        /// Aumid 類：Kind + Value 相同（PFN 已唯一）。
+        /// Process 類：Kind + Value + FullPath 正規化後相同（含兩邊都 null）。同名不同 path 視為不同 profile。
+        /// </summary>
+        private static bool IsSameProfileSlot(AppId a, AppId b)
+        {
+            if (a == null || b == null) return false;
+            if (!a.Matches(b)) return false;
+            if (a.Kind == IdKind.Aumid) return true;
+            string? pa = AppId.NormalizePath(a.FullPath);
+            string? pb = AppId.NormalizePath(b.FullPath);
+            return string.Equals(pa, pb, StringComparison.Ordinal);
+        }
+
+        /// <summary>顯示 path-bound profile 的路徑副標；Aumid 類或 FullPath 空時整區隱藏。</summary>
+        private void RefreshPathDisplay()
+        {
+            if (_editing == null) { PathDisplayPanel.Visibility = Visibility.Collapsed; return; }
+            if (_editing.AppId.Kind != IdKind.Process || string.IsNullOrEmpty(_editing.AppId.FullPath))
+            {
+                PathDisplayPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
+            PathDisplayPanel.Visibility = Visibility.Visible;
+            PathHintText.Text = _editing.AppId.FullPath ?? string.Empty;
         }
 
         /// <summary>appId 副文字（在地化 prefix + 完整識別值；Win32 → 「行程: <name>」、packaged → 「AUMID: <full>」）。</summary>

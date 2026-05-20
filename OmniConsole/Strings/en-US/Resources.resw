@@ -908,6 +908,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="AppIdAumidPrefix" xml:space="preserve">
     <value>AUMID: </value>
   </data>
+  <data name="GamepadProfile_PathBoundLabel.Text" xml:space="preserve">
+    <value>Bound to executable path:</value>
+  </data>
   <data name="GamepadAction_None" xml:space="preserve">
     <value>None</value>
   </data>

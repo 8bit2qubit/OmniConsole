@@ -126,13 +126,54 @@ namespace OmniConsole.Services
             return result;
         }
 
-        /// <summary>依 appId 找 profile；未命中回 null。</summary>
+        /// <summary>
+        /// 依 appId 找 profile；未命中回 null。
+        /// 比對寬鬆：path-bound 候選找不到精確同 path 的 store 項時，回退到同 process 名的舊 name-only profile。
+        /// </summary>
         public static GamepadProfile? Find(AppId appId)
         {
             if (appId == null) return null;
-            foreach (var p in Load())
-                if (p.AppId.Matches(appId)) return p;
+            var list = Load();
+            foreach (var p in list)
+                if (SameTarget(p.AppId, appId)) return p;
+            // Process 類 + input 有 path → 寬鬆回退：尋找同 Value 但 store FullPath 為 null 的舊 name-only profile
+            if (appId.Kind == IdKind.Process && !string.IsNullOrEmpty(appId.FullPath))
+            {
+                foreach (var p in list)
+                {
+                    if (p.AppId.Kind != IdKind.Process) continue;
+                    if (!p.AppId.Matches(appId)) continue;
+                    if (string.IsNullOrEmpty(p.AppId.FullPath)) return p;
+                }
+            }
             return null;
+        }
+
+        /// <summary>
+        /// 判定兩個 AppId 是否指向同一個 profile 槽（精確比對）。
+        /// Aumid 類：Kind 相同 + Value 相同。
+        /// Process 類：Kind 相同 + Value 相同 + FullPath 正規化後相同（含兩邊都 null 也視為相同）。
+        /// </summary>
+        private static bool SameTarget(AppId a, AppId b)
+        {
+            if (a == null || b == null) return false;
+            if (!a.Matches(b)) return false;  // Kind + Value 先過
+            if (a.Kind == IdKind.Aumid) return true;
+            string? pa = AppId.NormalizePath(a.FullPath);
+            string? pb = AppId.NormalizePath(b.FullPath);
+            return string.Equals(pa, pb, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Upsert 用的槽位比對：在 SameTarget 基礎上再放寬一條 — 同 Value 且 store 項 FullPath 為 null 的舊 name-only 視為同槽。
+        /// </summary>
+        private static bool SameSlot(AppId stored, AppId incoming)
+        {
+            if (stored == null || incoming == null) return false;
+            if (SameTarget(stored, incoming)) return true;
+            if (stored.Kind != IdKind.Process || incoming.Kind != IdKind.Process) return false;
+            if (!stored.Matches(incoming)) return false;
+            return string.IsNullOrEmpty(stored.FullPath) && !string.IsNullOrEmpty(incoming.FullPath);
         }
 
         // ── 寫 ─────────────────────────────────────────────────────────────
@@ -166,7 +207,7 @@ namespace OmniConsole.Services
             if (profile == null || profile.AppId == null) return false;
             if (IsBlacklisted(profile.AppId)) return false;
             var list = Load();
-            int idx = list.FindIndex(p => p.AppId.Matches(profile.AppId));
+            int idx = list.FindIndex(p => SameSlot(p.AppId, profile.AppId));
             if (idx >= 0) list[idx] = profile;
             else list.Add(profile);
             return SaveAll(list);
@@ -177,7 +218,7 @@ namespace OmniConsole.Services
         {
             if (appId == null) return false;
             var list = Load();
-            int removed = list.RemoveAll(p => p.AppId.Matches(appId));
+            int removed = list.RemoveAll(p => SameTarget(p.AppId, appId));
             if (removed == 0) return true;
             return SaveAll(list);
         }
@@ -193,11 +234,15 @@ namespace OmniConsole.Services
             string kindStr = appIdObj["kind"]?.GetValue<string>() ?? "process";
             string value = appIdObj["value"]?.GetValue<string>() ?? string.Empty;
             if (string.IsNullOrEmpty(value)) return null;
+            string? fullPath = appIdObj["fullPath"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(fullPath)) fullPath = null;
+            if (!AppId.IsValidFullPath(fullPath)) fullPath = null;
             prof.AppId = new AppId
             {
                 Kind = string.Equals(kindStr, "aumid", StringComparison.OrdinalIgnoreCase)
                             ? IdKind.Aumid : IdKind.Process,
-                Value = value
+                Value = value,
+                FullPath = fullPath
             };
 
             prof.DisplayName = obj["displayName"]?.GetValue<string>() ?? string.Empty;
@@ -272,13 +317,18 @@ namespace OmniConsole.Services
                 bindings[kv.Key.ToString()] = SerializeAction(kv.Value);
             }
 
+            var appIdObj = new JsonObject
+            {
+                ["kind"] = prof.AppId.Kind == IdKind.Aumid ? "aumid" : "process",
+                ["value"] = prof.AppId.Value ?? string.Empty
+            };
+            // FullPath 為 null 時不寫該 key
+            if (!string.IsNullOrEmpty(prof.AppId.FullPath))
+                appIdObj["fullPath"] = prof.AppId.FullPath;
+
             return new JsonObject
             {
-                ["appId"] = new JsonObject
-                {
-                    ["kind"] = prof.AppId.Kind == IdKind.Aumid ? "aumid" : "process",
-                    ["value"] = prof.AppId.Value ?? string.Empty
-                },
+                ["appId"] = appIdObj,
                 ["displayName"] = prof.DisplayName ?? string.Empty,
                 ["bindings"] = bindings
             };

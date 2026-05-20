@@ -22,12 +22,14 @@ namespace OmniConsole.PhantomLink.Services
         void GetForegroundAppInfo(
             [Out, MarshalAs(UnmanagedType.HString)] out string title,
             [Out, MarshalAs(UnmanagedType.HString)] out string processName,
+            [Out, MarshalAs(UnmanagedType.HString)] out string fullPath,
             [Out, MarshalAs(UnmanagedType.HString)] out string aumid,
             [Out, MarshalAs(UnmanagedType.HString)] out string displayName,
             [Out] out bool isElevated);
         void OpenProfileEditor(
             [MarshalAs(UnmanagedType.HString)] string appId,
-            [MarshalAs(UnmanagedType.HString)] string name);
+            [MarshalAs(UnmanagedType.HString)] string name,
+            [MarshalAs(UnmanagedType.HString)] string fullPath);
     }
 
     /// <summary>

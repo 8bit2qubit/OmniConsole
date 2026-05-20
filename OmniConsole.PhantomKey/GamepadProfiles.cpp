@@ -389,8 +389,9 @@ std::vector<GamepadProfile> LoadGamepadProfiles() {
         std::wstring kind  = json::GetString(appIdV, L"kind");
         std::wstring value = json::GetString(appIdV, L"value");
         if (value.empty()) continue;
-        prof.appId.kind  = (_wcsicmp(kind.c_str(), L"aumid") == 0) ? AppId::Kind::Aumid : AppId::Kind::Process;
-        prof.appId.value = value;
+        prof.appId.kind     = (_wcsicmp(kind.c_str(), L"aumid") == 0) ? AppId::Kind::Aumid : AppId::Kind::Process;
+        prof.appId.value    = value;
+        prof.appId.fullPath = json::GetString(appIdV, L"fullPath");  // 缺欄位回空字串 → 行為等同 name 通配
 
         prof.displayName = json::GetString(p, L"displayName");
 
@@ -479,8 +480,19 @@ static DWORD GetHostedUwpPid(HWND frameHwnd) {
     return ctx.pid;
 }
 
+// 路徑正規化：小寫 + 反斜線統一；空字串維持空。
+static std::wstring NormalizePath(const std::wstring& path) {
+    std::wstring out = path;
+    for (auto& c : out) {
+        if (c == L'/') c = L'\\';
+        else c = (wchar_t)towlower(c);
+    }
+    return out;
+}
+
 const GamepadProfile* FindGamepadProfileForForeground(const std::vector<GamepadProfile>& profiles,
                                            const std::wstring& procName,
+                                           const std::wstring& fullPath,
                                            HWND fgHwnd) {
     if (procName.empty()) return nullptr;
 
@@ -506,12 +518,15 @@ const GamepadProfile* FindGamepadProfileForForeground(const std::vector<GamepadP
         return nullptr;
     }
 
-    // Win32：比 process 名稱（不含 .exe，大小寫不敏感）
+    // Win32：強綁定 path，只認 procName + fullPath 雙件命中（不做 name 通配回退）
+    // 舊 name-only profile 在 store 裡仍會被讀進來，但這裡比對時忽略 — 主程式 Editor 開啟時自動升級為 path-bound
+    if (fullPath.empty()) return nullptr;
+    std::wstring fgPathNorm = NormalizePath(fullPath);
     for (const auto& p : profiles) {
-        if (p.appId.kind == AppId::Kind::Process &&
-            _wcsicmp(p.appId.value.c_str(), procName.c_str()) == 0) {
-            return &p;
-        }
+        if (p.appId.kind != AppId::Kind::Process) continue;
+        if (p.appId.fullPath.empty()) continue;
+        if (_wcsicmp(p.appId.value.c_str(), procName.c_str()) != 0) continue;
+        if (NormalizePath(p.appId.fullPath) == fgPathNorm) return &p;
     }
     return nullptr;
 }

@@ -23,6 +23,7 @@ namespace OmniConsole.PhantomLink
         // 前景程式狀態：顯示文字 + 「自訂此 App」按鈕傳給 PhantomBridge.OpenProfileEditor 的 appId / name
         private string _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
         private string _foregroundAppName;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
+        private string _foregroundFullPath;  // 前景 exe 完整路徑（Win32 桌面 process 才有，packaged 為空字串）；用於建 profile 時帶入 AppId.FullPath
 
         // 焦點剛從外部進入 Widget → 吞掉緊接著的一顆 D-pad Down，避免雙跳（OnGettingFocus 把焦點重導到選中態按鈕 + OnPreviewKeyDown 又推進一 section）
         private DateTime _swallowNextDownUntil;
@@ -306,13 +307,14 @@ namespace OmniConsole.PhantomLink
             var resw = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
             string title = string.Empty;
             string proc = string.Empty;
+            string fullPath = string.Empty;
             string aumid = string.Empty;
             string displayName = string.Empty;
             bool isElevated = false;
             try
             {
                 var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.GetForegroundAppInfo(out title, out proc, out aumid, out displayName, out isElevated);
+                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated);
             }
             catch (Exception ex)
             {
@@ -320,6 +322,7 @@ namespace OmniConsole.PhantomLink
                 ForegroundAppLineText.Text = LocSafe(resw, "Widget_ForegroundApp_None", "Current: —");
                 _foregroundAppId = null;
                 _foregroundAppName = string.Empty;
+                _foregroundFullPath = string.Empty;
                 CustomizeAppBtn.IsEnabled = false;
                 CustomizeAppNoteText.Visibility = Visibility.Collapsed;
                 return;
@@ -372,6 +375,8 @@ namespace OmniConsole.PhantomLink
             else
                 _foregroundAppId = null;
             _foregroundAppName = !string.IsNullOrEmpty(displayName) ? displayName : (title ?? string.Empty);
+            // packaged 行程或 blocked 時 fullPath 不適用（packaged 走 aumid 主鍵；blocked 不會建 profile）
+            _foregroundFullPath = (!blocked && !isUwp) ? (fullPath ?? string.Empty) : string.Empty;
 
             CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !isElevated;
             CustomizeAppNoteText.Visibility =
@@ -419,7 +424,7 @@ namespace OmniConsole.PhantomLink
             try
             {
                 var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.OpenProfileEditor(_foregroundAppId, _foregroundAppName ?? string.Empty);
+                bridge.OpenProfileEditor(_foregroundAppId, _foregroundAppName ?? string.Empty, _foregroundFullPath ?? string.Empty);
             }
             catch (Exception ex)
             {

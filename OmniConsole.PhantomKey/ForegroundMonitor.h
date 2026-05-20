@@ -15,6 +15,10 @@ struct InputRule {
 // 取得前景視窗的行程名稱（不含 .exe）
 std::wstring GetForegroundProcessName();
 
+// 一次取前景的行程名稱（不含 .exe）與完整路徑（含 .exe）；procName 為空字串代表取不到。
+// 與 GetForegroundProcessName 共用一次 OpenProcess + QueryFullProcessImageNameW。
+void GetForegroundProcessInfo(std::wstring& procName, std::wstring& fullPath);
+
 // 取得前景視窗 HWND；無前景窗回 nullptr
 HWND GetForegroundHwnd();
 

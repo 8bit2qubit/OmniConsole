@@ -17,12 +17,53 @@ namespace OmniConsole.Models
         /// <summary>識別值；Process=不含 .exe 的程式名稱（大小寫不敏感比對）、Aumid=完整 AUMID 字串。</summary>
         public string Value { get; set; } = string.Empty;
 
-        /// <summary>比對是否指向同一 App（Kind 相同 + Value 不分大小寫相同）。</summary>
+        /// <summary>
+        /// 完整路徑（含 .exe）；僅 Kind=Process 時有效，null 代表 name 通配。
+        /// 由 PhantomKey ForegroundMonitor 的 QueryFullProcessImageNameW 取得。
+        /// </summary>
+        public string? FullPath { get; set; }
+
+        /// <summary>比對是否指向同一 App（Kind 相同 + Value 不分大小寫相同）。FullPath 不參與相等性，由 store 層另行處理。</summary>
         public bool Matches(AppId other)
         {
             if (other == null) return false;
             return Kind == other.Kind &&
                    string.Equals(Value ?? string.Empty, other.Value ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>路徑正規化：小寫 + 反斜線統一；null/空字串回 null。</summary>
+        public static string? NormalizePath(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return null;
+            return path.Replace('/', '\\').ToLowerInvariant();
+        }
+
+        /// <summary>從完整路徑取倒數第二段（檔案的父資料夾名）；無分隔符或空字串回空字串。</summary>
+        public static string ExtractFolderName(string? fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath)) return string.Empty;
+            string normalized = fullPath.Replace('/', '\\');
+            int lastSlash = normalized.LastIndexOf('\\');
+            if (lastSlash <= 0) return string.Empty;
+            string parent = normalized.Substring(0, lastSlash);
+            int parentSlash = parent.LastIndexOf('\\');
+            return parentSlash >= 0 ? parent.Substring(parentSlash + 1) : parent;
+        }
+
+        /// <summary>FullPath 字元數上限。</summary>
+        private const int MaxFullPathLength = 1024;
+
+        /// <summary>FullPath 字元驗證：控制字元、`<>"|*?` 一律拒絕；反斜線與冒號允許（路徑必含）。</summary>
+        public static bool IsValidFullPath(string? path)
+        {
+            if (path == null) return true;
+            if (path.Length > MaxFullPathLength) return false;
+            foreach (char c in path)
+            {
+                if (c < 0x20) return false;
+                if (c == '<' || c == '>' || c == '"' || c == '|' || c == '*' || c == '?') return false;
+            }
+            return true;
         }
 
         /// <summary>Value 字元數上限，超過視為非法。</summary>

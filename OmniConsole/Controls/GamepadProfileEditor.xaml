@@ -10,10 +10,20 @@
     <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,24,0,24">
 
-            <!-- 頁首：App 名稱 + appId 副文字 -->
+            <!-- 頁首：App 名稱 + appId 副文字 + 綁定路徑（僅 Win32 process 類顯示）-->
             <StackPanel Spacing="4">
                 <TextBlock x:Name="AppNameText" FontSize="28" FontWeight="Bold"/>
                 <TextBlock x:Name="AppIdText"   FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <StackPanel x:Name="PathDisplayPanel" Orientation="Vertical" Spacing="2" Margin="0,4,0,0" Visibility="Collapsed">
+                    <TextBlock x:Uid="GamepadProfile_PathBoundLabel"
+                               FontSize="11"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock x:Name="PathHintText"
+                               FontSize="11"
+                               FontFamily="Consolas"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
             </StackPanel>
 
             <!-- 工具列群組 -->

@@ -31,6 +31,13 @@ namespace OmniConsole.Dialogs
             foreach (var p in others)
             {
                 string label = !string.IsNullOrEmpty(p.DisplayName) ? p.DisplayName : (p.AppId?.Value ?? string.Empty);
+                // path-bound profile 後綴接資料夾名稱
+                if (p.AppId != null && p.AppId.Kind == IdKind.Process && !string.IsNullOrEmpty(p.AppId.FullPath))
+                {
+                    string folder = AppId.ExtractFolderName(p.AppId.FullPath);
+                    if (!string.IsNullOrEmpty(folder))
+                        label = label + " · " + folder;
+                }
                 ProfileCombo.Items.Add(new ComboBoxItem { Content = label, Tag = p.AppId });
             }
             if (ProfileCombo.Items.Count > 0) ProfileCombo.SelectedIndex = 0;

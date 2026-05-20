@@ -255,14 +255,21 @@ namespace OmniConsole.Controls
             }
         }
 
-        /// <summary>產生 appId 的副文字(在地化 prefix + 識別值)。</summary>
+        /// <summary>產生 appId 的副文字（在地化 prefix + 識別值；path-bound profile 後綴接資料夾名稱以區分撞名）。</summary>
         private string AppIdSubtitle(AppId appId)
         {
             if (appId == null) return string.Empty;
             string prefix = appId.Kind == IdKind.Aumid
                 ? Loc("AppIdAumidPrefix")
                 : Loc("AppIdProcessPrefix");
-            return prefix + (appId.Value ?? string.Empty);
+            string baseText = prefix + (appId.Value ?? string.Empty);
+            if (appId.Kind == IdKind.Process && !string.IsNullOrEmpty(appId.FullPath))
+            {
+                string folder = AppId.ExtractFolderName(appId.FullPath);
+                if (!string.IsNullOrEmpty(folder))
+                    baseText = baseText + " · " + folder;
+            }
+            return baseText;
         }
 
         /// <summary>resw 查詢；plain / .Text / .Content 三候選回退到 key 本身。</summary>

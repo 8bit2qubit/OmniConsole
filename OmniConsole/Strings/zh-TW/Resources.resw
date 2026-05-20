@@ -908,6 +908,9 @@
   <data name="AppIdAumidPrefix" xml:space="preserve">
     <value>AUMID: </value>
   </data>
+  <data name="GamepadProfile_PathBoundLabel.Text" xml:space="preserve">
+    <value>綁定執行檔路徑：</value>
+  </data>
   <data name="GamepadAction_None" xml:space="preserve">
     <value>無</value>
   </data>

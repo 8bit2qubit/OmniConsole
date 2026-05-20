@@ -110,7 +110,7 @@ namespace OmniConsole.Models
         {
             var clone = new GamepadProfile
             {
-                AppId = new AppId { Kind = AppId.Kind, Value = AppId.Value },
+                AppId = new AppId { Kind = AppId.Kind, Value = AppId.Value, FullPath = AppId.FullPath },
                 DisplayName = DisplayName,
                 Bindings = new Dictionary<GamepadInputId, GamepadAction>(Bindings.Count)
             };

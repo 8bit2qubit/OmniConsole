@@ -26,20 +26,23 @@ namespace PhantomBridge
         // 啟動 Xbox 媒體櫃（xbox://library URI）
         void OpenXboxLibrary();
 
-        // 取前景視窗的 title / 行程名稱（不含 .exe）/ AUMID / displayName / isElevated。
+        // 取前景視窗的 title / 行程名稱（不含 .exe）/ 完整路徑（含 .exe）/ AUMID / displayName / isElevated。
         // displayName 優先序：
         // (1) packaged → PackageManager manifest DisplayName；
         // (2) ApplicationFrameHost 宿主 → title；
         // (3) Win32 → exe 版本資源 FileDescription；
         // (4) 皆失敗 → title → process 名稱。
+        // fullPath 由 QueryFullProcessImageNameW 取得；packaged 行程或取不到時回空字串。
+        // 主程式建立 gamepad profile 時帶入 AppId.FullPath，用於撞名遊戲分流（如 Steam vs Epic 同名 exe）。
         // Widget 用於顯示「目前程式」並判定「自訂此 App 的手把映射」按鈕應否啟用；
         // profile 內部 key 仍用 processName（穩定）。非 packaged 行程 aumid 回空字串。
         // isElevated：前景行程是否以提升權限執行（admin token，High IL 以上）。PhantomKey 跑在 Medium IL，
         // UIPI 會靜默丟棄 SendInput 給高 IL 視窗（PhantomKey 按鍵送不到高 IL 視窗），故 Widget 收到 true 時要停用「自訂此 App」（自訂 profile 無效）。
-        void GetForegroundAppInfo(out String title, out String processName, out String aumid, out String displayName, out Boolean isElevated);
+        void GetForegroundAppInfo(out String title, out String processName, out String fullPath, out String aumid, out String displayName, out Boolean isElevated);
 
-        // 喚起 OmniConsole 主程式編輯器（omniconsole://edit-gamepad-profile?appId=...&displayName=...）
-        // 流程：Win+G 收 Game Bar → ShellExecuteW（appId / displayName 經 percent-encode）
-        void OpenProfileEditor(String appId, String name);
+        // 喚起 OmniConsole 主程式編輯器（omniconsole://edit-gamepad-profile?appId=...&displayName=...&fullPath=...）
+        // 流程：Win+G 收 Game Bar → ShellExecuteW（appId / displayName / fullPath 經 percent-encode）
+        // fullPath 留空字串時 URI 不附該 query param，主程式建 profile 時 FullPath=null（name-only 通配）。
+        void OpenProfileEditor(String appId, String name, String fullPath);
     }
 }

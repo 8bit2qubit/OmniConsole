@@ -25,30 +25,37 @@ HWND GetForegroundHwnd() {
     return GetForegroundWindow();
 }
 
-std::wstring GetForegroundProcessName() {
+void GetForegroundProcessInfo(std::wstring& procName, std::wstring& fullPath) {
+    procName.clear();
+    fullPath.clear();
+
     HWND hwnd = GetForegroundWindow();
-    if (!hwnd) return L"";
+    if (!hwnd) return;
 
     DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
-    if (pid == 0) return L"";
+    if (pid == 0) return;
 
     HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (!hProc) return L"";
+    if (!hProc) return;
 
     WCHAR path[MAX_PATH] = {};
     DWORD size = MAX_PATH;
-    std::wstring result;
     if (QueryFullProcessImageNameW(hProc, 0, path, &size)) {
-        std::wstring fullPath = path;
+        fullPath.assign(path);
         size_t slash = fullPath.find_last_of(L'\\');
         std::wstring filename = (slash != std::wstring::npos) ? fullPath.substr(slash + 1) : fullPath;
         size_t dot = filename.rfind(L'.');
         if (dot != std::wstring::npos) filename = filename.substr(0, dot);
-        result = filename;
+        procName = std::move(filename);
     }
     CloseHandle(hProc);
-    return result;
+}
+
+std::wstring GetForegroundProcessName() {
+    std::wstring procName, fullPath;
+    GetForegroundProcessInfo(procName, fullPath);
+    return procName;
 }
 
 static bool IsSteamBigPicture();

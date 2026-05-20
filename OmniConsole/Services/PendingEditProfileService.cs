@@ -18,6 +18,7 @@ namespace OmniConsole.Services
 
         private const string KeyAppId = "PendingEditProfileAppId";
         private const string KeyDisplayName = "PendingEditProfileDisplayName";
+        private const string KeyFullPath = "PendingEditProfileFullPath";
 
         /// <summary>
         /// 解析 omniconsole://edit-gamepad-profile?appId=...&displayName=... 的 query string，寫入 LocalSettings 供 SettingsPage 取用。
@@ -35,6 +36,7 @@ namespace OmniConsole.Services
                 }
                 string appId = string.Empty;
                 string displayName = string.Empty;
+                string fullPath = string.Empty;
                 if (query.StartsWith("?")) query = query.Substring(1);
                 foreach (var pair in query.Split('&'))
                 {
@@ -47,13 +49,16 @@ namespace OmniConsole.Services
                     if (decoded.Length > MaxProtocolParamLength) continue;
                     if (string.Equals(key, "appId", StringComparison.OrdinalIgnoreCase)) appId = decoded;
                     else if (string.Equals(key, "displayName", StringComparison.OrdinalIgnoreCase)) displayName = decoded;
+                    else if (string.Equals(key, "fullPath", StringComparison.OrdinalIgnoreCase)) fullPath = decoded;
                 }
                 var local = Windows.Storage.ApplicationData.Current.LocalSettings;
                 if (!string.IsNullOrEmpty(appId))
                     local.Values[KeyAppId] = appId;
                 if (!string.IsNullOrEmpty(displayName))
                     local.Values[KeyDisplayName] = displayName;
-                DebugLogger.Log($"→ Stashed pending edit profile: appId={appId}, displayName={displayName}");
+                if (!string.IsNullOrEmpty(fullPath))
+                    local.Values[KeyFullPath] = fullPath;
+                DebugLogger.Log($"→ Stashed pending edit profile: appId={appId}, displayName={displayName}, fullPath={fullPath}");
             }
             catch (Exception ex)
             {
@@ -71,9 +76,18 @@ namespace OmniConsole.Services
             try
             {
                 var local = Windows.Storage.ApplicationData.Current.LocalSettings;
+                string? pendingFullPath = null;
+                if (local.Values.TryGetValue(KeyFullPath, out var pathObj) && pathObj is string pathStr)
+                {
+                    if (AppId.IsValidFullPath(pathStr) && !string.IsNullOrWhiteSpace(pathStr))
+                        pendingFullPath = pathStr;
+                    local.Values.Remove(KeyFullPath);
+                }
                 if (local.Values.TryGetValue(KeyAppId, out var idObj) && idObj is string idStr)
                 {
                     appId = AppId.Parse(idStr);
+                    if (appId != null && appId.Kind == IdKind.Process)
+                        appId.FullPath = pendingFullPath;
                     local.Values.Remove(KeyAppId);
                 }
                 if (local.Values.TryGetValue(KeyDisplayName, out var nameObj) && nameObj is string nameStr)

@@ -455,11 +455,12 @@ namespace winrt::PhantomBridge::implementation
     //                   ApplicationFrameHost 宿主的 UWP 走子視窗 CoreWindow 反查宿主 pid；
     //                   桌面 process 回 APPMODEL_ERROR_NO_PACKAGE，aumid 為空字串。
     // Widget 用於：頂部「目前程式」顯示 + 判定「自訂此 App」按鈕是否啟用。
-    void PhantomBridgeFactory::GetForegroundAppInfo(winrt::hstring& title, winrt::hstring& processName, winrt::hstring& aumid, winrt::hstring& displayName, bool& isElevated)
+    void PhantomBridgeFactory::GetForegroundAppInfo(winrt::hstring& title, winrt::hstring& processName, winrt::hstring& fullPath, winrt::hstring& aumid, winrt::hstring& displayName, bool& isElevated)
     {
         TryInstallClientWatchdog();
         title = winrt::hstring{};
         processName = winrt::hstring{};
+        fullPath = winrt::hstring{};
         aumid = winrt::hstring{};
         displayName = winrt::hstring{};
         isElevated = false;
@@ -498,6 +499,7 @@ namespace winrt::PhantomBridge::implementation
             }
         }
         processName = winrt::hstring{ procName };
+        fullPath = winrt::hstring{ exePath };
 
         // ── 取 AUMID ──
         // 兩條路徑：
@@ -558,7 +560,7 @@ namespace winrt::PhantomBridge::implementation
         return winrt::Windows::Foundation::Uri::EscapeComponent(s);
     }
 
-    void PhantomBridgeFactory::OpenProfileEditor(winrt::hstring const& appId, winrt::hstring const& name)
+    void PhantomBridgeFactory::OpenProfileEditor(winrt::hstring const& appId, winrt::hstring const& name, winrt::hstring const& fullPath)
     {
         TryInstallClientWatchdog();
         DismissGameBar(300);
@@ -567,6 +569,11 @@ namespace winrt::PhantomBridge::implementation
         uriStr += std::wstring{ PercentEncode(appId) };
         uriStr += L"&displayName=";
         uriStr += std::wstring{ PercentEncode(name) };
+        if (!fullPath.empty())
+        {
+            uriStr += L"&fullPath=";
+            uriStr += std::wstring{ PercentEncode(fullPath) };
+        }
 
         LaunchUriAsForeground(uriStr);
     }

@@ -125,7 +125,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         }
 
         // 前景程式變化偵測 → 重新讀取設定 + 重設 Mouse Mode 狀態 + FSE 退出檢查
-        std::wstring currentFg = GetForegroundProcessName();
+        std::wstring currentFg, currentFgPath;
+        GetForegroundProcessInfo(currentFg, currentFgPath);
         if (currentFg != lastFgProcess) {
             Log(L"[PhantomKey] FG changed: [%s] -> [%s].", lastFgProcess.c_str(), currentFg.c_str());
             LogForegroundWindowDiagnostics();
@@ -191,7 +192,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) {
         if (!config.hasBuiltInGamepadMapping &&
             config.mouseMode != MouseModeState::Off &&
             !IsMouseModeForceExcluded(currentFg)) {
-            matchedProfile = FindGamepadProfileForForeground(appProfiles, currentFg, GetForegroundHwnd());
+            matchedProfile = FindGamepadProfileForForeground(appProfiles, currentFg, currentFgPath, GetForegroundHwnd());
             if (matchedProfile) {
                 mouseModeActive = true;
                 useProfile = true;
