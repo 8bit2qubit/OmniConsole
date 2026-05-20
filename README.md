@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="350"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="350"><img src="docs/images/app-about.png" alt="OmniConsole About" height="350">
+  <img src="docs/images/app-settings.png" alt="OmniConsole Settings" height="350"><img src="docs/images/widget-omnicharm.png" alt="OmniCharm Widget" height="350"><img src="docs/images/app-about.png" alt="OmniConsole About" height="350"><img src="docs/images/app-nekomata.png" alt="Nekomata — Per-App Gamepad Mapping" height="350">
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 
 ## 💡 What is OmniConsole?
 
-OmniConsole serves as your Windows 11 Xbox Mode (FSE) Home shell on PCs and handhelds (ROG Xbox Ally X, etc.), with an OmniCharm Game Bar widget, Mouse Mode, and Steam shortcuts so everything stays on the gamepad. Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming platform. Any platform can be your Xbox Mode (FSE) Home — Steam, Xbox, Epic, Armoury Crate SE, Playnite, or anything you add.
+OmniConsole serves as your Windows 11 Xbox Mode (FSE) Home shell on PCs and handhelds (ROG Xbox Ally X, etc.), with an OmniCharm Game Bar widget, Mouse Mode, Steam shortcuts, and Nekomata per-app gamepad mapping so everything stays on the gamepad. Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming platform. Any platform can be your Xbox Mode (FSE) Home — Steam, Xbox, Epic, Armoury Crate SE, Playnite, or anything you add.
 
 - **On boot**: With "Enter Xbox mode (FSE) on startup" enabled, your gaming platform launches automatically at boot.
 - **During use**: Press the **Xbox button**, then select **"Home"** in Game Bar to launch your gaming platform, or **"Library"** to open OmniConsole Settings.
@@ -41,6 +41,7 @@ OmniConsole serves as your Windows 11 Xbox Mode (FSE) Home shell on PCs and hand
 - **Gamepad support** – Navigate with **D-Pad** or **Left Stick**; **A** to confirm, **B** to exit, **LB/RB** to switch category tabs, **Y** to add a custom platform, **X** to edit, and **Menu (☰)** to set the focused platform as default and launch it immediately (when running inside Xbox Mode (FSE)).
 - **Gamepad Mouse Mode** – Use your gamepad as a mouse and keyboard. Three modes: **Off**, **Auto** (browsers, File Explorer, Steam, Epic Games Store, Discord), and **Force On** (all apps except an exclusion list). Cursor speed is adjustable, with two controller layouts to choose from: **OmniNav** and **Classic**.
 - **OmniCharm widget** – A Game Bar widget for in-game quick access. Open **Task View**, the **Xbox Library**, or the **Steam Overlay** in one tap; toggle **Gamepad Mouse Mode**, controller layout, cursor speed, and the **Steam In-Game Overlay** (long-press ☰).
+- **Nekomata — custom per-app gamepad mapping** – Nekomata weaves a charm for each app, remapping every XInput input (A/B/X/Y, LB/RB, LT/RT, LS/RS, D-pad, both sticks) to a keyboard key, modifier combo, mouse button, scroll wheel, cursor movement, scrolling, arrow keys, or WASD. Open the editor from the OmniCharm widget's "Customize gamepad mapping for this app…" button.
 - **Gamepad Steam shortcuts** – The gamepad **⧉** button controls Steam Big Picture shortcuts: short press opens the **Steam Menu**, long press opens the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings entry** – A separate "**OmniConsole Settings**" entry in All Apps lets you change your default platform anytime.
 - **Native Xbox Mode (FSE) integration** – Registered as a Windows 11 Xbox Mode (FSE) Home App through the official API.

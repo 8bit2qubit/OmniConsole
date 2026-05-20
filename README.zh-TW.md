@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" height="350"><img src="docs/images/widget-omnicharm.zh-TW.png" alt="OmniCharm 小工具" height="350"><img src="docs/images/app-about.zh-TW.png" alt="OmniConsole 關於" height="350">
+  <img src="docs/images/app-settings.zh-TW.png" alt="OmniConsole 設定介面" height="350"><img src="docs/images/widget-omnicharm.zh-TW.png" alt="OmniCharm 小工具" height="350"><img src="docs/images/app-about.zh-TW.png" alt="OmniConsole 關於" height="350"><img src="docs/images/app-nekomata.zh-TW.png" alt="貓又 — 各程式手把映射" height="350">
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 Xbox 模式 (FSE) 首頁殼層，並提供 OmniCharm Game Bar 小工具、滑鼠模式與 Steam 快捷鍵，讓一切操作都不離手把。只要觸發 Xbox 模式 (FSE)，OmniConsole 就會自動啟動你設定的遊戲平台。任何平台都能當你的 Xbox 模式 (FSE) 首頁 — Steam、Xbox、Epic、Armoury Crate SE、Playnite，或你自行新增的平台。
+OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 Xbox 模式 (FSE) 首頁殼層，並提供 OmniCharm Game Bar 小工具、滑鼠模式、Steam 快捷鍵與貓又的各程式手把映射，讓一切操作都不離手把。只要觸發 Xbox 模式 (FSE)，OmniConsole 就會自動啟動你設定的遊戲平台。任何平台都能當你的 Xbox 模式 (FSE) 首頁 — Steam、Xbox、Epic、Armoury Crate SE、Playnite，或你自行新增的平台。
 
 - **開機時**：啟用「啟動時進入 Xbox 模式 (FSE)」後，開機即自動啟動你設定的遊戲平台。
 - **使用中**：按下 **Xbox 鍵**，點選 Game Bar 的「**首頁**」啟動遊戲平台，或點選「**媒體櫃**」開啟 OmniConsole 設定。
@@ -41,6 +41,7 @@ OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 
 - **手把支援** – 以**方向鍵**或**左搖桿**導覽；**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯，**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（僅在 OmniConsole 於 Xbox 模式 (FSE) 中執行時可用）。
 - **手把滑鼠模式** – 將手把當作滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store、Discord）與**強制開啟**（所有應用程式，排除清單除外）。游標速度可調，並提供兩種控制器版面配置：**OmniNav** 與 **Classic**。
 - **OmniCharm 小工具** – 遊戲中快速存取的 Game Bar 小工具：一鍵開啟**工作檢視**、**Xbox 媒體櫃**或 **Steam 遊戲內嵌介面**；切換**手把滑鼠模式**、控制器版面、游標速度與 **Steam 遊戲內嵌介面**（長按 ☰）。
+- **貓又 — 自訂各程式手把映射** – 貓又為每個程式編一道咒，將所有 XInput 輸入位（A/B/X/Y、LB/RB、LT/RT、LS/RS、十字鍵、雙搖桿）重新映射為鍵盤按鍵、修飾鍵組合、滑鼠按鍵、滾輪、游標移動、捲動、方向鍵或 WASD。從 OmniCharm 小工具的「自訂此程式的手把映射…」按鈕進入編輯器。
 - **手把 Steam 快捷鍵** – 手把 **⧉** 按鍵對應 Steam Big Picture 模式快捷：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
 - **專屬設定入口** – 「所有應用程式」中獨立的「**OmniConsole 設定**」項目，隨時可更改預設平台。
 - **原生 Xbox 模式 (FSE) 整合** – 透過 Windows 11 Xbox 模式 (FSE) 官方 API 註冊為主畫面應用程式。
