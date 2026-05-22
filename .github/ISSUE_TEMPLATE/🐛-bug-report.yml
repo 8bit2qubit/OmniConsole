@@ -1,8 +1,6 @@
-name: "❓ Report an Issue or Ask a Question"
-description: Report reproducible issues or ask questions after checking the README.
+name: "🐛 Bug Report"
+description: Report a reproducible bug after checking the README.
 title: "[Issue]: "
-labels:
-  - question
 assignees: []
 body:
   - type: checkboxes
@@ -18,10 +16,16 @@ body:
             I have searched the [**existing Issues**](https://github.com/8bit2qubit/OmniConsole/issues) to ensure my problem is not already reported.
           required: true
         - label: >-
-            I understand that OmniConsole is a **personal interest project**, written and maintained by a **solo developer** in their own free time. I have considered whether my request is **realistic** for a project of that scope before opening this.
+            I understand this template is for **reproducible bugs only**. If this is a feature request, I am aware that the **source code is available** and I can build and implement it myself locally.
           required: true
         - label: >-
-            I have **sanity-checked** this from the maintainer's side: it is a **real issue** or a **reasonable question**, not something that would make a tired hobbyist developer reach for more coffee.
+            I have checked that this bug is **specific to OmniConsole** — it is not a quirk of **Xbox Mode (FSE)**, the gaming platform itself (Steam, Xbox App, etc.), or a recent **Windows update**.
+          required: true
+        - label: >-
+            I understand that OmniConsole is a **personal interest project**, written and maintained by a **solo developer** in their own free time. I have considered whether this bug report is **realistic** for a project of that scope before opening this.
+          required: true
+        - label: >-
+            I have **sanity-checked** this from the maintainer's side: it is a **real, reproducible bug**, not something that would make a tired hobbyist developer reach for more coffee.
           required: true
   - type: markdown
     attributes:
@@ -128,30 +132,38 @@ body:
       value: "---"
   - type: markdown
     attributes:
-      value: "### 📝 Step 3: Issue Details"
+      value: "### 📝 Step 3: Bug Details"
   - type: textarea
     id: issue-description
     attributes:
-      label: "5. Describe your issue or question:"
-      description: "(A clear and concise description of what the problem is. Screenshots, a short clip, or relevant logs are welcome here — a picture often shows the problem more precisely than words.)"
+      label: "5. Describe the bug:"
+      description: "(A clear and concise description of what the bug is. Screenshots, a short clip, or relevant logs are welcome here — a picture often shows the problem more precisely than words.)"
       placeholder: "Type here..."
     validations:
       required: true
   - type: textarea
     id: steps-to-reproduce
     attributes:
-      label: "6. Steps to Reproduce (if applicable):"
-      description: "(If you are reporting a reproducible problem, list the steps. A short screen recording can capture this better than text.)"
+      label: "6. Steps to Reproduce:"
+      description: "(List the exact steps that reproduce the bug. A short screen recording can capture this better than text.)"
       placeholder: |
         1. Boot the PC / Press Xbox button.
         2. Observed ...
         3. ...
     validations:
-      required: false
+      required: true
+  - type: textarea
+    id: without-omniconsole
+    attributes:
+      label: "7. Does the problem still happen with the default Xbox App shell?"
+      description: "(Open **Settings → Gaming → Xbox mode (FSE)** and set **Choose home app** from OmniConsole back to the Xbox App, then try to reproduce the problem. This keeps the Xbox Mode (FSE) environment unchanged and only swaps out the shell. If the problem still happens, the root cause is Xbox Mode (FSE), the platform, or Windows rather than OmniConsole. Describe what you observed.)"
+      placeholder: "e.g., Set the home app back to the Xbox App — the problem still happens / no longer happens / not tested."
+    validations:
+      required: true
   - type: textarea
     id: expected-behavior
     attributes:
-      label: "7. Expected Behavior:"
+      label: "8. Expected Behavior:"
       description: "(What did you expect to happen? A reference screenshot, if you have one, helps.)"
       placeholder: "Type here..."
     validations:
@@ -159,7 +171,7 @@ body:
   - type: textarea
     id: actual-behavior
     attributes:
-      label: "8. Actual Behavior:"
+      label: "9. Actual Behavior:"
       description: "(What actually happened? A screenshot or clip of the result makes this clearer.)"
       placeholder: "Type here..."
     validations:
@@ -167,7 +179,7 @@ body:
   - type: textarea
     id: environment-snapshot
     attributes:
-      label: "9. Environment Snapshot"
+      label: "10. Environment Snapshot"
       description: >-
         Paste the **full Markdown snapshot** here — it carries the OS build, FSE state, XFSET status, and hardware details needed to diagnose and analyze the problem. **PhantomKey only runs inside the Xbox Mode (FSE) shell — capture the snapshot from inside FSE, while PhantomKey is running; a snapshot taken from the desktop will always show "PhantomKey: not running" and isn't useful for diagnosis.** Get it via **OmniConsole Settings → navigation button (☰) → About → Copy to Clipboard**.
       placeholder: "Paste your Markdown snapshot here..."
