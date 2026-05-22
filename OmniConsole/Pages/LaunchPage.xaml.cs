@@ -302,6 +302,15 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
+        /// 釋放手把導覽服務的計時器與系統級資源。應用程式結束前呼叫。
+        /// </summary>
+        public void DisposeGamepadService()
+        {
+            _launchPanelGamepadService?.Dispose();
+            _launchPanelGamepadService = null;
+        }
+
+        /// <summary>
         /// LaunchPanel 中手把 'A' 鍵的處理：焦點在按鈕時觸發點選。
         /// </summary>
         private void OnLaunchPanelGamepadAButtonPressed()

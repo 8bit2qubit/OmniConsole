@@ -1102,6 +1102,16 @@
                                         <TextBlock x:Uid="Label_Locale" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutLocaleText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock x:Uid="Label_CountryRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Name="AboutCountryRegionText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock x:Uid="Label_DeviceRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Name="AboutDeviceRegionText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
                                 </StackPanel>
                             </ContentControl>
                         </StackPanel>

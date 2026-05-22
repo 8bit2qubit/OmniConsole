@@ -96,6 +96,7 @@ namespace OmniConsole
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            DebugLogger.Log($"[DIAG] OnLaunched pid={Environment.ProcessId} tick={Environment.TickCount64} startWithSettings={_startWithSettings}");
             // 註冊 FSE 狀態變化通知（取代輪詢），記錄啟動時的 FSE 狀態供診斷
             FseService.StartListening();
             DebugLogger.Log($"[App] IsSupported={FseService.IsSupported()}, CanActivate={FseService.CanActivate()}, IsActive={FseService.IsActive()}");
@@ -211,6 +212,7 @@ namespace OmniConsole
         /// </summary>
         public static void ShowSettingsFromRedirect()
         {
+            DebugLogger.Log($"[DIAG] ShowSettingsFromRedirect pid={Environment.ProcessId} tick={Environment.TickCount64} hasWindow={_window != null}");
             _dispatcherQueue?.TryEnqueue(() =>
             {
                 if (_window is MainWindow mainWindow)
@@ -298,11 +300,12 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 統一退出應用程式。取消 FSE 狀態通知後以 Environment.Exit(0) 終止行程。
+        /// 統一退出應用程式。釋放手把導覽服務與 FSE 狀態通知後以 Environment.Exit(0) 終止行程。
         /// </summary>
         public static void ExitApp()
         {
-            DebugLogger.Log("[App] ExitApp: stopping FSE listener and exiting");
+            DebugLogger.Log("[App] ExitApp: disposing gamepad services, stopping FSE listener and exiting");
+            try { (_window as MainWindow)?.DisposeGamepadServices(); } catch { }
             FseService.StopListening();
             Environment.Exit(0);
         }

@@ -20,7 +20,7 @@ namespace OmniConsole.Services
     /// A/B/X/Y 鍵、LB/RB 肩鍵輸入映射至 WinUI 3 的焦點導覽與元素觸發，並支援螢幕鍵盤顯示與 ContentDialog 鍵盤閃避。
     /// 支援多手把同時連線，各手把狀態獨立追蹤。
     /// </summary>
-    public class GamepadNavigationService
+    public class GamepadNavigationService : IDisposable
     {
         // ── 螢幕鍵盤 ──────────────────────────────────────────────────────────
         // Windows 11 現代遊戲控制器鍵盤（Gamepad Keyboard）透過 CoreInputView.TryShow(CoreInputViewKind.Gamepad)
@@ -388,6 +388,23 @@ namespace OmniConsole.Services
         public void Stop()
         {
             _gamepadTimer?.Stop();
+        }
+
+        /// <summary>
+        /// 停止計時器、解除 Tick 事件並釋放手把狀態快取。應用程式結束或頁面卸載時呼叫。
+        /// </summary>
+        public void Dispose()
+        {
+            if (_gamepadTimer != null)
+            {
+                _gamepadTimer.Stop();
+                _gamepadTimer.Tick -= GamepadTimer_Tick;
+                _gamepadTimer = null;
+            }
+            _inputInjector = null;
+            _previousReadings.Clear();
+            _heldStates.Clear();
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

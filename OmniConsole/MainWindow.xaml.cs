@@ -80,14 +80,19 @@ namespace OmniConsole
                 rootElement.Loaded += (_, _) => _visualTreeReady.TrySetResult();
             }
 
-            // 更新安裝期間 AppWindow 層級的關閉請求（X 鈕、Alt+F4 等）一律拒絕
+            // AppWindow 層級的關閉請求（X 鈕、Task View 關閉、Alt+F4 等）。
+            // 更新安裝期間一律拒絕；否則在視窗關閉前釋放手把導覽服務的系統級資源，
+            // 涵蓋不經過 App.ExitApp 的關閉路徑。
             this.AppWindow.Closing += (s, e) =>
             {
                 if (IsUpdateInstallInProgress)
                 {
                     DebugLogger.Log("[MainWindow] AppWindow.Closing blocked: update install in progress");
                     e.Cancel = true;
+                    return;
                 }
+                DebugLogger.Log("[MainWindow] AppWindow.Closing: disposing gamepad services");
+                DisposeGamepadServices();
             };
         }
 
@@ -251,6 +256,15 @@ namespace OmniConsole
         // ── 全域退出 ─────────────────────────────────────────────────────────
 
         /// <summary>
+        /// 釋放兩個頁面持有的手把導覽服務。應用程式結束前由 App.ExitApp 呼叫。
+        /// </summary>
+        public void DisposeGamepadServices()
+        {
+            LaunchPageControl.DisposeGamepadService();
+            SettingsPageControl.DisposeGamepadService();
+        }
+
+        /// <summary>
         /// 全域退出邏輯。
         /// 若在設定介面中，直接退出應用程式（返回 FSE）。
         /// 若在其他介面且在 FSE 中，觸發退回桌面對話方塊。若不在則直接退出。
@@ -278,7 +292,7 @@ namespace OmniConsole
 
             // FSE 模式下透過 API 觸發「切換到 Windows 桌面」確認對話方塊
             // 對話方塊期間使用者無法點選 OmniConsole 的按鈕，無需停用
-            //   - 確認退出 → StateChanged callback 觸發，IsActive() 變 false → Exit()
+            //   - 確認退出 → StateChanged 回呼觸發，IsActive() 變 false → Exit()
             //   - 取消 → FSE 退出對話方塊消失，OmniConsole 按鈕可正常點選
             //   - 再次點選「返回桌面」按鈕 → 取消前一輪等待，重新觸發
             if (fseActive)

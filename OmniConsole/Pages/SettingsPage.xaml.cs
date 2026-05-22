@@ -234,6 +234,7 @@ namespace OmniConsole.Pages
         /// </summary>
         public void ShowSettings()
         {
+            DebugLogger.Log($"[DIAG] SettingsPage.ShowSettings pid={Environment.ProcessId} tick={Environment.TickCount64}");
             // Protocol 帶入的待編輯 appId / displayName 在這裡先取出，下方視情況用來自動跳到手把映射編輯器
             ConsumePendingEditProfileRequest();
 
@@ -402,6 +403,7 @@ namespace OmniConsole.Pages
         /// </summary>
         private void SettingsNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            DebugLogger.Log($"[DIAG] SettingsNav_SelectionChanged tick={Environment.TickCount64} tag={(args.SelectedItemContainer as NavigationViewItem)?.Tag}");
             if (args.SelectedItemContainer is NavigationViewItem selectedItem)
             {
                 if (selectedItem.Tag?.ToString() is not string tag) return;
@@ -482,6 +484,8 @@ namespace OmniConsole.Pages
                 ? $"{s.MaxTouchPoints} ({_resourceLoader.GetString("MaxTouchPoints_NoTouch")})"
                 : s.MaxTouchPoints.ToString(CultureInfo.InvariantCulture);
             AboutLocaleText.Text = LocalizeForUI(s.Locale);
+            AboutCountryRegionText.Text = LocalizeForUI(s.CountryRegion);
+            AboutDeviceRegionText.Text = LocalizeForUI(s.DeviceRegion);
             AboutCapturedAtText.Text = s.CapturedAt.ToString(
                 "yyyy-MM-dd HH:mm:ss zzz",
                 CultureInfo.InvariantCulture);
@@ -1289,6 +1293,15 @@ namespace OmniConsole.Pages
         public void StopGamepadPolling()
         {
             _gamepadNavigationService?.Stop();
+        }
+
+        /// <summary>
+        /// 釋放手把導覽服務的計時器與系統級資源。應用程式結束前呼叫。
+        /// </summary>
+        public void DisposeGamepadService()
+        {
+            _gamepadNavigationService?.Dispose();
+            _gamepadNavigationService = null;
         }
 
         /// <summary>

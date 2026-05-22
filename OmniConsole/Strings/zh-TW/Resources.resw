@@ -367,12 +367,6 @@
   <data name="PlatformDialog_Executable" xml:space="preserve">
     <value>執行檔</value>
   </data>
-  <data name="PlatformDialog_TargetLabel" xml:space="preserve">
-    <value>URI 或路徑</value>
-  </data>
-  <data name="PlatformDialog_TargetPlaceholder" xml:space="preserve">
-    <value>例如 steam://open/bigpicture</value>
-  </data>
   <data name="PlatformDialog_UriLabel" xml:space="preserve">
     <value>URI</value>
   </data>
@@ -812,6 +806,12 @@
   <data name="Label_Locale.Text" xml:space="preserve">
     <value>語系</value>
   </data>
+  <data name="Label_CountryRegion.Text" xml:space="preserve">
+    <value>國家/地區</value>
+  </data>
+  <data name="Label_DeviceRegion.Text" xml:space="preserve">
+    <value>裝置設定地區</value>
+  </data>
   <data name="Label_CapturedAt.Text" xml:space="preserve">
     <value>擷取時間：</value>
   </data>
@@ -849,7 +849,7 @@
     <value>貓又</value>
   </data>
   <data name="GamepadMappingDescription.Text" xml:space="preserve">
-    <value>貓又願意為你的手把施一道咒，為每個程式召喚出最順手的設定。</value>
+    <value>貓又願意為你的手把施一道咒，讓每個程式召喚出最順手的設定。</value>
   </data>
   <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
     <value>還沒有施過咒的程式呢～在 Game Bar 的 OmniCharm 小工具中選擇「自訂此程式的手把映射」，貓又就會為它編一道新咒。</value>

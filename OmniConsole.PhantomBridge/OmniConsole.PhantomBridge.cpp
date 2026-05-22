@@ -16,7 +16,7 @@
 //   1. init_apartment / CoRegisterClassObject / CoResumeClassObjects
 //   2. WaitForSingleObject(shutdownEvent, INFINITE) 純 kernel 等待
 //   3. shutdown 觸發：module_lock 計數歸零（COM 正常釋放）或
-//      RegisterWaitForSingleObject callback（client 行程死亡）
+//      RegisterWaitForSingleObject 回呼（client 行程死亡）
 //   4. CoRevokeClassObject + 退出
 
 using namespace winrt;
@@ -47,7 +47,7 @@ namespace
 // ── TryInstallClientWatchdog：方法 entry 呼叫的 client 行程監聽安裝 ──────────
 //
 // 透過 RPC 取得 client（PhantomLink）PID → OpenProcess → 丟給 thread pool 等其死亡，
-// client 終止瞬間 kernel 自動觸發 callback SetEvent(shutdownEvent)，達成 kernel 級低延遲偵測。
+// client 終止瞬間 kernel 自動觸發回呼 SetEvent(shutdownEvent)，達成 kernel 級低延遲偵測。
 // 必須由 RPC dispatch thread 呼叫；IClassFactory::CreateInstance 不一定走 RPC 層
 // （OLE32 內部派發可能繞過），故移到 runtime class 方法 entry 確保
 // RpcServerInqCallAttributesW 有效。只裝一次（atomic CAS），失敗時重置旗標讓下次重試。
@@ -188,8 +188,8 @@ int APIENTRY wWinMain(
     ::WaitForSingleObject(g_shutdownEvent, INFINITE);
 
     // ── 清理 ──
-    // 先解除 wait 註冊（INVALID_HANDLE_VALUE 阻塞等待 callback 完成），再關閉 client
-    // process handle，避免 callback 競態存取已釋放資源。
+    // 先解除 wait 註冊（INVALID_HANDLE_VALUE 阻塞等待回呼完成），再關閉 client
+    // process handle，避免回呼競態存取已釋放資源。
     if (g_clientWaitHandle != nullptr)
     {
         ::UnregisterWaitEx(g_clientWaitHandle, INVALID_HANDLE_VALUE);

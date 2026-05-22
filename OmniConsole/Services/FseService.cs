@@ -40,7 +40,7 @@ namespace OmniConsole.Services
         private static extern void UnregisterGamingFullScreenExperienceChangeNotification(
             IntPtr registration);
 
-        /// <summary>callback delegate 必須以欄位持有參照，防止 GC 回收導致 callback 失效。</summary>
+        /// <summary>回呼 delegate 必須以欄位持有參照，防止 GC 回收導致回呼失效。</summary>
         private static GamingFullScreenExperienceChangeRoutine? _changeCallback;
         private static IntPtr _changeRegistration;
 

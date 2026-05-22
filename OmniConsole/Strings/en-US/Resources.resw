@@ -338,7 +338,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Add</value>
   </data>
   <data name="GamepadHint_SwitchTab.Text" xml:space="preserve">
-    <value>Switch Tab</value>
+    <value>Switch tab</value>
   </data>
   <data name="GamepadHint_Add.Text" xml:space="preserve">
     <value>Add</value>
@@ -347,7 +347,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Edit</value>
   </data>
   <data name="GamepadHint_Launch.Text" xml:space="preserve">
-    <value>Set &amp; Launch</value>
+    <value>Set &amp; launch</value>
   </data>
   <data name="PlatformDialog_AddTitle" xml:space="preserve">
     <value>Add Platform</value>
@@ -366,12 +366,6 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   </data>
   <data name="PlatformDialog_Executable" xml:space="preserve">
     <value>Executable</value>
-  </data>
-  <data name="PlatformDialog_TargetLabel" xml:space="preserve">
-    <value>URI or Path</value>
-  </data>
-  <data name="PlatformDialog_TargetPlaceholder" xml:space="preserve">
-    <value>e.g. steam://open/bigpicture</value>
   </data>
   <data name="PlatformDialog_UriLabel" xml:space="preserve">
     <value>URI</value>
@@ -812,6 +806,12 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="Label_Locale.Text" xml:space="preserve">
     <value>Locale</value>
   </data>
+  <data name="Label_CountryRegion.Text" xml:space="preserve">
+    <value>Country or Region</value>
+  </data>
+  <data name="Label_DeviceRegion.Text" xml:space="preserve">
+    <value>Device Setup Region</value>
+  </data>
   <data name="Label_CapturedAt.Text" xml:space="preserve">
     <value>Captured at:</value>
   </data>
@@ -852,7 +852,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Nekomata will weave a charm for your gamepad, conjuring the perfect bindings for each app.</value>
   </data>
   <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
-    <value>No charmed apps yet~ Open the OmniCharm widget on the Game Bar and choose “Customize gamepad mapping for this app” — Nekomata will weave a new charm for it.</value>
+    <value>No charmed apps yet~ Open the OmniCharm widget in Game Bar and choose “Customize gamepad mapping for this app” — Nekomata will weave a new charm for it.</value>
   </data>
   <data name="GamepadMappingToolsSection.Text" xml:space="preserve">
     <value>Tools</value>
@@ -1260,7 +1260,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Delete this profile</value>
   </data>
   <data name="GamepadHint_SaveReturn.Text" xml:space="preserve">
-    <value>Save &amp; back</value>
+    <value>Save &amp; return</value>
   </data>
   <data name="AdvancedSection_Sound.Text" xml:space="preserve">
     <value>Interface Sound</value>

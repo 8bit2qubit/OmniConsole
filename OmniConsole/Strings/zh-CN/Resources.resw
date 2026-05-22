@@ -367,12 +367,6 @@
   <data name="PlatformDialog_Executable" xml:space="preserve">
     <value>可执行文件</value>
   </data>
-  <data name="PlatformDialog_TargetLabel" xml:space="preserve">
-    <value>URI 或路径</value>
-  </data>
-  <data name="PlatformDialog_TargetPlaceholder" xml:space="preserve">
-    <value>例如 steam://open/bigpicture</value>
-  </data>
   <data name="PlatformDialog_UriLabel" xml:space="preserve">
     <value>URI</value>
   </data>
@@ -812,6 +806,12 @@
   <data name="Label_Locale.Text" xml:space="preserve">
     <value>语言</value>
   </data>
+  <data name="Label_CountryRegion.Text" xml:space="preserve">
+    <value>国家或地区</value>
+  </data>
+  <data name="Label_DeviceRegion.Text" xml:space="preserve">
+    <value>设备设置区域</value>
+  </data>
   <data name="Label_CapturedAt.Text" xml:space="preserve">
     <value>捕获时间：</value>
   </data>
@@ -849,7 +849,7 @@
     <value>猫又</value>
   </data>
   <data name="GamepadMappingDescription.Text" xml:space="preserve">
-    <value>猫又愿意为你的手柄施一道咒，为每个应用召唤出最顺手的设置。</value>
+    <value>猫又愿意为你的手柄施一道咒，让每个应用召唤出最顺手的设置。</value>
   </data>
   <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
     <value>还没有施过咒的应用呢～在 Game Bar 的 OmniCharm 小组件中选择“自定义此应用的手柄映射”，猫又就会为它编一道新咒。</value>

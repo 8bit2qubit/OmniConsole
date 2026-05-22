@@ -53,6 +53,28 @@ namespace OmniConsole.Services
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
 
+        // GetUserGeoID(GEOCLASS_NATION) 取使用者「國家/地區」的 GeoId。
+        [DllImport("kernel32.dll")]
+        private static extern int GetUserGeoID(int GeoClass);
+
+        // GetGeoInfoW(GeoId, GEO_ISO2, ...) 把 GeoId 轉為 ISO 兩字母國家／地區代碼。
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetGeoInfoW(int Location, int GeoType, StringBuilder lpGeoData, int cchData, int LangId);
+
+        // GetUserGeoID 的 GeoClass：查詢國家層級。
+        private const int GEOCLASS_NATION = 16;
+
+        // GetGeoInfoW 的 GeoType：ISO 兩字母國家／地區代碼。
+        private const int GEO_ISO2 = 4;
+
+        // 「國家/地區」設定值位置（HKCU，REG_SZ）。
+        private const string CountryRegionKey = @"Control Panel\International\Geo";
+        private const string CountryRegionNationValue = "Nation";
+
+        // 「裝置設定地區」設定值位置（HKLM，REG_DWORD）。
+        private const string DeviceRegionKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\DeviceRegion";
+        private const string DeviceRegionValue = "DeviceRegion";
+
         // ── PhantomKey 健康檢查：透過 SendMessageTimeout ping 主迴圈推進狀況 ───────
         // PhantomKey 在 PingService 開了名稱為 "OmniConsole.PhantomKey.PingWnd" 的 message-only window，
         // 收到 WM_APP+1 會直接回傳「距離最後心跳的毫秒數」。
@@ -187,7 +209,7 @@ namespace OmniConsole.Services
             int PingLagMs);                        // ping 回傳的延遲（毫秒）；非 Responsive/Busy/Stuck 時為 -1
 
         /// <summary>
-        /// 「關於」頁的整體快照：套件版本、XFSET、硬體、PhantomKey 健康、OS / FSE / Locale 等環境資訊。
+        /// 「關於」頁的整體快照：套件版本、XFSET、硬體、PhantomKey 健康、OS / FSE / Locale / 地區等環境資訊。
         /// </summary>
         public record EnvironmentSnapshot(
             ComponentVersions Versions,
@@ -199,6 +221,8 @@ namespace OmniConsole.Services
             string DeviceForm,
             int MaxTouchPoints,
             string Locale,
+            string CountryRegion,
+            string DeviceRegion,
             DateTimeOffset CapturedAt);
 
         // ── 公開 API ─────────────────────────────────────────────────────────
@@ -260,7 +284,7 @@ namespace OmniConsole.Services
         }
 
         /// <summary>
-        /// 一次收齊所需的全部資訊：版本、XFSET、硬體、PhantomKey 健康、OS / FSE / Locale。
+        /// 一次收齊所需的全部資訊：版本、XFSET、硬體、PhantomKey 健康、OS / FSE / Locale / 地區。
         /// </summary>
         public static EnvironmentSnapshot GetEnvironmentSnapshot()
         {
@@ -278,7 +302,75 @@ namespace OmniConsole.Services
                 DeviceForm: GetDeviceFormText(),
                 MaxTouchPoints: maxTouches,
                 Locale: CultureInfo.CurrentUICulture.Name,
+                CountryRegion: GetCountryRegionText(),
+                DeviceRegion: GetDeviceRegionText(),
                 CapturedAt: DateTimeOffset.Now);
+        }
+
+        // ── 地區資訊 ─────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 把 GeoId 轉為「ISO 國碼 + GeoId」格式字串（例如 "TW (237)"）。
+        /// GeoId 無效時回傳 Unknown；GetGeoInfoW 取不到 ISO 碼時僅回帶括號的 GeoId（例如 "(237)"）。
+        /// </summary>
+        private static string FormatGeoId(int geoId)
+        {
+            if (geoId <= 0) return Unknown;
+
+            try
+            {
+                var sb = new StringBuilder(8);
+                int len = GetGeoInfoW(geoId, GEO_ISO2, sb, sb.Capacity, 0);
+                if (len > 0)
+                {
+                    string iso = sb.ToString().TrimEnd('\0');
+                    return $"{iso} ({geoId})";
+                }
+            }
+            catch (Exception ex) { DebugLogger.Log($"[AboutInfoService] GetGeoInfoW failed: {ex.Message}"); }
+
+            return $"({geoId})";
+        }
+
+        /// <summary>
+        /// 取使用者「國家/地區」設定（HKCU Geo\Nation，REG_SZ）；讀不到時回退至 GetUserGeoID，兩者皆失敗回 Unknown。
+        /// </summary>
+        private static string GetCountryRegionText()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(CountryRegionKey);
+                if (key?.GetValue(CountryRegionNationValue) is string str
+                    && int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out int geoId)
+                    && geoId > 0)
+                {
+                    return FormatGeoId(geoId);
+                }
+            }
+            catch (Exception ex) { DebugLogger.Log($"[AboutInfoService] read country region failed: {ex.Message}"); }
+
+            try { return FormatGeoId(GetUserGeoID(GEOCLASS_NATION)); }
+            catch (Exception ex) { DebugLogger.Log($"[AboutInfoService] GetUserGeoID failed: {ex.Message}"); }
+
+            return Unknown;
+        }
+
+        /// <summary>
+        /// 取「裝置設定地區」設定（HKLM DeviceRegion，REG_DWORD），即裝置初次設定時選的國家/地區。
+        /// </summary>
+        private static string GetDeviceRegionText()
+        {
+            try
+            {
+                object? value = Registry.GetValue($@"HKEY_LOCAL_MACHINE\{DeviceRegionKey}", DeviceRegionValue, null);
+                if (value is int geoId && geoId > 0)
+                {
+                    return FormatGeoId(geoId);
+                }
+            }
+            catch (Exception ex) { DebugLogger.Log($"[AboutInfoService] read device region failed: {ex.Message}"); }
+
+            return Unknown;
         }
 
         // ── PhantomKey 健康檢查 ─────────────────────────────────────────────────
@@ -506,6 +598,8 @@ namespace OmniConsole.Services
             sb.AppendLine($"- DeviceForm: {s.DeviceForm}");
             sb.AppendLine($"- MaxTouchPoints: {s.MaxTouchPoints}{(s.MaxTouchPoints == 0 ? " (no touch screen)" : "")}");
             sb.AppendLine($"- Locale: {s.Locale}");
+            sb.AppendLine($"- CountryRegion: {s.CountryRegion}");
+            sb.AppendLine($"- DeviceRegion: {s.DeviceRegion}");
             return sb.ToString();
         }
 
