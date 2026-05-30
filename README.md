@@ -133,6 +133,12 @@ If you run into issues caused by a Windows bug, such as Game Bar failing to open
 
 ---
 
+## 🔐 Verifying Your Installation
+
+The only official sources for OmniConsole are the [GitHub releases](https://github.com/8bit2qubit/OmniConsole/releases) and the [official website](https://8bit2qubit.github.io/omniconsole-site/download). If you obtained OmniConsole from anywhere else, you should verify the build is genuine. See [AUTHENTICITY.md](AUTHENTICITY.md) for the official certificate thumbprint and verification steps.
+
+---
+
 ## 💻 Tech Stack
 
 - **Primary Stack**: C# & .NET 8, C++

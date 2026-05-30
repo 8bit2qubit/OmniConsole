@@ -54,6 +54,60 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<Link>Steam.exe</Link>
 		</Content>
+		<Content Include="Phantom\OmniConsole.PhantomKey.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>OmniConsole.PhantomKey.dll</Link>
+		</Content>
+	</ItemGroup>
+
+	<!-- 注入建置環境資訊到 AssemblyMetadata，供關於頁附帶診斷資訊使用 -->
+	<Target Name="InjectBuildIdentity" BeforeTargets="GetAssemblyAttributes">
+		<Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" ContinueOnError="true" IgnoreExitCode="true" StandardOutputImportance="low">
+			<Output TaskParameter="ConsoleOutput" PropertyName="BuildCommitHashRaw" />
+		</Exec>
+		<Exec Command="git config --get remote.origin.url" ConsoleToMSBuild="true" ContinueOnError="true" IgnoreExitCode="true" StandardOutputImportance="low">
+			<Output TaskParameter="ConsoleOutput" PropertyName="BuildRepoUrlRaw" />
+		</Exec>
+		<Exec Command="powershell -NoProfile -Command &quot;[TimeZoneInfo]::Local.Id&quot;" ConsoleToMSBuild="true" ContinueOnError="true" IgnoreExitCode="true" StandardOutputImportance="low">
+			<Output TaskParameter="ConsoleOutput" PropertyName="BuildTimeZoneRaw" />
+		</Exec>
+		<Exec Command="powershell -NoProfile -Command &quot;[System.Globalization.CultureInfo]::CurrentCulture.Name&quot;" ConsoleToMSBuild="true" ContinueOnError="true" IgnoreExitCode="true" StandardOutputImportance="low">
+			<Output TaskParameter="ConsoleOutput" PropertyName="BuildMachineCultureRaw" />
+		</Exec>
+		<Exec Command="powershell -NoProfile -Command &quot;$r = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'; $major = if ([int]$r.CurrentBuild -ge 22000) { 'Windows 11' } else { 'Windows 10' }; $edition = switch ($r.EditionID) { 'Professional' { 'Pro' } 'ProfessionalWorkstation' { 'Pro for Workstations' } 'ProfessionalN' { 'Pro N' } 'Enterprise' { 'Enterprise' } 'EnterpriseN' { 'Enterprise N' } 'Education' { 'Education' } 'EducationN' { 'Education N' } 'Home' { 'Home' } 'HomeN' { 'Home N' } 'Core' { 'Home' } 'CoreN' { 'Home N' } 'CoreSingleLanguage' { 'Home Single Language' } 'IoTEnterprise' { 'IoT Enterprise' } default { $r.EditionID } }; '{0} {1} {2} (Build {3}.{4})' -f $major, $edition, $r.DisplayVersion, $r.CurrentBuild, $r.UBR&quot;" ConsoleToMSBuild="true" ContinueOnError="true" IgnoreExitCode="true" StandardOutputImportance="low">
+			<Output TaskParameter="ConsoleOutput" PropertyName="BuildMachineOSVersionRaw" />
+		</Exec>
+		<PropertyGroup>
+			<BuildCommitHash>$(BuildCommitHashRaw.Trim())</BuildCommitHash>
+			<BuildTimestamp>$([System.DateTimeOffset]::Now.ToString('yyyy-MM-dd HH:mm zzz'))</BuildTimestamp>
+			<BuildRepoUrl>$(BuildRepoUrlRaw.Trim())</BuildRepoUrl>
+			<BuildUserSignature>$(USERNAME)@$(COMPUTERNAME)</BuildUserSignature>
+			<BuildTimeZone>$(BuildTimeZoneRaw.Trim())</BuildTimeZone>
+			<BuildMachineCulture>$(BuildMachineCultureRaw.Trim())</BuildMachineCulture>
+			<BuildMachineOSVersion>$(BuildMachineOSVersionRaw.Trim())</BuildMachineOSVersion>
+			<BuildHostName>$(COMPUTERNAME)</BuildHostName>
+		</PropertyGroup>
+		<ItemGroup>
+			<AssemblyMetadata Include="BuildCommitHash" Value="$(BuildCommitHash)" />
+			<AssemblyMetadata Include="BuildTimestamp" Value="$(BuildTimestamp)" />
+			<AssemblyMetadata Include="BuildRepoUrl" Value="$(BuildRepoUrl)" />
+			<AssemblyMetadata Include="BuildUserSignature" Value="$(BuildUserSignature)" />
+			<AssemblyMetadata Include="BuildTimeZone" Value="$(BuildTimeZone)" />
+			<AssemblyMetadata Include="BuildMachineCulture" Value="$(BuildMachineCulture)" />
+			<AssemblyMetadata Include="BuildMachineOSVersion" Value="$(BuildMachineOSVersion)" />
+			<AssemblyMetadata Include="BuildHostName" Value="$(BuildHostName)" />
+		</ItemGroup>
+	</Target>
+
+	<ItemGroup>
+		<Content Include="Phantom\OmniConsole.PhantomPaw.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>OmniConsole.PhantomPaw.dll</Link>
+		</Content>
+		<Content Include="Phantom\OmniConsole.PhantomPaw32.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>OmniConsole.PhantomPaw32.dll</Link>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -84,6 +138,13 @@
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Reference Include="OmniConsole.Phantom">
+			<HintPath>Phantom\OmniConsole.Phantom.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+	</ItemGroup>
+
 	<!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
@@ -94,10 +155,11 @@
 	</PropertyGroup>
 
 	<!-- Publish Properties -->
-	<PropertyGroup>
-		<PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-		<PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-		<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-		<PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<PublishReadyToRun>False</PublishReadyToRun>
+		<PublishTrimmed>False</PublishTrimmed>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+		<PublishAot>true</PublishAot>
 	</PropertyGroup>
 </Project>

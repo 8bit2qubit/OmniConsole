@@ -57,8 +57,8 @@ namespace OmniConsole.Pages
         // 關於頁「已複製」InfoBar 的自動關閉計時器（2 秒後關閉）
         private readonly DispatcherTimer _aboutCopyConfirmTimer = new() { Interval = TimeSpan.FromSeconds(2) };
 
-        // ContentDialog 重入防護：平板互動模式下 Dialog 關閉動畫較慢，
-        // 手把快速按 A 可能在前一個 Dialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
+        // ContentDialog 重入防護：平板互動模式下 ContentDialog 關閉動畫較慢，
+        // 手把快速按 A 可能在前一個 ContentDialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
         private bool _isDialogOpen;
 
         // 防止檢查更新重複觸發
@@ -69,16 +69,6 @@ namespace OmniConsole.Pages
 
         // 下載更新的取消 token
         private CancellationTokenSource? _downloadCts;
-
-        // ── Win32 API ───────────────────────────────────────────────────────────
-
-        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
-        private static extern int RegisterApplicationRestart(string commandLine, int flags);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int SW_HIDE = 0;
 
         // 手把映射編輯器待辦：從 Protocol 進來時暫存 appId / displayName，ShowSettings 取出
         private OmniConsole.Models.AppId? _pendingEditAppId;
@@ -98,6 +88,7 @@ namespace OmniConsole.Pages
                 AboutCopyConfirmTeachingTip.IsOpen = false;
             };
             WireGamepadMappingControls();
+            ApplyBuildIdentity();
         }
 
         /// <summary>掛 GamepadProfileListView / GamepadProfileEditor 的事件路由（編輯／關閉／刪除／子對話方塊通知）。</summary>
@@ -114,6 +105,8 @@ namespace OmniConsole.Pages
             };
             GamepadProfileEditor.DialogActiveChanged += onDialogActive;
             GamepadProfileList.DialogActiveChanged += onDialogActive;
+
+            GamepadProfileList.ItemsChanged += (s, e) => UpdateGamepadHints();
         }
 
         /// <summary>從 LocalSettings 取 Protocol 進來時暫存的 appId / displayName；取出後立刻刪除。</summary>
@@ -142,11 +135,12 @@ namespace OmniConsole.Pages
             GamepadProfileList.FocusList();
         }
 
-        /// <summary>切到編輯器：載入目標 profile（不存在則新建套 OmniNav）→ 切 VSM → 更新提示按鈕。</summary>
+        /// <summary>切到編輯器：載入目標 profile（不存在則新建套 OmniNav）→ 切 VSM → 更新提示按鈕；同時把目標 AppId 記給清單供返回時還原焦點。</summary>
         private void OpenEditorFor(OmniConsole.Models.AppId appId, string displayName)
         {
             try
             {
+                GamepadProfileList.SetLastEditedHint(appId);
                 GamepadProfileEditor.Load(appId, displayName);
                 VisualStateManager.GoToState(this, "GamepadMappingEditorVisible", false);
                 UpdateGamepadHints();
@@ -158,13 +152,13 @@ namespace OmniConsole.Pages
             }
         }
 
-        /// <summary>退出編輯器回清單頁；更新清單並把焦點還給它。</summary>
+        /// <summary>退出編輯器回清單頁，重新載入清單後聚焦回剛編過的 row。</summary>
         private void CloseEditor()
         {
             VisualStateManager.GoToState(this, "GamepadMappingListVisible", false);
             UpdateGamepadHints();
             try { GamepadProfileList.Refresh(); } catch { }
-            GamepadProfileList.FocusList();
+            GamepadProfileList.FocusLastEdited();
         }
 
         /// <summary>目前是否在手把映射編輯器頁。</summary>
@@ -215,15 +209,12 @@ namespace OmniConsole.Pages
             if (IsGamepadMappingEditorVisible) GamepadProfileEditor.Save();
         }
 
-        /// <summary>判斷節點是否為祖先元素的子孫（含自身）。用於辨識焦點是否落在清單範圍內。</summary>
-        private static bool IsDescendantOf(DependencyObject? node, DependencyObject ancestor)
+        /// <summary>Y 鍵搜尋切換的提示按鈕滑鼠點選處理：在搜尋方塊與清單之間切換焦點。</summary>
+        private void SearchToggleHintButton_Click(object sender, RoutedEventArgs e)
         {
-            while (node != null)
-            {
-                if (ReferenceEquals(node, ancestor)) return true;
-                node = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(node);
-            }
-            return false;
+            if (!IsGamepadMappingListVisible) return;
+            if (GamepadProfileList.IsSearchBoxFocused) GamepadProfileList.FocusList();
+            else GamepadProfileList.FocusSearchBox();
         }
 
         // ── 設定介面初始化 ────────────────────────────────────────────────────
@@ -367,6 +358,10 @@ namespace OmniConsole.Pages
                 GamepadHintMenu.Visibility = Visibility.Collapsed;
                 GamepadHintXDelete.Visibility = (editor ? GamepadProfileEditor.CanDelete : GamepadProfileList.HasItems)
                     ? Visibility.Visible : Visibility.Collapsed;
+                GamepadHintLBRBPaging.Visibility = (editor ? false : GamepadProfileList.HasItems)
+                    ? Visibility.Visible : Visibility.Collapsed;
+                GamepadHintYSearchToggle.Visibility = (editor ? false : GamepadProfileList.HasItems)
+                    ? Visibility.Visible : Visibility.Collapsed;
                 return;
             }
             if (_currentNavTag != "General")
@@ -376,12 +371,16 @@ namespace OmniConsole.Pages
                 // 還原映射頁可能留下的特殊提示按鈕（離開時要藏回去；Exit 要顯示）
                 GamepadHintXDelete.Visibility = Visibility.Collapsed;
                 GamepadHintBSaveReturn.Visibility = Visibility.Collapsed;
+                GamepadHintLBRBPaging.Visibility = Visibility.Collapsed;
+                GamepadHintYSearchToggle.Visibility = Visibility.Collapsed;
                 GamepadHintExit.Visibility = Visibility.Visible;
                 return;
             }
             // 從手把映射回到 General 時也還原特殊提示按鈕
             GamepadHintXDelete.Visibility = Visibility.Collapsed;
             GamepadHintBSaveReturn.Visibility = Visibility.Collapsed;
+            GamepadHintLBRBPaging.Visibility = Visibility.Collapsed;
+            GamepadHintYSearchToggle.Visibility = Visibility.Collapsed;
             GamepadHintExit.Visibility = Visibility.Visible;
 
             bool showYX = _currentCategoryTag == "User" && SettingsService.GetCustomPlatformConsentAccepted();
@@ -459,10 +458,8 @@ namespace OmniConsole.Pages
         {
             AboutOmniConsoleVersion.Text = LocalizeForUI(s.Versions.OmniConsole);
             AboutPhantomBridgeVersion.Text = LocalizeForUI(s.Versions.PhantomBridge);
-            // PhantomKey 同時顯示套件內版本與已部署副本版本，便於診斷複製失敗或舊副本殘留。
-            AboutPhantomKeyVersion.Text = s.Versions.PhantomKey == s.Versions.PhantomKeyDeployed
-                ? LocalizeForUI(s.Versions.PhantomKey)
-                : $"{LocalizeForUI(s.Versions.PhantomKey)} → {LocalizeForUI(s.Versions.PhantomKeyDeployed)}";
+            AboutPhantomKeyVersion.Text = FormatPhantomKeyVersionForUI(s.Versions);
+            AboutPhantomPawVersion.Text = FormatPhantomPawVersionForUI(s.Versions);
             AboutPhantomLinkVersion.Text = LocalizeForUI(s.Versions.PhantomLink);
 
             // PhantomKey 健康狀況
@@ -492,6 +489,50 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
+        /// 把 BuildIdentity 的 commit hash 與 build 時間套用到關於頁發行資訊卡片兩列。
+        /// 任何欄位取不到值時，整列 Visibility=Collapsed。憑證指紋與 source URL 由詳細資訊按鈕觸發的對話方塊顯示。
+        /// </summary>
+        private void ApplyBuildIdentity()
+        {
+            var commit = BuildIdentity.CommitHash;
+            if (string.IsNullOrEmpty(commit))
+            {
+                AboutReleaseInfoCommitRow.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                AboutReleaseInfoCommitLink.Content = commit;
+                // Commit hyperlink 永遠指向官方 repo 的 commit 頁，讓使用者比對 hash 是否在官方 repo 中
+                AboutReleaseInfoCommitLink.NavigateUri = new Uri($"https://github.com/8bit2qubit/OmniConsole/commit/{commit}");
+            }
+
+            var timestamp = BuildIdentity.Timestamp;
+            if (string.IsNullOrEmpty(timestamp))
+            {
+                AboutReleaseInfoBuiltRow.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                AboutReleaseInfoBuiltText.Text = timestamp;
+            }
+        }
+
+        /// <summary>詳細資訊按鈕按下：開啟 CertificateDetailsDialog 顯示憑證指紋與 source URL。</summary>
+        private async void CertDetailsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CertificateDetailsDialog(XamlRoot, BuildIdentity.CertificateThumbprint);
+            StopGamepadPolling();
+            try
+            {
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                StartGamepadPolling();
+            }
+        }
+
+        /// <summary>
         /// 把資料層的固定英文回退字串（"(unknown)" / "(not installed)"）替換為在地化字串供 UI 顯示。
         /// 資料層保持英文常數有助於 Markdown 輸出的可讀性（貼到 GitHub Issue 不會帶非 ASCII 字串）。
         /// </summary>
@@ -501,6 +542,52 @@ namespace OmniConsole.Pages
             if (raw == "(unknown)") return _resourceLoader.GetString("Common_Unknown");
             if (raw == "(not installed)") return _resourceLoader.GetString("Common_NotInstalled");
             return raw;
+        }
+
+        /// <summary>
+        /// 把 PhantomKey 的 exe/dll 兩個版本欄位摺疊為設定頁顯示字串。
+        /// 摺疊策略與 <see cref="FormatPhantomPawVersionForUI"/> 同構（由乾淨到詳細）：
+        /// (1) exe/dll + packaged/deployed 全四個皆同 → 單一版本 "2.7.0.0"
+        /// (2) exe/dll 同步、但 packaged ≠ deployed → "2.7.0.0 → 2.6.0.0"
+        /// (3) exe 與 dll 真的不同 → "exe: ..., dll: ..."，每邊各自再套上面 (1)/(2) 規則
+        /// </summary>
+        private string FormatPhantomKeyVersionForUI(AboutInfoService.ComponentVersions v)
+        {
+            string pkgExe = v.PhantomKey, depExe = v.PhantomKeyDeployed;
+            string pkgDll = v.PhantomKeyDll, depDll = v.PhantomKeyDllDeployed;
+
+            bool componentsAligned = pkgExe == pkgDll && depExe == depDll;
+            if (componentsAligned)
+                return FormatPackagedVsDeployed(pkgExe, depExe);
+
+            return $"exe: {FormatPackagedVsDeployed(pkgExe, depExe)}, dll: {FormatPackagedVsDeployed(pkgDll, depDll)}";
+        }
+
+        /// <summary>
+        /// 把 PhantomPaw 四個版本欄位（32/64 × packaged/deployed）摺疊為設定頁顯示字串。
+        /// 摺疊策略（由乾淨到詳細）：
+        /// (1) 32/64 + packaged/deployed 全四個皆同 → 單一版本 "2.7.0.0"
+        /// (2) 32/64 同步、但 packaged ≠ deployed → "2.7.0.0 → 2.6.0.0"
+        /// (3) 32 與 64 真的不同 → "32: ..., 64: ..."，每邊各自再套上面 (1)/(2) 規則
+        /// </summary>
+        private string FormatPhantomPawVersionForUI(AboutInfoService.ComponentVersions v)
+        {
+            string pkg64 = v.PhantomPaw, dep64 = v.PhantomPawDeployed;
+            string pkg32 = v.PhantomPaw32, dep32 = v.PhantomPaw32Deployed;
+
+            bool bitnessAligned = pkg64 == pkg32 && dep64 == dep32;
+            if (bitnessAligned)
+                return FormatPackagedVsDeployed(pkg64, dep64);
+
+            return $"32: {FormatPackagedVsDeployed(pkg32, dep32)}, 64: {FormatPackagedVsDeployed(pkg64, dep64)}";
+        }
+
+        /// <summary>單一 bitness 的「packaged vs deployed」摺疊：相同顯示一次、不同顯示 "A → B"。</summary>
+        private string FormatPackagedVsDeployed(string packaged, string deployed)
+        {
+            return packaged == deployed
+                ? LocalizeForUI(packaged)
+                : $"{LocalizeForUI(packaged)} → {LocalizeForUI(deployed)}";
         }
 
         /// <summary>
@@ -589,23 +676,11 @@ namespace OmniConsole.Pages
 
             AboutPhantomKeyProcessText.Text = _resourceLoader.GetString("PhantomKeyHealth_Running");
 
-            AboutPhantomKeyUptimeText.Text = FormatUptimeForUI(h.Uptime);
+            AboutPhantomKeyUptimeText.Text = AboutInfoService.FormatUptime(h.Uptime, "—");
             AboutPhantomKeyIntegrityText.Text = h.IntegrityLevel == AboutInfoService.IntegrityLevel.Unknown
                 ? _resourceLoader.GetString("Common_Unknown")
                 : h.IntegrityLevel.ToString();
             AboutPhantomKeyResponsivenessText.Text = FormatResponsivenessForUI(h);
-        }
-
-        /// <summary>
-        /// 把 PhantomKey Uptime 格式化為設定頁顯示用字串，依量級裁切顯示精度；非正值回 dash。
-        /// </summary>
-        private static string FormatUptimeForUI(TimeSpan ts)
-        {
-            if (ts <= TimeSpan.Zero) return "—";
-            if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h {ts.Minutes}m";
-            if (ts.TotalHours >= 1) return $"{ts.Hours}h {ts.Minutes}m";
-            if (ts.TotalMinutes >= 1) return $"{ts.Minutes}m {ts.Seconds}s";
-            return $"{ts.Seconds}s";
         }
 
         /// <summary>
@@ -805,7 +880,7 @@ namespace OmniConsole.Pages
 
         /// <summary>
         /// 重設 Game Bar 並觸發 FSE。先透過 <see cref="FseService.EnsureGameBarReadyAsync"/>
-        /// 確保 Game Bar 完全就緒，再以「殺死後重發」機制繞過可能卡住的 FSE 進入對話方塊。
+        /// 確保 Game Bar 完全就緒，再以「終止後重發」機制繞過可能卡住的 FSE 進入對話方塊。
         /// </summary>
         private async void ResetGameBarButton_Click(object sender, RoutedEventArgs e)
         {
@@ -818,7 +893,7 @@ namespace OmniConsole.Pages
             await FseService.EnsureGameBarReadyAsync();
             await Task.Delay(500);
 
-            // 2. 再次殺掉以繞過 FSE 進入對話方塊（「殺死後重發」機制），稍待讓系統狀態穩定
+            // 2. 再次終止以繞過 FSE 進入對話方塊（「終止後重發」機制），稍待讓系統狀態穩定
             FseService.KillGameBar();
             await Task.Delay(500);
 
@@ -829,7 +904,7 @@ namespace OmniConsole.Pages
             if (FseService.TryActivate())
             {
                 // 此應用程式會被重新啟動在 FSE 環境
-                ShowWindow(Hwnd, SW_HIDE);
+                WindowForegroundService.Hide(Hwnd);
                 App.ExitApp();
             }
 
@@ -890,10 +965,7 @@ namespace OmniConsole.Pages
         {
             bool enabled = NavigationSoundsSwitch.IsOn;
             SettingsService.SetEnableNavigationSounds(enabled);
-            Microsoft.UI.Xaml.ElementSoundPlayer.State =
-                enabled
-                    ? Microsoft.UI.Xaml.ElementSoundPlayerState.On
-                    : Microsoft.UI.Xaml.ElementSoundPlayerState.Off;
+            SettingsService.ApplyNavigationSoundsSetting();
         }
 
         /// <summary>
@@ -1315,7 +1387,7 @@ namespace OmniConsole.Pages
             // 手把映射分頁有自己的 A 鍵語意：焦點在內容區時才走專屬邏輯，
             // 焦點在左側 NavigationView / 漢堡 / 返回鈕 時讓 switch 走預設處理(切 NavigationView / 開合 pane)
             if (_currentNavTag == "GamepadMapping" &&
-                focused is DependencyObject focusedDep && IsDescendantOf(focusedDep, GamepadMappingPage))
+                focused is DependencyObject focusedDep && GamepadNavigationService.IsDescendantOf(GamepadMappingPage, focusedDep))
             {
                 if (IsGamepadMappingEditorVisible)
                 {
@@ -1361,7 +1433,7 @@ namespace OmniConsole.Pages
                     SettingsNav.IsPaneOpen = !SettingsNav.IsPaneOpen;
                     break;
 
-                // 重設 Game Bar 按鈕：觸發殺行程並重新啟動 FSE 的備援流程
+                // 重設 Game Bar 按鈕：觸發終止行程並重新啟動 FSE 的備援流程
                 case Button btn when ReferenceEquals(btn, ResetGameBarButton):
                     ResetGameBarButton_Click(this, new RoutedEventArgs());
                     break;
@@ -1439,6 +1511,16 @@ namespace OmniConsole.Pages
                 case Button btn when ReferenceEquals(btn, RefreshAboutButton):
                     RefreshAboutButton_Click(this, new RoutedEventArgs());
                     break;
+
+                // 發行資訊卡片「詳細資訊」按鈕
+                case Button btn when ReferenceEquals(btn, CertDetailsButton):
+                    CertDetailsButton_Click(this, new RoutedEventArgs());
+                    break;
+
+                // 發行資訊卡片 Commit HyperlinkButton：走 AutomationPeer 觸發等同點選、進預設 LaunchUri 行為
+                case HyperlinkButton hlBtn when ReferenceEquals(hlBtn, AboutReleaseInfoCommitLink):
+                    GamepadNavigationService.ActivateFocusedElement(this.XamlRoot);
+                    break;
             }
         }
 
@@ -1461,30 +1543,46 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// 手把 LB 肩鍵：切換到上一個分類索引標籤。
+        /// 手把 LB 肩鍵：手把映射清單頁時往上跳一頁；General 頁時切到上一個分類索引標籤。
         /// </summary>
         private void OnGamepadLBPressed()
         {
+            if (IsGamepadMappingListVisible)
+            {
+                GamepadProfileList.PageUp();
+                return;
+            }
             if (_currentNavTag != "General") return;
             if (_currentCategoryTag == "User")
                 SwitchCategoryTab("System");
         }
 
         /// <summary>
-        /// 手把 RB 肩鍵：切換到下一個分類索引標籤。
+        /// 手把 RB 肩鍵：手把映射清單頁時往下跳一頁；General 頁時切到下一個分類索引標籤。
         /// </summary>
         private void OnGamepadRBPressed()
         {
+            if (IsGamepadMappingListVisible)
+            {
+                GamepadProfileList.PageDown();
+                return;
+            }
             if (_currentNavTag != "General") return;
             if (_currentCategoryTag == "System")
                 SwitchCategoryTab("User");
         }
 
         /// <summary>
-        /// 手把 Y 鍵：使用者索引標籤時觸發新增平台。
+        /// 手把 Y 鍵：手把映射清單頁時在搜尋方塊與清單間切換焦點；General 頁使用者索引標籤時觸發新增平台。
         /// </summary>
         private void OnGamepadYButtonPressed()
         {
+            if (IsGamepadMappingListVisible)
+            {
+                if (GamepadProfileList.IsSearchBoxFocused) GamepadProfileList.FocusList();
+                else GamepadProfileList.FocusSearchBox();
+                return;
+            }
             if (_currentNavTag != "General") return;
             if (_currentCategoryTag == "User" && SettingsService.GetCustomPlatformConsentAccepted())
                 _ = ShowPlatformEditDialogAsync(null);
@@ -1631,6 +1729,32 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
+        /// 安裝前置擋：查 PhantomPaw dll 是否被任何行程鎖住、有的話彈 AppsUsingPhantomPawDialog 顯示清單。
+        /// 玩家按「重試」清空所有鎖才回 true 進入安裝；按「取消」/B 鍵回 false 放棄。
+        /// 無鎖直接 true。
+        /// </summary>
+        private async Task<bool> CheckAndPromptLockedAppsAsync()
+        {
+            var pids = PhantomKeyService.GetProcessesLockingPawDlls();
+            if (pids.Count == 0) return true;
+
+            var apps = UpdateCheckService.ResolveLockingApps(pids);
+            var dialog = new AppsUsingPhantomPawDialog(this.XamlRoot, apps);
+
+            // 對話方塊期間停掉設定頁的手把輪詢
+            StopGamepadPolling();
+            try
+            {
+                var result = await dialog.ShowAsync();
+                return result == ContentDialogResult.Primary;
+            }
+            finally
+            {
+                StartGamepadPolling();
+            }
+        }
+
+        /// <summary>
         /// 將 InstallBundleAsync 包進 UpdateProgressDialog，由對話方塊以模態方式擋住手把 B 鍵與 Esc，
         /// 並在 MainWindow 端攔截視窗關閉。失敗後解除鎖定並顯示失敗訊息於原 InfoBar。
         /// </summary>
@@ -1638,6 +1762,33 @@ namespace OmniConsole.Pages
             string phantomLinkUrl, string mainUrl, string targetVersion,
             bool mainSkippable, bool resumeFromPhase2)
         {
+            // 連點/雙觸發防呆 + 外部入口防護：整個安裝流程（含前置對話方塊等待玩家階段）期間擋第二次進入。
+            // _downloadCts 只在實際下載階段 non-null、無法涵蓋前置對話方塊等待時間。
+            // 用 MainWindow.IsInstallFlowInProgress static 同時讓 App.ShowSettingsFromRedirect /
+            // ReactivateFromRedirect / PassthroughFromRedirect 三條外部入口讀取後提前 return。
+            if (MainWindow.IsInstallFlowInProgress) return;
+            MainWindow.IsInstallFlowInProgress = true;
+            try
+            {
+                await RunInstallBundleWithDialogInternalAsync(
+                    phantomLinkUrl, mainUrl, targetVersion, mainSkippable, resumeFromPhase2);
+            }
+            finally
+            {
+                MainWindow.IsInstallFlowInProgress = false;
+            }
+        }
+
+        /// <summary>實際安裝流程；由 RunInstallBundleWithDialogAsync 套上 MainWindow.IsInstallFlowInProgress 鎖後呼叫。</summary>
+        private async Task RunInstallBundleWithDialogInternalAsync(
+            string phantomLinkUrl, string mainUrl, string targetVersion,
+            bool mainSkippable, bool resumeFromPhase2)
+        {
+            // 前置擋：若 PhantomPaw dll 仍被任何行程鎖住（注入中的遊戲 / App），
+            // 彈對話方塊列鎖住者並等玩家關閉重試；玩家取消則整個安裝流程放棄。
+            if (!await CheckAndPromptLockedAppsAsync())
+                return;
+
             var dialog = new UpdateProgressDialog(this.XamlRoot, _resourceLoader);
 
             try
@@ -1656,11 +1807,17 @@ namespace OmniConsole.Pages
                 // 終止 PhantomKey，避免 MSIX 更新時因 .exe 佔用而拖慢進度
                 PhantomKeyService.Kill();
 
+                // 保險：強制刪 PhantomKey 部署的 exe + PhantomKey.dll + PhantomPaw(.dll/32.dll) 共四個檔。
+                // 對抗「前置對話方塊清空後安裝前」競態視窗 — 萬一舊 PhantomKey 與遊戲
+                // 在此期間被誤啟動又抓 dll、Kill 後 handle 通常已釋放、Delete 此時最易成功；
+                // 失敗也不擋流程、後續 PhantomKeyService.Start() 仍會試 File.Copy(overwrite)。
+                PhantomKeyService.DeleteDeployedFiles();
+
                 // MSIX 更新前取消 FSE 狀態通知
                 FseService.StopListening();
 
                 // 註冊自動重啟，ForceApplicationShutdown 結束 OmniConsole 後 Windows 會自動重新啟動 OmniConsole
-                RegisterApplicationRestart("", 0);
+                UpdateCheckService.RegisterAutoRestart();
 
                 // 設定安裝鎖定旗標供 MainWindow 讀取
                 MainWindow.IsUpdateInstallInProgress = true;

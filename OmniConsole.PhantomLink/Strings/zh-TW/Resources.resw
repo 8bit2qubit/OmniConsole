@@ -171,13 +171,13 @@
     <value>已停用 — 裝置具備內建手把映射。</value>
   </data>
   <data name="Widget_ForegroundApp_LineFormat" xml:space="preserve">
-    <value>目前: {0} ({1})</value>
+    <value>目前：{0} ({1})</value>
   </data>
   <data name="Widget_ForegroundApp_LineFormat_NoDesc" xml:space="preserve">
-    <value>目前: {0}</value>
+    <value>目前：{0}</value>
   </data>
   <data name="Widget_ForegroundApp_None" xml:space="preserve">
-    <value>目前: —</value>
+    <value>目前：—</value>
   </data>
   <data name="Widget_CustomizeApp.Content" xml:space="preserve">
     <value>自訂此程式的手把映射…</value>

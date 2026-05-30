@@ -1,6 +1,5 @@
 using OmniConsole.PhantomLink.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -8,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static OmniConsole.PhantomLink.Services.WidgetHelpers;
 
 namespace OmniConsole.PhantomLink
 {
@@ -213,20 +213,6 @@ namespace OmniConsole.PhantomLink
             return target != null && target.Focus(FocusState.Keyboard);
         }
 
-        /// <summary>
-        /// 遞迴走訪視覺樹，列舉所有指定型別的子元素。
-        /// </summary>
-        private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
-        {
-            int count = VisualTreeHelper.GetChildrenCount(root);
-            for (int i = 0; i < count; i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
-                if (child is T t) yield return t;
-                foreach (var d in FindDescendants<T>(child)) yield return d;
-            }
-        }
-
         // ── 資料綁定與啟用狀態 ──────────────────────────────────────────────
 
         /// <summary>
@@ -383,52 +369,28 @@ namespace OmniConsole.PhantomLink
                 (isElevated && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        /// <summary>resw 安全查詢：不存在或擲例外時回退到 `fallback` 參數值。</summary>
-        private static string LocSafe(Windows.ApplicationModel.Resources.ResourceLoader resw, string key, string fallback)
-        {
-            try
-            {
-                var s = resw.GetString(key);
-                return string.IsNullOrEmpty(s) ? fallback : s;
-            }
-            catch { return fallback; }
-        }
-
-        /// <summary>
-        /// 行程名稱比對（大小寫不敏感）是否為 IsBlacklisted 條目 (a)/(b) 涵蓋的程式。
-        /// 跟 OmniConsole/Services/GamepadProfileStore 同一份名單。
-        /// </summary>
-        private static bool IsBlacklistedProcess(string proc)
-        {
-            string[] names =
-            {
-                // (a) 自家 / 內建手把導覽
-                "OmniConsole", "Playnite.FullscreenApp", "steamwebhelper",
-                // (b) Mouse Mode Auto 白名單
-                "msedge", "chrome", "firefox", "opera", "brave",
-                "EpicGamesLauncher", "Discord", "explorer",
-            };
-            foreach (var n in names)
-                if (string.Equals(proc, n, StringComparison.OrdinalIgnoreCase)) return true;
-            return false;
-        }
-
         /// <summary>
         /// 「自訂此 App 的手把映射」按鈕：透過 PhantomBridge.OpenProfileEditor 喚起主程式
-        /// （Win+G 收 Game Bar → omniconsole://edit-gamepad-profile?appId=...&displayName=...）。
+        /// （omniconsole://edit-gamepad-profile?appId=...&displayName=...&fullPath=...）。
         /// </summary>
         private void CustomizeAppBtn_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_foregroundAppId)) return;
-            DebugLogger.Log("[Widget] CustomizeAppBtn_Click → PhantomBridge.OpenProfileEditor: " + _foregroundAppId);
+            var appId = _foregroundAppId;
+            var name = _foregroundAppName ?? string.Empty;
+            var fullPath = _foregroundFullPath ?? string.Empty;
+            DebugLogger.Log("[Widget] CustomizeAppBtn_Click → PhantomBridge.OpenProfileEditor");
+            DebugLogger.Log($"[Widget]   appId(len={appId.Length})=[{appId}]");
+            DebugLogger.Log($"[Widget]   name(len={name.Length})=[{name}]");
+            DebugLogger.Log($"[Widget]   fullPath(len={fullPath.Length})=[{fullPath}]");
             try
             {
                 var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.OpenProfileEditor(_foregroundAppId, _foregroundAppName ?? string.Empty, _foregroundFullPath ?? string.Empty);
+                bridge.OpenProfileEditor(appId, name, fullPath);
             }
             catch (Exception ex)
             {
-                DebugLogger.Log("[Widget] OpenProfileEditor failed: " + ex.Message);
+                DebugLogger.Log($"[Widget] OpenProfileEditor failed: HResult=0x{ex.HResult:X8} type={ex.GetType().Name} msg={ex.Message}");
             }
         }
 

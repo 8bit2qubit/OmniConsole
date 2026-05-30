@@ -227,7 +227,7 @@ namespace OmniConsole.Dialogs
         }
 
         /// <summary>依副檔名回傳對應的 Segoe Fluent Icons 字元。</summary>
-        private string GetFileGlyph(string fileName)
+        private static string GetFileGlyph(string fileName)
         {
             var ext = Path.GetExtension(fileName).ToLowerInvariant();
             return ext switch
@@ -454,14 +454,16 @@ namespace OmniConsole.Dialogs
             RequestLegacyPicker = true;
             Hide();
         }
-
-        // ── 資料模型 ──────────────────────────────────────────────────────────
-
-        /// <summary>側邊欄項目。</summary>
-        private record SidebarItem(string DisplayName, string Path, string Glyph);
-
-        /// <summary>檔案清單項目。</summary>
-        private record FileListItem(string Name, string FullPath, bool IsDirectory,
-            string Size, string Date, string Glyph);
     }
+
+    // ── ListView 項目資料模型 ──────────────────────────────────────────────
+    // 放在 namespace 層級（非 nested）：x:DataType 須經 xmlns 引用，nested type XAML 不易引；internal 即可。
+    // 用 x:Bind 不用 {Binding}：後者走反射，Native AOT 下屬性路徑被 trim，清單只剩空白容器。
+
+    /// <summary>側邊欄項目。</summary>
+    internal sealed record SidebarItem(string DisplayName, string Path, string Glyph);
+
+    /// <summary>檔案清單項目。</summary>
+    internal sealed record FileListItem(string Name, string FullPath, bool IsDirectory,
+        string Size, string Date, string Glyph);
 }

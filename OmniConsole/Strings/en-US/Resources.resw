@@ -256,7 +256,7 @@
     <value>Only available when the default platform is set to Steam Big Picture.</value>
   </data>
   <data name="SteamInGameOverlaySetting_ModifierNote.Text" xml:space="preserve">
-    <value>Long press &#xEDE3; to close the overlay and prevent modifier keys (e.g. Shift, Ctrl, Alt) from getting stuck in-game.
+    <value>Long press &#xEDE3; to close the overlay and prevent modifier keys (e.g., Shift, Ctrl, or Alt) from getting stuck in-game.
 Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; In Game &gt; Overlay shortcut key(s).</value>
   </data>
   <data name="MouseModeSetting_Title.Text" xml:space="preserve">
@@ -359,7 +359,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Name</value>
   </data>
   <data name="PlatformDialog_NamePlaceholder" xml:space="preserve">
-    <value>e.g. My Gaming Platform</value>
+    <value>e.g., My Gaming Platform</value>
   </data>
   <data name="PlatformDialog_LaunchTypeLabel" xml:space="preserve">
     <value>Launch Type</value>
@@ -371,13 +371,13 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>URI</value>
   </data>
   <data name="PlatformDialog_UriPlaceholder" xml:space="preserve">
-    <value>e.g. steam://open/bigpicture</value>
+    <value>e.g., steam://open/bigpicture</value>
   </data>
   <data name="PlatformDialog_PathLabel" xml:space="preserve">
     <value>Path</value>
   </data>
   <data name="PlatformDialog_PathPlaceholder" xml:space="preserve">
-    <value>e.g. C:\Program Files (x86)\Steam\steam.exe</value>
+    <value>e.g., C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_IconLabel" xml:space="preserve">
     <value>Card Cover (optional)</value>
@@ -435,7 +435,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Arguments (optional)</value>
   </data>
   <data name="PlatformDialog_ArgsPlaceholder" xml:space="preserve">
-    <value>e.g. -bigpicture</value>
+    <value>e.g., -bigpicture</value>
   </data>
   <data name="PlatformDialog_ValidationPathNotExe" xml:space="preserve">
     <value>Only executable files (.exe) are supported.</value>
@@ -498,7 +498,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Caution: Only import configurations from sources you trust. Malicious configurations could launch harmful programs.</value>
   </data>
   <data name="ImportPlatformDialog_Placeholder" xml:space="preserve">
-    <value>Paste JSON here... e.g.
+    <value>Paste JSON here... For example:
 {
   "shell": "OmniConsole",
   "displayName": "Steam Big Picture",
@@ -636,7 +636,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>OmniCharm Widget is available.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
-    <value>Quick-access Game Bar widget to toggle OmniConsole features in-game. Go to ☰ &gt; Advanced to download and install.</value>
+    <value>Quick-access Game Bar widget to toggle OmniConsole features in-game and set up Nekomata per-app gamepad mapping. Go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
     <value>OmniCharm Widget is available. Open OmniConsole Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
@@ -785,6 +785,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="Label_PhantomKey.Text" xml:space="preserve">
     <value>PhantomKey</value>
   </data>
+  <data name="Label_PhantomPaw.Text" xml:space="preserve">
+    <value>PhantomPaw</value>
+  </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
   </data>
@@ -801,7 +804,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Max Touch Points</value>
   </data>
   <data name="MaxTouchPoints_NoTouch" xml:space="preserve">
-    <value>no touch screen</value>
+    <value>no touchscreen</value>
   </data>
   <data name="Label_Locale.Text" xml:space="preserve">
     <value>Locale</value>
@@ -849,16 +852,25 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Nekomata</value>
   </data>
   <data name="GamepadMappingDescription.Text" xml:space="preserve">
-    <value>Nekomata will weave a charm for your gamepad, conjuring the perfect bindings for each app.</value>
+    <value>Nekomata will weave a charm for each app, conjuring the perfect keys and clicks for your gamepad.</value>
   </data>
   <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
-    <value>No charmed apps yet~ Open the OmniCharm widget in Game Bar and choose “Customize gamepad mapping for this app” — Nekomata will weave a new charm for it.</value>
+    <value>Meow~ no charmed apps yet. Open the OmniCharm widget in Game Bar and choose “Customize gamepad mapping for this app” — Nekomata will weave a new charm for it.</value>
   </data>
   <data name="GamepadMappingToolsSection.Text" xml:space="preserve">
     <value>Tools</value>
   </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Title.Text" xml:space="preserve">
+    <value>Prevent Double Input</value>
+  </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Description.Text" xml:space="preserve">
+    <value>Block this app from receiving native XInput and DirectInput signals to prevent interference with the simulated keyboard and mouse.</value>
+  </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
+    <value>Restart the game to apply changes. Don't turn this on for games with anti-cheat protection (e.g., EAC, BattlEye, or VAC), or you may trigger a violation.</value>
+  </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
-    <value>Clear all</value>
+    <value>Clear All</value>
   </data>
   <data name="GamepadMappingClearAllConfirmTitle" xml:space="preserve">
     <value>Clear all bindings?</value>
@@ -867,10 +879,10 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>All inputs will be set to None.</value>
   </data>
   <data name="GamepadMappingClearAllConfirmYes" xml:space="preserve">
-    <value>Clear all</value>
+    <value>Clear All</value>
   </data>
   <data name="GamepadMappingResetButton.Content" xml:space="preserve">
-    <value>OmniNav defaults</value>
+    <value>OmniNav Defaults</value>
   </data>
   <data name="GamepadMappingResetConfirmTitle" xml:space="preserve">
     <value>Reset to OmniNav defaults?</value>
@@ -882,7 +894,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Reset</value>
   </data>
   <data name="GamepadMappingResetClassicButton.Content" xml:space="preserve">
-    <value>Classic defaults</value>
+    <value>Classic Defaults</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmTitle" xml:space="preserve">
     <value>Reset to Classic defaults?</value>
@@ -894,7 +906,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Reset</value>
   </data>
   <data name="GamepadMappingCopyFromButton.Content" xml:space="preserve">
-    <value>Copy from app…</value>
+    <value>Copy from App…</value>
   </data>
   <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
     <value>Change key…</value>
@@ -1017,16 +1029,16 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Right stick</value>
   </data>
   <data name="GamepadGroup_FaceButtons.Text" xml:space="preserve">
-    <value>Face buttons</value>
+    <value>Face Buttons</value>
   </data>
   <data name="GamepadGroup_Shoulders.Text" xml:space="preserve">
-    <value>Shoulders / triggers</value>
+    <value>Shoulders / Triggers</value>
   </data>
   <data name="GamepadGroup_ThumbButtons.Text" xml:space="preserve">
-    <value>Stick presses</value>
+    <value>Stick Presses</value>
   </data>
   <data name="GamepadGroup_Sticks.Text" xml:space="preserve">
-    <value>Sticks / D-pad</value>
+    <value>Sticks / D-Pad</value>
   </data>
   <data name="GamepadModifier_Ctrl.Content" xml:space="preserve">
     <value>Ctrl</value>
@@ -1075,6 +1087,30 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="GamepadMappingDeleteConfirmNo" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="GamepadMappingSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search apps…</value>
+  </data>
+  <data name="GamepadMappingSortAddOrderDesc.Content" xml:space="preserve">
+    <value>Newest first</value>
+  </data>
+  <data name="GamepadMappingSortAddOrderAsc.Content" xml:space="preserve">
+    <value>Oldest first</value>
+  </data>
+  <data name="GamepadMappingSortNameAsc.Content" xml:space="preserve">
+    <value>Name (A to Z)</value>
+  </data>
+  <data name="GamepadMappingSortNameDesc.Content" xml:space="preserve">
+    <value>Name (Z to A)</value>
+  </data>
+  <data name="GamepadMappingNoSearchResultHint.Text" xml:space="preserve">
+    <value>No matching apps found.</value>
+  </data>
+  <data name="GamepadHint_SwitchPage.Text" xml:space="preserve">
+    <value>Switch page</value>
+  </data>
+  <data name="GamepadHint_Search.Text" xml:space="preserve">
+    <value>Search</value>
   </data>
   <data name="GamepadMappingEmptyConfirmTitle" xml:space="preserve">
     <value>Save with no bindings?</value>
@@ -1270,5 +1306,59 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="NavigationSoundsSetting_Description.Text" xml:space="preserve">
     <value>Play sounds when navigating.</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_Header.Text" xml:space="preserve">
+    <value>The following applications are using PhantomPaw. Please close them and retry the update:</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_Hint.Text" xml:space="preserve">
+    <value>Close the applications and press Retry, or press Cancel to update later.</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_RetryButton" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AboutSection_ReleaseInfo.Text" xml:space="preserve">
+    <value>Release Info</value>
+  </data>
+  <data name="Label_Certificate.Text" xml:space="preserve">
+    <value>Certificate</value>
+  </data>
+  <data name="Label_CommitHash.Text" xml:space="preserve">
+    <value>Commit:</value>
+  </data>
+  <data name="Label_BuiltAt.Text" xml:space="preserve">
+    <value>Built at:</value>
+  </data>
+  <data name="Label_Source.Text" xml:space="preserve">
+    <value>Official repository</value>
+  </data>
+  <data name="CertDetailsButton.Content" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="CertDetailsDialog_Title" xml:space="preserve">
+    <value>Certificate Details</value>
+  </data>
+  <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
+    <value>This installation is signed with the following certificate. Compare the SHA-256 thumbprint with the value published in AUTHENTICITY.md on the official repository. If the values do not match, this build is not from the official source.</value>
+  </data>
+  <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
+    <value>Open AUTHENTICITY.md to view published thumbprint</value>
+  </data>
+  <data name="CertDetailsDialog_CopyButton" xml:space="preserve">
+    <value>Copy Thumbprint</value>
+  </data>
+  <data name="CertDetailsDialog_CloseButton" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="CertDetailsDialog_Copied.Text" xml:space="preserve">
+    <value>Thumbprint copied to clipboard.</value>
+  </data>
+  <data name="OpenCommitOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open this commit on GitHub</value>
+  </data>
+  <data name="OpenRepoOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open repository on GitHub</value>
   </data>
 </root>

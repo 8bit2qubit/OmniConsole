@@ -23,10 +23,10 @@ namespace OmniConsole.Dialogs
             XamlRoot = xamlRoot;
             _resw = resw;
 
-            Title = Loc("GamepadMappingCopyFromTitle");
-            PrimaryButtonText = Loc("GamepadKeyPickerOk");
-            CloseButtonText = Loc("GamepadKeyPickerCancel");
-            HintText.Text = Loc("GamepadMappingCopyFromHint");
+            Title = _resw.Loc("GamepadMappingCopyFromTitle");
+            PrimaryButtonText = _resw.Loc("GamepadKeyPickerOk");
+            CloseButtonText = _resw.Loc("GamepadKeyPickerCancel");
+            HintText.Text = _resw.Loc("GamepadMappingCopyFromHint");
 
             foreach (var p in others)
             {
@@ -60,7 +60,7 @@ namespace OmniConsole.Dialogs
             }
         }
 
-        /// <summary>Dialog 開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=取消關閉），預設焦點到 ProfileCombo。</summary>
+        /// <summary>對話方塊開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=關閉）。初始焦點到 ProfileCombo。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             _gamepadNav = new GamepadNavigationService(
@@ -72,27 +72,12 @@ namespace OmniConsole.Dialogs
             ProfileCombo.Focus(FocusState.Programmatic);
         }
 
-        /// <summary>Dialog 關閉：停止手把輪詢並釋放。</summary>
+        /// <summary>對話方塊關閉：停止手把輪詢並釋放。</summary>
         private void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
             _gamepadNav?.Stop();
             _gamepadNav = null;
         }
 
-        /// <summary>resw 查詢；plain / .Text / .Content 三候選回退到 key 本身。</summary>
-        private string Loc(string key)
-        {
-            string[] candidates = { key, key + "/Text", key + "/Content" };
-            foreach (var c in candidates)
-            {
-                try
-                {
-                    var s = _resw.GetString(c);
-                    if (!string.IsNullOrEmpty(s)) return s;
-                }
-                catch { }
-            }
-            return key;
-        }
     }
 }

@@ -133,6 +133,12 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 
 ---
 
+## 🔐 驗證你的安裝
+
+OmniConsole 的官方來源只有 [GitHub Releases](https://github.com/8bit2qubit/OmniConsole/releases) 與[官方網站](https://8bit2qubit.github.io/omniconsole-site/download)。若你從上述以外的來源取得 OmniConsole，請務必驗證該建置是否為官方版本。詳見 [AUTHENTICITY.zh-TW.md](AUTHENTICITY.zh-TW.md) 取得官方憑證指紋與驗證步驟。
+
+---
+
 ## 💻 技術堆疊
 
 - **主要堆疊**：C# & .NET 8, C++

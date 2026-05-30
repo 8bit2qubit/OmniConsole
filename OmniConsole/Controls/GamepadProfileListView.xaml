@@ -10,73 +10,140 @@
         <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
     </UserControl.Resources>
 
-    <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto"
-                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <!-- 三段式版面：標題區(Auto) / 工具列(Auto) / 清單區(*) 撐滿剩餘高度。
+         外層不再用 ScrollViewer，捲動權交回 ListView 自身，虛擬化才會生效，
+         LastVisibleIndex 才回報真實可見項數（LB/RB 跳頁計算依賴此值）。 -->
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0：標題區（釘住不捲） -->
+        <StackPanel Grid.Row="0" Spacing="16" HorizontalAlignment="Center" Margin="0,0,0,16">
             <TextBlock x:Uid="GamepadMappingTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
             <TextBlock x:Uid="GamepadMappingDescription" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+        </StackPanel>
 
+        <!-- Row 1：工具列（搜尋方塊 + 排序下拉選單，釘住不捲） -->
+            <Border x:Name="ToolbarCard"
+                    Grid.Row="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,16"
+                    MinWidth="700"
+                    MaxWidth="700"
+                    Visibility="Collapsed">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="SearchBox" Grid.Column="0"
+                             x:Uid="GamepadMappingSearchBox"
+                             TextChanged="SearchBox_TextChanged"
+                             KeyDown="SearchBox_KeyDown"/>
+
+                    <ComboBox x:Name="SortCombo" Grid.Column="1"
+                              MinWidth="200"
+                              SelectionChanged="SortCombo_SelectionChanged">
+                        <ComboBoxItem x:Uid="GamepadMappingSortAddOrderDesc"/>
+                        <ComboBoxItem x:Uid="GamepadMappingSortAddOrderAsc"/>
+                        <ComboBoxItem x:Uid="GamepadMappingSortNameAsc"/>
+                        <ComboBoxItem x:Uid="GamepadMappingSortNameDesc"/>
+                    </ComboBox>
+                </Grid>
+            </Border>
+
+            <!-- Row 2：清單卡片，撐滿剩餘高度（VerticalAlignment=Stretch + Row 高度=*）。
+                 ListView 因此有受限視窗高度 → 開啟虛擬化、自己出捲軸。 -->
             <Border x:Name="ListCard"
+                    Grid.Row="2"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="4"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Stretch"
                     MinWidth="700"
                     MaxWidth="700">
-                <ListView x:Name="ProfileList"
-                          SelectionMode="Single"
-                          IsItemClickEnabled="True"
-                          ItemClick="ProfileList_ItemClick"
-                          Background="Transparent">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:GamepadProfileRow">
-                            <Grid Padding="8,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="{x:Bind DisplayName}" FontSize="16" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="{x:Bind SubText}" FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Click="DeleteItemButton_Click"
-                                        Tag="{x:Bind AppId}"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="8">
-                                    <FontIcon Glyph="&#xE74D;" FontSize="14"/>
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <Grid>
+                    <ListView x:Name="ProfileList"
+                              SelectionMode="Single"
+                              IsItemClickEnabled="True"
+                              IsTabStop="False"
+                              ItemClick="ProfileList_ItemClick"
+                              Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:GamepadProfileRow">
+                                <Grid Padding="8,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{x:Bind DisplayName}" FontSize="16" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{x:Bind SubText}" FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Click="DeleteItemButton_Click"
+                                            Tag="{x:Bind AppId}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="8">
+                                        <FontIcon Glyph="&#xE74D;" FontSize="14"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- 搜尋無結果提示，疊在 ListView 上方同一個 Grid cell -->
+                    <TextBlock x:Name="NoSearchResultHint"
+                               x:Uid="GamepadMappingNoSearchResultHint"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,32"
+                               Visibility="Collapsed"/>
+                </Grid>
             </Border>
 
-            <StackPanel x:Name="EmptyState"
-                        Spacing="16"
-                        HorizontalAlignment="Center"
-                        Visibility="Collapsed"
-                        SizeChanged="EmptyState_SizeChanged">
-                <Border x:Name="MascotBorder"
-                        CornerRadius="24"
-                        HorizontalAlignment="Center"
-                        Visibility="Collapsed">
-                    <Image x:Name="MascotImage"
-                           Stretch="Fill"
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"/>
-                </Border>
-                <TextBlock x:Name="EmptyHint"
-                           x:Uid="GamepadMappingEmptyHint"
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           FontSize="14"
-                           TextWrapping="Wrap"
-                           TextAlignment="Center"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+            <!-- 空清單狀態：撐滿清單區（Row 2）整格作為量測基準，內容用內層 StackPanel 置中。
+                 EmptyState 本身 Stretch 才能拿到 Row 2 的真實可用高度供 ResizeMascot 計算，
+                 否則高度被立繪內容反向撐出 → 循環依賴 → 立繪縮成一丁點。 -->
+            <Grid x:Name="EmptyState"
+                  Grid.Row="2"
+                  Visibility="Collapsed"
+                  SizeChanged="EmptyState_SizeChanged">
+                <StackPanel Spacing="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <Border x:Name="MascotBorder"
+                            CornerRadius="24"
+                            HorizontalAlignment="Center"
+                            Visibility="Collapsed">
+                        <Image x:Name="MascotImage"
+                               Stretch="Fill"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch"/>
+                    </Border>
+                    <TextBlock x:Name="EmptyHint"
+                               x:Uid="GamepadMappingEmptyHint"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+    </Grid>
 </UserControl>

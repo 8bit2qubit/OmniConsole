@@ -38,7 +38,7 @@ namespace OmniConsole.Dialogs
             Closed += OnClosed;
         }
 
-        /// <summary>對話方塊開啟：啟動自帶手把輪詢（B=關閉、A=觸發焦點元素）。</summary>
+        /// <summary>對話方塊開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=關閉）。初始焦點由 XAML DefaultButton="Close" 控制。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             _gamepadNav = new GamepadNavigationService(

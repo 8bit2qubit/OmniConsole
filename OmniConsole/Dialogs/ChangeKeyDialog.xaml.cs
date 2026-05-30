@@ -26,9 +26,9 @@ namespace OmniConsole.Dialogs
             _resw = resw;
             _isCombo = isCombo;
 
-            Title = Loc(isCombo ? "GamepadMappingChangeComboTitle" : "GamepadMappingChangeKeyTitle");
-            PrimaryButtonText = Loc("GamepadKeyPickerOk");
-            CloseButtonText = Loc("GamepadKeyPickerCancel");
+            Title = _resw.Loc(isCombo ? "GamepadMappingChangeComboTitle" : "GamepadMappingChangeKeyTitle");
+            PrimaryButtonText = _resw.Loc("GamepadKeyPickerOk");
+            CloseButtonText = _resw.Loc("GamepadKeyPickerCancel");
 
             ModifiersPanel.Visibility = isCombo ? Visibility.Visible : Visibility.Collapsed;
             if (isCombo)
@@ -112,7 +112,7 @@ namespace OmniConsole.Dialogs
             }
         }
 
-        /// <summary>對話方塊開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=取消關閉），預設焦點到 KeyCombo。</summary>
+        /// <summary>對話方塊開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=關閉）。初始焦點到 KeyCombo。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             _gamepadNav = new GamepadNavigationService(
@@ -136,7 +136,7 @@ namespace OmniConsole.Dialogs
         {
             if (!string.IsNullOrEmpty(e.ReswKey))
             {
-                string s = Loc(e.ReswKey);
+                string s = _resw.Loc(e.ReswKey);
                 if (!string.IsNullOrEmpty(s)) return s;
             }
             return e.FallbackText;
@@ -146,24 +146,9 @@ namespace OmniConsole.Dialogs
         private string GroupName(VirtualKeyGroup g)
         {
             string key = "GamepadKeyGroup_" + g.ToString();
-            string s = Loc(key);
+            string s = _resw.Loc(key);
             return string.IsNullOrEmpty(s) ? g.ToString() : s;
         }
 
-        /// <summary>resw 查詢；依 key 本身 / .Text / .Content 三候選試查，皆查不到時回 key 字面，try/catch 包住例外。</summary>
-        private string Loc(string key)
-        {
-            string[] candidates = { key, key + "/Text", key + "/Content" };
-            foreach (var c in candidates)
-            {
-                try
-                {
-                    var s = _resw.GetString(c);
-                    if (!string.IsNullOrEmpty(s)) return s;
-                }
-                catch { }
-            }
-            return key;
-        }
     }
 }

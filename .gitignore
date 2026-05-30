@@ -44,9 +44,10 @@ project.assets.json
 publish/
 *.appxrecipe
 
-## C++ build output (PhantomKey)
+## C++ build output (PhantomKey / PhantomPaw / PhantomPaw32)
 version.h
 x64/
+Win32/
 *.ilk
 *.pdb
 *.obj

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
+using static OmniConsole.Services.GamepadProfileMappingHelper;
 
 namespace OmniConsole.Controls
 {
@@ -16,42 +17,6 @@ namespace OmniConsole.Controls
     /// </summary>
     public sealed partial class GamepadProfileEditor : UserControl
     {
-        // ── 動作選項（ComboBox.Tag）─────────────────────────────────────────
-        private enum ActionOption
-        {
-            None,
-            KeyTap,         // 鍵盤按鍵（KeyTap / KeyHold 走同一選項，依 VK 是否為修飾鍵自動分流）
-            KeyCombo,       // 組合鍵（Ctrl/Shift/Alt/Win + 鍵）
-            MouseLeft,
-            MouseRight,
-            MouseMiddle,
-            WheelUp,
-            WheelDown,
-            WheelLeft,
-            WheelRight,
-            StickCursor,
-            StickScroll,
-            StickArrows,
-            StickWasd,
-            // DPad 主行專用選項（不對應單一 GamepadInputId，僅 ComboDPad 使用）
-            DpadArrows,
-            DpadWasd,
-            DpadNumpad,
-            DpadCustom
-        }
-
-        // DPad 預設組合 VK 表（up / down / left / right）
-        private static readonly int[] kDpadArrowsVks = { 0x26, 0x28, 0x25, 0x27 }; // VK_UP / DOWN / LEFT / RIGHT
-        private static readonly int[] kDpadWasdVks = { 'W', 'S', 'A', 'D' };
-        private static readonly int[] kDpadNumpadVks = { 0x68, 0x62, 0x64, 0x66 }; // Numpad 8 / 2 / 4 / 6
-
-        // DPad 4 個 KeyId（順序 up/down/left/right，與 VK 表逐位相符）
-        private static readonly GamepadInputId[] kDpadKeys =
-        {
-            GamepadInputId.DPadUp, GamepadInputId.DPadDown,
-            GamepadInputId.DPadLeft, GamepadInputId.DPadRight
-        };
-
         // 玩家手動切到「自訂」後即使 4 子列湊巧等價於某預設組合，主行維持「自訂」
         private bool _dpadEditingCustom = false;
 
@@ -151,7 +116,7 @@ namespace OmniConsole.Controls
         {
             combo.Items.Add(new ComboBoxItem
             {
-                Content = Loc(reswKey),
+                Content = _resw.Loc(reswKey),
                 Tag = opt
             });
         }
@@ -207,6 +172,21 @@ namespace OmniConsole.Controls
             _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
 
             RefreshAllRows();
+
+            // 同步 BlockNativeGamepadInput 旗標到 ToggleSwitch（_suppress 旗標讓 Toggled handler 不寫回 _editing）
+            _suppressBlockNativeGamepadInputToggled = true;
+            BlockNativeGamepadInputSwitch.IsOn = _editing.BlockNativeGamepadInput;
+            _suppressBlockNativeGamepadInputToggled = false;
+        }
+
+        private bool _suppressBlockNativeGamepadInputToggled = false;
+
+        /// <summary>BlockNativeGamepadInput ToggleSwitch 切換 → 寫回 _editing。</summary>
+        private void BlockNativeGamepadInputSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_suppressBlockNativeGamepadInputToggled) return;
+            if (_editing == null) return;
+            _editing.BlockNativeGamepadInput = BlockNativeGamepadInputSwitch.IsOn;
         }
 
         /// <summary>把 _editing 的所有 binding 同步回 UI（ComboBox 選項 + KeyBtn 顯示）。</summary>
@@ -226,13 +206,13 @@ namespace OmniConsole.Controls
             // 全部 None → 主行顯示 None
             bool allNone = true;
             for (int i = 0; i < 4; i++)
-                if (_editing.Get(kDpadKeys[i]).Kind != GamepadActionKind.None) { allNone = false; break; }
+                if (_editing.Get(DpadKeys[i]).Kind != GamepadActionKind.None) { allNone = false; break; }
             if (allNone) return ActionOption.None;
 
             // 比對三組預設：4 鍵都 KeyTap 且 vk 逐位相符
-            if (MatchDpadVks(kDpadArrowsVks)) return ActionOption.DpadArrows;
-            if (MatchDpadVks(kDpadWasdVks)) return ActionOption.DpadWasd;
-            if (MatchDpadVks(kDpadNumpadVks)) return ActionOption.DpadNumpad;
+            if (MatchDpadVks(DpadArrowsVks)) return ActionOption.DpadArrows;
+            if (MatchDpadVks(DpadWasdVks)) return ActionOption.DpadWasd;
+            if (MatchDpadVks(DpadNumpadVks)) return ActionOption.DpadNumpad;
 
             return ActionOption.DpadCustom;
         }
@@ -243,7 +223,7 @@ namespace OmniConsole.Controls
             if (_editing == null) return false;
             for (int i = 0; i < 4; i++)
             {
-                var a = _editing.Get(kDpadKeys[i]);
+                var a = _editing.Get(DpadKeys[i]);
                 if (a.Kind != GamepadActionKind.KeyTap) return false;
                 if (a.Vk != expected[i]) return false;
             }
@@ -287,15 +267,15 @@ namespace OmniConsole.Controls
 
             switch (opt)
             {
-                case ActionOption.DpadArrows: ApplyDPadPresetVks(kDpadArrowsVks); _dpadEditingCustom = false; break;
-                case ActionOption.DpadWasd: ApplyDPadPresetVks(kDpadWasdVks); _dpadEditingCustom = false; break;
-                case ActionOption.DpadNumpad: ApplyDPadPresetVks(kDpadNumpadVks); _dpadEditingCustom = false; break;
+                case ActionOption.DpadArrows: ApplyDPadPresetVks(DpadArrowsVks); _dpadEditingCustom = false; break;
+                case ActionOption.DpadWasd: ApplyDPadPresetVks(DpadWasdVks); _dpadEditingCustom = false; break;
+                case ActionOption.DpadNumpad: ApplyDPadPresetVks(DpadNumpadVks); _dpadEditingCustom = false; break;
                 case ActionOption.None: ApplyDPadAllNone(); _dpadEditingCustom = false; break;
                 case ActionOption.DpadCustom: ApplyDPadAllNone(); _dpadEditingCustom = true; break;
             }
 
             // 4 子列 model 變了 → 同步 UI；主行自身依目前狀態切展開
-            foreach (var k in kDpadKeys)
+            foreach (var k in DpadKeys)
                 if (_rows.TryGetValue(k, out var pair))
                     SyncRowFromModel(k, pair.combo, pair.keyBtn);
             UpdateDPadExpandedVisibility(opt);
@@ -306,14 +286,14 @@ namespace OmniConsole.Controls
         {
             if (_editing == null) return;
             for (int i = 0; i < 4; i++)
-                _editing.Bindings[kDpadKeys[i]] = new GamepadAction { Kind = GamepadActionKind.KeyTap, Vk = vks[i] };
+                _editing.Bindings[DpadKeys[i]] = new GamepadAction { Kind = GamepadActionKind.KeyTap, Vk = vks[i] };
         }
 
         /// <summary>把 4 個 DPad KeyId 全部清為 None（自訂模式起點、主行選 None 時亦走此路徑）。</summary>
         private void ApplyDPadAllNone()
         {
             if (_editing == null) return;
-            foreach (var k in kDpadKeys)
+            foreach (var k in DpadKeys)
                 _editing.Bindings[k] = new GamepadAction { Kind = GamepadActionKind.None };
         }
 
@@ -351,8 +331,8 @@ namespace OmniConsole.Controls
             if (!show) return;
 
             var a = _editing!.Get(id);
-            string baseText = Loc("GamepadMappingChangeKeyButton").TrimEnd('…');
-            if (string.IsNullOrEmpty(baseText) || baseText == "GamepadMappingChangeKeyButton") baseText = "改鍵";
+            string baseText = _resw.Loc("GamepadMappingChangeKeyButton").TrimEnd('…');
+            if (string.IsNullOrEmpty(baseText) || baseText == "GamepadMappingChangeKeyButton") baseText = "Change key";
             string keyText = (opt == ActionOption.KeyCombo) ? ComboName(a) : KeyName(a.Vk);
             keyBtn.Content = baseText + ": " + keyText;
         }
@@ -376,74 +356,6 @@ namespace OmniConsole.Controls
             // 同步該列的 KeyBtn
             if (_rows.TryGetValue(id, out var pair))
                 UpdateKeyButton(id, opt, pair.keyBtn);
-        }
-
-        /// <summary>由 ActionOption 推 Action：KeyTap 保留 prev.Vk（若是 KeyTap/KeyHold），其他依 opt 直接建。</summary>
-        private static GamepadAction OptionToAction(ActionOption opt, GamepadAction prev)
-        {
-            const int VK_RETURN = 0x0D, VK_TAB = 0x09;
-            switch (opt)
-            {
-                case ActionOption.None:
-                    return new GamepadAction { Kind = GamepadActionKind.None };
-                case ActionOption.KeyTap:
-                    {
-                        // 保留 KeyTap / KeyHold 的 Kind / Vk；其他切過來時補 VK_RETURN
-                        if (prev.Kind == GamepadActionKind.KeyTap || prev.Kind == GamepadActionKind.KeyHold)
-                            return new GamepadAction { Kind = prev.Kind, Vk = prev.Vk == 0 ? VK_RETURN : prev.Vk };
-                        return new GamepadAction { Kind = GamepadActionKind.KeyTap, Vk = VK_RETURN };
-                    }
-                case ActionOption.KeyCombo:
-                    {
-                        if (prev.Kind == GamepadActionKind.KeyCombo)
-                            return new GamepadAction { Kind = GamepadActionKind.KeyCombo, Vk = prev.Vk == 0 ? VK_TAB : prev.Vk, Mods = prev.Mods };
-                        return new GamepadAction { Kind = GamepadActionKind.KeyCombo, Vk = VK_TAB, Mods = GamepadModifier.Ctrl };
-                    }
-                case ActionOption.MouseLeft: return new GamepadAction { Kind = GamepadActionKind.MouseButton, Which = GamepadMouseWhich.Left };
-                case ActionOption.MouseRight: return new GamepadAction { Kind = GamepadActionKind.MouseButton, Which = GamepadMouseWhich.Right };
-                case ActionOption.MouseMiddle: return new GamepadAction { Kind = GamepadActionKind.MouseButton, Which = GamepadMouseWhich.Middle };
-                case ActionOption.WheelUp: return new GamepadAction { Kind = GamepadActionKind.MouseWheel, Dir = GamepadWheelDir.Up };
-                case ActionOption.WheelDown: return new GamepadAction { Kind = GamepadActionKind.MouseWheel, Dir = GamepadWheelDir.Down };
-                case ActionOption.WheelLeft: return new GamepadAction { Kind = GamepadActionKind.MouseWheel, Dir = GamepadWheelDir.Left };
-                case ActionOption.WheelRight: return new GamepadAction { Kind = GamepadActionKind.MouseWheel, Dir = GamepadWheelDir.Right };
-                case ActionOption.StickCursor: return new GamepadAction { Kind = GamepadActionKind.StickCursor };
-                case ActionOption.StickScroll: return new GamepadAction { Kind = GamepadActionKind.StickScroll };
-                case ActionOption.StickArrows: return new GamepadAction { Kind = GamepadActionKind.StickArrows };
-                case ActionOption.StickWasd: return new GamepadAction { Kind = GamepadActionKind.StickWasd };
-                default: return new GamepadAction { Kind = GamepadActionKind.None };
-            }
-        }
-
-        /// <summary>由 Action 推 ActionOption（給 ComboBox 預選用）。</summary>
-        private static ActionOption ToOption(GamepadAction a, GamepadInputId id)
-        {
-            switch (a.Kind)
-            {
-                case GamepadActionKind.None: return ActionOption.None;
-                case GamepadActionKind.KeyTap:
-                case GamepadActionKind.KeyHold: return ActionOption.KeyTap;
-                case GamepadActionKind.KeyCombo: return ActionOption.KeyCombo;
-                case GamepadActionKind.MouseButton:
-                    return a.Which switch
-                    {
-                        GamepadMouseWhich.Right => ActionOption.MouseRight,
-                        GamepadMouseWhich.Middle => ActionOption.MouseMiddle,
-                        _ => ActionOption.MouseLeft,
-                    };
-                case GamepadActionKind.MouseWheel:
-                    return a.Dir switch
-                    {
-                        GamepadWheelDir.Down => ActionOption.WheelDown,
-                        GamepadWheelDir.Left => ActionOption.WheelLeft,
-                        GamepadWheelDir.Right => ActionOption.WheelRight,
-                        _ => ActionOption.WheelUp,
-                    };
-                case GamepadActionKind.StickCursor: return ActionOption.StickCursor;
-                case GamepadActionKind.StickScroll: return ActionOption.StickScroll;
-                case GamepadActionKind.StickArrows: return ActionOption.StickArrows;
-                case GamepadActionKind.StickWasd: return ActionOption.StickWasd;
-                default: return ActionOption.None;
-            }
         }
 
         // ── 改鍵 / 重設 / 從其他程式讀入 ────────────────────────────────────
@@ -474,10 +386,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                Loc("GamepadMappingResetConfirmTitle"),
-                Loc("GamepadMappingResetConfirmBody"),
-                Loc("GamepadMappingResetConfirmYes"),
-                Loc("GamepadKeyPickerCancel"));
+                _resw.Loc("GamepadMappingResetConfirmTitle"),
+                _resw.Loc("GamepadMappingResetConfirmBody"),
+                _resw.Loc("GamepadMappingResetConfirmYes"),
+                _resw.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -494,10 +406,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                Loc("GamepadMappingResetClassicConfirmTitle"),
-                Loc("GamepadMappingResetClassicConfirmBody"),
-                Loc("GamepadMappingResetClassicConfirmYes"),
-                Loc("GamepadKeyPickerCancel"));
+                _resw.Loc("GamepadMappingResetClassicConfirmTitle"),
+                _resw.Loc("GamepadMappingResetClassicConfirmBody"),
+                _resw.Loc("GamepadMappingResetClassicConfirmYes"),
+                _resw.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -514,10 +426,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                Loc("GamepadMappingClearAllConfirmTitle"),
-                Loc("GamepadMappingClearAllConfirmBody"),
-                Loc("GamepadMappingClearAllConfirmYes"),
-                Loc("GamepadKeyPickerCancel"));
+                _resw.Loc("GamepadMappingClearAllConfirmTitle"),
+                _resw.Loc("GamepadMappingClearAllConfirmBody"),
+                _resw.Loc("GamepadMappingClearAllConfirmYes"),
+                _resw.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -566,10 +478,10 @@ namespace OmniConsole.Controls
         {
             if (_editing == null || _isNew) { Closed?.Invoke(this, EventArgs.Empty); return; }
             var dlg = new GamepadMessageDialog(XamlRoot,
-                Loc("GamepadMappingDeleteConfirmTitle"),
-                Loc("GamepadMappingDeleteConfirmBody"),
-                Loc("GamepadMappingDeleteConfirmYes"),
-                Loc("GamepadMappingDeleteConfirmNo"));
+                _resw.Loc("GamepadMappingDeleteConfirmTitle"),
+                _resw.Loc("GamepadMappingDeleteConfirmBody"),
+                _resw.Loc("GamepadMappingDeleteConfirmYes"),
+                _resw.Loc("GamepadMappingDeleteConfirmNo"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -592,9 +504,9 @@ namespace OmniConsole.Controls
             if (GamepadProfileStore.IsBlacklisted(_editing.AppId))
             {
                 var dlg = new GamepadMessageDialog(XamlRoot,
-                    Loc("GamepadMappingBlacklistedTitle"),
-                    Loc("GamepadMappingBlacklistedBody"),
-                    Loc("GamepadKeyPickerOk"),
+                    _resw.Loc("GamepadMappingBlacklistedTitle"),
+                    _resw.Loc("GamepadMappingBlacklistedBody"),
+                    _resw.Loc("GamepadKeyPickerOk"),
                     null);
                 await ShowDialogAsync(dlg);
                 return;
@@ -603,10 +515,10 @@ namespace OmniConsole.Controls
             if (_editing.IsEffectivelyEmpty())
             {
                 var dlg = new GamepadMessageDialog(XamlRoot,
-                    Loc("GamepadMappingEmptyRemoveTitle"),
-                    Loc("GamepadMappingEmptyRemoveBody"),
-                    Loc("GamepadMappingEmptyRemoveYes"),
-                    Loc("GamepadKeyPickerCancel"));
+                    _resw.Loc("GamepadMappingEmptyRemoveTitle"),
+                    _resw.Loc("GamepadMappingEmptyRemoveBody"),
+                    _resw.Loc("GamepadMappingEmptyRemoveYes"),
+                    _resw.Loc("GamepadKeyPickerCancel"));
                 await ShowDialogAsync(dlg);
                 if (!dlg.Result) return;
 
@@ -645,7 +557,7 @@ namespace OmniConsole.Controls
             {
                 if (!string.IsNullOrEmpty(entry.ReswKey))
                 {
-                    string s = Loc(entry.ReswKey);
+                    string s = _resw.Loc(entry.ReswKey);
                     if (!string.IsNullOrEmpty(s) && s != entry.ReswKey) return s;
                 }
                 return entry.FallbackText;
@@ -657,27 +569,12 @@ namespace OmniConsole.Controls
         private string ComboName(GamepadAction a)
         {
             var parts = new List<string>();
-            if ((a.Mods & GamepadModifier.Ctrl) != 0) parts.Add(Loc("GamepadModifier_Ctrl"));
-            if ((a.Mods & GamepadModifier.Shift) != 0) parts.Add(Loc("GamepadModifier_Shift"));
-            if ((a.Mods & GamepadModifier.Alt) != 0) parts.Add(Loc("GamepadModifier_Alt"));
-            if ((a.Mods & GamepadModifier.Win) != 0) parts.Add(Loc("GamepadModifier_Win"));
+            if ((a.Mods & GamepadModifier.Ctrl) != 0) parts.Add(_resw.Loc("GamepadModifier_Ctrl"));
+            if ((a.Mods & GamepadModifier.Shift) != 0) parts.Add(_resw.Loc("GamepadModifier_Shift"));
+            if ((a.Mods & GamepadModifier.Alt) != 0) parts.Add(_resw.Loc("GamepadModifier_Alt"));
+            if ((a.Mods & GamepadModifier.Win) != 0) parts.Add(_resw.Loc("GamepadModifier_Win"));
             parts.Add(KeyName(a.Vk));
             return string.Join("+", parts);
-        }
-
-        /// <summary>
-        /// 判定兩個 AppId 是否指向同一個 profile 槽（Editor CopyFrom 排除自己用）。
-        /// Aumid 類：Kind + Value 相同（PFN 已唯一）。
-        /// Process 類：Kind + Value + FullPath 正規化後相同（含兩邊都 null）。同名不同 path 視為不同 profile。
-        /// </summary>
-        private static bool IsSameProfileSlot(AppId a, AppId b)
-        {
-            if (a == null || b == null) return false;
-            if (!a.Matches(b)) return false;
-            if (a.Kind == IdKind.Aumid) return true;
-            string? pa = AppId.NormalizePath(a.FullPath);
-            string? pb = AppId.NormalizePath(b.FullPath);
-            return string.Equals(pa, pb, StringComparison.Ordinal);
         }
 
         /// <summary>顯示 path-bound profile 的路徑副標；Aumid 類或 FullPath 空時整區隱藏。</summary>
@@ -698,25 +595,9 @@ namespace OmniConsole.Controls
         {
             if (appId == null) return string.Empty;
             string prefix = appId.Kind == IdKind.Aumid
-                ? Loc("AppIdAumidPrefix")
-                : Loc("AppIdProcessPrefix");
+                ? _resw.Loc("AppIdAumidPrefix")
+                : _resw.Loc("AppIdProcessPrefix");
             return prefix + (appId.Value ?? string.Empty);
-        }
-
-        /// <summary>resw 查詢；依 key 本身 / .Text / .Content 三候選試查，皆查不到時回 key 字面，try/catch 包住例外。</summary>
-        private string Loc(string key)
-        {
-            string[] candidates = { key, key + "/Text", key + "/Content" };
-            foreach (var c in candidates)
-            {
-                try
-                {
-                    var s = _resw.GetString(c);
-                    if (!string.IsNullOrEmpty(s)) return s;
-                }
-                catch { }
-            }
-            return key;
         }
     }
 }

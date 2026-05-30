@@ -11,7 +11,7 @@
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OmniConsole.PhantomLink</RootNamespace>
-    <AssemblyName>OmniConsole.PhantomLink</AssemblyName>
+    <AssemblyName>OmniConsole.PhantomLinkWidget</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.26100.0</TargetPlatformVersion>
@@ -127,12 +127,7 @@
     <Compile Include="PhantomLinkWidget.xaml.cs">
       <DependentUpon>PhantomLinkWidget.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\DebugLogger.cs" />
     <Compile Include="Services\FluentIconTextHelper.cs" />
-    <Compile Include="Services\FseStatus.cs" />
-    <Compile Include="Services\HardwareDetection.cs" />
-    <Compile Include="Services\PhantomBridgeHelper.cs" />
-    <Compile Include="Services\PhantomKeyStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -152,27 +147,28 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <!-- ── Full Trust COM Server 產出（由 PhantomBridge vcxproj 建置） ── -->
-    <!-- 路徑 Link 決定 exe/winmd 在 msix 套件內的相對位置，與 Package.appxmanifest
-         的 <com:ExeServer Executable="..."/> 必須對齊（皆為套件根目錄）。 -->
     <Content Include="..\OmniConsole.PhantomBridge\x64\$(Configuration)\OmniConsole.PhantomBridge.exe">
       <Link>OmniConsole.PhantomBridge.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\OmniConsole.PhantomBridge\x64\$(Configuration)\PhantomBridge.winmd">
+    <Content Include="..\OmniConsole\Phantom\OmniConsole.PhantomBridge.dll">
+      <Link>OmniConsole.PhantomBridge.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OmniConsole\Phantom\PhantomBridge.winmd">
       <Link>PhantomBridge.winmd</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <!-- ── PhantomBridge WinRT metadata 參考 ── -->
-    <!-- winmd 已作為 Content 一併封裝（供 Metadata Based Marshaling 跨行程使用）。
-         C# 端不依賴 winmd 投影，改以 Services/PhantomBridgeHelper.cs 的 [ComImport] 手動宣告。
-         此 Reference 保留是為了：(1) 建置順序關聯 (2) IDE 工具能找到型別資訊。 -->
     <Reference Include="PhantomBridge">
-      <HintPath>..\OmniConsole.PhantomBridge\x64\$(Configuration)\PhantomBridge.winmd</HintPath>
+      <HintPath>..\OmniConsole\Phantom\PhantomBridge.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>
       <Private>false</Private>
+    </Reference>
+    <Reference Include="OmniConsole.PhantomLink.Core">
+      <HintPath>..\OmniConsole\Phantom\OmniConsole.PhantomLink.dll</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -200,37 +196,10 @@
   <Target Name="SyncVersionFromMainManifest" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NoProfile -Command &quot;[xml]$m = Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest'; $v = $m.Package.Identity.Version; [xml]$t = Get-Content '$(ProjectDir)Package.appxmanifest'; if ($t.Package.Identity.Version -ne $v) { $t.Package.Identity.Version = $v; $t.Save('$(ProjectDir)Package.appxmanifest') }&quot;" />
   </Target>
-  <!-- PhantomBridge (fulltrust C++/WinRT COM server) 必須先於 PhantomLink 建置。
-       不用 <ProjectReference>：傳統 UWP / .NET Native csproj 的 ResolveProjectReferences
-       不會自動觸發 vcxproj 建置，實測會出 MSB3073（PhantomBridge.0.h 不存在）。
-       明確的 <Target><MSBuild Projects=.../></Target> 是這個 toolchain 上實測可靠的依賴宣告之一。
-       Platform 鎖 x64：PhantomLink msix 為 x64-only，PhantomBridge 對齊 x64。 -->
-  <Target Name="BuildPhantomBridge" BeforeTargets="BeforeBuild">
+  <Target Name="BuildPhantomBridgeLoader" BeforeTargets="BeforeBuild">
     <MSBuild Projects="..\OmniConsole.PhantomBridge\OmniConsole.PhantomBridge.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
   </Target>
-  <!-- 從 cppwinrt 產出的 PhantomBridge.0.h 解析 IPhantomBridgeFactory 的 IID，
-       產生 Generated\PhantomBridgeIIDs.g.cs。IDL 變更 → IID 自動同步到 C#。
-
-       設計要點：
-         1. BeforeTargets 同時掛 BeforeBuild 與 CoreCompile：CoreCompile 在增量建置中
-            可能被跳過，連帶 BeforeTargets 也不執行；雙掛保證 IID 同步。
-         2. DependsOnTargets="BuildPhantomBridge" 鎖序：.h 必須先由 vcxproj 產出。
-         3. .g.cs 由本 target 動態加入 Compile item，避免乾淨 repo 首次建置報 CS2001。
-         4. 不設 Inputs/Outputs incremental check：腳本內部已比對內容相同則不寫檔。 -->
-  <Target Name="GeneratePhantomBridgeIIDs"
-          BeforeTargets="BeforeBuild;CoreCompile"
-          DependsOnTargets="BuildPhantomBridge">
-    <PropertyGroup>
-      <_PhantomBridgeHeader>..\OmniConsole.PhantomBridge\x64\$(Configuration)\Intermediate\Generated Files\winrt\impl\PhantomBridge.0.h</_PhantomBridgeHeader>
-      <_PhantomBridgeIIDsFile>$(ProjectDir)Generated\PhantomBridgeIIDs.g.cs</_PhantomBridgeIIDsFile>
-    </PropertyGroup>
-    <MakeDir Directories="$(ProjectDir)Generated" />
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)Build\GeneratePhantomBridgeIIDs.ps1&quot; -HeaderPath &quot;$(_PhantomBridgeHeader)&quot; -OutputPath &quot;$(_PhantomBridgeIIDsFile)&quot;" />
-    <ItemGroup>
-      <Compile Include="$(_PhantomBridgeIIDsFile)" />
-    </ItemGroup>
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

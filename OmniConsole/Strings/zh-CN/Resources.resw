@@ -636,7 +636,7 @@
     <value>OmniCharm 小组件已可安装。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
-    <value>在游戏中快速切换 OmniConsole 功能的 Game Bar 小组件。前往“☰ &gt; 高级”下载并安装。</value>
+    <value>在游戏中快速切换 OmniConsole 功能、猫又各应用手柄映射的 Game Bar 小组件。前往“☰ &gt; 高级”下载并安装。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
     <value>OmniCharm 小组件已可安装。从“Game Bar &gt; 库”打开 OmniConsole 设置，前往“☰ &gt; 高级”下载并安装。</value>
@@ -785,6 +785,9 @@
   <data name="Label_PhantomKey.Text" xml:space="preserve">
     <value>PhantomKey</value>
   </data>
+  <data name="Label_PhantomPaw.Text" xml:space="preserve">
+    <value>PhantomPaw</value>
+  </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
   </data>
@@ -849,19 +852,28 @@
     <value>猫又</value>
   </data>
   <data name="GamepadMappingDescription.Text" xml:space="preserve">
-    <value>猫又愿意为你的手柄施一道咒，让每个应用召唤出最顺手的设置。</value>
+    <value>猫又愿意为每个应用施一道咒，替手柄召唤出最顺手的键鼠指法。</value>
   </data>
   <data name="GamepadMappingEmptyHint.Text" xml:space="preserve">
-    <value>还没有施过咒的应用呢～在 Game Bar 的 OmniCharm 小组件中选择“自定义此应用的手柄映射”，猫又就会为它编一道新咒。</value>
+    <value>喵呜～还没有施过咒的应用呢。在 Game Bar 的 OmniCharm 小组件中选择“自定义此应用的手柄映射”，猫又就会为它编一道新咒。</value>
   </data>
   <data name="GamepadMappingToolsSection.Text" xml:space="preserve">
     <value>工具</value>
+  </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Title.Text" xml:space="preserve">
+    <value>避免双重输入</value>
+  </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Description.Text" xml:space="preserve">
+    <value>屏蔽此应用接收原生 XInput 与 DirectInput 输入信号，避免与模拟键鼠同时作动。</value>
+  </data>
+  <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
+    <value>需重启游戏生效。请勿对含反作弊的游戏（例如 EAC、BattlEye、VAC）启用，否则可能触发违规。</value>
   </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
     <value>清除全部</value>
   </data>
   <data name="GamepadMappingClearAllConfirmTitle" xml:space="preserve">
-    <value>清除全部按键配置？</value>
+    <value>清除全部输入位？</value>
   </data>
   <data name="GamepadMappingClearAllConfirmBody" xml:space="preserve">
     <value>输入位将全部设为“无”。</value>
@@ -876,7 +888,7 @@
     <value>重置为 OmniNav 默认？</value>
   </data>
   <data name="GamepadMappingResetConfirmBody" xml:space="preserve">
-    <value>当前所有按键配置将被覆盖为 OmniNav 默认。</value>
+    <value>当前所有输入位将被覆盖为 OmniNav 默认。</value>
   </data>
   <data name="GamepadMappingResetConfirmYes" xml:space="preserve">
     <value>重置</value>
@@ -888,7 +900,7 @@
     <value>重置为 Classic 默认？</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmBody" xml:space="preserve">
-    <value>当前所有按键配置将被覆盖为 Classic 默认。</value>
+    <value>当前所有输入位将被覆盖为 Classic 默认。</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
     <value>重置</value>
@@ -1068,7 +1080,7 @@
     <value>删除此配置？</value>
   </data>
   <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
-    <value>此应用的自定义按键配置将被移除，改由内置配置接管。</value>
+    <value>此应用的自定义按键配置将被移除，改由内置布局接管。</value>
   </data>
   <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
     <value>删除</value>
@@ -1076,17 +1088,41 @@
   <data name="GamepadMappingDeleteConfirmNo" xml:space="preserve">
     <value>取消</value>
   </data>
+  <data name="GamepadMappingSearchBox.PlaceholderText" xml:space="preserve">
+    <value>搜索程序…</value>
+  </data>
+  <data name="GamepadMappingSortAddOrderDesc.Content" xml:space="preserve">
+    <value>添加顺序：新→旧</value>
+  </data>
+  <data name="GamepadMappingSortAddOrderAsc.Content" xml:space="preserve">
+    <value>添加顺序：旧→新</value>
+  </data>
+  <data name="GamepadMappingSortNameAsc.Content" xml:space="preserve">
+    <value>名称：A→Z</value>
+  </data>
+  <data name="GamepadMappingSortNameDesc.Content" xml:space="preserve">
+    <value>名称：Z→A</value>
+  </data>
+  <data name="GamepadMappingNoSearchResultHint.Text" xml:space="preserve">
+    <value>没有找到匹配的程序。</value>
+  </data>
+  <data name="GamepadHint_SwitchPage.Text" xml:space="preserve">
+    <value>切换页面</value>
+  </data>
+  <data name="GamepadHint_Search.Text" xml:space="preserve">
+    <value>搜索</value>
+  </data>
   <data name="GamepadMappingEmptyConfirmTitle" xml:space="preserve">
     <value>保存为空配置？</value>
   </data>
   <data name="GamepadMappingEmptyConfirmBody" xml:space="preserve">
-    <value>所有输入位均设为“无”。此应用将改由内置配置接管。</value>
+    <value>所有输入位均设为“无”。此应用将改由内置布局接管。</value>
   </data>
   <data name="GamepadMappingEmptyRemoveTitle" xml:space="preserve">
     <value>移除此应用的自定义配置？</value>
   </data>
   <data name="GamepadMappingEmptyRemoveBody" xml:space="preserve">
-    <value>所有输入位均设为“无”，等同于没有自定义配置。此应用将改由内置配置接管。</value>
+    <value>所有输入位均设为“无”，等同于没有自定义配置。此应用将改由内置布局接管。</value>
   </data>
   <data name="GamepadMappingEmptyRemoveYes" xml:space="preserve">
     <value>移除</value>
@@ -1270,5 +1306,59 @@
   </data>
   <data name="NavigationSoundsSetting_Description.Text" xml:space="preserve">
     <value>操作时播放导览音效。</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_Header.Text" xml:space="preserve">
+    <value>以下应用程序正在使用 PhantomPaw，请先关闭再重试更新：</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_Hint.Text" xml:space="preserve">
+    <value>关闭应用程序后按“重试”，或按“取消”稍后再更新。</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_RetryButton" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="AppsUsingPhantomPawDialog_CancelButton" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="AboutSection_ReleaseInfo.Text" xml:space="preserve">
+    <value>发行信息</value>
+  </data>
+  <data name="Label_Certificate.Text" xml:space="preserve">
+    <value>证书</value>
+  </data>
+  <data name="Label_CommitHash.Text" xml:space="preserve">
+    <value>Commit：</value>
+  </data>
+  <data name="Label_BuiltAt.Text" xml:space="preserve">
+    <value>构建时间：</value>
+  </data>
+  <data name="Label_Source.Text" xml:space="preserve">
+    <value>官方仓库</value>
+  </data>
+  <data name="CertDetailsButton.Content" xml:space="preserve">
+    <value>详细信息</value>
+  </data>
+  <data name="CertDetailsDialog_Title" xml:space="preserve">
+    <value>证书详细信息</value>
+  </data>
+  <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
+    <value>这份安装由以下证书签署。将下方 SHA-256 指纹与官方仓库的 AUTHENTICITY.zh-TW.md 公布值比对。若数值不一致，这份构建便不是来自官方来源。</value>
+  </data>
+  <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
+    <value>打开 AUTHENTICITY.zh-TW.md 查看公布指纹</value>
+  </data>
+  <data name="CertDetailsDialog_CopyButton" xml:space="preserve">
+    <value>复制指纹</value>
+  </data>
+  <data name="CertDetailsDialog_CloseButton" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="CertDetailsDialog_Copied.Text" xml:space="preserve">
+    <value>指纹已复制到剪贴板。</value>
+  </data>
+  <data name="OpenCommitOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>在 GitHub 打开此 commit</value>
+  </data>
+  <data name="OpenRepoOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>在 GitHub 打开仓库</value>
   </data>
 </root>

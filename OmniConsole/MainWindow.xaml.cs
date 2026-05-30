@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using OmniConsole.Services;
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using WinRT.Interop;
@@ -12,16 +11,6 @@ namespace OmniConsole
 {
     public sealed partial class MainWindow : Window
     {
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
-        private const int DWMWCP_DONOTROUND = 1;
-        private const int SW_HIDE = 0;
-
         private bool _isMaximized = false;
         private bool _isSettingsMode = false;
         private bool _isShowingSettings = false;
@@ -36,6 +25,15 @@ namespace OmniConsole
         /// 由 SettingsPage.RunInstallBundleWithDialogAsync 在開始/結束時切換。
         /// </summary>
         public static bool IsUpdateInstallInProgress { get; set; }
+
+        /// <summary>
+        /// 整段安裝流程（含前置 AppsUsingPhantomPawDialog + 下載 + 安裝）期間設為 true。
+        /// 由 SettingsPage.RunInstallBundleWithDialogAsync 包整段 try/finally；
+        /// 較 IsUpdateInstallInProgress 更早 true、更晚 false：開頭涵蓋下載前的前置對話方塊等待，
+        /// 結尾在 Phase2Install 把 IsUpdateInstallInProgress 設 false（讓 OS graceful close 通過）後仍維持 true。
+        /// 供外部入口（開始功能表 / Game Bar 首頁 / 媒體櫃）的 redirect handler 提前 return。
+        /// </summary>
+        public static bool IsInstallFlowInProgress { get; set; }
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
 
@@ -57,8 +55,7 @@ namespace OmniConsole
 
             // 強制直角，避免 Windows 11 預設圓角
             _hwnd = WindowNative.GetWindowHandle(this);
-            int corner = DWMWCP_DONOTROUND;
-            DwmSetWindowAttribute(_hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+            WindowForegroundService.DisableWindowCorners(_hwnd);
 
             // 設定工作檢視與工作列圖示（使用套件內 Assets 的圖示）
             var iconPath = System.IO.Path.Combine(
@@ -281,11 +278,11 @@ namespace OmniConsole
             bool fseActive = FseService.IsActive();
             DebugLogger.Log($"[MainWindow] RequestExitApplication: _isShowingSettings={_isShowingSettings}, fseActive={fseActive}");
 
-            // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面 (如 FSE) 即可
+            // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面（如 FSE）即可
             if (_isShowingSettings)
             {
                 SettingsPageControl.StopGamepadPolling();
-                ShowWindow(_hwnd, SW_HIDE); // 先隱藏視窗，避免 FullScreen presenter 卸載時閃白
+                WindowForegroundService.Hide(_hwnd); // 先隱藏視窗，避免 FullScreen presenter 卸載時閃白
                 App.ExitApp();
                 return;
             }
@@ -318,7 +315,7 @@ namespace OmniConsole
                     await tcs.Task;
                     FseService.StateChanged -= OnStateChanged;
                     LaunchPageControl.StopGamepadPolling();
-                    ShowWindow(_hwnd, SW_HIDE);
+                    WindowForegroundService.Hide(_hwnd);
                     App.ExitApp();
                     return;
                 }
@@ -331,7 +328,7 @@ namespace OmniConsole
             else
             {
                 LaunchPageControl.StopGamepadPolling();
-                ShowWindow(_hwnd, SW_HIDE);
+                WindowForegroundService.Hide(_hwnd);
                 App.ExitApp();
             }
         }

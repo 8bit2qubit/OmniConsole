@@ -104,22 +104,25 @@
             <VisualStateGroup x:Name="AboutLayoutStates">
                 <!-- 寬螢幕（預設）：兩欄並排；標題與動作跨兩欄 -->
                 <VisualState x:Name="WideAboutState"/>
-                <!-- 窄螢幕：單欄垂直；動作群組置頂以利手把焦點 -->
+                <!-- 窄螢幕：單欄垂直；發行資訊置頂、動作群組在下利於從上往下手把導航 -->
                 <VisualState x:Name="NarrowAboutState">
                     <VisualState.Setters>
                         <Setter Target="AboutTitleGroup.(Grid.ColumnSpan)" Value="1"/>
-                        <Setter Target="AboutActionsGroup.(Grid.Row)" Value="1"/>
+                        <Setter Target="AboutReleaseInfoGroup.(Grid.Row)" Value="1"/>
+                        <Setter Target="AboutReleaseInfoGroup.(Grid.Column)" Value="0"/>
+                        <Setter Target="AboutReleaseInfoGroup.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="AboutActionsGroup.(Grid.Row)" Value="2"/>
                         <Setter Target="AboutActionsGroup.(Grid.Column)" Value="0"/>
                         <Setter Target="AboutActionsGroup.(Grid.ColumnSpan)" Value="1"/>
-                        <Setter Target="AboutSuiteGroup.(Grid.Row)" Value="2"/>
+                        <Setter Target="AboutSuiteGroup.(Grid.Row)" Value="3"/>
                         <Setter Target="AboutSuiteGroup.(Grid.Column)" Value="0"/>
-                        <Setter Target="AboutPhantomKeyGroup.(Grid.Row)" Value="3"/>
+                        <Setter Target="AboutPhantomKeyGroup.(Grid.Row)" Value="4"/>
                         <Setter Target="AboutPhantomKeyGroup.(Grid.Column)" Value="0"/>
-                        <Setter Target="AboutXfsetGroup.(Grid.Row)" Value="4"/>
+                        <Setter Target="AboutXfsetGroup.(Grid.Row)" Value="5"/>
                         <Setter Target="AboutXfsetGroup.(Grid.Column)" Value="0"/>
-                        <Setter Target="AboutHardwareGroup.(Grid.Row)" Value="5"/>
+                        <Setter Target="AboutHardwareGroup.(Grid.Row)" Value="6"/>
                         <Setter Target="AboutHardwareGroup.(Grid.Column)" Value="0"/>
-                        <Setter Target="AboutSystemGroup.(Grid.Row)" Value="6"/>
+                        <Setter Target="AboutSystemGroup.(Grid.Row)" Value="7"/>
                         <Setter Target="AboutSystemGroup.(Grid.Column)" Value="0"/>
                     </VisualState.Setters>
                 </VisualState>
@@ -152,7 +155,7 @@
                         <Setter Target="ImportPlatformButton.Visibility" Value="Visible"/>
                     </VisualState.Setters>
                 </VisualState>
-                <!-- GamepadMappingListTab：清單頁的提示列狀態（X 刪除由 code-behind 依 HasItems 控制） -->
+                <!-- GamepadMappingListTab：清單頁狀態，X／LB/RB／Y 由 code-behind 控制 -->
                 <VisualState x:Name="GamepadMappingListTab"/>
                 <!-- GamepadMappingEditorTab：編輯器頁，B 改為「儲存並返回」，隱藏一般退出提示 -->
                 <VisualState x:Name="GamepadMappingEditorTab">
@@ -897,8 +900,9 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <!-- WideState 用 Row0/1（標題+動作跨兩欄）+ Row2/3/4（左欄三群組與右欄兩群組對齊）；
-                                 NarrowState 額外使用 Row5/6 -->
+                            <!-- WideState 用 Row0/1/2（標題、動作、發行資訊 跨兩欄）+ Row3/4/5（左欄三群組與右欄兩群組對齊）；
+                                 NarrowState 額外使用 Row6/7 -->
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -915,8 +919,8 @@
                             <TextBlock x:Uid="AboutDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap"/>
                         </StackPanel>
 
-                        <!-- 動作群組（WideState：跨兩欄；NarrowState：單欄） -->
-                        <StackPanel x:Name="AboutActionsGroup" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        <!-- 動作群組（WideState：Row 1 col 1，與發行資訊並排；NarrowState：Row 2 跨單欄） -->
+                        <StackPanel x:Name="AboutActionsGroup" Grid.Row="1" Grid.Column="1"
                                     Spacing="8" HorizontalAlignment="Center" Width="700">
                             <TextBlock x:Uid="AboutSection_Actions" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -936,17 +940,19 @@
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <TextBlock x:Uid="AboutActions_Title" FontWeight="SemiBold" FontSize="16"/>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock x:Uid="Label_CapturedAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock x:Name="AboutCapturedAtText" FontSize="14" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock x:Uid="Label_CapturedAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="AboutCapturedAtText" FontSize="14" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                         <Button x:Name="CopyAboutButton" x:Uid="CopyAboutButton"
                                                 Click="CopyAboutButton_Click"
-                                                FontSize="14" Padding="24,8"/>
+                                                FontSize="14" Padding="24,8"
+                                                XYFocusUp="{x:Bind CertDetailsButton}"/>
                                         <Button x:Name="RefreshAboutButton" x:Uid="RefreshAboutButton"
                                                 Click="RefreshAboutButton_Click"
-                                                FontSize="14" Padding="24,8"/>
+                                                FontSize="14" Padding="24,8"
+                                                XYFocusUp="{x:Bind CertDetailsButton}"/>
                                         <!-- 進度環用 Opacity 切顯隱（保持 20×20 佔位）避免按鈕 row 重排造成寬度抖動 -->
                                         <ProgressRing x:Name="RefreshAboutProgressRing"
                                                       IsActive="False" Opacity="0"
@@ -956,8 +962,52 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- OmniConsole Suite 群組（WideState：Row 2 col 0；NarrowState：Row 2 col 0） -->
-                        <StackPanel x:Name="AboutSuiteGroup" Grid.Row="2" Grid.Column="0" Spacing="8" Width="700">
+                        <!-- 發行資訊群組（WideState：Row 1 col 0 跟 Actions 並排同 700 寬；NarrowState：Row 1 跨單欄置頂）
+                             卡片內顯示 commit hash 與 build 時間兩列；憑證指紋、source URL 由詳細資訊按鈕開啟對話方塊顯示 -->
+                        <StackPanel x:Name="AboutReleaseInfoGroup" Grid.Row="1" Grid.Column="0"
+                                    Spacing="8" HorizontalAlignment="Center" Width="700">
+                            <TextBlock x:Uid="AboutSection_ReleaseInfo" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Margin="2,0,0,0"/>
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch">
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Glyph="&#xE967;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Spacing="2">
+                                        <!-- Commit row -->
+                                        <StackPanel x:Name="AboutReleaseInfoCommitRow" Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="Label_CommitHash" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <HyperlinkButton x:Name="AboutReleaseInfoCommitLink"
+                                                             x:Uid="OpenCommitOnGitHubAccessibleName"
+                                                             FontSize="14" FontFamily="Consolas" Padding="0" Margin="0" VerticalAlignment="Center"
+                                                             XYFocusRight="{x:Bind CertDetailsButton}"
+                                                             XYFocusDown="{x:Bind CopyAboutButton}"/>
+                                        </StackPanel>
+                                        <!-- Built row -->
+                                        <StackPanel x:Name="AboutReleaseInfoBuiltRow" Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="Label_BuiltAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="AboutReleaseInfoBuiltText" FontSize="14" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <Button x:Name="CertDetailsButton" x:Uid="CertDetailsButton" Grid.Column="2"
+                                            Click="CertDetailsButton_Click"
+                                            FontSize="14" Padding="24,8" VerticalAlignment="Center"
+                                            XYFocusLeft="{x:Bind AboutReleaseInfoCommitLink}"
+                                            XYFocusDown="{x:Bind CopyAboutButton}"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- OmniConsole Suite 群組（WideState：Row 3 col 0；NarrowState：Row 3 col 0） -->
+                        <StackPanel x:Name="AboutSuiteGroup" Grid.Row="3" Grid.Column="0" Spacing="8" Width="700">
                             <TextBlock x:Uid="AboutSection_Suite" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
@@ -983,12 +1033,17 @@
                                         <TextBlock x:Uid="Label_PhantomLink" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomLinkVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock x:Uid="Label_PhantomPaw" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Name="AboutPhantomPawVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
                                 </StackPanel>
                             </ContentControl>
                         </StackPanel>
 
-                        <!-- PhantomKey 健康狀況群組（WideState：Row 3 col 0） -->
-                        <StackPanel x:Name="AboutPhantomKeyGroup" Grid.Row="3" Grid.Column="0" Spacing="8" Width="700">
+                        <!-- PhantomKey 健康狀況群組（WideState：Row 4 col 0） -->
+                        <StackPanel x:Name="AboutPhantomKeyGroup" Grid.Row="4" Grid.Column="0" Spacing="8" Width="700">
                             <TextBlock x:Uid="AboutSection_PhantomKey" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
@@ -1018,8 +1073,8 @@
                             </ContentControl>
                         </StackPanel>
 
-                        <!-- XFSET 群組（WideState：Row 4 col 0） -->
-                        <StackPanel x:Name="AboutXfsetGroup" Grid.Row="4" Grid.Column="0" Spacing="8" Width="700">
+                        <!-- XFSET 群組（WideState：Row 5 col 0） -->
+                        <StackPanel x:Name="AboutXfsetGroup" Grid.Row="5" Grid.Column="0" Spacing="8" Width="700">
                             <TextBlock x:Uid="AboutSection_Xfset" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
@@ -1039,8 +1094,8 @@
                             </ContentControl>
                         </StackPanel>
 
-                        <!-- 硬體群組（WideState：Row 2 col 1） -->
-                        <StackPanel x:Name="AboutHardwareGroup" Grid.Row="2" Grid.Column="1" Spacing="8" Width="700">
+                        <!-- 硬體群組（WideState：Row 3 col 1） -->
+                        <StackPanel x:Name="AboutHardwareGroup" Grid.Row="3" Grid.Column="1" Spacing="8" Width="700">
                             <TextBlock x:Uid="AboutSection_Hardware" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
@@ -1075,8 +1130,8 @@
                             </ContentControl>
                         </StackPanel>
 
-                        <!-- 系統群組（WideState：Row 3 col 1） -->
-                        <StackPanel x:Name="AboutSystemGroup" Grid.Row="3" Grid.Column="1" Spacing="8" Width="700">
+                        <!-- 系統群組（WideState：Row 4 col 1） -->
+                        <StackPanel x:Name="AboutSystemGroup" Grid.Row="4" Grid.Column="1" Spacing="8" Width="700">
                             <TextBlock x:Uid="AboutSection_System" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
@@ -1229,6 +1284,33 @@
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
                     <TextBlock x:Uid="GamepadHint_DeleteProfile" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <!-- LB/RB 跳頁提示（手把映射清單頁顯示，由 VSM 控制 Visibility） -->
+            <StackPanel x:Name="GamepadHintLBRBPaging" Orientation="Horizontal" Spacing="4" Visibility="Collapsed">
+                <FontIcon Glyph="&#xF10C;" FontSize="22"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          VerticalAlignment="Center"/>
+                <FontIcon Glyph="&#xF10D;" FontSize="22"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock x:Uid="GamepadHint_SwitchPage" FontSize="14"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- Y 鍵：搜尋方塊與清單之間切換焦點（手把映射清單頁顯示，滑鼠可點選 = 將焦點移到搜尋方塊） -->
+            <Button x:Name="GamepadHintYSearchToggle" Visibility="Collapsed"
+                    Click="SearchToggleHintButton_Click"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Padding="0" MinWidth="0" MinHeight="0"
+                    IsTabStop="False">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xF095;" FontSize="22"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock x:Uid="GamepadHint_Search" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>

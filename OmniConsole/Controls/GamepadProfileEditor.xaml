@@ -5,28 +5,60 @@
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
+
+        <Style x:Key="HeaderCardFocusStyle" TargetType="ContentControl">
+            <Setter Property="IsTabStop" Value="True"/>
+            <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
+            <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
+            <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
+            <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
+            <Setter Property="FocusVisualMargin" Value="-3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Border CornerRadius="8"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,24,0,24">
 
-            <!-- 頁首：App 名稱 + appId 副文字 + 綁定路徑（僅 Win32 process 類顯示）-->
-            <StackPanel Spacing="4">
-                <TextBlock x:Name="AppNameText" FontSize="28" FontWeight="Bold"/>
-                <TextBlock x:Name="AppIdText"   FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                <StackPanel x:Name="PathDisplayPanel" Orientation="Vertical" Spacing="2" Margin="0,4,0,0" Visibility="Collapsed">
-                    <TextBlock x:Uid="GamepadProfile_PathBoundLabel"
-                               FontSize="11"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock x:Name="PathHintText"
-                               FontSize="11"
-                               FontFamily="Consolas"
-                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                               TextTrimming="CharacterEllipsis"/>
+            <!-- 頁首卡片：App 名稱 + appId 副文字 + 綁定路徑（僅 Win32 process 類顯示），可被手把焦點落 -->
+            <ContentControl Style="{StaticResource HeaderCardFocusStyle}" HorizontalAlignment="Stretch" MinWidth="700"
+                            XYFocusDown="{x:Bind BlockNativeGamepadInputSwitch}">
+                <StackPanel Padding="16" Spacing="4">
+                    <TextBlock x:Name="AppNameText" FontSize="28" FontWeight="Bold"/>
+                    <TextBlock x:Name="AppIdText"   FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <StackPanel x:Name="PathDisplayPanel" Orientation="Vertical" Spacing="2" Margin="0,4,0,0" Visibility="Collapsed">
+                        <TextBlock x:Uid="GamepadProfile_PathBoundLabel"
+                                   FontSize="11"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock x:Name="PathHintText"
+                                   FontSize="11"
+                                   FontFamily="Consolas"
+                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
+            </ContentControl>
 
-            <!-- 工具列群組 -->
+            <!-- 工具列 + BlockNativeGamepadInput 合併群組 -->
             <TextBlock x:Uid="GamepadMappingToolsSection" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="2,0,0,0"/>
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -34,20 +66,45 @@
                     CornerRadius="8"
                     HorizontalAlignment="Stretch"
                     MinWidth="700">
-                <Grid Padding="16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <FontIcon Grid.Column="0" Glyph="&#xE713;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Button x:Name="ClearAllButton"     x:Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="24,8" Click="ClearAllButton_Click"/>
-                        <Button x:Name="ResetButton"        x:Uid="GamepadMappingResetButton"        FontSize="14" Padding="24,8" Click="ResetButton_Click"/>
-                        <Button x:Name="ResetClassicButton" x:Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="24,8" Click="ResetClassicButton_Click"/>
-                        <Button x:Name="CopyFromButton"     x:Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="24,8" Click="CopyFromButton_Click"/>
-                    </StackPanel>
-                </Grid>
+                <StackPanel>
+                    <!-- BlockNativeGamepadInput 開關 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE785;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="GamepadProfile_BlockNativeGamepadInput_Title" FontWeight="SemiBold" FontSize="16"/>
+                            <TextBlock x:Uid="GamepadProfile_BlockNativeGamepadInput_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                            <TextBlock x:Uid="GamepadProfile_BlockNativeGamepadInput_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <ToggleSwitch x:Name="BlockNativeGamepadInputSwitch"
+                                      Toggled="BlockNativeGamepadInputSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0"/>
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 工具列 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE713;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button x:Name="CopyFromButton"     x:Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="24,8" Click="CopyFromButton_Click"     XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
+                            <Button x:Name="ClearAllButton"     x:Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="24,8" Click="ClearAllButton_Click"     XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
+                            <Button x:Name="ResetButton"        x:Uid="GamepadMappingResetButton"        FontSize="14" Padding="24,8" Click="ResetButton_Click"        XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
+                            <Button x:Name="ResetClassicButton" x:Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="24,8" Click="ResetClassicButton_Click" XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
             </Border>
 
             <!-- 面鍵群組 -->

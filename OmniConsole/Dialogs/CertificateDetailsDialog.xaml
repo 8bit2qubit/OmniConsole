@@ -1,0 +1,55 @@
+<ContentDialog
+    x:Class="OmniConsole.Dialogs.CertificateDetailsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    DefaultButton="Close"
+    RequestedTheme="Dark">
+
+    <ContentDialog.Resources>
+        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+    </ContentDialog.Resources>
+
+    <StackPanel Spacing="12" MinWidth="480">
+
+        <TextBlock x:Uid="CertDetailsDialog_Body" FontSize="14"
+                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                   TextWrapping="Wrap"/>
+
+        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,8">
+            <TextBlock x:Name="ThumbprintText"
+                       FontSize="13"
+                       FontFamily="Consolas"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                       TextWrapping="Wrap"
+                       IsTextSelectionEnabled="True"/>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock x:Uid="Label_Source" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+            <TextBlock FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text=": " VerticalAlignment="Center"/>
+            <HyperlinkButton x:Name="SourceLink"
+                             x:Uid="OpenRepoOnGitHubAccessibleName"
+                             FontSize="13" FontFamily="Consolas" Padding="0" Margin="0" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <HyperlinkButton x:Name="OpenAuthenticityButton"
+                        x:Uid="CertDetailsDialog_OpenAuthenticity"
+                        FontSize="13"/>
+
+        <TextBlock x:Name="CopiedHintText"
+                   x:Uid="CertDetailsDialog_Copied"
+                   FontSize="12"
+                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                   Visibility="Collapsed"/>
+
+    </StackPanel>
+</ContentDialog>

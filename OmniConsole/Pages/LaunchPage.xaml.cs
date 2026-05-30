@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace OmniConsole.Pages
@@ -14,22 +13,6 @@ namespace OmniConsole.Pages
     /// </summary>
     public sealed partial class LaunchPage : UserControl
     {
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_TOOLWINDOW = 0x00000080;
-        private const int SW_HIDE = 0;
-
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
         /// <summary>啟動失敗或需要進行設定時，由 MainWindow 切換至設定介面。</summary>
@@ -124,8 +107,8 @@ namespace OmniConsole.Pages
                     StatusText.Text = string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName);
 
                     // 立即從工作檢視和工作列隱藏
-                    int exStyle = GetWindowLong(Hwnd, GWL_EXSTYLE);
-                    SetWindowLong(Hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+                    int exStyle = WindowForegroundService.GetExStyle(Hwnd);
+                    WindowForegroundService.SetExStyle(Hwnd, exStyle | WindowForegroundService.WS_EX_TOOLWINDOW);
 
                     // [Windows Bug] 部分應用程式在 FSE 中會被最大化並搶走前景焦點，
                     // 在輪詢前先終止，避免干擾前景判定。
@@ -146,7 +129,7 @@ namespace OmniConsole.Pages
                     {
                         await Task.Delay(pollIntervalMs);
                         elapsed += pollIntervalMs;
-                        IntPtr fg = GetForegroundWindow();
+                        IntPtr fg = WindowForegroundService.GetForeground();
                         if (fg != Hwnd)
                         {
                             if (FseService.IsIgnoredForegroundWindow(fg))
@@ -165,13 +148,13 @@ namespace OmniConsole.Pages
                         if (FseService.IsActive())
                             PhantomKeyService.Start();
 
-                        ShowWindow(Hwnd, SW_HIDE);
+                        WindowForegroundService.Hide(Hwnd);
                         App.ExitApp();
                         return;
                     }
 
                     // 若逾時仍未取得前景，還原視窗狀態並進入失敗流程
-                    SetWindowLong(Hwnd, GWL_EXSTYLE, exStyle);
+                    WindowForegroundService.SetExStyle(Hwnd, exStyle);
                     success = false;
                     isTimeout = true;
                 }
