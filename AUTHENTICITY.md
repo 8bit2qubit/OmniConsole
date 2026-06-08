@@ -8,7 +8,7 @@ This document explains how to confirm your installed copy of OmniConsole is the 
 
 The only official sources for OmniConsole are:
 
-    https://github.com/8bit2qubit/OmniConsole
+    https://github.com/8bit2qubit/OmniConsole/releases
     https://8bit2qubit.github.io/omniconsole-site/download
 
 Builds from any other source (mirror, fork, third-party site) are not endorsed by this project and may have been modified.
@@ -25,16 +25,18 @@ If the values do not match, your installed build is not from this repository.
 
 ## Inspect the Certificate Yourself
 
-You can independently verify the certificate without relying on the About page, using PowerShell:
+You can independently verify the certificate without relying on the About page, using PowerShell. A complete OmniConsole installation has two packages — **OmniConsole** itself and the **OmniCharm widget** — and both should be verified. The command below checks both at once:
 
 ```powershell
-Get-AppxPackage -Name b5fbce6b-2d7d-4da0-b419-4beb30e2b808 |
-  ForEach-Object {
-    $sig = Join-Path $_.InstallLocation 'AppxSignature.p7x'
-    $hash = (Get-AuthenticodeSignature -FilePath $sig).
-              SignerCertificate.GetCertHashString('SHA256')
-    ($hash -split '(.{2})' -ne '') -join ':'
-  }
+$packages = @(
+  'b5fbce6b-2d7d-4da0-b419-4beb30e2b808'  # OmniConsole
+  '4fa8e044-7ffa-4059-b034-e4111881d96e'  # OmniCharm widget
+)
+$packages | ForEach-Object { Get-AppxPackage -Name $_ } | ForEach-Object {
+  $sig  = Join-Path $_.InstallLocation 'AppxSignature.p7x'
+  $hash = (Get-AuthenticodeSignature -FilePath $sig).SignerCertificate.GetCertHashString('SHA256')
+  '{0}: {1}' -f $_.Name, (($hash -split '(.{2})' -ne '') -join ':')
+}
 ```
 
-The output is the SHA-256 thumbprint in colon-separated form, matching the format shown on the About page. Compare it (case-insensitive) against the official value above.
+Both packages are signed by the same certificate; each line is prefixed with the package name, and every thumbprint should equal the official value above (case-insensitive). If any value does not match, that package is not from this repository. If only the OmniConsole line appears, the OmniCharm widget is not yet installed.

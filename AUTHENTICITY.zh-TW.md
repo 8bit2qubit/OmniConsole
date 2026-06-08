@@ -8,7 +8,7 @@
 
 OmniConsole 的官方來源僅有：
 
-    https://github.com/8bit2qubit/OmniConsole
+    https://github.com/8bit2qubit/OmniConsole/releases
     https://8bit2qubit.github.io/omniconsole-site/download
 
 任何其他來源（鏡像、fork、第三方網站）皆未經本專案背書，內容可能已被修改。
@@ -25,16 +25,18 @@ OmniConsole 的官方來源僅有：
 
 ## 自行檢查憑證
 
-你可以不依賴關於頁，自行用 PowerShell 驗證：
+你可以不依賴關於頁，自行用 PowerShell 驗證。完整的 OmniConsole 安裝包含兩個套件：**OmniConsole 主體**與 **OmniCharm 小工具**，兩者都應驗證。下列指令會一次檢查這兩個套件：
 
 ```powershell
-Get-AppxPackage -Name b5fbce6b-2d7d-4da0-b419-4beb30e2b808 |
-  ForEach-Object {
-    $sig = Join-Path $_.InstallLocation 'AppxSignature.p7x'
-    $hash = (Get-AuthenticodeSignature -FilePath $sig).
-              SignerCertificate.GetCertHashString('SHA256')
-    ($hash -split '(.{2})' -ne '') -join ':'
-  }
+$packages = @(
+  'b5fbce6b-2d7d-4da0-b419-4beb30e2b808'  # OmniConsole
+  '4fa8e044-7ffa-4059-b034-e4111881d96e'  # OmniCharm 小工具
+)
+$packages | ForEach-Object { Get-AppxPackage -Name $_ } | ForEach-Object {
+  $sig  = Join-Path $_.InstallLocation 'AppxSignature.p7x'
+  $hash = (Get-AuthenticodeSignature -FilePath $sig).SignerCertificate.GetCertHashString('SHA256')
+  '{0}: {1}' -f $_.Name, (($hash -split '(.{2})' -ne '') -join ':')
+}
 ```
 
-輸出為冒號分隔的 SHA-256 指紋，格式與關於頁顯示一致。與上方官方值比對時不分大小寫。
+兩個套件由同一張憑證簽署，每行開頭為套件識別碼，指紋皆應等於上方官方值（不分大小寫）。任一指紋不符，該套件便不是來自本儲存庫。若只顯示 OmniConsole 那一行，表示尚未安裝 OmniCharm 小工具。
