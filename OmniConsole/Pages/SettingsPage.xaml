@@ -12,12 +12,17 @@
         <!-- 預設 #0DFFFFFF（半透白）疊在 #1A1B1E 上會合成 #262729，需直接以實色覆寫 -->
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
 
-        <!-- 關於頁卡片群組可聚焦容器：D-pad 焦點可落在資訊區塊上，
-             ScrollViewer 收到焦點變更時呼叫 BringIntoView 將其捲入可視範圍。
-             焦點視覺由 system focus visual（白色 3px 外框）提供。 -->
+        <!-- 關於頁卡片群組可聚焦容器：IsTabStop=True 讓 D-pad 焦點可落在資訊區塊上
+             （ScrollViewer 內建會自動把取得焦點的子元素捲入可視範圍，無需手動處理）。
+             焦點視覺由 system focus visual（白色 3px 外框）提供：
+             系統焦點框會讀控制項的 CornerRadius 畫圓角（WinUI 內建）→ 設 CornerRadius=8 讓白框跟卡片圓角一致。
+             ContentControl 預設無控制項範本（故無 FocusStates 可觸發；不像 Button 等控制項自帶範本與 FocusStates），
+             自畫 FocusBorder+VisualState 永遠不觸發，改用 UseSystemFocusVisuals=True 並設 CornerRadius 即可圓角。
+             FocusVisualMargin=-3 讓框貼在卡片外緣。 -->
         <Style x:Key="AboutCardFocusStyle" TargetType="ContentControl">
             <Setter Property="IsTabStop" Value="True"/>
             <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
             <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
             <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
@@ -31,7 +36,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContentControl">
-                        <Border CornerRadius="8"
+                        <Border CornerRadius="{TemplateBinding CornerRadius}"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
@@ -350,9 +355,15 @@
                                       SelectionChanged="PlatformGridView_SelectionChanged">
                                 <GridView.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <ItemsWrapGrid x:Name="PlatformWrapGrid" Orientation="Horizontal"/>
+                                        <ItemsWrapGrid x:Name="PlatformWrapGrid" Orientation="Horizontal" Loaded="PlatformWrapGrid_Loaded"/>
                                     </ItemsPanelTemplate>
                                 </GridView.ItemsPanel>
+
+                                <GridView.ItemContainerTransitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition/>
+                                    </TransitionCollection>
+                                </GridView.ItemContainerTransitions>
 
                                 <GridView.Resources>
                                     <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemAccentColorDark2}"/>
@@ -437,7 +448,7 @@
                                 <GridView.ItemTemplate>
                                     <DataTemplate x:DataType="models:PlatformCardItem">
                                         <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
-                                        <!-- 可用性更新後由程式碼重新指定 ItemsSource 觸發重新整理 -->
+                                        <!-- 可用性更新在 LoadPlatformAvailabilityAsync 以同位取代觸發重新繫結（不換 ItemsSource） -->
                                         <Border CornerRadius="16" Margin="8"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 Opacity="{x:Bind CardOpacity}">
@@ -604,7 +615,7 @@
                                 HorizontalAlignment="Stretch"
                                 MinWidth="700">
                             <StackPanel>
-                                <!-- PhantomKey 手把輸入 — 已改為 FSE 常駐，保留標題/描述作為以下設定的區段說明，僅註解開關 -->
+                                <!-- PhantomKey 手把輸入，已改為 FSE 常駐，保留標題/描述作為以下設定的區段說明，僅註解開關 -->
                                 <Grid Padding="16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

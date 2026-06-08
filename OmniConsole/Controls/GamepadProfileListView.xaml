@@ -103,6 +103,20 @@
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
+
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection>
+                                <EntranceThemeTransition/>
+                            </TransitionCollection>
+                        </ListView.ItemContainerTransitions>
+
+                        <!-- 顯式 ItemsPanel + Loaded 快取：WinAppSDK 2.x 的 ItemsPanelRoot 不可靠讀回 null，
+                             改在 panel 自身 Loaded 取 sender 快取，供 PageBy 算每頁可見項數。 -->
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Loaded="ItemsPanel_Loaded"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
                     </ListView>
 
                     <!-- 搜尋無結果提示，疊在 ListView 上方同一個 Grid cell -->

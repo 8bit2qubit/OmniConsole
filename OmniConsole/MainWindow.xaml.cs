@@ -1,7 +1,9 @@
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using OmniConsole.Dialogs;
 using OmniConsole.Services;
+using OmniConsole.Startup;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +13,16 @@ namespace OmniConsole
 {
     public sealed partial class MainWindow : Window
     {
-        private bool _isMaximized = false;
         private bool _isSettingsMode = false;
         private bool _isShowingSettings = false;
         private IntPtr _hwnd;
         private CancellationTokenSource? _fseExitCts;
+
+        /// <summary>
+        /// 全域唯一的手把導航服務（Pull 模型）。整個 App 生命週期單一實例、計時器全程運轉，
+        /// 每 Tick 自動解析當前最頂 modal dialog 或目前 page scope。取代過去「每 page/dialog 各自 new」。
+        /// </summary>
+        private GamepadNavigationService? _gamepad;
 
         // Content.Loaded 觸發時 SetResult，標記 XamlRoot 此後可用於 ContentDialog
         private readonly TaskCompletionSource _visualTreeReady = new();
@@ -45,18 +52,6 @@ namespace OmniConsole
             // 避免 InfoBar 誤顯示「有新版可下載」
             UpdateCheckService.InvalidateCacheIfCurrentVersion();
 
-            // 移除標題列與邊框，避免全螢幕時出現最小化/最大化/關閉按鈕
-            if (this.AppWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.SetBorderAndTitleBar(false, false);
-                presenter.IsResizable = false;
-                presenter.IsMinimizable = false;
-            }
-
-            // 強制直角，避免 Windows 11 預設圓角
-            _hwnd = WindowNative.GetWindowHandle(this);
-            WindowForegroundService.DisableWindowCorners(_hwnd);
-
             // 設定工作檢視與工作列圖示（使用套件內 Assets 的圖示）
             var iconPath = System.IO.Path.Combine(
                 Windows.ApplicationModel.Package.Current.InstalledLocation.Path,
@@ -74,7 +69,15 @@ namespace OmniConsole
             // 監聽 Content.Loaded 作為 XamlRoot 可用的訊號
             if (this.Content is FrameworkElement rootElement)
             {
-                rootElement.Loaded += (_, _) => _visualTreeReady.TrySetResult();
+                rootElement.Loaded += (_, _) =>
+                {
+                    _visualTreeReady.TrySetResult();
+                    // FSE 開場點亮焦點框
+                    var scope = LaunchPageControl.Visibility == Visibility.Visible
+                        ? (DependencyObject)LaunchPageControl
+                        : SettingsPageControl;
+                    FocusStateHelper.PrimeFirstFocusable(scope, this.DispatcherQueue);
+                };
             }
 
             // AppWindow 層級的關閉請求（X 鈕、Task View 關閉、Alt+F4 等）。
@@ -91,6 +94,13 @@ namespace OmniConsole
                 DebugLogger.Log("[MainWindow] AppWindow.Closing: disposing gamepad services");
                 DisposeGamepadServices();
             };
+
+            // 建立全域唯一手把導航服務並注入給 GamepadDialog（須早於任何 dialog 開啟）。
+            // 初始 page scope = LaunchPage（啟動先顯示啟動頁），計時器全程運轉：之後切頁只換 scope、
+            // dialog 開關只進出 _openDialogs，都不需重啟計時器。
+            _gamepad = new GamepadNavigationService(this.DispatcherQueue, LaunchPageControl);
+            GamepadDialog.AttachService(_gamepad);
+            _gamepad.Start();
         }
 
         /// <summary>
@@ -99,6 +109,29 @@ namespace OmniConsole
         public void PrepareForSettings()
         {
             _isSettingsMode = true;
+        }
+
+        /// <summary>
+        /// 全螢幕的唯一進入點：切換至全螢幕 Presenter（已是全螢幕則略過）。所有需要全螢幕的
+        /// 路徑（啟動、進設定、返回啟動頁）都呼叫這裡。
+        /// </summary>
+        private void EnsureFullScreen()
+        {
+            if (this.AppWindow.Presenter?.Kind != AppWindowPresenterKind.FullScreen)
+                this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        }
+
+        /// <summary>
+        /// 啟動流程呼叫：讓視窗以全螢幕首次顯示。雙保險涵蓋兩種環境：
+        /// - FSE 環境：Activate() 之前 SetPresenter(FullScreen)。
+        /// - 桌面環境：window 首次顯示前的 SetPresenter 會被 OS 忽略（新 OS build 26220.8491+ 上冷啟動會帶標題列），
+        ///   故 Activate() 後再於 DispatcherQueue 補一次 EnsureFullScreen（window ready 後才可靠生效）。
+        /// </summary>
+        public void ActivateFullScreen()
+        {
+            EnsureFullScreen();                                 // FSE：Activate 前即全螢幕
+            this.Activate();
+            this.DispatcherQueue.TryEnqueue(EnsureFullScreen);  // 桌面：window ready 後補設、救回全螢幕
         }
 
         /// <summary>
@@ -113,15 +146,6 @@ namespace OmniConsole
             _hwnd = WindowNative.GetWindowHandle(this);
             LaunchPageControl.Hwnd = _hwnd;
             SettingsPageControl.Hwnd = _hwnd;
-
-            // 首次啟動時設定全螢幕（延遲到 Activated 才執行，避免建構函式中卡住）
-            // 在此 Activated 回呼中設定，視窗尚未完成第一次繪製，
-            // 可避免 OverlappedPresenter → FullScreen 的可見轉換及其系統音效（Windows Background.wav）
-            if (!_isMaximized && !_isSettingsMode)
-            {
-                _isMaximized = true;
-                (AppWindow.Presenter as OverlappedPresenter)?.Maximize();
-            }
 
             // 設定模式不自動啟動平台
             if (_isSettingsMode) return;
@@ -142,15 +166,16 @@ namespace OmniConsole
         /// </summary>
         public void ShowSettings()
         {
-            LaunchPageControl.StopGamepadPolling();
+            // 切 page scope 到設定頁；全域服務計時器全程運轉，故只需切 scope（即使 dialog 開著時從外部入
+            // 口重入也只是重設同一 scope，不會再像舊架構重啟出第二套輪詢）。
+            _gamepad?.SetPageScope(SettingsPageControl);
+            _gamepad?.Start();
             _isShowingSettings = true;
             LaunchPageControl.Visibility = Visibility.Collapsed;
             SettingsPageControl.Visibility = Visibility.Visible;
 
-            // 切換至全螢幕 Presenter（設定模式下也需要全螢幕，確保無標題列）
-            if (this.AppWindow.Presenter?.Kind != AppWindowPresenterKind.FullScreen)
-                this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-            this.Activate();
+            // 設定模式也要全螢幕；用 ActivateFullScreen 雙保險（FSE Activate 前生效、桌面 ready 後補救）
+            ActivateFullScreen();
 
             SettingsPageControl.ShowSettings();
         }
@@ -176,7 +201,8 @@ namespace OmniConsole
                 try
                 {
                     var loader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-                    var dialog = new ContentDialog
+                    // 用 GamepadDialog 基底類別（A=觸發焦點元素、B=關閉皆自動）；Pull 模型自動讓背景設定頁輪詢避讓。
+                    var dialog = new GamepadDialog
                     {
                         XamlRoot = this.Content.XamlRoot,
                         Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
@@ -188,25 +214,6 @@ namespace OmniConsole
                         PrimaryButtonText = loader.GetString("ResumeUpdateDialog_Resume"),
                         CloseButtonText = loader.GetString("ResumeUpdateDialog_Later"),
                         DefaultButton = ContentDialogButton.Primary
-                    };
-
-                    // 對話方塊期間切換手把輪詢：暫停設定頁輪詢、啟動對話方塊自己的輪詢（A 啟用焦點按鈕、B 隱藏對話方塊）
-                    GamepadNavigationService? gamepadNav = null;
-                    dialog.Opened += (s, _) =>
-                    {
-                        settingsPage.StopGamepadPolling();
-                        gamepadNav = new GamepadNavigationService(
-                            searchRoot: s,
-                            dispatcherQueue: DispatcherQueue,
-                            onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(s.XamlRoot),
-                            onBButtonPressed: () => s.Hide());
-                        gamepadNav.Start();
-                    };
-                    dialog.Closed += (_, _) =>
-                    {
-                        gamepadNav?.Stop();
-                        gamepadNav = null;
-                        settingsPage.StartGamepadPolling();
                     };
 
                     var result = await dialog.ShowAsync();
@@ -243,7 +250,7 @@ namespace OmniConsole
         /// </summary>
         private void LaunchPlatformDirectly()
         {
-            SettingsPageControl.StopGamepadPolling();
+            _gamepad?.SetPageScope(LaunchPageControl);
             _isShowingSettings = false;
             SettingsPageControl.Visibility = Visibility.Collapsed;
             LaunchPageControl.Visibility = Visibility.Visible;
@@ -253,12 +260,12 @@ namespace OmniConsole
         // ── 全域退出 ─────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 釋放兩個頁面持有的手把導覽服務。應用程式結束前由 App.ExitApp 呼叫。
+        /// 釋放全域手把導覽服務的系統級資源。應用程式結束前由 App.ExitApp / AppWindow.Closing 呼叫。
         /// </summary>
         public void DisposeGamepadServices()
         {
-            LaunchPageControl.DisposeGamepadService();
-            SettingsPageControl.DisposeGamepadService();
+            _gamepad?.Dispose();
+            _gamepad = null;
         }
 
         /// <summary>
@@ -281,7 +288,7 @@ namespace OmniConsole
             // 在設定介面時，不需要詢問退回桌面，直接結束回到原本呼叫的介面（如 FSE）即可
             if (_isShowingSettings)
             {
-                SettingsPageControl.StopGamepadPolling();
+                _gamepad?.Stop();
                 WindowForegroundService.Hide(_hwnd); // 先隱藏視窗，避免 FullScreen presenter 卸載時閃白
                 App.ExitApp();
                 return;
@@ -314,7 +321,7 @@ namespace OmniConsole
                 {
                     await tcs.Task;
                     FseService.StateChanged -= OnStateChanged;
-                    LaunchPageControl.StopGamepadPolling();
+                    _gamepad?.Stop();
                     WindowForegroundService.Hide(_hwnd);
                     App.ExitApp();
                     return;
@@ -327,7 +334,7 @@ namespace OmniConsole
             // 若為一般視窗模式、或是尚未進入 FSE 環境時，一律直接退出應用程式
             else
             {
-                LaunchPageControl.StopGamepadPolling();
+                _gamepad?.Stop();
                 WindowForegroundService.Hide(_hwnd);
                 App.ExitApp();
             }
@@ -339,42 +346,37 @@ namespace OmniConsole
         /// 從 FSE/Game Bar 重導時呼叫，重設啟動狀態並重新啟動平台。
         /// 若目前不在 FSE 環境，重新檢查 FSE 條件，避免略過引導畫面直接啟動平台。
         /// </summary>
-        public void Reactivate()
+        public async void Reactivate()
         {
-            if (!FseService.IsActive())
+            var route = await StartupOrchestrator.EvaluateFseGuidanceAsync();
+            switch (route)
             {
-                // 系統完全不支援 FSE（舊版 Windows 或未啟用任何 FSE）→ 引導啟用
-                if (!FseService.IsSupported())
-                {
+                case StartupRoute.GuidanceFseNotAvailable:
                     LaunchPageControl.ShowFseNotAvailable();
                     return;
-                }
-                // 僅支援 PC 限制版 FSE（DeviceForm≠46）→ 引導透過 XFSET 取得掌機完整版
-                if (!FseService.IsHandheldFseAvailable())
-                {
+
+                case StartupRoute.GuidanceFseHandheldRequired:
                     LaunchPageControl.ShowFseNotAvailable(handheldRequired: true);
                     return;
-                }
-                // 掌機完整版可用但 Home App 尚未設為 OmniConsole（例如仍為 Xbox）→ 引導至設定，不啟動平台
-                if (!FseService.IsOmniConsoleSetAsHomeApp())
-                {
+
+                case StartupRoute.GuidanceFseHomeAppNotSet:
                     LaunchPageControl.ShowFseHomeAppNotSet();
                     return;
-                }
-                // FSE 可用且 Home App 已設為 OmniConsole，但目前不在 FSE 中
-                // → 與首次啟動相同，觸發 FSE 進入流程後退出，由 Windows 以 FSE 環境重啟
-                if (FseService.TryActivate())
-                {
+
+                case StartupRoute.TryActivateFse:
+                    FseService.TryActivate();
                     App.ExitApp();
                     return;
-                }
-                // TryActivate 失敗（系統支援但觸發失敗）→ 繼續正常啟動
+
+                case StartupRoute.StartWithMainWindow:
+                    // 已在 FSE 中：直接重設畫面回 LaunchPage 並重啟平台。
+                    break;
             }
 
             _isShowingSettings = false;
             SettingsPageControl.Visibility = Visibility.Collapsed;
             LaunchPageControl.Visibility = Visibility.Visible;
-            (this.AppWindow.Presenter as OverlappedPresenter)?.Maximize();
+            EnsureFullScreen(); // 維持全螢幕（presenter 通常已是全螢幕，這裡是保險）
             LaunchPageControl.Reactivate();
         }
 

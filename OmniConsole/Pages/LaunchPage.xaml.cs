@@ -11,7 +11,7 @@ namespace OmniConsole.Pages
     /// 啟動畫面 UserControl。
     /// 負責平台自動啟動、FSE 引導畫面及啟動失敗時的操作按鈕。
     /// </summary>
-    public sealed partial class LaunchPage : UserControl
+    public sealed partial class LaunchPage : UserControl, IGamepadInputScope
     {
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -37,8 +37,6 @@ namespace OmniConsole.Pages
         private bool _isLaunching = false;
         private bool _hasLaunchedOnce = false;
         private readonly ResourceLoader _resourceLoader = new();
-
-        private GamepadNavigationService? _launchPanelGamepadService;
 
         public LaunchPage()
         {
@@ -74,8 +72,6 @@ namespace OmniConsole.Pages
                 // 讀取快取的更新資訊，有新版時顯示 InfoBar
                 ShowUpdateInfoBarIfNeeded();
 
-                StartGamepadPolling();
-
                 var platform = SettingsService.GetDefaultPlatform();
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
 
@@ -84,7 +80,7 @@ namespace OmniConsole.Pages
                 {
                     StatusText.Text = string.Format(_resourceLoader.GetString("PlatformNotAvailable"), platformName);
                     VisualStateManager.GoToState(this, "LaunchError", false);
-                    OpenSettingsButton.Focus(FocusState.Programmatic);
+                    OpenSettingsButton.Focus(FocusStateHelper.Preferred);
                     return;
                 }
 
@@ -116,33 +112,74 @@ namespace OmniConsole.Pages
                     // 但 Win+F11、工作檢視、開機自動進入等路徑不經過該清理，仍需此防禦。
                     FseService.KillIgnoredBackgroundServices();
 
-                    // 輪詢前景視窗：一旦前景不再是 OmniConsole，代表平台已到前景，可以安全退出
-                    // 超過 slowWarningSeconds 顯示緩和提示，超過 timeoutSeconds 進入失敗流程
+                    // 輪詢前景視窗：一旦前景確實是目標平台（非過渡窗）即可安全退出。
                     const int pollIntervalMs = 500;
-                    const int slowWarningSeconds = 15;
-                    const int timeoutSeconds = 60;
+                    const int slowWarningSeconds = 20;
+                    const int timeoutSeconds = 60;            // 「平台沒起來」的逾時（前景一直是殼層／過渡窗）
+                    const int extendedTimeoutSeconds = 300;   // 「平台啟動中但慢」的寬限硬上限（全新 Steam 跨更新可達數分鐘）
 
                     bool platformToForeground = false;
                     int elapsed = 0;
 
-                    while (elapsed < timeoutSeconds * 1000)
+                    IntPtr lastFg = IntPtr.Zero;
+                    DebugLogger.Log($"[LP-DIAG] poll start self=0x{Hwnd.ToInt64():X} platform={platform.Id}");
+
+                    bool slowWarningShown = false;
+                    bool sawBootstrap = false;   // 本次啟動「曾見過該平台 bootstrap 在前景：證明平台確實在啟動、給寬限
+                    while (elapsed < extendedTimeoutSeconds * 1000)
                     {
                         await Task.Delay(pollIntervalMs);
                         elapsed += pollIntervalMs;
                         IntPtr fg = WindowForegroundService.GetForeground();
+
+                        if (!slowWarningShown && elapsed >= slowWarningSeconds * 1000)
+                        {
+                            slowWarningShown = true;
+                            VisualStateManager.GoToState(this, "LaunchingSlow", false);
+                        }
+
+                        var ev = WindowForegroundService.EvaluatePlatformForeground(
+                            Hwnd,
+                            ProcessLauncherService.GetEffectiveForegroundProcessNames(platform),
+                            ProcessLauncherService.GetEffectiveForegroundAumidSubstrings(platform));
+                        if (ProcessLauncherService.IsForegroundLaunchingPlatform(ev.fgProc, ev.fgPid, platform))
+                            sawBootstrap = true;
+
+                        if (fg != lastFg)
+                        {
+                            lastFg = fg;
+                            bool ig = (fg != Hwnd) && FseService.IsIgnoredForegroundWindow(fg);
+                            DebugLogger.Log($"[LP-DIAG] t={elapsed}ms ignored={ig} sawBootstrap={sawBootstrap} {WindowForegroundService.ForegroundFocusSnapshot(Hwnd)}");
+                        }
+
+                        if (elapsed >= timeoutSeconds * 1000 && !sawBootstrap)
+                        {
+                            DebugLogger.Log($"[LP-DIAG] t={elapsed}ms timeout (fgProc={ev.fgProc} not platform bootstrap), give up");
+                            break;
+                        }
+
                         if (fg != Hwnd)
                         {
                             if (FseService.IsIgnoredForegroundWindow(fg))
                                 continue;
+
+                            bool ready = ev.hasExpected
+                                ? (ev.procMatch || ev.aumidMatch)
+                                : ev.focusOnFg;
+
+                            if (!ready)
+                            {
+                                DebugLogger.Log($"[LP-DIAG] t={elapsed}ms NOT ready (fgProc={ev.fgProc} hasExp={ev.hasExpected} procMatch={ev.procMatch} aumidMatch={ev.aumidMatch} focusOnFg={ev.focusOnFg} sawBootstrap={sawBootstrap}), keep waiting");
+                                continue;
+                            }
                             platformToForeground = true;
                             break;
                         }
-                        if (elapsed == slowWarningSeconds * 1000)
-                            VisualStateManager.GoToState(this, "LaunchingSlow", false);
                     }
 
                     if (platformToForeground)
                     {
+                        DebugLogger.Log($"[LP-DIAG] >>> EXIT DECISION (platform to fg). FINAL: {WindowForegroundService.ForegroundFocusSnapshot(Hwnd)}");
                         // FSE 環境下啟動 PhantomKey 手把輸入服務（常駐，不再檢查使用者開關）
                         //if (FseService.IsActive() && SettingsService.GetUsePhantomKey())
                         if (FseService.IsActive())
@@ -165,7 +202,7 @@ namespace OmniConsole.Pages
                     string errorStringKey = isTimeout ? "LaunchTimeout" : "LaunchFailed";
                     StatusText.Text = string.Format(_resourceLoader.GetString(errorStringKey), platformName);
                     VisualStateManager.GoToState(this, "LaunchError", false);
-                    OpenSettingsButton.Focus(FocusState.Programmatic);
+                    OpenSettingsButton.Focus(FocusStateHelper.Preferred);
                 }
             }
             finally
@@ -193,8 +230,7 @@ namespace OmniConsole.Pages
             DebugLogger.Log($"ShowFseNotAvailable: handheldRequired={handheldRequired}");
             StatusText.Text = _resourceLoader.GetString(resourceKey);
             VisualStateManager.GoToState(this, "FseNotAvailable", false);
-            EnableFseButton.Focus(FocusState.Programmatic);
-            StartGamepadPolling();
+            EnableFseButton.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>
@@ -205,8 +241,7 @@ namespace OmniConsole.Pages
             DebugLogger.Log("ShowFseHomeAppNotSet: FSE Home App not set to OmniConsole.");
             StatusText.Text = _resourceLoader.GetString("FseHomeAppNotSet");
             VisualStateManager.GoToState(this, "FseHomeAppNotSet", false);
-            OpenFseSettingsButton.Focus(FocusState.Programmatic);
-            StartGamepadPolling();
+            OpenFseSettingsButton.Focus(FocusStateHelper.Preferred);
         }
 
         // ── 按鈕事件處理 ──────────────────────────────────────────────────────
@@ -217,7 +252,6 @@ namespace OmniConsole.Pages
         /// </summary>
         private void OpenSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            StopGamepadPolling();
             VisualStateManager.GoToState(this, "Idle", false);
             NavigateToSettingsRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -262,36 +296,17 @@ namespace OmniConsole.Pages
 
         // ── 手把輸入處理 ──────────────────────────────────────────────────────
 
-        /// <summary>
-        /// 啟動 LaunchPanel 的手把輪詢，使 A 鍵可觸發按鈕，B 鍵可退出。
-        /// </summary>
-        public void StartGamepadPolling()
-        {
-            _launchPanelGamepadService ??= new GamepadNavigationService(
-                this.LaunchPanel,
-                this.DispatcherQueue,
-                OnLaunchPanelGamepadAButtonPressed,
-                OnGamepadBButtonPressed
-            );
-            _launchPanelGamepadService.Start();
-        }
+        // ── IGamepadInputScope ──
+        // 輪詢計時器由 MainWindow 集中管理；本頁只宣告「焦點搜尋根 + A/B 語意」。
 
-        /// <summary>
-        /// 停止 LaunchPanel 的手把輪詢。
-        /// </summary>
-        public void StopGamepadPolling()
-        {
-            _launchPanelGamepadService?.Stop();
-        }
+        /// <summary>焦點搜尋根：D-pad 在啟動面板內找下一個焦點元素。</summary>
+        UIElement IGamepadInputScope.SearchRoot => this.LaunchPanel;
 
-        /// <summary>
-        /// 釋放手把導覽服務的計時器與系統級資源。應用程式結束前呼叫。
-        /// </summary>
-        public void DisposeGamepadService()
-        {
-            _launchPanelGamepadService?.Dispose();
-            _launchPanelGamepadService = null;
-        }
+        /// <summary>A 鍵：焦點在按鈕時觸發點選。</summary>
+        void IGamepadInputScope.OnA() => OnLaunchPanelGamepadAButtonPressed();
+
+        /// <summary>B 鍵：觸發退出流程。回 true 表示已處理。</summary>
+        bool IGamepadInputScope.OnB() { OnGamepadBButtonPressed(); return true; }
 
         /// <summary>
         /// LaunchPanel 中手把 'A' 鍵的處理：焦點在按鈕時觸發點選。

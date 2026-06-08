@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using OmniConsole.Dialogs;
 using OmniConsole.Models;
@@ -48,7 +49,7 @@ namespace OmniConsole.Controls
 
         // 原始清單，依 GamepadProfileStore.Load() 自然順序載入
         private readonly List<GamepadProfileRow> _allItems = new List<GamepadProfileRow>();
-        // ListView 綁定的可見集合，是 _allItems 經搜尋過濾與排序後的子集
+        // ListView 繫結的可見集合，是 _allItems 經搜尋過濾與排序後的子集
         private readonly ObservableCollection<GamepadProfileRow> _items = new ObservableCollection<GamepadProfileRow>();
 
         private GamepadProfileSortMode _sortMode = GamepadProfileSortMode.AddOrderDesc;
@@ -59,18 +60,16 @@ namespace OmniConsole.Controls
         /// <summary>使用者要編輯某 profile（A 鍵或滑鼠點列項）時觸發。</summary>
         public event EventHandler<AppId>? EditRequested;
 
-        /// <summary>子對話方塊開啟前 true、關閉後 false（宿主據此 Stop/StartGamepadPolling）。</summary>
-        public event EventHandler<bool>? DialogActiveChanged;
-
         /// <summary>清單內容變動（Refresh 後）時觸發，宿主據此重評底部手把提示可見性。</summary>
         public event EventHandler? ItemsChanged;
 
-        /// <summary>綁定 ListView ItemsSource 為內部 ObservableCollection，並掛 ListViewItem 焦點事件以同步 SelectedItem。</summary>
+        /// <summary>繫結 ListView ItemsSource 為內部 ObservableCollection，並掛 SelectorItem 焦點事件以同步 SelectedItem。</summary>
         public GamepadProfileListView()
         {
             InitializeComponent();
             ProfileList.ItemsSource = _items;
             ProfileList.ContainerContentChanging += ProfileList_ContainerContentChanging;
+            ProfileList.GotFocus += ProfileList_GotFocus;
             SortCombo.SelectedIndex = 0;
             Unloaded += GamepadProfileListView_Unloaded;
         }
@@ -81,21 +80,19 @@ namespace OmniConsole.Controls
             _searchDebounceTimer?.Stop();
         }
 
-        /// <summary>每次 ListViewItem 容器產生或重用時，掛上 GotFocus 同步 SelectedItem；只在 index 0 容器設 XYFocusUp 指向搜尋方塊，其餘讓 ListView 自己處理往上跳前一項。</summary>
+        /// <summary>每次容器產生或重用時，只在 index 0 容器設 XYFocusUp 指向搜尋方塊，其餘讓 ListView 自己處理往上跳前一項。</summary>
         private void ProfileList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            if (args.ItemContainer is ListViewItem lvi)
-            {
-                lvi.GotFocus -= ListViewItem_GotFocus;
-                lvi.GotFocus += ListViewItem_GotFocus;
-                lvi.XYFocusUp = args.ItemIndex == 0 ? (DependencyObject)SearchBox : null;
-            }
+            if (args.ItemContainer is SelectorItem item)
+                item.XYFocusUp = args.ItemIndex == 0 ? (DependencyObject)SearchBox : null;
         }
 
-        /// <summary>ListViewItem 拿到焦點時同步 SelectedItem，讓 selected background 與 selection indicator 跟隨焦點。</summary>
-        private void ListViewItem_GotFocus(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 清單項取得焦點時同步 SelectedItem，讓 selected background 跟 selection indicator 走。
+        /// </summary>
+        private void ProfileList_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is ListViewItem lvi && lvi.Content is GamepadProfileRow row)
+            if (e.OriginalSource is SelectorItem item && item.Content is GamepadProfileRow row)
                 ProfileList.SelectedItem = row;
         }
 
@@ -158,14 +155,30 @@ namespace OmniConsole.Controls
                 _ => filtered
             };
 
-            _items.Clear();
-            foreach (var r in sorted) _items.Add(r);
+            DiffApply(sorted);
 
             NoSearchResultHint.Visibility = (_items.Count == 0 && !string.IsNullOrEmpty(query))
                 ? Visibility.Visible : Visibility.Collapsed;
 
             if (_items.Count > 0 && ProfileList.SelectedIndex < 0)
                 ProfileList.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// 以 Id 為鍵（AppId.MatchesExact）做增量比對，把 <paramref name="newRows"/> 套進固定實例 _items，
+        /// 取代過去 _items.Clear()+逐項 Add（Clear 發 Reset 讓 ListView 整批重建容器 → 刪中間會閃）。
+        /// 增量演算法在 <see cref="ObservableCollectionDiff.Apply{T}"/>，此處只提供身分／內容比對。
+        /// </summary>
+        private void DiffApply(IEnumerable<GamepadProfileRow> newRows)
+        {
+            var target = newRows as IReadOnlyList<GamepadProfileRow> ?? newRows.ToList();
+            ObservableCollectionDiff.Apply(
+                _items,
+                target,
+                static (a, b) => a.AppId.MatchesExact(b.AppId),
+                static (a, b) => a.DisplayName == b.DisplayName
+                              && a.SubText == b.SubText
+                              && a.FolderName == b.FolderName);
         }
 
         /// <summary>搜尋方塊文字變動：150ms debounce 後呼叫 ApplyFilterAndSort。</summary>
@@ -204,24 +217,24 @@ namespace OmniConsole.Controls
             }
         }
 
-        /// <summary>聚焦到 index 0 的 ListViewItem container；container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
+        /// <summary>聚焦到 index 0 的 SelectorItem container；container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
         private void FocusFirstListItem()
         {
             if (_items.Count == 0) return;
             ProfileList.SelectedIndex = 0;
             ProfileList.ScrollIntoView(_items[0]);
-            if (ProfileList.ContainerFromIndex(0) is ListViewItem lvi)
+            if (ProfileList.ContainerFromIndex(0) is SelectorItem lvi)
             {
-                lvi.Focus(FocusState.Programmatic);
+                lvi.Focus(FocusStateHelper.Preferred);
             }
             else
             {
                 EventHandler<object>? handler = null;
                 handler = (s, e) =>
                 {
-                    if (ProfileList.ContainerFromIndex(0) is ListViewItem deferred)
+                    if (ProfileList.ContainerFromIndex(0) is SelectorItem deferred)
                     {
-                        deferred.Focus(FocusState.Programmatic);
+                        deferred.Focus(FocusStateHelper.Preferred);
                         ProfileList.LayoutUpdated -= handler;
                     }
                 };
@@ -330,21 +343,21 @@ namespace OmniConsole.Controls
             }
         }
 
-        /// <summary>程式化聚焦到 SelectedIndex 對應的 ListViewItem；清單為空時回退到 ListView 容器，container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
+        /// <summary>程式化聚焦到 SelectedIndex 對應的 SelectorItem；清單為空時回退到 ListView 容器，container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
         public void FocusList()
         {
             if (_items.Count == 0)
             {
-                ProfileList.Focus(FocusState.Programmatic);
+                ProfileList.Focus(FocusStateHelper.Preferred);
                 return;
             }
             int idx = ProfileList.SelectedIndex;
             if (idx < 0 || idx >= _items.Count) idx = 0;
             ProfileList.SelectedIndex = idx;
             ProfileList.ScrollIntoView(_items[idx]);
-            if (ProfileList.ContainerFromIndex(idx) is ListViewItem lvi)
+            if (ProfileList.ContainerFromIndex(idx) is SelectorItem lvi)
             {
-                lvi.Focus(FocusState.Programmatic);
+                lvi.Focus(FocusStateHelper.Preferred);
             }
             else
             {
@@ -352,9 +365,9 @@ namespace OmniConsole.Controls
                 EventHandler<object>? handler = null;
                 handler = (s, e) =>
                 {
-                    if (ProfileList.ContainerFromIndex(targetIdx) is ListViewItem deferred)
+                    if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
                     {
-                        deferred.Focus(FocusState.Programmatic);
+                        deferred.Focus(FocusStateHelper.Preferred);
                         ProfileList.LayoutUpdated -= handler;
                     }
                 };
@@ -363,7 +376,7 @@ namespace OmniConsole.Controls
         }
 
         /// <summary>將焦點程式化設給搜尋方塊（宿主 Y 鍵從清單移動焦點時呼叫）。</summary>
-        public void FocusSearchBox() => SearchBox.Focus(FocusState.Programmatic);
+        public void FocusSearchBox() => SearchBox.Focus(FocusStateHelper.Preferred);
 
         /// <summary>編輯器入口處先呼叫，記錄即將編輯的 AppId 供 CloseEditor 還原焦點使用。</summary>
         public void SetLastEditedHint(AppId appId) => _lastEditedAppId = appId;
@@ -380,13 +393,13 @@ namespace OmniConsole.Controls
         {
             for (int i = 0; i < _items.Count; i++)
             {
-                if (_items[i].AppId != null && _items[i].AppId.Matches(appId))
+                if (_items[i].AppId != null && _items[i].AppId.MatchesExact(appId))
                 {
                     ProfileList.SelectedIndex = i;
                     ProfileList.ScrollIntoView(_items[i]);
-                    if (ProfileList.ContainerFromIndex(i) is ListViewItem lvi)
+                    if (ProfileList.ContainerFromIndex(i) is SelectorItem lvi)
                     {
-                        lvi.Focus(FocusState.Programmatic);
+                        lvi.Focus(FocusStateHelper.Preferred);
                         return true;
                     }
                     // 容器尚未實體化（虛擬化清單捲動到目標前不會建 container）；
@@ -395,9 +408,9 @@ namespace OmniConsole.Controls
                     EventHandler<object>? handler = null;
                     handler = (s, e) =>
                     {
-                        if (ProfileList.ContainerFromIndex(targetIdx) is ListViewItem deferred)
+                        if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
                         {
-                            deferred.Focus(FocusState.Programmatic);
+                            deferred.Focus(FocusStateHelper.Preferred);
                             ProfileList.LayoutUpdated -= handler;
                         }
                     };
@@ -414,14 +427,23 @@ namespace OmniConsole.Controls
         /// <summary>RB 鍵：依當下可見項數往下跳一頁。</summary>
         public void PageDown() => PageBy(+1);
 
+        // WinAppSDK 2.x 的 ListView.ItemsPanelRoot 不可靠（常讀回 null），改在面板自身 Loaded 取 sender 快取。
+        private ItemsStackPanel? _itemsPanel;
+
+        /// <summary>ItemsStackPanel 載入時快取參考，供 GetPageSize 算每頁可見項數（取代不可靠的 ItemsPanelRoot）。</summary>
+        private void ItemsPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ItemsStackPanel panel) _itemsPanel = panel;
+        }
+
         /// <summary>
-        /// 當下「每頁可見項數」：取 ItemsStackPanel 即時回報的 LastVisibleIndex-FirstVisibleIndex+1。
+        /// 當下「每頁可見項數」：取快取 ItemsStackPanel 即時回報的 LastVisibleIndex-FirstVisibleIndex+1。
         /// 此值隨視窗高度（解析度）動態變化，作為 PageBy 跳頁步距。
-        /// panel 尚未實體化（清單剛載入）時回報無效值，回傳 0 由呼叫端做回退處理。
+        /// 面板尚未實體化（清單剛載入）時回報無效值，回傳 0 由呼叫端做回退處理。
         /// </summary>
         private int GetPageSize()
         {
-            if (ProfileList.ItemsPanelRoot is ItemsStackPanel panel)
+            if (_itemsPanel is ItemsStackPanel panel)
             {
                 int visible = panel.LastVisibleIndex - panel.FirstVisibleIndex + 1;
                 if (visible > 0) return visible;
@@ -440,7 +462,7 @@ namespace OmniConsole.Controls
             int currentIdx = ProfileList.SelectedIndex;
             if (currentIdx < 0)
             {
-                var focused = FocusManager.GetFocusedElement(XamlRoot) as ListViewItem;
+                var focused = FocusManager.GetFocusedElement(XamlRoot) as SelectorItem;
                 if (focused != null) currentIdx = ProfileList.IndexFromContainer(focused);
             }
             if (currentIdx < 0) currentIdx = 0;
@@ -452,9 +474,9 @@ namespace OmniConsole.Controls
 
             ProfileList.SelectedIndex = newIdx;
             ProfileList.ScrollIntoView(_items[newIdx]);
-            if (ProfileList.ContainerFromIndex(newIdx) is ListViewItem lvi)
+            if (ProfileList.ContainerFromIndex(newIdx) is SelectorItem lvi)
             {
-                lvi.Focus(FocusState.Programmatic);
+                lvi.Focus(FocusStateHelper.Preferred);
             }
             else
             {
@@ -462,9 +484,9 @@ namespace OmniConsole.Controls
                 EventHandler<object>? handler = null;
                 handler = (s, e) =>
                 {
-                    if (ProfileList.ContainerFromIndex(targetIdx) is ListViewItem deferred)
+                    if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
                     {
-                        deferred.Focus(FocusState.Programmatic);
+                        deferred.Focus(FocusStateHelper.Preferred);
                         ProfileList.LayoutUpdated -= handler;
                     }
                 };
@@ -472,13 +494,13 @@ namespace OmniConsole.Controls
             }
         }
 
-        /// <summary>取目前作用中的 row：先看焦點 ListViewItem（D-pad 移動只動焦點不更新 SelectedItem），回退到 SelectedItem。</summary>
+        /// <summary>取目前作用中的 row：先看焦點 SelectorItem（D-pad 移動只動焦點不更新 SelectedItem），回退到 SelectedItem。</summary>
         private GamepadProfileRow? GetActiveRow()
         {
-            if (FocusManager.GetFocusedElement(XamlRoot) is ListViewItem lvi)
+            if (FocusManager.GetFocusedElement(XamlRoot) is SelectorItem item)
             {
-                if (lvi.Content is GamepadProfileRow focusedRow) return focusedRow;
-                if (lvi.DataContext is GamepadProfileRow ctxRow) return ctxRow;
+                if (item.Content is GamepadProfileRow focusedRow) return focusedRow;
+                if (item.DataContext is GamepadProfileRow ctxRow) return ctxRow;
             }
             return ProfileList.SelectedItem as GamepadProfileRow;
         }
@@ -521,47 +543,42 @@ namespace OmniConsole.Controls
 
         /// <summary>
         /// 彈確認對話方塊，按下「是」才實際刪除並重新整理；刪除後焦點落回原索引（或鄰近）的項目。
-        /// 期間透過 DialogActiveChanged 通知宿主 Stop/Start 手把輪詢。
         /// </summary>
         private async Task DeleteAsync(AppId appId)
         {
             int prevIndex = -1;
             for (int i = 0; i < _items.Count; i++)
             {
-                if (_items[i].AppId != null && _items[i].AppId.Matches(appId))
+                if (_items[i].AppId != null && _items[i].AppId.MatchesExact(appId))
                 {
                     prevIndex = i;
                     break;
                 }
             }
 
-            DialogActiveChanged?.Invoke(this, true);
-            try
+            var dlg = new GamepadMessageDialog(
+                XamlRoot,
+                _resw.Loc("GamepadMappingDeleteConfirmTitle"),
+                _resw.Loc("GamepadMappingDeleteConfirmBody"),
+                _resw.Loc("GamepadMappingDeleteConfirmYes"),
+                _resw.Loc("GamepadMappingDeleteConfirmNo"));
+            await dlg.ShowAsync();
+            if (dlg.Result)
             {
-                var dlg = new GamepadMessageDialog(
-                    XamlRoot,
-                    _resw.Loc("GamepadMappingDeleteConfirmTitle"),
-                    _resw.Loc("GamepadMappingDeleteConfirmBody"),
-                    _resw.Loc("GamepadMappingDeleteConfirmYes"),
-                    _resw.Loc("GamepadMappingDeleteConfirmNo"));
-                await dlg.ShowAsync();
-                if (dlg.Result)
-                {
-                    GamepadProfileStore.Delete(appId);
-                    Refresh();
-                }
+                GamepadProfileStore.Delete(appId);
+                Refresh();
             }
-            finally
+
+            // 刪除後焦點還原到鄰近項目
             {
-                DialogActiveChanged?.Invoke(this, false);
                 if (_items.Count > 0 && prevIndex >= 0)
                 {
                     int target = Math.Min(prevIndex, _items.Count - 1);
                     ProfileList.SelectedIndex = target;
                     ProfileList.ScrollIntoView(_items[target]);
-                    if (ProfileList.ContainerFromIndex(target) is ListViewItem lvi)
+                    if (ProfileList.ContainerFromIndex(target) is SelectorItem lvi)
                     {
-                        lvi.Focus(FocusState.Programmatic);
+                        lvi.Focus(FocusStateHelper.Preferred);
                     }
                     else
                     {
@@ -569,9 +586,9 @@ namespace OmniConsole.Controls
                         EventHandler<object>? handler = null;
                         handler = (s, e) =>
                         {
-                            if (ProfileList.ContainerFromIndex(targetIdx) is ListViewItem deferred)
+                            if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
                             {
-                                deferred.Focus(FocusState.Programmatic);
+                                deferred.Focus(FocusStateHelper.Preferred);
                                 ProfileList.LayoutUpdated -= handler;
                             }
                         };

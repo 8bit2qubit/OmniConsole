@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -17,14 +18,18 @@ namespace OmniConsole.Dialogs
     /// 支援手把操作的自製檔案選擇器，取代系統 FileOpenPicker（不支援手把）。
     /// 支援 D-pad 導覽、鍵盤、滑鼠與觸控操作。
     /// </summary>
-    public sealed partial class FilePickerDialog : ContentDialog
+    public sealed partial class FilePickerDialog : GamepadDialog
     {
         private readonly ResourceLoader _resourceLoader;
         private readonly FilePickerOptions _options;
         private readonly List<SidebarItem> _sidebarItems = [];
-        private GamepadNavigationService? _gamepadNav;
-        private Action? _keyboardAvoidanceCleanup;
         private CancellationTokenSource? _previewCts;
+
+        /// <summary>B 鍵：返回上層目錄（已在根目錄則不動作、不關閉）。回 true = 已處理。</summary>
+        public override bool OnB() { NavigateUp(); return true; }
+
+        /// <summary>含 TextBox（路徑列），啟用螢幕鍵盤閃避。</summary>
+        protected override bool EnableKeyboardAvoidanceOnOpen => true;
 
         private string _currentPath = "";
         private FileSystemBrowserService.FileSystemItem? _selectedFile;
@@ -198,7 +203,7 @@ namespace OmniConsole.Dialogs
                 {
                     // 延遲一幀再設焦點，避免 ItemClick 事件處理尚未結束時焦點被搶回
                     DispatcherQueue.TryEnqueue(() =>
-                        NavigateUpButton.Focus(FocusState.Programmatic));
+                        NavigateUpButton.Focus(FocusStateHelper.Preferred));
                 }
                 else
                 {
@@ -251,9 +256,9 @@ namespace OmniConsole.Dialogs
             var c1 = FileListView.ContainerFromIndex(index);
             DebugLogger.Log($"[FocusFile] after ScrollIntoView+UpdateLayout: index={index}, container={c1?.GetType().Name}");
 
-            if (c1 is ListViewItem container)
+            if (c1 is SelectorItem container)
             {
-                container.Focus(FocusState.Programmatic);
+                container.Focus(FocusStateHelper.Preferred);
                 return;
             }
 
@@ -263,7 +268,7 @@ namespace OmniConsole.Dialogs
                 if (args.ItemIndex == index)
                 {
                     FileListView.ContainerContentChanging -= OnContainerReady;
-                    args.ItemContainer.Focus(FocusState.Programmatic);
+                    args.ItemContainer.Focus(FocusStateHelper.Preferred);
                 }
             }
             FileListView.ContainerContentChanging += OnContainerReady;
@@ -388,19 +393,9 @@ namespace OmniConsole.Dialogs
 
         // ── 手把 ──────────────────────────────────────────────────────────────
 
-        /// <summary>對話方塊開啟時：設定 XY 焦點導覽、啟動手把輪詢、螢幕鍵盤閃避，並導覽至初始目錄。</summary>
+        /// <summary>對話方塊開啟時：導覽至初始目錄並聚焦檔案清單。手把導航（A=觸發焦點元素、B=上層目錄）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。</summary>
         private void FilePickerDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            _gamepadNav = new GamepadNavigationService(
-                searchRoot: this,
-                dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
-                onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(XamlRoot),
-                onBButtonPressed: NavigateUp);
-            _gamepadNav.Start();
-
-            _keyboardAvoidanceCleanup = GamepadNavigationService.EnableKeyboardAvoidance(
-                GetTemplateChild("BackgroundElement") as FrameworkElement, XamlRoot);
-
             // 初始導覽
             var initialPath = _options.InitialDirectory;
             if (string.IsNullOrEmpty(initialPath) || !Directory.Exists(initialPath))
@@ -411,16 +406,12 @@ namespace OmniConsole.Dialogs
             NavigateTo(initialPath);
 
             // 預設焦點到檔案清單
-            FileListView.Focus(FocusState.Programmatic);
+            FileListView.Focus(FocusStateHelper.Preferred);
         }
 
-        /// <summary>對話方塊關閉時：停止手把輪詢、清理螢幕鍵盤閃避與預覽取消 token。</summary>
+        /// <summary>對話方塊關閉時：清理預覽取消 token。手把輪詢與螢幕鍵盤閃避由 GamepadDialog 基底類別自動清理。</summary>
         private void FilePickerDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
-            _gamepadNav?.Stop();
-            _gamepadNav = null;
-            _keyboardAvoidanceCleanup?.Invoke();
-            _keyboardAvoidanceCleanup = null;
             _previewCts?.Cancel();
             _previewCts?.Dispose();
             _previewCts = null;

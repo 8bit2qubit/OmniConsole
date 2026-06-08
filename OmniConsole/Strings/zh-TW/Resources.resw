@@ -1217,9 +1217,6 @@
   <data name="Vk_Apps" xml:space="preserve">
     <value>功能表鍵</value>
   </data>
-  <data name="Vk_NumpadDecimal" xml:space="preserve">
-    <value>數字鍵盤 .</value>
-  </data>
   <data name="Vk_VolumeUp" xml:space="preserve">
     <value>調高音量</value>
   </data>
@@ -1268,9 +1265,6 @@
   <data name="Vk_Alt" xml:space="preserve">
     <value>Alt</value>
   </data>
-  <data name="Vk_Win" xml:space="preserve">
-    <value>Win</value>
-  </data>
   <data name="Vk_LShift" xml:space="preserve">
     <value>左 Shift</value>
   </data>
@@ -1288,6 +1282,9 @@
   </data>
   <data name="Vk_RAlt" xml:space="preserve">
     <value>右 Alt</value>
+  </data>
+  <data name="Vk_LWin" xml:space="preserve">
+    <value>左 Win</value>
   </data>
   <data name="Vk_RWin" xml:space="preserve">
     <value>右 Win</value>
@@ -1322,9 +1319,6 @@
   <data name="AboutSection_ReleaseInfo.Text" xml:space="preserve">
     <value>發行資訊</value>
   </data>
-  <data name="Label_Certificate.Text" xml:space="preserve">
-    <value>憑證</value>
-  </data>
   <data name="Label_CommitHash.Text" xml:space="preserve">
     <value>Commit：</value>
   </data>
@@ -1341,7 +1335,7 @@
     <value>憑證詳細資訊</value>
   </data>
   <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
-    <value>這份安裝是由以下憑證簽署。將下方 SHA-256 指紋與官方儲存庫的 AUTHENTICITY.zh-TW.md 公布值比對。若數值不一致，這份建置便不是來自官方來源。</value>
+    <value>這份 OmniConsole 由以下憑證簽署。將下方 SHA-256 指紋與官方儲存庫的 AUTHENTICITY.zh-TW.md 公布值比對。若數值不一致，這份建置便不是來自官方來源。OmniCharm 小工具由同一張憑證簽署；逐個套件的完整驗證請見 AUTHENTICITY.zh-TW.md。</value>
   </data>
   <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
     <value>開啟 AUTHENTICITY.zh-TW.md 檢視公布指紋</value>

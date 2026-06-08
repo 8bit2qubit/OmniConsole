@@ -16,7 +16,7 @@ namespace OmniConsole.Dialogs
     /// 驗證通過後，結果項目存於 <see cref="ResultEntry"/>，待選圖示存於 <see cref="PendingIconFile"/>，
     /// 由 MainWindow 在 <c>ShowAsync</c> 返回後統一儲存。
     /// </summary>
-    public sealed partial class PlatformEditDialog : ContentDialog
+    public sealed partial class PlatformEditDialog : GamepadDialog
     {
         private readonly ResourceLoader _resourceLoader;
         private readonly string _ownFamilyName;
@@ -25,8 +25,12 @@ namespace OmniConsole.Dialogs
         private string? _pendingIconPath;
         private List<(string DisplayName, string PackageFamilyName)>? _packagedAppCache;
         private string _selectedPackageFamilyName;
-        private GamepadNavigationService? _gamepadNav;
-        private Action? _keyboardAvoidanceCleanup;
+
+        /// <summary>B 鍵不動作，避免誤觸關閉對話方塊遺失輸入（回 false = 不處理、不關閉）。</summary>
+        public override bool OnB() => false;
+
+        /// <summary>含 TextBox / AutoSuggestBox，啟用螢幕鍵盤閃避。</summary>
+        protected override bool EnableKeyboardAvoidanceOnOpen => true;
 
         /// <summary>驗證通過後由對話方塊建立的平台項目，由呼叫端在 ShowAsync 返回後呼叫 <c>UserPlatformStore.Add</c> 儲存。</summary>
         public UserPlatformEntry? ResultEntry { get; private set; }
@@ -112,10 +116,9 @@ namespace OmniConsole.Dialogs
             PackagedAppSuggestBox.SuggestionChosen += PackagedAppSuggestBox_SuggestionChosen;
             PrimaryButtonClick += PlatformEditDialog_PrimaryButtonClick;
             Opened += PlatformEditDialog_Opened;
-            Closed += PlatformEditDialog_Closed;
         }
 
-        /// <summary>對話方塊開啟時設定 XYFocus、啟動手把輪詢與螢幕鍵盤閃避。</summary>
+        /// <summary>對話方塊開啟時設定 XYFocus。手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。</summary>
         private void PlatformEditDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             // D-pad 向下離開內容區時，優先跳到「儲存」(Primary) 而非「取消」(Close)
@@ -124,26 +127,8 @@ namespace OmniConsole.Dialogs
             {
                 contentRoot.XYFocusDown = primaryButton;
             }
-
-            _gamepadNav = new GamepadNavigationService(
-                searchRoot: this,
-                dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
-                onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(XamlRoot),
-                onBButtonPressed: null);    // B 鍵不動作，避免誤觸關閉對話方塊遺失輸入
-            _gamepadNav.Start();
-
-            // 螢幕鍵盤彈出時自動將對話方塊上移，避免鍵盤遮蓋內容
-            _keyboardAvoidanceCleanup = GamepadNavigationService.EnableKeyboardAvoidance(
-                GetTemplateChild("BackgroundElement") as FrameworkElement, XamlRoot);
-        }
-
-        /// <summary>對話方塊關閉時停止手把輪詢並清除鍵盤閃避。</summary>
-        private void PlatformEditDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            _gamepadNav?.Stop();
-            _gamepadNav = null;
-            _keyboardAvoidanceCleanup?.Invoke();
-            _keyboardAvoidanceCleanup = null;
+            // 顯式把初始焦點設到內容區第一個可聚焦元素（NameBox）
+            DispatcherQueue.TryEnqueue(() => NameBox.Focus(FocusStateHelper.Preferred));
         }
 
         // ── 控制項可見性 ────────────────────────────────────────────────────

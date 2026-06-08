@@ -1,28 +1,26 @@
-<ContentDialog
+<dialogs:GamepadDialog
     x:Class="OmniConsole.Dialogs.AppsUsingPhantomPawDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:OmniConsole.Models"
+    xmlns:dialogs="using:OmniConsole.Dialogs"
     Style="{StaticResource DefaultContentDialogStyle}"
     DefaultButton="Primary"
     RequestedTheme="Dark">
 
-    <ContentDialog.Resources>
+    <dialogs:GamepadDialog.Resources>
         <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
         <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
         <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
         <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
         <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
+        <!-- 關掉 ListViewItem 左側 selection accent bar，焦點視覺僅保留系統圓角白框（比照貓又清單）。 -->
+        <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
 
+        <!-- 卡片外觀（底色/邊框/圓角）；不自畫焦點白框、不可聚焦，焦點落外層 ListViewItem、用系統圓角白框（比照貓又）。 -->
         <Style x:Key="LockedAppCardStyle" TargetType="ContentControl">
-            <Setter Property="IsTabStop" Value="True"/>
-            <Setter Property="UseSystemFocusVisuals" Value="True"/>
-            <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
-            <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
-            <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
-            <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
-            <Setter Property="FocusVisualMargin" Value="-3"/>
+            <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
@@ -43,19 +41,46 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    </ContentDialog.Resources>
+    </dialogs:GamepadDialog.Resources>
 
-    <StackPanel Spacing="12" MinWidth="420">
+    <!-- 三段式 Grid 版面（標題 Auto / 清單 * / 提示 Auto），比照貓又清單 GamepadProfileListView：
+         ListView 直坐 Row、外層無 ScrollViewer 等包裝。D-pad 上下走 WinUI 預設 directional focus。 -->
+    <Grid MinWidth="420">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="AppsUsingPhantomPawDialog_Header" FontSize="14"
+        <TextBlock Grid.Row="0" x:Uid="AppsUsingPhantomPawDialog_Header" FontSize="14"
                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                   TextWrapping="Wrap"/>
+                   TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-        <ScrollViewer MaxHeight="280"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl x:Name="LockedAppsList">
-                <ItemsControl.ItemTemplate>
+            <!-- ListView（非 ItemsControl）：比照貓又清單，用 ContainerContentChanging 只在「最後一項」設
+                 XYFocusDown 指向重試鈕（讓最後一張卡片 Down 到「重試」而非幾何最近的「取消」）。
+                 IsTabStop=False：容器本身不吃焦點。SelectionMode=None：純資訊清單、不需選取高亮。
+                 用 ListView 自己的內建捲動（MaxHeight=280）、不外包 ScrollViewer。 -->
+            <ListView x:Name="LockedAppsList"
+                      Grid.Row="1"
+                      MaxHeight="280"
+                      IsTabStop="False"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False"
+                      Background="Transparent"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ContainerContentChanging="LockedAppsList_ContainerContentChanging">
+                <ListView.ItemContainerStyle>
+                    <!-- BasedOn 系統 DefaultListViewItemStyle：保留系統圓角白框 FocusVisual（比照貓又清單）。
+                         不 BasedOn 會整個蓋掉系統樣式 → 白框消失。只覆寫 padding/min-height 拔內建內距、讓卡片自控版面。
+                         焦點落 ListViewItem（可聚焦），裡面卡片 ContentControl 設 IsTabStop=False 不搶焦點。 -->
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:LockingApp">
                         <ContentControl Style="{StaticResource LockedAppCardStyle}"
                                         HorizontalAlignment="Stretch"
@@ -73,13 +98,12 @@
                             </StackPanel>
                         </ContentControl>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                </ListView.ItemTemplate>
+            </ListView>
 
-        <TextBlock x:Uid="AppsUsingPhantomPawDialog_Hint" FontSize="12"
+        <TextBlock Grid.Row="2" x:Uid="AppsUsingPhantomPawDialog_Hint" FontSize="12"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                   TextWrapping="Wrap"/>
+                   TextWrapping="Wrap" Margin="0,12,0,0"/>
 
-    </StackPanel>
-</ContentDialog>
+    </Grid>
+</dialogs:GamepadDialog>

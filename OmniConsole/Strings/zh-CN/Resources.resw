@@ -1089,7 +1089,7 @@
     <value>取消</value>
   </data>
   <data name="GamepadMappingSearchBox.PlaceholderText" xml:space="preserve">
-    <value>搜索程序…</value>
+    <value>搜索应用…</value>
   </data>
   <data name="GamepadMappingSortAddOrderDesc.Content" xml:space="preserve">
     <value>添加顺序：新→旧</value>
@@ -1104,7 +1104,7 @@
     <value>名称：Z→A</value>
   </data>
   <data name="GamepadMappingNoSearchResultHint.Text" xml:space="preserve">
-    <value>没有找到匹配的程序。</value>
+    <value>没有找到匹配的应用。</value>
   </data>
   <data name="GamepadHint_SwitchPage.Text" xml:space="preserve">
     <value>切换页面</value>
@@ -1217,9 +1217,6 @@
   <data name="Vk_Apps" xml:space="preserve">
     <value>菜单键</value>
   </data>
-  <data name="Vk_NumpadDecimal" xml:space="preserve">
-    <value>数字键盘 .</value>
-  </data>
   <data name="Vk_VolumeUp" xml:space="preserve">
     <value>调高音量</value>
   </data>
@@ -1268,9 +1265,6 @@
   <data name="Vk_Alt" xml:space="preserve">
     <value>Alt</value>
   </data>
-  <data name="Vk_Win" xml:space="preserve">
-    <value>Win</value>
-  </data>
   <data name="Vk_LShift" xml:space="preserve">
     <value>左 Shift</value>
   </data>
@@ -1288,6 +1282,9 @@
   </data>
   <data name="Vk_RAlt" xml:space="preserve">
     <value>右 Alt</value>
+  </data>
+  <data name="Vk_LWin" xml:space="preserve">
+    <value>左 Win</value>
   </data>
   <data name="Vk_RWin" xml:space="preserve">
     <value>右 Win</value>
@@ -1322,9 +1319,6 @@
   <data name="AboutSection_ReleaseInfo.Text" xml:space="preserve">
     <value>发行信息</value>
   </data>
-  <data name="Label_Certificate.Text" xml:space="preserve">
-    <value>证书</value>
-  </data>
   <data name="Label_CommitHash.Text" xml:space="preserve">
     <value>Commit：</value>
   </data>
@@ -1341,7 +1335,7 @@
     <value>证书详细信息</value>
   </data>
   <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
-    <value>这份安装由以下证书签署。将下方 SHA-256 指纹与官方仓库的 AUTHENTICITY.zh-TW.md 公布值比对。若数值不一致，这份构建便不是来自官方来源。</value>
+    <value>这份 OmniConsole 由以下证书签署。将下方 SHA-256 指纹与官方仓库的 AUTHENTICITY.zh-TW.md 公布值比对。若数值不一致，这份构建便不是来自官方来源。OmniCharm 小组件由同一张证书签署；逐个应用包的完整验证请见 AUTHENTICITY.zh-TW.md。</value>
   </data>
   <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
     <value>打开 AUTHENTICITY.zh-TW.md 查看公布指纹</value>

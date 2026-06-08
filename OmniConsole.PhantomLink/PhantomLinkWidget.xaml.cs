@@ -25,7 +25,11 @@ namespace OmniConsole.PhantomLink
         private string _foregroundAppName;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
         private string _foregroundFullPath;  // 前景 exe 完整路徑（Win32 桌面 process 才有，packaged 為空字串）；用於建 profile 時帶入 AppId.FullPath
 
-        // 焦點剛從外部進入 Widget → 吞掉緊接著的一顆 D-pad Down，避免雙跳（OnGettingFocus 把焦點重導到選中態按鈕 + OnPreviewKeyDown 又推進一 section）
+        // 焦點從外部進入後，自動從哨兵前進到第一個真 section 的去重旗標（GettingFocus 進入時連發數次，只前進一次）
+        private bool _advancePending;
+
+        // D-pad Down 進入時：自動前進已跳一格，緊接著那個 Down 本身會再導航一格 → 吞掉避免雙跳。
+        // A 鍵展開無 Down 故不受影響。AdvanceFromSentinel 真的前進時才 arm。
         private DateTime _swallowNextDownUntil;
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
@@ -104,27 +108,36 @@ namespace OmniConsole.PhantomLink
         // ── 焦點進入偵測：重導至選中態按鈕 + 吞掉進入時的 D-pad Down ─────────
 
         /// <summary>
-        /// 焦點從 Widget 外部進入（A 或 D-pad）→ 重導到第一 section 的選中態按鈕（checked），
-        /// 並開啟 150ms 吞 Down 窗。A 鍵進入無 Down 事件，窗自然過期；D-pad Down 進入時，
-        /// 同一顆 Down 會被窗吃掉，避免「系統送焦點進按鈕 + OnPreviewKeyDown 又推進下一 section」雙跳。
+        /// 焦點從 Widget 外部進入（A 鍵展開 或 D-pad Down 移入，事件無法區分）→ 先重導到隱形哨兵（吸收
+        /// Game Bar「首次進入不顯框」的 quirk），再 AdvanceFromSentinel 自動前進到第一個真 section 點亮焦點框。
+        /// D-pad Down 進入時 arm swallow 吞掉緊接的那個 Down 避免雙跳；A 鍵展開無 Down，swallow 窗自然過期。
         /// </summary>
         private void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
             var oldFE = args.OldFocusedElement as DependencyObject;
             if (!IsDescendant(oldFE))
             {
-                // 已知 Game Bar 冷啟動後首次 D-pad Down 進 Widget 的行為是 Game Bar 自身的 quirk：
-                // 焦點會落在第一組第一顆按鈕但無 focus ring，再按一次 Down 才正確顯示第二組的
-                // 選中態。無法從 Widget 這邊修正（Game Bar 側的焦點渲染問題），Widget 已 loaded
-                // 後再進入就正常。
-                _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(150);
-                var target = PickFocusTarget(QuickActionsSection);
-                if (target != null && !ReferenceEquals(target, args.NewFocusedElement))
+                // 焦點從外部進入 Widget（D-pad Down 移入 或 A 鍵展開，兩者事件無法區分：皆 inputDevice=
+                // Keyboard / direction=None / new=哨兵）。先重導到 0 高度透明哨兵（吸收 Game Bar「首次進入不
+                // 顯框」的 quirk），再排 dispatcher 自動前進到第一個真 section，走 FocusSection
+                // 的 Focus(FocusState.Keyboard) 真轉移點亮焦點框。統一兩條路徑：都落哨兵→自動前進→真按鈕有框。
+                if (!ReferenceEquals(FocusSentinel, args.NewFocusedElement))
                 {
-                    try { args.TrySetNewFocusedElement(target); }
+                    try { args.TrySetNewFocusedElement(FocusSentinel); }
                     catch (Exception ex) { DebugLogger.Log("[Widget] TrySetNewFocusedElement FAIL: " + ex); }
                 }
-                DebugLogger.Log("[Widget] focus re-entered → redirect to checked + arm swallow-Down");
+
+                // 連發去重：GettingFocus 進入時會連觸發數次，只 arm 一次自動前進。
+                if (!_advancePending)
+                {
+                    _advancePending = true;
+                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        _advancePending = false;
+                        AdvanceFromSentinel();
+                    });
+                }
+                DebugLogger.Log("[Widget] focus re-entered → sentinel + arm advance");
             }
         }
 
@@ -142,9 +155,9 @@ namespace OmniConsole.PhantomLink
         // ── 跨 Section D-pad 導航 ───────────────────────────────────────────
 
         /// <summary>
-        /// 跨 section D-pad 導航：落點挑選中態的 ToggleButton 或 Slider / ComboBox —
-        /// 通用規則，未來新增 section 不需改程式。初始焦點由 OnGettingFocus 重導到選中態按鈕，
-        /// 外部進入時緊接著的 D-pad Down 由 _swallowNextDownUntil 吃掉，避免雙跳。
+        /// 跨 section D-pad 導航：落點挑選中態的 ToggleButton 或 Slider / ComboBox，
+        /// 為通用規則，未來新增 section 不需改程式。初始焦點由 OnGettingFocus 重導哨兵 + AdvanceFromSentinel
+        /// 自動前進到第一個真 section；D-pad Down 進入時吞掉緊接的那個 Down 避免雙跳。
         /// </summary>
         private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
@@ -152,10 +165,11 @@ namespace OmniConsole.PhantomLink
             bool up = e.Key == VirtualKey.GamepadDPadUp || e.Key == VirtualKey.Up;
             if (!down && !up) return;
 
+            // D-pad Down 進入後 AdvanceFromSentinel 已自動前進一格，吞掉緊接著那個 Down 避免雙跳。
             if (down && DateTime.UtcNow < _swallowNextDownUntil)
             {
                 _swallowNextDownUntil = DateTime.MinValue;
-                DebugLogger.Log("[Widget] swallow entry Down");
+                DebugLogger.Log("[Widget] swallow entry Down (post-advance)");
                 e.Handled = true;
                 return;
             }
@@ -172,6 +186,31 @@ namespace OmniConsole.PhantomLink
             for (int i = idx + step; i >= 0 && i < sections.Count; i += step)
             {
                 if (FocusSection(sections[i])) { e.Handled = true; return; }
+            }
+        }
+
+        /// <summary>
+        /// 焦點從外部進入落哨兵後，自動前進到第一個可聚焦的真 section（跳過 sections[0] 哨兵）。
+        /// 走 FocusSection 的 Focus(FocusState.Keyboard) 真轉移點亮焦點框，統一 D-pad Down 與 A 鍵展開兩條
+        /// 路徑都直接落第一個真按鈕有框。僅在焦點仍停在哨兵時前進（使用者若已手動導航走則不干預）。
+        /// </summary>
+        private void AdvanceFromSentinel()
+        {
+            // 焦點已不在哨兵（使用者已自行導航）→ 不干預
+            var focused = FocusManager.GetFocusedElement() as DependencyObject;
+            if (focused == null || !ReferenceEquals(FindSection(focused), FocusSentinel))
+                return;
+
+            var sections = RootPanel.Children.OfType<FrameworkElement>().ToList();
+            for (int i = 1; i < sections.Count; i++) // 跳過 index 0（哨兵）
+            {
+                if (FocusSection(sections[i]))
+                {
+                    // 已自動前進一格。若是 D-pad Down 進入，緊接著那個 Down 還會再導航一格 → arm swallow 吞掉
+                    // 避免雙跳。A 鍵展開無 Down，swallow 窗口自然過期不影響。
+                    _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(200);
+                    return;
+                }
             }
         }
 
@@ -213,7 +252,7 @@ namespace OmniConsole.PhantomLink
             return target != null && target.Focus(FocusState.Keyboard);
         }
 
-        // ── 資料綁定與啟用狀態 ──────────────────────────────────────────────
+        // ── 資料繫結與啟用狀態 ──────────────────────────────────────────────
 
         /// <summary>
         /// 從 Shared.ini 讀值並同步所有 UI 控制項狀態。
@@ -343,13 +382,7 @@ namespace OmniConsole.PhantomLink
             if (!string.IsNullOrEmpty(proc))
                 blocked = IsBlacklistedProcess(proc);
             if (!blocked && isUwp)
-            {
-                blocked = aumid.IndexOf("Microsoft.GamingApp", StringComparison.OrdinalIgnoreCase) >= 0
-                       || aumid.IndexOf("B9ECED6F.ArmouryCrateSE", StringComparison.OrdinalIgnoreCase) >= 0
-                       || aumid.IndexOf("windows.immersivecontrolpanel", StringComparison.OrdinalIgnoreCase) >= 0
-                       || aumid.IndexOf("Microsoft.WindowsStore", StringComparison.OrdinalIgnoreCase) >= 0
-                       || aumid.IndexOf("b5fbce6b-2d7d-4da0-b419-4beb30e2b808", StringComparison.OrdinalIgnoreCase) >= 0;
-            }
+                blocked = IsBlacklistedAumid(aumid);
 
             // packaged 優先用 aumid: 前綴，桌面 process 用 process: 前綴
             if (blocked)
@@ -453,7 +486,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /*
-        // SettingsBtn 暫時註解保留 —— 使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
+        // SettingsBtn 暫時註解保留：使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
         /// <summary>透過 PhantomBridge 喚起 OmniConsole 主程式設定頁。</summary>
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -467,7 +500,7 @@ namespace OmniConsole.PhantomLink
 
         /// <summary>
         /// Steam In-Game Overlay 兩顆 ToggleButton 共用 Click：On/Off 互斥切換、寫入 Store。
-        /// 獨立於 Mouse Mode —— 不受 _builtInMapping 或 mode=Off 影響，永遠可操作。
+        /// 獨立於 Mouse Mode：不受 _builtInMapping 或 mode=Off 影響，永遠可操作。
         /// </summary>
         private void SteamInGameOverlayBtn_Click(object sender, RoutedEventArgs e)
         {

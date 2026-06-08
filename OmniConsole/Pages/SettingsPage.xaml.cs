@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
@@ -7,6 +8,7 @@ using OmniConsole.Models;
 using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -21,7 +23,7 @@ namespace OmniConsole.Pages
     /// 設定介面 UserControl。
     /// 負責平台卡片管理、NavigationView 頁面切換、自訂平台對話方塊及設定手把輪詢。
     /// </summary>
-    public sealed partial class SettingsPage : UserControl
+    public sealed partial class SettingsPage : UserControl, IGamepadInputScope
     {
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -39,10 +41,10 @@ namespace OmniConsole.Pages
         // ── 內部狀態 ──────────────────────────────────────────────────────────
 
         private readonly ResourceLoader _resourceLoader = new();
-        private GamepadNavigationService? _gamepadNavigationService;
 
         // 設定介面的平台卡片清單與目前選取的平台 Id
-        private List<PlatformCardItem> _cardItems = [];
+        // 固定實例（readonly）：ItemsSource 只繫結一次，內容變更一律走增量新增／移除／取代（見 ReplaceCards）。
+        private readonly ObservableCollection<PlatformCardItem> _cardItems = [];
         private string _selectedPlatformId = "";
 
         // 目前顯示的平台分類索引標籤（System / User）
@@ -66,6 +68,9 @@ namespace OmniConsole.Pages
 
         // 防止關於頁重新整理重複觸發
         private bool _isRefreshingAbout;
+
+        // 防止關於頁複製到剪貼簿重複觸發
+        private bool _isCopyingAbout;
 
         // 下載更新的取消 token
         private CancellationTokenSource? _downloadCts;
@@ -97,15 +102,6 @@ namespace OmniConsole.Pages
             GamepadProfileList.EditRequested += (s, appId) => OpenEditorFor(appId, string.Empty);
             GamepadProfileEditor.Closed += (s, e) => CloseEditor();
             GamepadProfileEditor.Deleted += (s, e) => CloseEditor();
-
-            EventHandler<bool> onDialogActive = (s, active) =>
-            {
-                if (active) StopGamepadPolling();
-                else StartGamepadPolling();
-            };
-            GamepadProfileEditor.DialogActiveChanged += onDialogActive;
-            GamepadProfileList.DialogActiveChanged += onDialogActive;
-
             GamepadProfileList.ItemsChanged += (s, e) => UpdateGamepadHints();
         }
 
@@ -324,8 +320,6 @@ namespace OmniConsole.Pages
             if (UpdateCheckService.ShouldAutoCheck())
                 _ = AutoCheckForUpdatesAsync();
 
-            StartGamepadPolling();
-
             // 由 Protocol 帶入待編輯 appId 時，把 NavigationView 切到「手把映射」分頁
             //（SelectionChanged → InitGamepadMappingPage 會處理 _pendingEditAppId 開編輯器）
             if (_pendingEditAppId != null)
@@ -432,7 +426,7 @@ namespace OmniConsole.Pages
         /// 擷取環境快照並更新關於頁各文字區塊。
         /// 在背景執行緒取資料、再回 UI 執行緒設值。
         /// </summary>
-        private async void LoadAboutPageContent()
+        private async void LoadAboutPageContent(bool enforceMinDelay = false)
         {
             if (_isRefreshingAbout) return;
             _isRefreshingAbout = true;
@@ -441,9 +435,9 @@ namespace OmniConsole.Pages
             RefreshAboutProgressRing.Opacity = 1;
             RefreshAboutProgressRing.IsActive = true;
 
-            var delayTask = Task.Delay(500);
+            var delayTask = enforceMinDelay ? Task.Delay(500) : null;
             var snapshot = await Task.Run(() => AboutInfoService.GetEnvironmentSnapshot());
-            await delayTask;
+            if (delayTask is not null) await delayTask;
 
             ApplyAboutSnapshot(snapshot);
             RefreshAboutProgressRing.IsActive = false;
@@ -521,15 +515,7 @@ namespace OmniConsole.Pages
         private async void CertDetailsButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new CertificateDetailsDialog(XamlRoot, BuildIdentity.CertificateThumbprint);
-            StopGamepadPolling();
-            try
-            {
-                await dialog.ShowAsync();
-            }
-            finally
-            {
-                StartGamepadPolling();
-            }
+            await dialog.ShowAsync();
         }
 
         /// <summary>
@@ -712,8 +698,11 @@ namespace OmniConsole.Pages
         /// <summary>
         /// 複製關於頁的環境快照到剪貼簿，供使用者貼到 GitHub Issue 協助回報問題。
         /// </summary>
-        private void CopyAboutButton_Click(object sender, RoutedEventArgs e)
+        private async void CopyAboutButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isCopyingAbout) return;
+            _isCopyingAbout = true;
+
             try
             {
                 var snapshot = AboutInfoService.GetEnvironmentSnapshot();
@@ -729,10 +718,16 @@ namespace OmniConsole.Pages
                 AboutCopyConfirmTeachingTip.IsOpen = true;
                 _aboutCopyConfirmTimer.Stop();
                 _aboutCopyConfirmTimer.Start();
+
+                await Task.Delay(500);
             }
             catch (Exception ex)
             {
                 DebugLogger.Log($"[SettingsPage] CopyAboutButton_Click failed: {ex.Message}");
+            }
+            finally
+            {
+                _isCopyingAbout = false;
             }
         }
 
@@ -742,7 +737,7 @@ namespace OmniConsole.Pages
         /// </summary>
         private void RefreshAboutButton_Click(object sender, RoutedEventArgs e)
         {
-            LoadAboutPageContent();
+            LoadAboutPageContent(enforceMinDelay: true);
         }
 
         /// <summary>
@@ -774,7 +769,15 @@ namespace OmniConsole.Pages
 
             for (int i = 0; i < _cardItems.Count; i++)
             {
-                _cardItems[i].IsAvailable = available[i];
+                if (_cardItems[i].IsAvailable == available[i]) continue;
+                // PlatformCardItem 無屬性變更通知（INotifyPropertyChanged），IsAvailable 變更不會通知 OneTime 繫結；
+                // 以同位置取代觸發集合「取代」通知，讓該容器重新繫結、CardOpacity 更新（集合實例不換）。
+                _cardItems[i] = new PlatformCardItem
+                {
+                    Platform = _cardItems[i].Platform,
+                    DisplayName = _cardItems[i].DisplayName,
+                    IsAvailable = available[i],
+                };
             }
 
             // 若目前選取的平台已停用，先調整選取的 Id
@@ -793,9 +796,7 @@ namespace OmniConsole.Pages
                 }
             }
 
-            // 重新指定 ItemsSource 讓 OneTime 繫結重新求值（CardOpacity 依最新 IsAvailable 更新）
-            PlatformGridView.ItemsSource = null;
-            PlatformGridView.ItemsSource = _cardItems;
+            // ItemsSource 已繫結固定的 _cardItems 實例；上方 Replace 已增量重整變更項，無需重設 ItemsSource
 
             // 還原選取狀態
             var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
@@ -855,25 +856,35 @@ namespace OmniConsole.Pages
             SettingsDescription.Text = string.Format(_resourceLoader.GetString("SettingsDescription"), name);
         }
 
+        // ItemsWrapGrid 自身 Loaded 事件以 sender 取得並快取的面板實例。
+        private ItemsWrapGrid? _platformWrapGrid;
+
         /// <summary>
-        /// GridView 大小變更時，依可用寬度計算每張卡片的尺寸，使卡片填滿整列。
+        /// 依可用寬度計算每張平台卡片尺寸，使卡片填滿整列。
         /// </summary>
-        private void PlatformGridView_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void PlatformWrapGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            if (PlatformGridView.ItemsPanelRoot is ItemsWrapGrid wrapGrid)
-            {
-                double availableWidth = e.NewSize.Width;
-                // 根據可用寬度決定欄數
-                // ≥1100px → 4 欄, ≥700px → 3 欄, <700px → 2 欄
-                int columns = availableWidth >= 1100 ? 4 : availableWidth >= 700 ? 3 : 2;
-                double itemWidth = Math.Floor(availableWidth / columns);
-                double remainder = availableWidth - itemWidth * columns;
-                // 非整除且餘數極小時 ItemsWrapGrid 因精度問題換行，減 1 迴避
-                if (remainder > 0 && remainder < 1)
-                    itemWidth -= 1;
-                wrapGrid.ItemWidth = itemWidth;
-                wrapGrid.ItemHeight = Math.Floor(itemWidth * 0.7); // 維持約 7:10 的高寬比
-            }
+            _platformWrapGrid = sender as ItemsWrapGrid;
+            ApplyPlatformItemSize(PlatformGridView.ActualWidth);
+        }
+
+        private void PlatformGridView_SizeChanged(object sender, SizeChangedEventArgs e)
+            => ApplyPlatformItemSize(e.NewSize.Width);
+
+        private void ApplyPlatformItemSize(double availableWidth)
+        {
+            if (_platformWrapGrid is null || availableWidth <= 0)
+                return;
+            // 根據可用寬度決定欄數
+            // ≥1100px → 4 欄, ≥700px → 3 欄, <700px → 2 欄
+            int columns = availableWidth >= 1100 ? 4 : availableWidth >= 700 ? 3 : 2;
+            double itemWidth = Math.Floor(availableWidth / columns);
+            double remainder = availableWidth - itemWidth * columns;
+            // 非整除且餘數極小時 ItemsWrapGrid 因精度問題換行，減 1 迴避
+            if (remainder > 0 && remainder < 1)
+                itemWidth -= 1;
+            _platformWrapGrid.ItemWidth = itemWidth;
+            _platformWrapGrid.ItemHeight = Math.Floor(itemWidth * 0.7); // 維持約 7:10 的高寬比
         }
 
         // ── 設定控制項事件 ────────────────────────────────────────────────────
@@ -1088,11 +1099,12 @@ namespace OmniConsole.Pages
             // 使用者索引標籤未同意時：顯示免責聲明，隱藏卡片和手把提示
             VisualStateManager.GoToState(this, (isUserTab && !isConsented) ? "ConsentVisible" : "GridViewVisible", false);
 
+            List<PlatformCardItem> newCards;
             if (isUserTab)
             {
                 // 使用者自訂平台
                 var userDefinitions = UserPlatformStore.GetAllDefinitions();
-                _cardItems = userDefinitions
+                newCards = userDefinitions
                     .Select(p => new PlatformCardItem
                     {
                         Platform = p,
@@ -1103,7 +1115,7 @@ namespace OmniConsole.Pages
             else
             {
                 // 系統內建平台
-                _cardItems = PlatformCatalog.All
+                newCards = PlatformCatalog.All
                     .Select(p => new PlatformCardItem
                     {
                         Platform = p,
@@ -1112,7 +1124,11 @@ namespace OmniConsole.Pages
                     .ToList();
             }
 
-            PlatformGridView.ItemsSource = _cardItems;
+            // 增量同步到固定的 _cardItems 實例（新增／移除／取代，見 ReplaceCards）；
+            // 涵蓋切索引標籤／匯入／新增／編輯／刪除所有重載路徑。ItemsSource 僅首次（為 null 時）繫結一次。
+            ReplaceCards(newCards);
+            if (PlatformGridView.ItemsSource is null)
+                PlatformGridView.ItemsSource = _cardItems;
 
             // 還原選取狀態
             var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
@@ -1123,6 +1139,45 @@ namespace OmniConsole.Pages
 
             // 非同步查詢可用性
             _ = LoadPlatformAvailabilityAsync();
+        }
+
+        /// <summary>
+        /// 程式化將焦點設給 PlatformGridView 指定索引的卡片容器；容器尚未實體化時掛 LayoutUpdated 延後聚焦。
+        /// 與貓又清單刪除後的焦點還原行為一致，使刪除後白框停在被刪項的前後。
+        /// </summary>
+        private void FocusPlatformCard(int index)
+        {
+            if (index < 0 || index >= _cardItems.Count) return;
+            PlatformGridView.ScrollIntoView(_cardItems[index]);
+            if (PlatformGridView.ContainerFromIndex(index) is SelectorItem container)
+            {
+                container.Focus(FocusStateHelper.Preferred);
+                return;
+            }
+            EventHandler<object>? handler = null;
+            handler = (s, e) =>
+            {
+                if (PlatformGridView.ContainerFromIndex(index) is SelectorItem deferred)
+                {
+                    deferred.Focus(FocusStateHelper.Preferred);
+                    PlatformGridView.LayoutUpdated -= handler;
+                }
+            };
+            PlatformGridView.LayoutUpdated += handler;
+        }
+
+        /// <summary>
+        /// 以 Id 為鍵做增量比對，把 _cardItems 內容同步成 newCards（不換 ItemsSource、不發重設通知，少重建、不閃）。
+        /// 增量演算法在 <see cref="ObservableCollectionDiff.Apply{T}"/>，此處只提供身分／內容比對。
+        /// </summary>
+        private void ReplaceCards(IReadOnlyList<PlatformCardItem> newCards)
+        {
+            ObservableCollectionDiff.Apply(
+                _cardItems,
+                newCards,
+                static (a, b) => a.Id == b.Id,
+                static (a, b) => a.DisplayName == b.DisplayName
+                              && a.IconAsset == b.IconAsset);
         }
 
         // ── 平台匯出 / 匯入 ───────────────────────────────────────────────────
@@ -1172,9 +1227,7 @@ namespace OmniConsole.Pages
                 ExportSuccessTeachingTip.IsOpen = false;
 
                 var dialog = new ImportPlatformDialog(this.XamlRoot, _resourceLoader);
-                StopGamepadPolling();
                 var result = await dialog.ShowAsync();
-                StartGamepadPolling();
                 if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
 
                 UserPlatformStore.Add(dialog.ResultEntry);
@@ -1258,18 +1311,14 @@ namespace OmniConsole.Pages
                 // 由此處協調顯示 FilePickerDialog 後重新開啟 PlatformEditDialog。
                 while (true)
                 {
-                    StopGamepadPolling();
                     result = await dialog.ShowAsync();
-                    StartGamepadPolling();
 
                     if (!dialog.RequestFilePicker) break;
 
                     // 顯示自製檔案選擇器
                     var pickerDialog = new FilePickerDialog(
                         this.XamlRoot, _resourceLoader, dialog.FilePickerRequest!);
-                    StopGamepadPolling();
                     var pickerResult = await pickerDialog.ShowAsync();
-                    StartGamepadPolling();
 
                     string? selectedPath = null;
                     if (pickerResult == ContentDialogResult.Primary)
@@ -1308,19 +1357,50 @@ namespace OmniConsole.Pages
                 else if (result == ContentDialogResult.Secondary && isEdit && existingEntry != null)
                 {
                     // 刪除平台：從 Store 移除後，視剩餘數量決定留在使用者索引標籤或切回系統索引標籤
+                    // 刪除前先記下被刪卡片索引、以及被刪的是否正是目前預設平台（底色那張）。
+                    int prevIndex = -1;
+                    for (int i = 0; i < _cardItems.Count; i++)
+                    {
+                        if (_cardItems[i].Id == existingEntry.Id) { prevIndex = i; break; }
+                    }
+                    bool deletedDefault = _selectedPlatformId == existingEntry.Id;
+
                     UserPlatformStore.Delete(existingEntry.Id);
 
                     var remainingUser = UserPlatformStore.GetAllDefinitions();
                     if (remainingUser.Count > 0)
                     {
-                        // 使用者索引標籤仍有其他平台，留在使用者索引標籤並選取第一個
-                        _selectedPlatformId = remainingUser[0].Id;
+                        // 焦點（白框）一律落回被刪項原索引（或最後一項），與貓又清單刪除行為一致。
+                        int target = prevIndex < 0 ? 0 : Math.Min(prevIndex, remainingUser.Count - 1);
+
+                        // 選取（底色／預設平台）：刪非預設平台時維持不變（原預設仍在，由 LoadPlatformCards
+                        // 還原底色）；刪到預設平台時不能讓預設遺失，改選 target 那張並即儲存為新預設
+                        // （若 target 不可用，LoadPlatformAvailabilityAsync 會在可用性載入後自動改選第一張可用的）。
+                        if (deletedDefault)
+                        {
+                            _selectedPlatformId = remainingUser[target].Id;
+                            var newDefault = UserPlatformStore.FindById(_selectedPlatformId)
+                                ?? PlatformCatalog.All[0];
+                            SettingsService.SetDefaultPlatform(newDefault);
+                            SettingsService.SaveCurrentVersion();
+                            UpdateSettingsDescription();
+                        }
+
                         LoadPlatformCards();
+                        FocusPlatformCard(target);
                     }
                     else
                     {
-                        // 使用者索引標籤已無平台，切換至系統索引標籤
-                        _selectedPlatformId = PlatformCatalog.All[0].Id;
+                        // 使用者索引標籤已無平台，切換至系統索引標籤。
+                        // 僅在刪到的正是預設平台時才補新預設（選系統第一張並即儲存），避免預設遺失；
+                        // 若原預設是其他系統平台則維持不變，不可被覆蓋。
+                        if (deletedDefault)
+                        {
+                            _selectedPlatformId = PlatformCatalog.All[0].Id;
+                            SettingsService.SetDefaultPlatform(PlatformCatalog.All[0]);
+                            SettingsService.SaveCurrentVersion();
+                            UpdateSettingsDescription();
+                        }
                         _currentCategoryTag = "";
                         SwitchCategoryTab("System");
                     }
@@ -1332,49 +1412,19 @@ namespace OmniConsole.Pages
             }
         }
 
-        // ── 手把輸入處理 ──────────────────────────────────────────────────────
+        // ── 手把輸入處理（IGamepadInputScope） ──
+        // 輪詢計時器由 MainWindow 集中管理；本頁只宣告「焦點搜尋根 + 各鍵語意」，全套覆寫含 X/Y/LB/RB/Menu。
 
-        /// <summary>
-        /// 啟動 Xbox 手把的輸入輪詢機制。
-        /// 若尚未初始化 <see cref="GamepadNavigationService"/>，則會在此建立其實體，
-        /// 以 <see cref="SettingsNav"/> 為 XY 焦點根容器，並傳遞各按鍵回呼函式。
-        /// </summary>
-        public void StartGamepadPolling()
-        {
-            if (_gamepadNavigationService == null)
-            {
-                _gamepadNavigationService = new GamepadNavigationService(
-                    this.SettingsNav,
-                    this.DispatcherQueue,
-                    OnGamepadAButtonPressed,
-                    OnGamepadBButtonPressed,
-                    OnGamepadLBPressed,
-                    OnGamepadRBPressed,
-                    OnGamepadXButtonPressed,
-                    OnGamepadYButtonPressed,
-                    OnGamepadMenuButtonPressed
-                );
-            }
-            _gamepadNavigationService.Start();
-        }
+        /// <summary>焦點搜尋根：D-pad 在設定導覽容器內找下一個焦點元素。</summary>
+        UIElement IGamepadInputScope.SearchRoot => this.SettingsNav;
 
-        /// <summary>
-        /// 停止 Xbox 手把的輸入輪詢機制。
-        /// 於結束應用程式或離開設定介面時呼叫。
-        /// </summary>
-        public void StopGamepadPolling()
-        {
-            _gamepadNavigationService?.Stop();
-        }
-
-        /// <summary>
-        /// 釋放手把導覽服務的計時器與系統級資源。應用程式結束前呼叫。
-        /// </summary>
-        public void DisposeGamepadService()
-        {
-            _gamepadNavigationService?.Dispose();
-            _gamepadNavigationService = null;
-        }
+        void IGamepadInputScope.OnA() => OnGamepadAButtonPressed();
+        bool IGamepadInputScope.OnB() { OnGamepadBButtonPressed(); return true; }
+        void IGamepadInputScope.OnX() => OnGamepadXButtonPressed();
+        void IGamepadInputScope.OnY() => OnGamepadYButtonPressed();
+        void IGamepadInputScope.OnLB() => OnGamepadLBPressed();
+        void IGamepadInputScope.OnRB() => OnGamepadRBPressed();
+        void IGamepadInputScope.OnMenu() => OnGamepadMenuButtonPressed();
 
         /// <summary>
         /// 處理手把 'A' 鍵被按下的回呼函式（設定介面）。
@@ -1395,7 +1445,7 @@ namespace OmniConsole.Pages
                     return;
                 }
                 // 清單頁：焦點落在 ListView / 列項時呼叫 EditSelected，垃圾桶 Button 走一般觸發
-                if (focused is ListView || focused is ListViewItem)
+                if (focused is ListView || focused is SelectorItem)
                 {
                     GamepadProfileList.EditSelected();
                     return;
@@ -1407,7 +1457,7 @@ namespace OmniConsole.Pages
             switch (focused)
             {
                 // 平台卡片：確認選取（不可用卡片不處理）
-                case GridViewItem { Content: PlatformCardItem { IsAvailable: true } card }:
+                case SelectorItem { Content: PlatformCardItem { IsAvailable: true } card }:
                     PlatformGridView.SelectedItem = card;
                     _selectedPlatformId = card.Id;
                     break;
@@ -1448,7 +1498,7 @@ namespace OmniConsole.Pages
                     ImportPlatformButton_Click(this, new RoutedEventArgs());
                     break;
 
-                // PhantomKey 手把輸入開關 — 已移除（FSE 常駐），保留註解以利復原
+                // PhantomKey 手把輸入開關，已移除（FSE 常駐），保留註解以利復原
                 //case ToggleSwitch sw when ReferenceEquals(sw, UsePhantomKeySwitch):
                 //    UsePhantomKeySwitch.IsOn = !sw.IsOn;
                 //    break;
@@ -1600,8 +1650,8 @@ namespace OmniConsole.Pages
             if (!SettingsService.GetCustomPlatformConsentAccepted()) return;
 
             var focused = FocusManager.GetFocusedElement(this.XamlRoot);
-            if (focused is GridViewItem gridViewItem &&
-                gridViewItem.Content is PlatformCardItem card)
+            if (focused is SelectorItem item &&
+                item.Content is PlatformCardItem card)
             {
                 var entry = UserPlatformStore.FindEntryById(card.Id);
                 if (entry != null)
@@ -1630,7 +1680,7 @@ namespace OmniConsole.Pages
 
             // 若焦點在可用卡片上，先確認選取（更新預設平台）
             var focused = FocusManager.GetFocusedElement(this.XamlRoot);
-            if (focused is GridViewItem { Content: PlatformCardItem { IsAvailable: true } card })
+            if (focused is SelectorItem { Content: PlatformCardItem { IsAvailable: true } card })
             {
                 PlatformGridView.SelectedItem = card;
                 _selectedPlatformId = card.Id;
@@ -1740,18 +1790,8 @@ namespace OmniConsole.Pages
 
             var apps = UpdateCheckService.ResolveLockingApps(pids);
             var dialog = new AppsUsingPhantomPawDialog(this.XamlRoot, apps);
-
-            // 對話方塊期間停掉設定頁的手把輪詢
-            StopGamepadPolling();
-            try
-            {
-                var result = await dialog.ShowAsync();
-                return result == ContentDialogResult.Primary;
-            }
-            finally
-            {
-                StartGamepadPolling();
-            }
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
         }
 
         /// <summary>
@@ -1808,7 +1848,7 @@ namespace OmniConsole.Pages
                 PhantomKeyService.Kill();
 
                 // 保險：強制刪 PhantomKey 部署的 exe + PhantomKey.dll + PhantomPaw(.dll/32.dll) 共四個檔。
-                // 對抗「前置對話方塊清空後安裝前」競態視窗 — 萬一舊 PhantomKey 與遊戲
+                // 對抗「前置對話方塊清空後安裝前」競態視窗：萬一舊 PhantomKey 與遊戲
                 // 在此期間被誤啟動又抓 dll、Kill 後 handle 通常已釋放、Delete 此時最易成功；
                 // 失敗也不擋流程、後續 PhantomKeyService.Start() 仍會試 File.Copy(overwrite)。
                 PhantomKeyService.DeleteDeployedFiles();
@@ -1822,8 +1862,7 @@ namespace OmniConsole.Pages
                 // 設定安裝鎖定旗標供 MainWindow 讀取
                 MainWindow.IsUpdateInstallInProgress = true;
 
-                // 對話方塊期間停掉設定頁的手把輪詢
-                StopGamepadPolling();
+                // 對話方塊期間背景設定頁輪詢由 Pull 模型自動避讓（UpdateProgressDialog 繼承 GamepadDialog）
 
                 // 不 await ShowAsync，與 InstallBundleAsync 並行執行
                 var showTask = dialog.ShowAsync().AsTask();
@@ -1840,7 +1879,6 @@ namespace OmniConsole.Pages
                 DebugLogger.Log($"[SettingsPage] Download/install failed: {ex.Message}");
                 dialog.RequestClose();
                 MainWindow.IsUpdateInstallInProgress = false;
-                StartGamepadPolling();
                 UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
             }

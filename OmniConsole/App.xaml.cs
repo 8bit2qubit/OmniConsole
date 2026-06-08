@@ -56,8 +56,9 @@ namespace OmniConsole
                     return;
 
                 case StartupRoute.TryActivateFse:
-                    // Windows 11 Build 26220.8165+ SetGamingFullScreenExperience 同步阻塞至使用者選擇,
-                    // 「Stay on desktop」回 0x80004004 (E_ABORT). TryActivate 成功/失敗都 ExitApp:
+                    // 觸發 FSE 進入流程後退出，由 Windows 以 FSE 環境重啟。
+                    // Build 26220.8165+ 上 TryActivate 同步阻塞至使用者選擇，「Stay on desktop」回
+                    // 0x80004004 (E_ABORT)；成功/失敗都 ExitApp：
                     //   成功 → Windows 重啟本程式進 FSE 環境
                     //   失敗 → 不在桌面啟動遊戲平台、直接退出
                     FseService.TryActivate();
@@ -73,7 +74,7 @@ namespace OmniConsole
                     if (_startWithSettings || decision.HasPendingUpdate)
                     {
                         mainWindow.PrepareForSettings();
-                        mainWindow.ShowSettings();
+                        mainWindow.ShowSettings(); // 內含 ActivateFullScreen 雙保險（FSE/桌面皆全螢幕）
 
                         if (decision.HasPendingUpdate)
                             _ = mainWindow.TryHandlePendingUpdateAsync();
@@ -82,7 +83,8 @@ namespace OmniConsole
                     }
                     else
                     {
-                        mainWindow.Activate();
+                        // 啟動即全螢幕（雙保險：FSE Activate 前生效、桌面 window ready 後補救）
+                        mainWindow.ActivateFullScreen();
                     }
                     break;
             }

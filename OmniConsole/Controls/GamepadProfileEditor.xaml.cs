@@ -31,9 +31,6 @@ namespace OmniConsole.Controls
         /// <summary>使用者按底部 (X) 刪除確認後通知宿主關閉。</summary>
         public event EventHandler? Deleted;
 
-        /// <summary>子對話方塊開啟前 true、關閉後 false（宿主據此 Stop/StartGamepadPolling）。</summary>
-        public event EventHandler<bool>? DialogActiveChanged;
-
         /// <summary>建構子：建立 row 對照表並對每個 ComboBox 填入合法動作選項。</summary>
         public GamepadProfileEditor()
         {
@@ -142,7 +139,7 @@ namespace OmniConsole.Controls
             if (!_isNew && !string.IsNullOrEmpty(displayName))
                 _editing.DisplayName = displayName;
 
-            // protocol / widget 帶進來的 path 寫入未綁定路徑的 _editing；已 path-bound profile 不被覆寫
+            // protocol / widget 帶進來的 path 寫入未繫結路徑的 _editing；已 path-bound profile 不被覆寫
             if (appId.Kind == IdKind.Process
                 && !string.IsNullOrEmpty(appId.FullPath)
                 && string.IsNullOrEmpty(_editing.AppId.FullPath))
@@ -155,11 +152,11 @@ namespace OmniConsole.Controls
 
             RefreshPathDisplay();
 
-            // CopyFrom 只在有其他 profile 時 enable（撞名不同 path 視為不同 profile，仍可互相 CopyFrom）
+            // CopyFrom 只在有其他 profile 時啟用（撞名不同路徑視為不同 profile，仍可互相 CopyFrom）。
+            // 只需判斷「有沒有」，用 Any 短路即可，不必 ToList 建出整個清單。
             try
             {
-                var others = GamepadProfileStore.Load().Where(p => !IsSameProfileSlot(p.AppId, _editing.AppId)).ToList();
-                CopyFromButton.IsEnabled = others.Count > 0;
+                CopyFromButton.IsEnabled = GamepadProfileStore.Load().Any(p => !IsSameProfileSlot(p.AppId, _editing.AppId));
             }
             catch
             {
@@ -377,7 +374,7 @@ namespace OmniConsole.Controls
                     UpdateKeyButton(id, ToOption(dlg.Result, id), pair.keyBtn);
             }
             // 焦點回原「改鍵」按鈕（避免跳到漢堡按鈕）
-            btn.Focus(FocusState.Programmatic);
+            btn.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>「重設為 OmniNav 預設」：彈確認後把 16 列覆寫回 OmniNav。</summary>
@@ -397,7 +394,7 @@ namespace OmniConsole.Controls
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
-            originBtn?.Focus(FocusState.Programmatic);
+            originBtn?.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>「重設為 Classic 預設」：彈確認後把 16 列覆寫回 Classic。</summary>
@@ -417,7 +414,7 @@ namespace OmniConsole.Controls
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
-            originBtn?.Focus(FocusState.Programmatic);
+            originBtn?.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>「清除全部」：彈確認後把 16 個輸入位全設為 None。</summary>
@@ -437,7 +434,7 @@ namespace OmniConsole.Controls
                 _dpadEditingCustom = false;
                 RefreshAllRows();
             }
-            originBtn?.Focus(FocusState.Programmatic);
+            originBtn?.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>「從其他程式讀入」：開 CopyFromProfileDialog，回來後 deep clone 其 bindings。</summary>
@@ -468,7 +465,7 @@ namespace OmniConsole.Controls
                     RefreshAllRows();
                 }
             }
-            originBtn?.Focus(FocusState.Programmatic);
+            originBtn?.Focus(FocusStateHelper.Preferred);
         }
 
         // ── 對外操作 ────────────────────────────────────────────────────────
@@ -541,12 +538,10 @@ namespace OmniConsole.Controls
 
         // ── helper ──────────────────────────────────────────────────────────
 
-        /// <summary>顯示子對話方塊（包裹 DialogActiveChanged 開關以便宿主切換手把輪詢）。</summary>
+        /// <summary>顯示子對話方塊。直接 ShowAsync（與其他對話方塊一致；DialogActiveChanged 舊機制已淘汰、無訂閱端）。</summary>
         private async Task<ContentDialogResult> ShowDialogAsync(ContentDialog dlg)
         {
-            DialogActiveChanged?.Invoke(this, true);
-            try { return await dlg.ShowAsync(); }
-            finally { DialogActiveChanged?.Invoke(this, false); }
+            return await dlg.ShowAsync();
         }
 
         /// <summary>VK 顯示名稱（resw 經 VirtualKeys 表查；無對應回 VK# 字面）。</summary>

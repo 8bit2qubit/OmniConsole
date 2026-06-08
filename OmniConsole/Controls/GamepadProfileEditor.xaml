@@ -6,9 +6,12 @@
     <UserControl.Resources>
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
 
+        <!-- 系統焦點框讀控制項 CornerRadius 畫圓角 → 設 CornerRadius=8 讓白框跟卡片圓角一致。
+             ContentControl 預設無控制項範本（故無 FocusStates 可觸發），自畫 FocusBorder+VisualState 永遠不觸發，故走系統框+CornerRadius（見 AboutCardFocusStyle）。 -->
         <Style x:Key="HeaderCardFocusStyle" TargetType="ContentControl">
             <Setter Property="IsTabStop" Value="True"/>
             <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
             <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
             <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
@@ -22,7 +25,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContentControl">
-                        <Border CornerRadius="8"
+                        <Border CornerRadius="{TemplateBinding CornerRadius}"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
@@ -39,7 +42,7 @@
     <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,24,0,24">
 
-            <!-- 頁首卡片：App 名稱 + appId 副文字 + 綁定路徑（僅 Win32 process 類顯示），可被手把焦點落 -->
+            <!-- 頁首卡片：App 名稱 + appId 副文字 + 繫結路徑（僅 Win32 process 類顯示），可被手把焦點落 -->
             <ContentControl Style="{StaticResource HeaderCardFocusStyle}" HorizontalAlignment="Stretch" MinWidth="700"
                             XYFocusDown="{x:Bind BlockNativeGamepadInputSwitch}">
                 <StackPanel Padding="16" Spacing="4">

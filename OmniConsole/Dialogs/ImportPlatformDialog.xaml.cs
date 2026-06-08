@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
 using OmniConsole.Services;
-using System;
 
 namespace OmniConsole.Dialogs
 {
@@ -11,11 +10,15 @@ namespace OmniConsole.Dialogs
     /// 讓使用者貼上 JSON 字串以匯入自訂平台的對話方塊。
     /// 驗證通過後將結果存入 <see cref="ResultEntry"/>，由呼叫端寫入 UserPlatformStore。
     /// </summary>
-    public sealed partial class ImportPlatformDialog : ContentDialog
+    public sealed partial class ImportPlatformDialog : GamepadDialog
     {
         private readonly ResourceLoader _resourceLoader;
-        private GamepadNavigationService? _gamepadNav;
-        private Action? _keyboardAvoidanceCleanup;
+
+        /// <summary>B 鍵不動作，避免誤觸關閉對話方塊遺失輸入（回 false = 不處理、不關閉）。</summary>
+        public override bool OnB() => false;
+
+        /// <summary>含 TextBox，啟用螢幕鍵盤閃避。</summary>
+        protected override bool EnableKeyboardAvoidanceOnOpen => true;
 
         /// <summary>驗證通過後建立的平台項目，由呼叫端寫入 UserPlatformStore。</summary>
         public UserPlatformEntry? ResultEntry { get; private set; }
@@ -39,7 +42,6 @@ namespace OmniConsole.Dialogs
 
             PrimaryButtonClick += ImportPlatformDialog_PrimaryButtonClick;
             Opened += ImportPlatformDialog_Opened;
-            Closed += ImportPlatformDialog_Closed;
         }
 
         private void ImportPlatformDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
@@ -50,25 +52,9 @@ namespace OmniConsole.Dialogs
             {
                 contentRoot.XYFocusDown = primaryButton;
             }
-
-            _gamepadNav = new GamepadNavigationService(
-                searchRoot: this,
-                dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
-                onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(XamlRoot),
-                onBButtonPressed: null);   // B 鍵不動作，避免誤觸關閉對話方塊遺失輸入
-            _gamepadNav.Start();
-
-            // 螢幕鍵盤彈出時自動將對話方塊上移，避免鍵盤遮蓋內容
-            _keyboardAvoidanceCleanup = GamepadNavigationService.EnableKeyboardAvoidance(
-                GetTemplateChild("BackgroundElement") as FrameworkElement, XamlRoot);
-        }
-
-        private void ImportPlatformDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            _gamepadNav?.Stop();
-            _gamepadNav = null;
-            _keyboardAvoidanceCleanup?.Invoke();
-            _keyboardAvoidanceCleanup = null;
+            // 顯式把初始焦點設到內容區第一個可聚焦元素（JsonInputBox）
+            DispatcherQueue.TryEnqueue(() => JsonInputBox.Focus(FocusStateHelper.Preferred));
+            // 手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。
         }
 
         /// <summary>

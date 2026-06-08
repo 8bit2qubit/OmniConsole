@@ -1217,9 +1217,6 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="Vk_Apps" xml:space="preserve">
     <value>Apps</value>
   </data>
-  <data name="Vk_NumpadDecimal" xml:space="preserve">
-    <value>Numpad .</value>
-  </data>
   <data name="Vk_VolumeUp" xml:space="preserve">
     <value>Volume Up</value>
   </data>
@@ -1268,9 +1265,6 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="Vk_Alt" xml:space="preserve">
     <value>Alt</value>
   </data>
-  <data name="Vk_Win" xml:space="preserve">
-    <value>Win</value>
-  </data>
   <data name="Vk_LShift" xml:space="preserve">
     <value>Left Shift</value>
   </data>
@@ -1288,6 +1282,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="Vk_RAlt" xml:space="preserve">
     <value>Right Alt</value>
+  </data>
+  <data name="Vk_LWin" xml:space="preserve">
+    <value>Left Win</value>
   </data>
   <data name="Vk_RWin" xml:space="preserve">
     <value>Right Win</value>
@@ -1322,9 +1319,6 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="AboutSection_ReleaseInfo.Text" xml:space="preserve">
     <value>Release Info</value>
   </data>
-  <data name="Label_Certificate.Text" xml:space="preserve">
-    <value>Certificate</value>
-  </data>
   <data name="Label_CommitHash.Text" xml:space="preserve">
     <value>Commit:</value>
   </data>
@@ -1341,7 +1335,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Certificate Details</value>
   </data>
   <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
-    <value>This installation is signed with the following certificate. Compare the SHA-256 thumbprint with the value published in AUTHENTICITY.md on the official repository. If the values do not match, this build is not from the official source.</value>
+    <value>This copy of OmniConsole is signed with the following certificate. Compare the SHA-256 thumbprint with the value published in AUTHENTICITY.md on the official repository. If the values do not match, this build is not from the official source. The OmniCharm widget is signed with the same certificate; for full per-package verification, see AUTHENTICITY.md.</value>
   </data>
   <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
     <value>Open AUTHENTICITY.md to view published thumbprint</value>

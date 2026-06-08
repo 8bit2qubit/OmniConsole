@@ -12,9 +12,8 @@ namespace OmniConsole.Dialogs
     /// 指紋由呼叫端透過建構式傳入（已是冒號分隔大寫格式），Copy 將其原樣寫入剪貼簿。
     /// Source URL 顯示為可點 HyperlinkButton 開啟 GitHub repo 首頁；另有 AUTHENTICITY 連結依語系開對應的真偽說明文件。
     /// </summary>
-    public sealed partial class CertificateDetailsDialog : ContentDialog
+    public sealed partial class CertificateDetailsDialog : GamepadDialog
     {
-        private GamepadNavigationService? _gamepadNav;
         private readonly string _thumbprint;
 
         /// <summary>建構：接收指紋（冒號分隔大寫）、設定按鈕文字、掛上事件。Source URL 指向官方 repo。</summary>
@@ -50,25 +49,14 @@ namespace OmniConsole.Dialogs
 
             PrimaryButtonClick += OnCopyClick;
             Opened += OnOpened;
-            Closed += OnClosed;
+            // 手把導航（A=觸發焦點元素、B=關閉）由 GamepadDialog 基底類別自動提供。
         }
 
-        /// <summary>對話方塊開啟：啟動自帶手把輪詢（A=觸發焦點元素、B=關閉）。初始焦點由 XAML DefaultButton="Close" 控制。</summary>
+        /// <summary>對話方塊開啟：顯式把初始焦點設到內容區第一個可聚焦元素（SourceLink），比照其他對話方塊
+        /// 「焦點落內容元素、明確可控」的設計，不靠 XAML DefaultButton 框架機制。排 dispatcher 待佈局完成。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            _gamepadNav = new GamepadNavigationService(
-                searchRoot: this,
-                dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
-                onAButtonPressed: () => GamepadNavigationService.ActivateFocusedElement(XamlRoot),
-                onBButtonPressed: () => Hide());
-            _gamepadNav.Start();
-        }
-
-        /// <summary>對話方塊關閉：停止手把輪詢並釋放。</summary>
-        private void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            _gamepadNav?.Stop();
-            _gamepadNav = null;
+            DispatcherQueue.TryEnqueue(() => SourceLink.Focus(FocusStateHelper.Preferred));
         }
 
         /// <summary>Copy 按下：取消預設關閉、將冒號分隔大寫指紋寫入剪貼簿、顯示「已複製」提示。</summary>

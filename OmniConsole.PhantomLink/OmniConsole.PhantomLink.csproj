@@ -193,8 +193,10 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- 版本資訊跟隨主程式 Package.appxmanifest 的 Identity.Version。 -->
   <Target Name="SyncVersionFromMainManifest" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NoProfile -Command &quot;[xml]$m = Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest'; $v = $m.Package.Identity.Version; [xml]$t = Get-Content '$(ProjectDir)Package.appxmanifest'; if ($t.Package.Identity.Version -ne $v) { $t.Package.Identity.Version = $v; $t.Save('$(ProjectDir)Package.appxmanifest') }&quot;" />
+    <Exec Command="powershell -NoProfile -Command &quot;$v = ([xml](Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest')).Package.Identity.Version; $p = '$(ProjectDir)Properties\AssemblyInfo.cs'; $c = Get-Content $p -Raw; $n = $c -replace 'AssemblyVersion\(\&quot;[\d.]+\&quot;\)', ('AssemblyVersion(\&quot;' + $v + '\&quot;)') -replace 'AssemblyFileVersion\(\&quot;[\d.]+\&quot;\)', ('AssemblyFileVersion(\&quot;' + $v + '\&quot;)'); if ($n -ne $c) { Set-Content -Path $p -Value $n -NoNewline -Encoding UTF8 }&quot;" />
   </Target>
   <Target Name="BuildPhantomBridgeLoader" BeforeTargets="BeforeBuild">
     <MSBuild Projects="..\OmniConsole.PhantomBridge\OmniConsole.PhantomBridge.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />

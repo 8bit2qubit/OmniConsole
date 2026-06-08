@@ -1,7 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
-using OmniConsole.Services;
 
 namespace OmniConsole.Dialogs
 {
@@ -10,11 +9,16 @@ namespace OmniConsole.Dialogs
     /// 無 Primary/Close 按鈕，B 鍵與 Esc 皆無作用，Closing 事件擋下所有關閉請求；
     /// 由呼叫端在更新流程結束（成功或失敗）後顯式呼叫 Hide。
     /// </summary>
-    public sealed partial class UpdateProgressDialog : ContentDialog
+    public sealed partial class UpdateProgressDialog : GamepadDialog
     {
         private readonly ResourceLoader _resourceLoader;
-        private GamepadNavigationService? _gamepadNav;
         private bool _allowClose;
+
+        /// <summary>進度對話方塊：A 鍵不轉送（吃掉）。</summary>
+        public override void OnA() { }
+
+        /// <summary>進度對話方塊：B 鍵不關閉（回 false = 不處理），配合 Closing 攔截擋下所有關閉。</summary>
+        public override bool OnB() => false;
 
         /// <summary>建立進度對話方塊。XamlRoot 由呼叫端注入。</summary>
         public UpdateProgressDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader)
@@ -28,28 +32,8 @@ namespace OmniConsole.Dialogs
             StatusText.Text = resourceLoader.GetString("UpdateDownload_InProgress");
             ProgressText.Text = "0%";
 
-            Opened += UpdateProgressDialog_Opened;
-            Closed += UpdateProgressDialog_Closed;
             Closing += UpdateProgressDialog_Closing;
-        }
-
-        /// <summary>對話方塊開啟時啟動手把輪詢，A/B 兩鍵都不轉送。</summary>
-        private void UpdateProgressDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            // A 委派為 non-nullable 型別，傳 no-op；B 委派可為 null
-            _gamepadNav = new GamepadNavigationService(
-                searchRoot: this,
-                dispatcherQueue: Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
-                onAButtonPressed: () => { },
-                onBButtonPressed: null);
-            _gamepadNav.Start();
-        }
-
-        /// <summary>對話方塊關閉時停止手把輪詢。</summary>
-        private void UpdateProgressDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            _gamepadNav?.Stop();
-            _gamepadNav = null;
+            // 手把導航由 GamepadDialog 基底類別提供；本對話方塊 A/B 皆不轉送（見上方 override）。
         }
 
         /// <summary>除呼叫端顯式 RequestClose() 之外，所有關閉請求一律拒絕。</summary>

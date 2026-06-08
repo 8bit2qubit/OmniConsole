@@ -1,4 +1,4 @@
-<ContentDialog
+<dialogs:GamepadDialog
     x:Class="OmniConsole.Dialogs.FilePickerDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,7 +7,7 @@
     DefaultButton="None"
     RequestedTheme="Dark">
 
-    <ContentDialog.Resources>
+    <dialogs:GamepadDialog.Resources>
         <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
         <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
         <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
@@ -16,7 +16,7 @@
         <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
         <!-- Phantom 配色：對話方塊內卡片背景 #25282C -->
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-    </ContentDialog.Resources>
+    </dialogs:GamepadDialog.Resources>
 
     <Grid x:Name="RootGrid" MinHeight="400">
         <Grid.RowDefinitions>
@@ -152,4 +152,4 @@
         </Grid>
     </Grid>
 
-</ContentDialog>
+</dialogs:GamepadDialog>
