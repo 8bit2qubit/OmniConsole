@@ -3,13 +3,23 @@
     x:Class="OmniConsole.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:OmniConsole">
+    xmlns:local="using:OmniConsole"
+    xmlns:svc="using:OmniConsole.Services">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- 全域 ComboBox / AutoSuggestBox：展開下拉/建議清單時把游標設回箭頭，根治忙碌轉圈，手把+滑鼠皆涵蓋。
+                 透過 AutoFix attached property 套用；BasedOn 內建 style 保留外觀。 -->
+            <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+                <Setter Property="svc:BusyCursorFix.AutoFix" Value="True"/>
+            </Style>
+            <Style TargetType="AutoSuggestBox" BasedOn="{StaticResource DefaultAutoSuggestBoxStyle}">
+                <Setter Property="svc:BusyCursorFix.AutoFix" Value="True"/>
+            </Style>
 
             <!-- Phantom 配色：NavigationView 面板背景純色 -->
             <!-- LeftMinimal overlay pane 內部走 SplitView.PaneBackground = NavigationViewDefaultPaneBackground（generic.xaml line 17640） -->

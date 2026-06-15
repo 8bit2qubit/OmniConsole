@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
 using OmniConsole.Models;
 using OmniConsole.Services;
@@ -11,7 +12,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace OmniConsole.Controls
@@ -45,7 +45,7 @@ namespace OmniConsole.Controls
     /// <summary>手把映射「清單頁」UserControl：列出所有 per-App profile，提供搜尋／排序／編輯／刪除入口。</summary>
     public sealed partial class GamepadProfileListView : UserControl
     {
-        private readonly ResourceLoader _resw = ResourceLoader.GetForViewIndependentUse();
+        private readonly ResourceLoader _resourceLoader = new();
 
         // 原始清單，依 GamepadProfileStore.Load() 自然順序載入
         private readonly List<GamepadProfileRow> _allItems = new List<GamepadProfileRow>();
@@ -70,6 +70,13 @@ namespace OmniConsole.Controls
             ProfileList.ItemsSource = _items;
             ProfileList.ContainerContentChanging += ProfileList_ContainerContentChanging;
             ProfileList.GotFocus += ProfileList_GotFocus;
+
+            // 填充排序下拉（code-behind 填、Content 走 .Loc 已在地化；不用 XAML 宣告 x:Uid 項目）。
+            // 索引對應 SortCombo_SelectionChanged：0=AddOrderDesc 1=AddOrderAsc 2=NameAsc 3=NameDesc。
+            SortCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadMappingSortAddOrderDesc") });
+            SortCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadMappingSortAddOrderAsc") });
+            SortCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadMappingSortNameAsc") });
+            SortCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadMappingSortNameDesc") });
             SortCombo.SelectedIndex = 0;
             Unloaded += GamepadProfileListView_Unloaded;
         }
@@ -556,12 +563,13 @@ namespace OmniConsole.Controls
                 }
             }
 
+            string appName = prevIndex >= 0 ? _items[prevIndex].DisplayName : appId.Value;
             var dlg = new GamepadMessageDialog(
                 XamlRoot,
-                _resw.Loc("GamepadMappingDeleteConfirmTitle"),
-                _resw.Loc("GamepadMappingDeleteConfirmBody"),
-                _resw.Loc("GamepadMappingDeleteConfirmYes"),
-                _resw.Loc("GamepadMappingDeleteConfirmNo"));
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmTitle"),
+                string.Format(_resourceLoader.Loc("GamepadMappingDeleteConfirmBody"), appName),
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmYes"),
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmNo"));
             await dlg.ShowAsync();
             if (dlg.Result)
             {
@@ -607,8 +615,8 @@ namespace OmniConsole.Controls
         {
             if (appId == null) return string.Empty;
             string prefix = appId.Kind == IdKind.Aumid
-                ? _resw.Loc("AppIdAumidPrefix")
-                : _resw.Loc("AppIdProcessPrefix");
+                ? _resourceLoader.Loc("AppIdAumidPrefix")
+                : _resourceLoader.Loc("AppIdProcessPrefix");
             string baseText = prefix + (appId.Value ?? string.Empty);
             if (appId.Kind == IdKind.Process && !string.IsNullOrEmpty(appId.FullPath))
             {

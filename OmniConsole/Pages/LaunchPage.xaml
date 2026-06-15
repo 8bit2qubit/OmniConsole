@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="OmniConsole.Pages.LaunchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:OmniConsole.Services">
 
     <Grid>
         <VisualStateManager.VisualStateGroups>
@@ -86,7 +87,7 @@
             </Border>
 
             <!-- 狀態文字：顯示目前的啟動進度或錯誤訊息 -->
-            <TextBlock x:Name="StatusText" x:Uid="StatusText"
+            <TextBlock x:Name="StatusText" x:Uid="StatusText" services:Localized.Uid="StatusText"
                        FontSize="28"
                        HorizontalAlignment="Center"
                        TextWrapping="Wrap"
@@ -101,7 +102,7 @@
                           Visibility="Collapsed"/>
 
             <!-- 啟動時間過長時顯示的緩和提示（15 秒後才出現） -->
-            <TextBlock x:Name="LaunchSlowWarningText" x:Uid="LaunchSlowWarningText"
+            <TextBlock x:Name="LaunchSlowWarningText" x:Uid="LaunchSlowWarningText" services:Localized.Uid="LaunchSlowWarningText"
                        FontSize="16"
                        HorizontalAlignment="Center"
                        TextWrapping="Wrap"
@@ -112,24 +113,25 @@
 
             <!-- 啟動失敗時才顯示 -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton"
+                <Button x:Name="OpenSettingsButton" x:Uid="OpenSettingsButton" services:Localized.Uid="OpenSettingsButton"
                         Visibility="Collapsed"
                         Click="OpenSettingsButton_Click"
                         FontSize="18"
                         Padding="40,16"
                         Style="{StaticResource AccentButtonStyle}"/>
-                <Button x:Name="ReturnToDesktopButton" x:Uid="ReturnToDesktopButton"
+                <Button x:Name="ReturnToDesktopButton" x:Uid="ReturnToDesktopButton" services:Localized.Uid="ReturnToDesktopButton"
                         Visibility="Collapsed"
                         Click="ReturnToDesktopButton_Click"
                         FontSize="18"
                         Padding="40,16"/>
                 <!-- FSE 設定步驟按鈕：CanActivate()=false 時同時顯示雙按鈕，點選後 OmniConsole 保持開啟，引導使用者手動重啟 -->
-                <Button x:Name="EnableFseButton" x:Uid="EnableFseButton"
+                <Button x:Name="EnableFseButton" x:Uid="EnableFseButton" services:Localized.Uid="EnableFseButton"
                         Visibility="Collapsed"
                         Click="EnableFseButton_Click"
                         FontSize="18"
                         Padding="40,16"/>
-                <Button x:Name="OpenFseSettingsButton" x:Uid="OpenFseSettingsButton"
+                <!-- 含品牌名：改由 code-behind 設 Content（注入真實品牌）；保留 Localized.Uid 供社群語言外掛套用。 -->
+                <Button x:Name="OpenFseSettingsButton" services:Localized.Uid="OpenFseSettingsButton"
                         Visibility="Collapsed"
                         Click="OpenFseSettingsButton_Click"
                         FontSize="18"
@@ -148,7 +150,7 @@
                 <FontIcon Glyph="&#xF093;" FontSize="22"
                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                           VerticalAlignment="Center"/>
-                <TextBlock x:Uid="GamepadHint_Select" FontSize="14"
+                <TextBlock x:Uid="GamepadHint_Select" services:Localized.Uid="GamepadHint_Select" FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -161,7 +163,7 @@
                     <FontIcon Glyph="&#xF094;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Exit" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Exit" services:Localized.Uid="GamepadHint_Exit" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>

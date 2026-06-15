@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="OmniConsole.PhantomLink.PhantomLinkWidget"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -39,11 +39,11 @@
                                TextTrimming="CharacterEllipsis"/>
                     <!-- CustomizeAppNoteText：前景為系統管理員程式時顯示說明 -->
                     <TextBlock x:Name="CustomizeAppNoteText"
-                               x:Uid="Widget_CustomizeApp_ElevatedNote"
+                               x:Uid="Widget_CustomizeApp_ElevatedNote" services:Localized.Uid="Widget_CustomizeApp_ElevatedNote"
                                Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
                                FontSize="12" TextWrapping="Wrap"
                                Visibility="Collapsed"/>
-                    <Button x:Name="CustomizeAppBtn" x:Uid="Widget_CustomizeApp"
+                    <Button x:Name="CustomizeAppBtn" x:Uid="Widget_CustomizeApp" services:Localized.Uid="Widget_CustomizeApp"
                             Click="CustomizeAppBtn_Click"
                             HorizontalAlignment="Stretch"
                             UseSystemFocusVisuals="True"
@@ -67,7 +67,7 @@
                             XYFocusDown="{x:Bind SteamInGameOverlayOffBtn}">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xE7C4;" FontSize="16"/>
-                            <TextBlock x:Uid="Widget_OpenTaskView"/>
+                            <TextBlock x:Uid="Widget_OpenTaskView" services:Localized.Uid="Widget_OpenTaskView"/>
                         </StackPanel>
                     </Button>
                     <!--
@@ -78,7 +78,7 @@
                             XYFocusDown="{x:Bind SteamInGameOverlayOnBtn}">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xE713;" FontSize="16"/>
-                            <TextBlock x:Uid="Widget_OpenSettings"/>
+                            <TextBlock x:Uid="Widget_OpenSettings" services:Localized.Uid="Widget_OpenSettings"/>
                         </StackPanel>
                     </Button>
                     -->
@@ -89,7 +89,7 @@
                             XYFocusDown="{x:Bind SteamInGameOverlayOnBtn}">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xE990;" FontSize="16"/>
-                            <TextBlock x:Uid="Widget_OpenXboxLibrary"/>
+                            <TextBlock x:Uid="Widget_OpenXboxLibrary" services:Localized.Uid="Widget_OpenXboxLibrary"/>
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -100,9 +100,9 @@
                      Trigger 條件可見性（FSE + 預設平台為 SteamBigPicture）由 ReloadFromStore 處理；
                      不可見時 Off/On 的水平 XYFocus 由程式碼動態改指對方。 -->
                 <StackPanel x:Name="SteamInGameOverlaySection" Spacing="6">
-                    <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" services:Localized.Uid="Widget_SteamInGameOverlay_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold"/>
                     <StackPanel x:Name="SteamInGameOverlayButtonRow" Orientation="Horizontal" Spacing="6">
-                        <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off"
+                        <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off" services:Localized.Uid="Widget_SteamInGameOverlay_Off"
                                       Click="SteamInGameOverlayBtn_Click" Tag="Off"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind TaskViewBtn}"
@@ -119,10 +119,10 @@
                                 XYFocusDown="{x:Bind ModeAutoBtn}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xEA5B;" FontSize="16"/>
-                                <TextBlock x:Uid="Widget_TriggerSteamInGameOverlay"/>
+                                <TextBlock x:Uid="Widget_TriggerSteamInGameOverlay" services:Localized.Uid="Widget_TriggerSteamInGameOverlay"/>
                             </StackPanel>
                         </Button>
-                        <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On"
+                        <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On" services:Localized.Uid="Widget_SteamInGameOverlay_On"
                                       Click="SteamInGameOverlayBtn_Click" Tag="On"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind XboxLibraryBtn}"
@@ -131,30 +131,30 @@
                                       XYFocusDown="{x:Bind ModeForceOnBtn}"/>
                     </StackPanel>
                     <!-- 平台適用性說明：此功能仰賴 Steam 長按 ☰ 觸發 Shift+Tab，需預設平台為 Steam Big Picture -->
-                    <TextBlock x:Uid="Widget_SteamInGameOverlay_PlatformNote"
+                    <TextBlock x:Uid="Widget_SteamInGameOverlay_PlatformNote" services:Localized.Uid="Widget_SteamInGameOverlay_PlatformNote"
                                Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
                                FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <!-- Mouse Mode: 3 ToggleButton 水平組 -->
                 <StackPanel x:Name="ModeSection" Spacing="6">
-                    <TextBlock x:Uid="Widget_MouseMode_Title" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_MouseMode_Title" services:Localized.Uid="Widget_MouseMode_Title" FontWeight="SemiBold"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off"
+                        <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off" services:Localized.Uid="Widget_Mode_Off"
                                       Click="ModeBtn_Click" Tag="Off"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind SteamInGameOverlayOffBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
                                       XYFocusRight="{x:Bind ModeAutoBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
-                        <ToggleButton x:Name="ModeAutoBtn" x:Uid="Widget_Mode_Auto"
+                        <ToggleButton x:Name="ModeAutoBtn" x:Uid="Widget_Mode_Auto" services:Localized.Uid="Widget_Mode_Auto"
                                       Click="ModeBtn_Click" Tag="Auto"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
                                       XYFocusRight="{x:Bind ModeForceOnBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
-                        <ToggleButton x:Name="ModeForceOnBtn" x:Uid="Widget_Mode_ForceOn"
+                        <ToggleButton x:Name="ModeForceOnBtn" x:Uid="Widget_Mode_ForceOn" services:Localized.Uid="Widget_Mode_ForceOn"
                                       Click="ModeBtn_Click" Tag="ForceOn"
                                       UseSystemFocusVisuals="True" MinWidth="88"
                                       XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
@@ -166,7 +166,7 @@
 
                 <!-- Layout: 2 ToggleButton 水平組 -->
                 <StackPanel Spacing="6">
-                    <TextBlock x:Uid="Widget_Layout_Title" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_Layout_Title" services:Localized.Uid="Widget_Layout_Title" FontWeight="SemiBold"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="LayoutNavBtn" Content="OmniNav"
                                       Click="LayoutBtn_Click" Tag="OmniNav"
@@ -192,7 +192,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold"/>
+                        <TextBlock x:Uid="Widget_CursorSpeed_Title" services:Localized.Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold"/>
                         <TextBlock x:Name="CursorSpeedValueText" Grid.Column="1"
                                    VerticalAlignment="Center" FontWeight="SemiBold"/>
                     </Grid>
@@ -207,7 +207,7 @@
                 </StackPanel>
 
                 <!-- 內建手把映射說明（ROG Ally 家族時顯示） -->
-                <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote"
+                <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote" services:Localized.Uid="Widget_BuiltInMappingNote"
                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                            FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"/>
 

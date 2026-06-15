@@ -14,7 +14,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<!-- 防止 MSIX Bundle 將語言資源拆分為獨立 Resource Package -->
 		<AppxBundleAutoResourcePackageQualifiers>Scale;DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
-		<!-- 綁定 SCCD 檔案 -->
+		<!-- 繫結 SCCD 檔案 -->
 		<AppxCustomCapabilityCcd>CustomCapability.SCCD</AppxCustomCapabilityCcd>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>

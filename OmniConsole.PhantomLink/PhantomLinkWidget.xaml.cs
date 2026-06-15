@@ -103,6 +103,9 @@ namespace OmniConsole.PhantomLink
             DebugLogger.Log("[Widget] LeavingBackground → reload");
             try { ReloadFromStore(); }
             catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
+            // 主程式設定頁可能改過語言偏好 → 回前景時跟上，偏好已就位下次啟動即正確。
+            try { App.ApplyUiLanguage(); }
+            catch (Exception ex) { DebugLogger.Log("[Widget] ApplyUiLanguage FAIL: " + ex); }
         }
 
         // ── 焦點進入偵測：重導至選中態按鈕 + 吞掉進入時的 D-pad Down ─────────
@@ -207,7 +210,7 @@ namespace OmniConsole.PhantomLink
                 if (FocusSection(sections[i]))
                 {
                     // 已自動前進一格。若是 D-pad Down 進入，緊接著那個 Down 還會再導航一格 → arm swallow 吞掉
-                    // 避免雙跳。A 鍵展開無 Down，swallow 窗口自然過期不影響。
+                    // 避免雙跳。A 鍵展開無 Down，swallow 視窗自然過期不影響。
                     _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(200);
                     return;
                 }

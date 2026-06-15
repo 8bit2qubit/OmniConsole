@@ -78,7 +78,7 @@ namespace OmniConsole.Pages
                 // 預檢平台可用性，不可用則直接顯示訊息，避免無謂的啟動嘗試與逾時等待
                 if (!await ProcessLauncherService.CheckPlatformAvailableAsync(platform))
                 {
-                    StatusText.Text = string.Format(_resourceLoader.GetString("PlatformNotAvailable"), platformName);
+                    StatusText.Text = string.Format(_resourceLoader.Loc("PlatformNotAvailable"), platformName);
                     VisualStateManager.GoToState(this, "LaunchError", false);
                     OpenSettingsButton.Focus(FocusStateHelper.Preferred);
                     return;
@@ -88,7 +88,7 @@ namespace OmniConsole.Pages
                 VisualStateManager.GoToState(this, "Launching", false);
                 LaunchIconImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(platform.IconAsset));
 
-                StatusText.Text = string.Format(_resourceLoader.GetString("Launching"), platformName);
+                StatusText.Text = string.Format(_resourceLoader.Loc("Launching"), platformName);
 
                 bool isTimeout = false;
                 bool success = await ProcessLauncherService.LaunchPlatformAsync(platform);
@@ -100,7 +100,7 @@ namespace OmniConsole.Pages
                     // 啟動成功：顯示狀態，等待目標平台進入前景後結束應用程式
                     // 給予足夠的逾時時間來確保平台順利到前景，避免 FSE 重啟首頁
                     // 結束後開設定或 Game Bar 重導都是冷啟動全新實例，避免視窗恢復問題
-                    StatusText.Text = string.Format(_resourceLoader.GetString("LaunchSuccess"), platformName);
+                    StatusText.Text = string.Format(_resourceLoader.Loc("LaunchSuccess"), platformName);
 
                     // 立即從工作檢視和工作列隱藏
                     int exStyle = WindowForegroundService.GetExStyle(Hwnd);
@@ -200,7 +200,7 @@ namespace OmniConsole.Pages
                 {
                     // 啟動失敗：切換至 LaunchError 狀態（VSM 負責隱藏圖示/進度圈，顯示操作按鈕）
                     string errorStringKey = isTimeout ? "LaunchTimeout" : "LaunchFailed";
-                    StatusText.Text = string.Format(_resourceLoader.GetString(errorStringKey), platformName);
+                    StatusText.Text = string.Format(_resourceLoader.Loc(errorStringKey), platformName);
                     VisualStateManager.GoToState(this, "LaunchError", false);
                     OpenSettingsButton.Focus(FocusStateHelper.Preferred);
                 }
@@ -228,7 +228,7 @@ namespace OmniConsole.Pages
         {
             string resourceKey = handheldRequired ? "FseHandheldRequired" : "FseNotAvailable";
             DebugLogger.Log($"ShowFseNotAvailable: handheldRequired={handheldRequired}");
-            StatusText.Text = _resourceLoader.GetString(resourceKey);
+            StatusText.Text = _resourceLoader.Loc(resourceKey);
             VisualStateManager.GoToState(this, "FseNotAvailable", false);
             EnableFseButton.Focus(FocusStateHelper.Preferred);
         }
@@ -239,7 +239,9 @@ namespace OmniConsole.Pages
         public void ShowFseHomeAppNotSet()
         {
             DebugLogger.Log("ShowFseHomeAppNotSet: FSE Home App not set to OmniConsole.");
-            StatusText.Text = _resourceLoader.GetString("FseHomeAppNotSet");
+            StatusText.Text = _resourceLoader.Loc("FseHomeAppNotSet");
+            // 含品牌名：由 code-behind 設 Content（注入品牌）。
+            OpenFseSettingsButton.Content = _resourceLoader.Loc("OpenFseSettingsButton");
             VisualStateManager.GoToState(this, "FseHomeAppNotSet", false);
             OpenFseSettingsButton.Focus(FocusStateHelper.Preferred);
         }
@@ -354,7 +356,7 @@ namespace OmniConsole.Pages
                 var plKey = SettingsService.GetUseGameBarLibraryForSettings()
                     ? "UpdateInfoBar_MissingPhantomLink_Launch_GameBar"
                     : "UpdateInfoBar_MissingPhantomLink_Launch_StartMenu";
-                UpdateInfoBar.Message = _resourceLoader.GetString(plKey);
+                UpdateInfoBar.Message = _resourceLoader.Loc(plKey);
                 UpdateInfoBar.IsOpen = true;
             }
             else if (kindStr == UpdateCheckService.UpdateKind.MainAppUpdate.ToString()
@@ -364,7 +366,7 @@ namespace OmniConsole.Pages
                     ? "UpdateAvailable_InfoBar_Launch_GameBar"
                     : "UpdateAvailable_InfoBar_Launch_StartMenu";
                 UpdateInfoBar.Message = string.Format(
-                    _resourceLoader.GetString(key), cached);
+                    _resourceLoader.Loc(key), cached);
                 UpdateInfoBar.IsOpen = true;
             }
             else

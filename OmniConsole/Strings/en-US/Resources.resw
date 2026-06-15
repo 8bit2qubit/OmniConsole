@@ -121,7 +121,7 @@
     <value>Launching...</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
-    <value>OmniConsole Settings</value>
+    <value>{OmniConsole} Settings</value>
   </data>
   <data name="SettingsDescription" xml:space="preserve">
     <value>Default platform: {0}</value>
@@ -148,19 +148,19 @@
     <value>Return to Desktop</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Xbox Mode (FSE) is not enabled. Please enable it first, then manually restart OmniConsole.</value>
+    <value>Xbox Mode (FSE) is not enabled. Please enable it first, then manually restart {OmniConsole}.</value>
   </data>
   <data name="FseHandheldRequired" xml:space="preserve">
-    <value>Limited PC Xbox Mode (FSE) detected, but OmniConsole requires the Full Handheld edition. Please enable it with Xbox Full Screen Experience Tool, then manually restart OmniConsole.</value>
+    <value>Limited PC Xbox Mode (FSE) detected, but {OmniConsole} requires the Full Handheld edition. Please enable it with Xbox Full Screen Experience Tool, then manually restart {OmniConsole}.</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>Please go to Windows Settings → Gaming → Xbox mode (FSE) and select OmniConsole from the “Choose home app” dropdown, then manually restart OmniConsole.</value>
+    <value>Please go to Windows Settings → Gaming → Xbox mode (FSE) and select {OmniConsole} from the “Choose home app” dropdown, then manually restart {OmniConsole}.</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
     <value>Enable Xbox Mode (FSE)</value>
   </data>
   <data name="OpenFseSettingsButton.Content" xml:space="preserve">
-    <value>Set OmniConsole as Home App</value>
+    <value>Set {OmniConsole} as Home App</value>
   </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
@@ -265,13 +265,13 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   <data name="MouseModeSetting_Description.Text" xml:space="preserve">
     <value>Off: disabled. Auto: apps listed below. Force On: all apps.</value>
   </data>
-  <data name="MouseModeItem_Off.Content" xml:space="preserve">
+  <data name="MouseModeItem_Off" xml:space="preserve">
     <value>Off</value>
   </data>
-  <data name="MouseModeItem_Auto.Content" xml:space="preserve">
+  <data name="MouseModeItem_Auto" xml:space="preserve">
     <value>Auto</value>
   </data>
-  <data name="MouseModeItem_ForceOn.Content" xml:space="preserve">
+  <data name="MouseModeItem_ForceOn" xml:space="preserve">
     <value>Force On</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
@@ -311,7 +311,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Direct to Platform</value>
   </data>
   <data name="PassthroughSetting_Description.Text" xml:space="preserve">
-    <value>Navigate “Home” and “Library” directly to the default platform instead of OmniConsole.</value>
+    <value>Navigate “Home” and “Library” directly to the default platform instead of {OmniConsole}.</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
     <value>Currently only supports Xbox App. “Library” button setting above takes priority.</value>
@@ -404,7 +404,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>No application is registered to handle this URI scheme.</value>
   </data>
   <data name="PlatformDialog_ValidationUriSelf" xml:space="preserve">
-    <value>Cannot add OmniConsole itself as a platform; this would cause a restart loop.</value>
+    <value>Cannot add {OmniConsole} itself as a platform; this would cause a restart loop.</value>
   </data>
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>Invalid file path. Example: C:\Program Files (x86)\Steam\steam.exe</value>
@@ -477,7 +477,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Please select a packaged app.</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppSelf" xml:space="preserve">
-    <value>Cannot add OmniConsole itself as a platform.</value>
+    <value>Cannot add {OmniConsole} itself as a platform.</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
     <value>Cannot add Game Bar as a platform.</value>
@@ -485,7 +485,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="PlatformDialog_ValidationPackagedAppNotAllowed" xml:space="preserve">
     <value>This package cannot be used as a platform (e.g., it may be an extension, service, or runtime component).</value>
   </data>
-  <data name="CardMenu_Export.Text" xml:space="preserve">
+  <data name="CardMenu_Export" xml:space="preserve">
     <value>Export</value>
   </data>
   <data name="ImportPlatformButton.Content" xml:space="preserve">
@@ -534,7 +534,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>No application is registered to handle this URI scheme.</value>
   </data>
   <data name="Import_Error_UriSelf" xml:space="preserve">
-    <value>Cannot import OmniConsole itself as a platform.</value>
+    <value>Cannot import {OmniConsole} itself as a platform.</value>
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>Executable path must end with .exe.</value>
@@ -612,37 +612,37 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Download &amp; Install</value>
   </data>
   <data name="UpdateCheck_NewVersion_Subtitle" xml:space="preserve">
-    <value>OmniConsole v{0} is available.</value>
+    <value>{OmniConsole} v{0} is available.</value>
   </data>
   <data name="UpdateCheck_UpToDate_Subtitle" xml:space="preserve">
-    <value>OmniConsole is on the latest version.</value>
+    <value>{OmniConsole} is on the latest version.</value>
   </data>
   <data name="UpdateCheck_Failed_Subtitle" xml:space="preserve">
     <value>Please check your internet connection and try again.</value>
   </data>
   <data name="UpdateAvailable_InfoBar" xml:space="preserve">
-    <value>OmniConsole v{0} is available.</value>
+    <value>{OmniConsole} v{0} is available.</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Launch_GameBar" xml:space="preserve">
-    <value>OmniConsole v{0} is available. Open OmniConsole Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
+    <value>{OmniConsole} v{0} is available. Open {OmniConsole} Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Launch_StartMenu" xml:space="preserve">
-    <value>OmniConsole v{0} is available. Open OmniConsole Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
+    <value>{OmniConsole} v{0} is available. Open {OmniConsole} Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
-    <value>OmniConsole v{0} is available. Go to ☰ &gt; Advanced to download and install.</value>
+    <value>{OmniConsole} v{0} is available. Go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Title" xml:space="preserve">
     <value>OmniCharm Widget is available.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
-    <value>Quick-access Game Bar widget to toggle OmniConsole features in-game and set up Nekomata per-app gamepad mapping. Go to ☰ &gt; Advanced to download and install.</value>
+    <value>Quick-access Game Bar widget to toggle {OmniConsole} features in-game and set up Nekomata per-app gamepad mapping. Go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
-    <value>OmniCharm Widget is available. Open OmniConsole Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
+    <value>OmniCharm Widget is available. Open {OmniConsole} Settings from Game Bar &gt; Library, then go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_StartMenu" xml:space="preserve">
-    <value>OmniCharm Widget is available. Open OmniConsole Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
+    <value>OmniCharm Widget is available. Open {OmniConsole} Settings from Start &gt; All apps, then go to ☰ &gt; Advanced to download and install.</value>
   </data>
   <data name="UpdateCheck_Checking" xml:space="preserve">
     <value>Checking...</value>
@@ -657,7 +657,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Download failed. Please try again.</value>
   </data>
   <data name="UpdateProgressDialog_Title" xml:space="preserve">
-    <value>Updating OmniConsole</value>
+    <value>Updating {OmniConsole}</value>
   </data>
   <data name="UpdateProgressDialog_Hint" xml:space="preserve">
     <value>Do not close the app or shut down the console until the update finishes.</value>
@@ -669,16 +669,19 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Installing OmniCharm widget (1 of 2)...</value>
   </data>
   <data name="UpdateProgress_Phase2Download" xml:space="preserve">
-    <value>Downloading OmniConsole (2 of 2)...</value>
+    <value>Downloading {OmniConsole} (2 of 2)...</value>
   </data>
   <data name="UpdateProgress_Phase2Install" xml:space="preserve">
-    <value>Installing OmniConsole (2 of 2). The app will restart...</value>
+    <value>Installing {OmniConsole} (2 of 2). The app will restart...</value>
+  </data>
+  <data name="UpdateProgress_LanguageSync" xml:space="preserve">
+    <value>Updating community language files...</value>
   </data>
   <data name="ResumeUpdateDialog_Title" xml:space="preserve">
     <value>Resume update?</value>
   </data>
   <data name="ResumeUpdateDialog_Content" xml:space="preserve">
-    <value>The previous update to v{0} did not finish. Resume now to keep the OmniCharm widget and OmniConsole on the same version.</value>
+    <value>The previous update to v{0} did not finish. Resume now to keep the OmniCharm widget and {OmniConsole} on the same version.</value>
   </data>
   <data name="ResumeUpdateDialog_Resume" xml:space="preserve">
     <value>Resume</value>
@@ -696,13 +699,13 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>About</value>
   </data>
   <data name="AboutTitle.Text" xml:space="preserve">
-    <value>About OmniConsole</value>
+    <value>About {OmniConsole}</value>
   </data>
   <data name="AboutDescription.Text" xml:space="preserve">
     <value>Version and environment details to help report upgrade or compatibility issues.</value>
   </data>
   <data name="AboutSection_Suite.Text" xml:space="preserve">
-    <value>OmniConsole Suite</value>
+    <value>{OmniConsole} Suite</value>
   </data>
   <data name="AboutSection_Xfset.Text" xml:space="preserve">
     <value>XFSET (Xbox Full Screen Experience Tool)</value>
@@ -777,7 +780,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>GPU</value>
   </data>
   <data name="Label_OmniConsole.Text" xml:space="preserve">
-    <value>OmniConsole</value>
+    <value>{OmniConsole}</value>
   </data>
   <data name="Label_PhantomBridge.Text" xml:space="preserve">
     <value>PhantomBridge</value>
@@ -867,7 +870,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Block this app from receiving native XInput and DirectInput signals to prevent interference with the simulated keyboard and mouse.</value>
   </data>
   <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
-    <value>Restart the game to apply changes. Don't turn this on for games with anti-cheat protection (e.g., EAC, BattlEye, or VAC), or you may trigger a violation.</value>
+    <value>Restart the app to apply changes. Don't turn this on for games with anti-cheat protection (e.g., EAC, BattlEye, or VAC), or you may trigger a violation.</value>
   </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
     <value>Clear All</value>
@@ -1076,11 +1079,14 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="GamepadMappingCopyFromHint" xml:space="preserve">
     <value>Pick an existing profile to copy its bindings.</value>
   </data>
+  <data name="GamepadMappingCopyFromPlaceholder" xml:space="preserve">
+    <value>Type to filter apps...</value>
+  </data>
   <data name="GamepadMappingDeleteConfirmTitle" xml:space="preserve">
     <value>Delete this profile?</value>
   </data>
   <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
-    <value>The customized bindings for this app will be removed and the built-in layout will take over again.</value>
+    <value>The customized bindings for “{0}” will be removed and the built-in layout will take over again.</value>
   </data>
   <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
     <value>Delete</value>
@@ -1091,16 +1097,16 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="GamepadMappingSearchBox.PlaceholderText" xml:space="preserve">
     <value>Search apps…</value>
   </data>
-  <data name="GamepadMappingSortAddOrderDesc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortAddOrderDesc" xml:space="preserve">
     <value>Newest first</value>
   </data>
-  <data name="GamepadMappingSortAddOrderAsc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortAddOrderAsc" xml:space="preserve">
     <value>Oldest first</value>
   </data>
-  <data name="GamepadMappingSortNameAsc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortNameAsc" xml:space="preserve">
     <value>Name (A to Z)</value>
   </data>
-  <data name="GamepadMappingSortNameDesc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortNameDesc" xml:space="preserve">
     <value>Name (Z to A)</value>
   </data>
   <data name="GamepadMappingNoSearchResultHint.Text" xml:space="preserve">
@@ -1143,7 +1149,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Function keys</value>
   </data>
   <data name="GamepadKeyGroup_EditNav" xml:space="preserve">
-    <value>Edit / navigation</value>
+    <value>Edit / Navigation</value>
   </data>
   <data name="GamepadKeyGroup_Control" xml:space="preserve">
     <value>Control</value>
@@ -1295,6 +1301,108 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="GamepadHint_SaveReturn.Text" xml:space="preserve">
     <value>Save &amp; return</value>
   </data>
+  <data name="AdvancedSection_Display.Text" xml:space="preserve">
+    <value>Interface Display</value>
+  </data>
+  <data name="LanguageSetting_Title.Text" xml:space="preserve">
+    <value>Display Language</value>
+  </data>
+  <data name="LanguageSetting_Description.Text" xml:space="preserve">
+    <value>Choose the interface language.</value>
+  </data>
+  <data name="LanguageItem_SystemDefault" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="LanguageItem_CommunitySuffix" xml:space="preserve">
+    <value>(Community)</value>
+  </data>
+  <data name="LanguageItem_CommunityWithTranslator" xml:space="preserve">
+    <value>(Community - {0})</value>
+  </data>
+  <data name="LanguageRestartDialog_Title" xml:space="preserve">
+    <value>Restart Required</value>
+  </data>
+  <data name="LanguageRestartDialog_Body" xml:space="preserve">
+    <value>The language change takes effect after restarting. Restart now?</value>
+  </data>
+  <data name="LanguageRestartDialog_Restart" xml:space="preserve">
+    <value>Restart Now</value>
+  </data>
+  <data name="LanguageRestartDialog_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="ManageLanguagesSetting_Title.Text" xml:space="preserve">
+    <value>Community Languages</value>
+  </data>
+  <data name="ManageLanguagesSetting_Description.Text" xml:space="preserve">
+    <value>Browse, download, and update community-contributed translations.</value>
+  </data>
+  <data name="ManageLanguagesButton.Content" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="ManageLanguages_Title" xml:space="preserve">
+    <value>Community Languages</value>
+  </data>
+  <data name="ManageLanguages_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ManageLanguages_Loading" xml:space="preserve">
+    <value>Loading available languages...</value>
+  </data>
+  <data name="ManageLanguages_Downloading" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="ManageLanguages_Error" xml:space="preserve">
+    <value>Could not connect to the translation repository. Please check your internet connection and try again.</value>
+  </data>
+  <data name="ManageLanguages_Empty" xml:space="preserve">
+    <value>No community languages are available for this version yet.</value>
+  </data>
+  <data name="ManageLanguages_SelectHint" xml:space="preserve">
+    <value>Select a language to see details.</value>
+  </data>
+  <data name="ManageLanguages_Translators" xml:space="preserve">
+    <value>Translators: {0}</value>
+  </data>
+  <data name="ManageLanguages_TranslatorSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="ManageLanguages_Status_NotInstalled" xml:space="preserve">
+    <value>Not installed</value>
+  </data>
+  <data name="ManageLanguages_Status_Installed" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="ManageLanguages_Status_UpdateAvailable" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="ManageLanguages_Action_Install" xml:space="preserve">
+    <value>Download and install</value>
+  </data>
+  <data name="ManageLanguages_Action_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="ManageLanguages_Action_Uninstall" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="ManageLanguages_Revision" xml:space="preserve">
+    <value>Revision {0}</value>
+  </data>
+  <data name="ManageLanguages_Revision_Installed" xml:space="preserve">
+    <value>Revision {0} (installed)</value>
+  </data>
+  <data name="ManageLanguages_Revision_UpdateAvailable" xml:space="preserve">
+    <value>Revision {0} (installed {1})</value>
+  </data>
+  <data name="ManageLanguages_Result_Downloaded" xml:space="preserve">
+    <value>Installed successfully.</value>
+  </data>
+  <data name="ManageLanguages_Result_Removed" xml:space="preserve">
+    <value>Removed successfully.</value>
+  </data>
+  <data name="ManageLanguages_Result_Failed" xml:space="preserve">
+    <value>Something went wrong. Please check your internet connection and try again.</value>
+  </data>
   <data name="AdvancedSection_Sound.Text" xml:space="preserve">
     <value>Interface Sound</value>
   </data>
@@ -1305,7 +1413,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Play sounds when navigating.</value>
   </data>
   <data name="AppsUsingPhantomPawDialog_Header.Text" xml:space="preserve">
-    <value>The following applications are using PhantomPaw. Please close them and retry the update:</value>
+    <value>The following applications are using Nekomata's PhantomPaw. Please close them and retry the update:</value>
   </data>
   <data name="AppsUsingPhantomPawDialog_Hint.Text" xml:space="preserve">
     <value>Close the applications and press Retry, or press Cancel to update later.</value>
@@ -1335,7 +1443,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Certificate Details</value>
   </data>
   <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
-    <value>This copy of OmniConsole is signed with the following certificate. Compare the SHA-256 thumbprint with the value published in AUTHENTICITY.md on the official repository. If the values do not match, this build is not from the official source. The OmniCharm widget is signed with the same certificate; for full per-package verification, see AUTHENTICITY.md.</value>
+    <value>This copy of {OmniConsole} is signed with the following certificate. Compare the SHA-256 thumbprint with the value published in AUTHENTICITY.md on the official repository. If the values do not match, this build is not from the official source. The OmniCharm widget is signed with the same certificate; for full per-package verification, see AUTHENTICITY.md.</value>
   </data>
   <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
     <value>Open AUTHENTICITY.md to view published thumbprint</value>

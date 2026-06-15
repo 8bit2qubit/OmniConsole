@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
+using OmniConsole.Services;
 
 namespace OmniConsole.Dialogs
 {
@@ -11,7 +12,7 @@ namespace OmniConsole.Dialogs
     /// </summary>
     public sealed partial class UpdateProgressDialog : GamepadDialog
     {
-        private readonly ResourceLoader _resourceLoader;
+        private readonly ResourceLoader _resourceLoader = new();
         private bool _allowClose;
 
         /// <summary>進度對話方塊：A 鍵不轉送（吃掉）。</summary>
@@ -21,15 +22,14 @@ namespace OmniConsole.Dialogs
         public override bool OnB() => false;
 
         /// <summary>建立進度對話方塊。XamlRoot 由呼叫端注入。</summary>
-        public UpdateProgressDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader)
+        public UpdateProgressDialog(XamlRoot xamlRoot)
         {
             InitializeComponent();
             XamlRoot = xamlRoot;
-            _resourceLoader = resourceLoader;
 
-            Title = resourceLoader.GetString("UpdateProgressDialog_Title");
-            HintText.Text = resourceLoader.GetString("UpdateProgressDialog_Hint");
-            StatusText.Text = resourceLoader.GetString("UpdateDownload_InProgress");
+            Title = _resourceLoader.Loc("UpdateProgressDialog_Title");
+            HintText.Text = _resourceLoader.Loc("UpdateProgressDialog_Hint");
+            StatusText.Text = _resourceLoader.Loc("UpdateDownload_InProgress");
             ProgressText.Text = "0%";
 
             Closing += UpdateProgressDialog_Closing;
@@ -69,9 +69,11 @@ namespace OmniConsole.Dialogs
                 "Phase2Install" => "UpdateProgress_Phase2Install",
                 // mainSkippable 路徑：未實際重裝主程式，只是請求重啟以套用 PhantomLink 安裝
                 "Phase2RequestingRestart" => "UpdateProgress_Phase2Install",
+                // app 更新後首啟同步社群語言檔
+                "LanguageSync" => "UpdateProgress_LanguageSync",
                 _ => "UpdateDownload_InProgress"
             };
-            StatusText.Text = _resourceLoader.GetString(resKey);
+            StatusText.Text = _resourceLoader.Loc(resKey);
         }
 
         /// <summary>由呼叫端顯式關閉對話方塊（更新成功或失敗後）。</summary>

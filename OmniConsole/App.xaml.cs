@@ -39,6 +39,9 @@ namespace OmniConsole
 
             DebugLogger.Log($"[DIAG] OnLaunched pid={Environment.ProcessId} tick={Environment.TickCount64} startWithSettings={_startWithSettings}");
 
+            // 在建立任何 UI 前套用語言（官方語言需 UI 建立前設定、外掛語言須在控制項報到前載入好）。
+            InitializeLocalization();
+
             var decision = await StartupOrchestrator.RunStartupAsync(_startWithSettings);
 
             switch (decision.Route)
@@ -80,14 +83,47 @@ namespace OmniConsole
                             _ = mainWindow.TryHandlePendingUpdateAsync();
 
                         WindowForegroundService.BringToForeground(mainWindow);
+
+                        // 語言同步只在「進 Settings」路徑做：同步對話方塊僅限設定情境，不可彈在 LaunchPage 啟動平台時擋住流程。
+                        _ = mainWindow.TrySyncLanguagesAsync();
                     }
                     else
                     {
                         // 啟動即全螢幕（雙保險：FSE Activate 前生效、桌面 window ready 後補救）
+                        // 此路徑（正常啟動 → 去 LaunchPage 啟動平台）不做語言同步：避免同步對話方塊打斷啟動平台。
                         mainWindow.ActivateFullScreen();
                     }
                     break;
             }
+        }
+
+        /// <summary>
+        /// 啟動時套用 UI 語言（在建立任何 UI 之前呼叫）。偏好存共用 Shared.ini（空＝跟系統）。
+        /// 官方語言的 PRI 已在 Program.Main 處理，此處負責載入並套用外掛翻譯層。
+        /// 任一步驟取不到資料夾/語言皆靜默降級回官方，不影響啟動。
+        /// </summary>
+        private static void InitializeLocalization()
+        {
+            try
+            {
+                string lang = SettingsService.GetUiLanguage();   // 空＝跟系統
+                // 注意：PrimaryLanguageOverride 已在 Program.Main 最早處設定（須在資源載入前）；此處不再重設，只處理外掛翻譯層。
+
+                // 載入外掛翻譯資料夾（共享 PublisherCacheFolder\OmniConsoleShared\Translations\OmniConsole）。
+                // 只載「目前語言」內容（掃目錄記可選清單、不全載），避免把所有語言塞進記憶體浪費。
+                try
+                {
+                    var shared = Windows.Storage.ApplicationData.Current.GetPublisherCacheFolder("OmniConsoleShared");
+                    string dir = System.IO.Path.Combine(shared.Path, "Translations", "OmniConsole");
+                    PhantomLocalizer.Instance.LoadFolder(dir, lang);
+                }
+                catch (Exception ex) { DebugLogger.Log("[Localizer] LoadFolder FAIL: " + ex.Message); }
+
+                // 設定目前語言。空（跟隨系統）也必須顯式設空字串「清除」殘留語言（非「不設」），
+                // 否則切回跟隨系統後仍走上次殘留語言、與其他文字不一致。
+                PhantomLocalizer.Instance.SetLanguage(lang ?? string.Empty);
+            }
+            catch (Exception ex) { DebugLogger.Log("[Localizer] InitializeLocalization FAIL: " + ex.Message); }
         }
 
         /// <summary>

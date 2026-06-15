@@ -18,7 +18,7 @@ namespace OmniConsole.Dialogs
     /// </summary>
     public sealed partial class PlatformEditDialog : GamepadDialog
     {
-        private readonly ResourceLoader _resourceLoader;
+        private readonly ResourceLoader _resourceLoader = new();
         private readonly string _ownFamilyName;
         private readonly UserPlatformEntry? _existingEntry;
 
@@ -55,14 +55,12 @@ namespace OmniConsole.Dialogs
         /// 傳入 null 表示新增模式，傳入既有 entry 表示編輯模式。
         /// </summary>
         /// <param name="xamlRoot">呼叫端視窗的 XamlRoot，ContentDialog 顯示所需。</param>
-        /// <param name="resourceLoader">在地化字串載入器。</param>
         /// <param name="existingEntry">既有平台項目（編輯模式）；null 為新增模式。</param>
-        public PlatformEditDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader,
+        public PlatformEditDialog(XamlRoot xamlRoot,
                                   UserPlatformEntry? existingEntry = null)
         {
             InitializeComponent();
             XamlRoot = xamlRoot;
-            _resourceLoader = resourceLoader;
             _existingEntry = existingEntry;
             _ownFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 
@@ -72,35 +70,35 @@ namespace OmniConsole.Dialogs
             _selectedPackageFamilyName = existingEntry?.PackageFamilyName ?? "";
 
             // 在地化標題與按鈕
-            Title = isEdit ? resourceLoader.GetString("PlatformDialog_EditTitle")
-                           : resourceLoader.GetString("PlatformDialog_AddTitle");
-            PrimaryButtonText = resourceLoader.GetString("PlatformDialog_Save");
-            CloseButtonText = resourceLoader.GetString("PlatformDialog_Cancel");
-            if (isEdit) SecondaryButtonText = resourceLoader.GetString("PlatformDialog_Delete");
+            Title = isEdit ? _resourceLoader.Loc("PlatformDialog_EditTitle")
+                           : _resourceLoader.Loc("PlatformDialog_AddTitle");
+            PrimaryButtonText = _resourceLoader.Loc("PlatformDialog_Save");
+            CloseButtonText = _resourceLoader.Loc("PlatformDialog_Cancel");
+            if (isEdit) SecondaryButtonText = _resourceLoader.Loc("PlatformDialog_Delete");
 
             // 在地化靜態標籤
-            NameLabel.Text = resourceLoader.GetString("PlatformDialog_NameLabel");
-            LaunchTypeLabel.Text = resourceLoader.GetString("PlatformDialog_LaunchTypeLabel");
-            ArgsLabel.Text = resourceLoader.GetString("PlatformDialog_ArgsLabel");
-            PackagedAppLabel.Text = resourceLoader.GetString("PlatformDialog_PackagedAppLabel");
-            PackagedAppWarning.Text = resourceLoader.GetString("PlatformDialog_PackagedAppWarning");
-            PackagedAppSuggestBox.PlaceholderText = resourceLoader.GetString("PlatformDialog_PackagedAppPlaceholder");
-            IconLabel.Text = resourceLoader.GetString("PlatformDialog_IconLabel");
-            IconHint.Text = resourceLoader.GetString("PlatformDialog_IconHint");
-            ConfigWarning.Text = resourceLoader.GetString("PlatformDialog_ConfigWarning");
+            NameLabel.Text = _resourceLoader.Loc("PlatformDialog_NameLabel");
+            LaunchTypeLabel.Text = _resourceLoader.Loc("PlatformDialog_LaunchTypeLabel");
+            ArgsLabel.Text = _resourceLoader.Loc("PlatformDialog_ArgsLabel");
+            PackagedAppLabel.Text = _resourceLoader.Loc("PlatformDialog_PackagedAppLabel");
+            PackagedAppWarning.Text = _resourceLoader.Loc("PlatformDialog_PackagedAppWarning");
+            PackagedAppSuggestBox.PlaceholderText = _resourceLoader.Loc("PlatformDialog_PackagedAppPlaceholder");
+            IconLabel.Text = _resourceLoader.Loc("PlatformDialog_IconLabel");
+            IconHint.Text = _resourceLoader.Loc("PlatformDialog_IconHint");
+            ConfigWarning.Text = _resourceLoader.Loc("PlatformDialog_ConfigWarning");
 
             // ComboBox 選項（Protocol URI 不需在地化）
             LaunchTypeCombo.Items.Add("Protocol URI");
-            LaunchTypeCombo.Items.Add(resourceLoader.GetString("PlatformDialog_Executable"));
-            LaunchTypeCombo.Items.Add(resourceLoader.GetString("PlatformDialog_PackagedApp"));
+            LaunchTypeCombo.Items.Add(_resourceLoader.Loc("PlatformDialog_Executable"));
+            LaunchTypeCombo.Items.Add(_resourceLoader.Loc("PlatformDialog_PackagedApp"));
             LaunchTypeCombo.SelectedIndex = isPackagedApp ? 2 : isExecutable ? 1 : 0;
 
             // 預填現有值
             NameBox.Text = existingEntry?.DisplayName ?? "";
-            NameBox.PlaceholderText = resourceLoader.GetString("PlatformDialog_NamePlaceholder");
+            NameBox.PlaceholderText = _resourceLoader.Loc("PlatformDialog_NamePlaceholder");
             TargetBox.Text = existingEntry?.LaunchTarget ?? "";
             ArgsBox.Text = existingEntry?.Arguments ?? "";
-            ArgsBox.PlaceholderText = resourceLoader.GetString("PlatformDialog_ArgsPlaceholder");
+            ArgsBox.PlaceholderText = _resourceLoader.Loc("PlatformDialog_ArgsPlaceholder");
             PackagedAppSuggestBox.Text = _selectedPackageFamilyName;
             IconFileNameText.Text = existingEntry?.IconFileName ?? "";
 
@@ -139,11 +137,11 @@ namespace OmniConsole.Dialogs
         private void UpdateControlVisibility(bool isExe, bool isPackagedAppMode)
         {
             TargetLabel.Text = isExe
-                ? _resourceLoader.GetString("PlatformDialog_PathLabel")
-                : _resourceLoader.GetString("PlatformDialog_UriLabel");
+                ? _resourceLoader.Loc("PlatformDialog_PathLabel")
+                : _resourceLoader.Loc("PlatformDialog_UriLabel");
             TargetBox.PlaceholderText = isExe
-                ? _resourceLoader.GetString("PlatformDialog_PathPlaceholder")
-                : _resourceLoader.GetString("PlatformDialog_UriPlaceholder");
+                ? _resourceLoader.Loc("PlatformDialog_PathPlaceholder")
+                : _resourceLoader.Loc("PlatformDialog_UriPlaceholder");
             TargetBox.MaxLength = isExe ? 260 : 2048;
 
             TargetLabel.Visibility = isPackagedAppMode ? Visibility.Collapsed : Visibility.Visible;
@@ -183,7 +181,7 @@ namespace OmniConsole.Dialogs
                 FileTypeFilters = [".exe"],
                 InitialDirectory = GetDirectoryFromPath(TargetBox.Text),
                 ShowImagePreview = false,
-                FilterDisplayName = _resourceLoader.GetString("FilePickerDialog_FilterExe")
+                FilterDisplayName = _resourceLoader.Loc("FilePickerDialog_FilterExe")
             };
             ActiveBrowseTarget = BrowseTarget.Exe;
             RequestFilePicker = true;
@@ -200,7 +198,7 @@ namespace OmniConsole.Dialogs
                 FileTypeFilters = [".png", ".jpg", ".jpeg", ".bmp"],
                 InitialDirectory = null,
                 ShowImagePreview = true,
-                FilterDisplayName = _resourceLoader.GetString("FilePickerDialog_FilterImage")
+                FilterDisplayName = _resourceLoader.Loc("FilePickerDialog_FilterImage")
             };
             ActiveBrowseTarget = BrowseTarget.Icon;
             RequestFilePicker = true;
@@ -355,25 +353,25 @@ namespace OmniConsole.Dialogs
                 {
                     if (string.IsNullOrWhiteSpace(_selectedPackageFamilyName))
                     {
-                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppEmpty");
+                        PackagedAppError.Text = _resourceLoader.Loc("PlatformDialog_ValidationPackagedAppEmpty");
                         PackagedAppError.Visibility = Visibility.Visible;
                         hasError = true;
                     }
                     else if (_selectedPackageFamilyName == _ownFamilyName)
                     {
-                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppSelf");
+                        PackagedAppError.Text = _resourceLoader.Loc("PlatformDialog_ValidationPackagedAppSelf");
                         PackagedAppError.Visibility = Visibility.Visible;
                         hasError = true;
                     }
                     else if (_selectedPackageFamilyName == PlatformFieldValidator.GameBarFamilyName)
                     {
-                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppGameBar");
+                        PackagedAppError.Text = _resourceLoader.Loc("PlatformDialog_ValidationPackagedAppGameBar");
                         PackagedAppError.Visibility = Visibility.Visible;
                         hasError = true;
                     }
                     else if (!PlatformFieldValidator.IsAllowedPackageFamilyName(_selectedPackageFamilyName, _ownFamilyName))
                     {
-                        PackagedAppError.Text = _resourceLoader.GetString("PlatformDialog_ValidationPackagedAppNotAllowed");
+                        PackagedAppError.Text = _resourceLoader.Loc("PlatformDialog_ValidationPackagedAppNotAllowed");
                         PackagedAppError.Visibility = Visibility.Visible;
                         hasError = true;
                     }
@@ -391,14 +389,14 @@ namespace OmniConsole.Dialogs
                         // 阻止自身 protocol URI（啟動自己會導致 FSE 循環重啟）
                         if (PlatformFieldValidator.IsSelfProtocolUri(TargetBox.Text.Trim()))
                         {
-                            TargetError.Text = _resourceLoader.GetString("PlatformDialog_ValidationUriSelf");
+                            TargetError.Text = _resourceLoader.Loc("PlatformDialog_ValidationUriSelf");
                             TargetError.Visibility = Visibility.Visible;
                             hasError = true;
                         }
                         // URI 格式驗證通過後，檢查系統是否有對應的 URI handler
                         else if (!await ProcessLauncherService.IsUriSupportedAsync(TargetBox.Text.Trim()))
                         {
-                            TargetError.Text = _resourceLoader.GetString("PlatformDialog_ValidationUriNotSupported");
+                            TargetError.Text = _resourceLoader.Loc("PlatformDialog_ValidationUriNotSupported");
                             TargetError.Visibility = Visibility.Visible;
                             hasError = true;
                         }
@@ -470,11 +468,11 @@ namespace OmniConsole.Dialogs
         private string? ValidateName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                return _resourceLoader.GetString("PlatformDialog_ValidationTargetEmpty");
+                return _resourceLoader.Loc("PlatformDialog_ValidationTargetEmpty");
             if (name.Length > 50)
-                return _resourceLoader.GetString("PlatformDialog_ValidationNameTooLong");
+                return _resourceLoader.Loc("PlatformDialog_ValidationNameTooLong");
             if (!PlatformFieldValidator.IsValidName(name))
-                return _resourceLoader.GetString("PlatformDialog_ValidationNameInvalid");
+                return _resourceLoader.Loc("PlatformDialog_ValidationNameInvalid");
             return null;
         }
 
@@ -484,11 +482,11 @@ namespace OmniConsole.Dialogs
         private string? ValidateUri(string uri)
         {
             if (string.IsNullOrWhiteSpace(uri))
-                return _resourceLoader.GetString("PlatformDialog_ValidationTargetEmpty");
+                return _resourceLoader.Loc("PlatformDialog_ValidationTargetEmpty");
             if (uri.Length > 2048)
-                return _resourceLoader.GetString("PlatformDialog_ValidationUriTooLong");
+                return _resourceLoader.Loc("PlatformDialog_ValidationUriTooLong");
             if (!PlatformFieldValidator.IsValidUri(uri))
-                return _resourceLoader.GetString("PlatformDialog_ValidationUriInvalid");
+                return _resourceLoader.Loc("PlatformDialog_ValidationUriInvalid");
             return null;
         }
 
@@ -498,15 +496,15 @@ namespace OmniConsole.Dialogs
         private string? ValidatePath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
-                return _resourceLoader.GetString("PlatformDialog_ValidationTargetEmpty");
+                return _resourceLoader.Loc("PlatformDialog_ValidationTargetEmpty");
             if (path.Length > 260)
-                return _resourceLoader.GetString("PlatformDialog_ValidationPathTooLong");
+                return _resourceLoader.Loc("PlatformDialog_ValidationPathTooLong");
             if (!path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                return _resourceLoader.GetString("PlatformDialog_ValidationPathNotExe");
+                return _resourceLoader.Loc("PlatformDialog_ValidationPathNotExe");
             if (!PlatformFieldValidator.IsValidExecutablePath(path))
-                return _resourceLoader.GetString("PlatformDialog_ValidationPathInvalid");
+                return _resourceLoader.Loc("PlatformDialog_ValidationPathInvalid");
             if (PlatformFieldValidator.IsConsoleApplication(path))
-                return _resourceLoader.GetString("PlatformDialog_ValidationPathConsoleApp");
+                return _resourceLoader.Loc("PlatformDialog_ValidationPathConsoleApp");
             return null;
         }
 
@@ -517,9 +515,9 @@ namespace OmniConsole.Dialogs
         {
             if (string.IsNullOrEmpty(args)) return null;
             if (args.Length > 500)
-                return _resourceLoader.GetString("PlatformDialog_ValidationArgsTooLong");
+                return _resourceLoader.Loc("PlatformDialog_ValidationArgsTooLong");
             if (!PlatformFieldValidator.IsValidArguments(args))
-                return _resourceLoader.GetString("PlatformDialog_ValidationArgsInvalid");
+                return _resourceLoader.Loc("PlatformDialog_ValidationArgsInvalid");
             return null;
         }
     }

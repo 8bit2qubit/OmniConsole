@@ -16,6 +16,7 @@ namespace OmniConsole.Dialogs
     public sealed partial class AppsUsingPhantomPawDialog : GamepadDialog
     {
         private readonly ObservableCollection<LockingApp> _lockedApps = new();
+        private readonly ResourceLoader _resourceLoader = new();
 
         /// <summary>建構：接收初始鎖住清單、設定按鈕文字、PrimaryButton 走重檢邏輯、Opened 設初始焦點到清單第一張卡片。</summary>
         public AppsUsingPhantomPawDialog(XamlRoot xamlRoot, IEnumerable<LockingApp> initialLockedApps)
@@ -23,9 +24,8 @@ namespace OmniConsole.Dialogs
             InitializeComponent();
             XamlRoot = xamlRoot;
 
-            var loader = new ResourceLoader();
-            PrimaryButtonText = loader.GetString("AppsUsingPhantomPawDialog_RetryButton");
-            CloseButtonText = loader.GetString("AppsUsingPhantomPawDialog_CancelButton");
+            PrimaryButtonText = _resourceLoader.Loc("AppsUsingPhantomPawDialog_RetryButton");
+            CloseButtonText = _resourceLoader.Loc("AppsUsingPhantomPawDialog_CancelButton");
 
             foreach (var app in initialLockedApps) _lockedApps.Add(app);
             LockedAppsList.ItemsSource = _lockedApps;

@@ -63,6 +63,9 @@ namespace OmniConsole.Pages
         // 手把快速按 A 可能在前一個 ContentDialog 尚未完全移除時觸發第二次 ShowAsync() 導致崩潰
         private bool _isDialogOpen;
 
+        // 語言下拉選單初始化期間抑制 SelectionChanged（還原選取不應觸發儲存/重啟提示）
+        private bool _suppressLanguageChange;
+
         // 防止檢查更新重複觸發
         private bool _isCheckingUpdate;
 
@@ -263,6 +266,7 @@ namespace OmniConsole.Pages
             }
 
             UpdateSettingsDescription();
+            ApplyBrandedTitles();   // 含品牌名的標題（由 code-behind 設、注入品牌）
 
             // PhantomKey 已改為 FSE 常駐，不再有獨立開關。
             // UI 開關雖然註解保留，但這裡直接判斷 FSE → 啟動，確保更新重啟後恢復。
@@ -275,6 +279,12 @@ namespace OmniConsole.Pages
             // 還原 Steam In-Game Overlay 開關狀態（PhantomKey 恆為啟用，此開關恆可用）
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = true;
+
+            // 填充 Mouse Mode 下拉（code-behind 填、Content 走 .Loc 在地化；ComboBox i18n 慣例，同游標速度 / 貓又編輯器）。
+            MouseModeCombo.Items.Clear();
+            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_Off"), Tag = SettingsService.MouseModeOff });
+            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_Auto"), Tag = SettingsService.MouseModeAuto });
+            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_ForceOn"), Tag = SettingsService.MouseModeForceOn });
 
             // 還原 Mouse Mode（Off/Auto/ForceOn）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
             bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
@@ -295,6 +305,9 @@ namespace OmniConsole.Pages
             CursorSpeedCombo.SelectedIndex = Array.IndexOf(SettingsService.ValidCursorSpeedPercents, pct);
 
             ApplyMouseModeEnabledState(builtInMapping);
+
+            // 填充顯示語言下拉選單（官方 + 社群動態補）並還原選取
+            PopulateLanguageCombo();
 
             // 還原導覽音效開關狀態
             NavigationSoundsSwitch.IsOn = SettingsService.GetEnableNavigationSounds();
@@ -472,7 +485,7 @@ namespace OmniConsole.Pages
             AboutFseStateText.Text = s.FseState;
 
             AboutMaxTouchPointsText.Text = s.MaxTouchPoints == 0
-                ? $"{s.MaxTouchPoints} ({_resourceLoader.GetString("MaxTouchPoints_NoTouch")})"
+                ? $"{s.MaxTouchPoints} ({_resourceLoader.Loc("MaxTouchPoints_NoTouch")})"
                 : s.MaxTouchPoints.ToString(CultureInfo.InvariantCulture);
             AboutLocaleText.Text = LocalizeForUI(s.Locale);
             AboutCountryRegionText.Text = LocalizeForUI(s.CountryRegion);
@@ -511,11 +524,12 @@ namespace OmniConsole.Pages
             }
         }
 
-        /// <summary>詳細資訊按鈕按下：開啟 CertificateDetailsDialog 顯示憑證指紋與 source URL。</summary>
+        /// <summary>詳細資訊按鈕按下：開啟憑證詳細對話方塊顯示指紋與來源網址，關閉後焦點還原至此按鈕。</summary>
         private async void CertDetailsButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new CertificateDetailsDialog(XamlRoot, BuildIdentity.CertificateThumbprint);
             await dialog.ShowAsync();
+            DispatcherQueue.TryEnqueue(() => CertDetailsButton.Focus(FocusStateHelper.Preferred));
         }
 
         /// <summary>
@@ -525,8 +539,8 @@ namespace OmniConsole.Pages
         private string LocalizeForUI(string raw)
         {
             if (string.IsNullOrEmpty(raw)) return raw;
-            if (raw == "(unknown)") return _resourceLoader.GetString("Common_Unknown");
-            if (raw == "(not installed)") return _resourceLoader.GetString("Common_NotInstalled");
+            if (raw == "(unknown)") return _resourceLoader.Loc("Common_Unknown");
+            if (raw == "(not installed)") return _resourceLoader.Loc("Common_NotInstalled");
             return raw;
         }
 
@@ -581,8 +595,8 @@ namespace OmniConsole.Pages
         /// </summary>
         private string FormatXfsetToolForUI(AboutInfoService.XfsetInfo x)
         {
-            if (!x.ToolInstalled) return _resourceLoader.GetString("XfsetStatus_NotInstalled");
-            return $"{_resourceLoader.GetString("XfsetStatus_Installed")} ({x.ToolVersion})";
+            if (!x.ToolInstalled) return _resourceLoader.Loc("XfsetStatus_NotInstalled");
+            return $"{_resourceLoader.Loc("XfsetStatus_Installed")} ({x.ToolVersion})";
         }
 
         /// <summary>
@@ -590,7 +604,7 @@ namespace OmniConsole.Pages
         /// </summary>
         private string FormatPhysPanelForUI(AboutInfoService.XfsetInfo x)
         {
-            if (!x.PhysPanelInstalled) return _resourceLoader.GetString("XfsetStatus_NotInstalled");
+            if (!x.PhysPanelInstalled) return _resourceLoader.Loc("XfsetStatus_NotInstalled");
 
             string touchKey = x.TouchService switch
             {
@@ -599,7 +613,7 @@ namespace OmniConsole.Pages
                 _ => "XfsetStatus_TouchServiceUnknown",
             };
 
-            return $"{_resourceLoader.GetString("XfsetStatus_Installed")} ({x.PhysPanelVersion}), {_resourceLoader.GetString(touchKey)}";
+            return $"{_resourceLoader.Loc("XfsetStatus_Installed")} ({x.PhysPanelVersion}), {_resourceLoader.Loc(touchKey)}";
         }
 
         /// <summary>
@@ -607,7 +621,7 @@ namespace OmniConsole.Pages
         /// </summary>
         private string FormatBytesForUI(ulong bytes)
         {
-            if (bytes == 0) return _resourceLoader.GetString("Common_Unknown");
+            if (bytes == 0) return _resourceLoader.Loc("Common_Unknown");
             const double GiB = 1024.0 * 1024.0 * 1024.0;
             double gib = bytes / GiB;
             return gib >= 1.0
@@ -620,7 +634,7 @@ namespace OmniConsole.Pages
         /// </summary>
         private string FormatMhzForUI(int mhz)
         {
-            if (mhz <= 0) return _resourceLoader.GetString("Common_Unknown");
+            if (mhz <= 0) return _resourceLoader.Loc("Common_Unknown");
             return mhz >= 1000
                 ? (mhz / 1000.0).ToString("0.00 GHz", CultureInfo.InvariantCulture)
                 : $"{mhz} MHz";
@@ -641,7 +655,7 @@ namespace OmniConsole.Pages
         private string FormatGpuForUI(AboutInfoService.HardwareInfo h)
         {
             // 多張顯示卡，每張一行；驅動版本/日期各自顯示
-            if (h.Gpus.Count == 0) return _resourceLoader.GetString("Common_Unknown");
+            if (h.Gpus.Count == 0) return _resourceLoader.Loc("Common_Unknown");
             return string.Join(Environment.NewLine,
                 h.Gpus.Select(g => $"{LocalizeForUI(g.Name)} ({FormatBytesForUI(g.VramBytes)} VRAM, {LocalizeForUI(g.DriverVersion)} / {LocalizeForUI(g.DriverDate)})"));
         }
@@ -653,18 +667,18 @@ namespace OmniConsole.Pages
         {
             if (!h.ProcessRunning)
             {
-                AboutPhantomKeyProcessText.Text = _resourceLoader.GetString("PhantomKeyHealth_NotRunning");
+                AboutPhantomKeyProcessText.Text = _resourceLoader.Loc("PhantomKeyHealth_NotRunning");
                 AboutPhantomKeyUptimeText.Text = "—";
                 AboutPhantomKeyIntegrityText.Text = "—";
                 AboutPhantomKeyResponsivenessText.Text = "—";
                 return;
             }
 
-            AboutPhantomKeyProcessText.Text = _resourceLoader.GetString("PhantomKeyHealth_Running");
+            AboutPhantomKeyProcessText.Text = _resourceLoader.Loc("PhantomKeyHealth_Running");
 
             AboutPhantomKeyUptimeText.Text = AboutInfoService.FormatUptime(h.Uptime, "—");
             AboutPhantomKeyIntegrityText.Text = h.IntegrityLevel == AboutInfoService.IntegrityLevel.Unknown
-                ? _resourceLoader.GetString("Common_Unknown")
+                ? _resourceLoader.Loc("Common_Unknown")
                 : h.IntegrityLevel.ToString();
             AboutPhantomKeyResponsivenessText.Text = FormatResponsivenessForUI(h);
         }
@@ -678,19 +692,19 @@ namespace OmniConsole.Pages
             {
                 AboutInfoService.PhantomKeyResponsiveness.Responsive
                     => string.Format(CultureInfo.InvariantCulture,
-                        _resourceLoader.GetString("PhantomKeyResp_Responsive"), h.PingLagMs),
+                        _resourceLoader.Loc("PhantomKeyResp_Responsive"), h.PingLagMs),
                 AboutInfoService.PhantomKeyResponsiveness.Busy
                     => string.Format(CultureInfo.InvariantCulture,
-                        _resourceLoader.GetString("PhantomKeyResp_Busy"), h.PingLagMs),
+                        _resourceLoader.Loc("PhantomKeyResp_Busy"), h.PingLagMs),
                 AboutInfoService.PhantomKeyResponsiveness.Stuck
                     => string.Format(CultureInfo.InvariantCulture,
-                        _resourceLoader.GetString("PhantomKeyResp_Stuck"), h.PingLagMs),
+                        _resourceLoader.Loc("PhantomKeyResp_Stuck"), h.PingLagMs),
                 AboutInfoService.PhantomKeyResponsiveness.Hung
-                    => _resourceLoader.GetString("PhantomKeyResp_Hung"),
+                    => _resourceLoader.Loc("PhantomKeyResp_Hung"),
                 AboutInfoService.PhantomKeyResponsiveness.NoPingWindow
-                    => _resourceLoader.GetString("PhantomKeyResp_NoPingWindow"),
+                    => _resourceLoader.Loc("PhantomKeyResp_NoPingWindow"),
                 AboutInfoService.PhantomKeyResponsiveness.NotRunning
-                    => _resourceLoader.GetString("PhantomKeyHealth_NotRunning"),
+                    => _resourceLoader.Loc("PhantomKeyHealth_NotRunning"),
                 _ => "—",
             };
         }
@@ -751,9 +765,23 @@ namespace OmniConsole.Pages
             double viewport = AboutPage.ViewportWidth;
             double actualWidth = AboutPage.ActualWidth;
             double available = viewport > 0 ? viewport : (actualWidth > 0 ? actualWidth : newSize);
-            string targetState = available >= DualColumnThreshold ? "WideAboutState" : "NarrowAboutState";
+            bool narrow = available < DualColumnThreshold;
+            string targetState = narrow ? "NarrowAboutState" : "WideAboutState";
             // VSG 掛在 SettingsPage 根 Grid 上，與 SettingsNavPage / GeneralContent / GamepadHints 並列。
             VisualStateManager.GoToState(this, targetState, false);
+            ApplyAboutFocusNavigation(narrow);
+        }
+
+        /// <summary>記住上次套用的關於頁焦點導航是否為窄版，避免每次 SizeChanged 重複賦值（null=尚未套用）。</summary>
+        private bool? _aboutNarrowFocus;
+
+        /// <summary>關於頁手把焦點導航寬窄分流：寬螢幕（雙欄）走框架自動 XY、窄螢幕（單欄）設手動 XYFocus 指向接垂直流。</summary>
+        private void ApplyAboutFocusNavigation(bool narrow)
+        {
+            if (_aboutNarrowFocus == narrow) return; // 狀態未變、免重複賦值
+            _aboutNarrowFocus = narrow;
+            FocusNavHelper.ApplyTwoColumnFocusNav(
+                narrow, AboutReleaseInfoCommitLink, CertDetailsButton, CopyAboutButton, RefreshAboutButton);
         }
 
         // ── 平台可用性 ────────────────────────────────────────────────────────
@@ -853,7 +881,18 @@ namespace OmniConsole.Pages
         {
             var platform = SettingsService.GetDefaultPlatform();
             var name = ProcessLauncherService.GetPlatformDisplayName(platform);
-            SettingsDescription.Text = string.Format(_resourceLoader.GetString("SettingsDescription"), name);
+            SettingsDescription.Text = string.Format(_resourceLoader.Loc("SettingsDescription"), name);
+        }
+
+        /// <summary>
+        /// 設定含品牌名的標題類字串：由 code-behind 設定，品牌名由程式注入（佔位符換成品牌、確保一致正確）。
+        /// </summary>
+        private void ApplyBrandedTitles()
+        {
+            SettingsTitleText.Text = _resourceLoader.Loc("SettingsTitle");
+            AboutTitleText.Text = _resourceLoader.Loc("AboutTitle");
+            AboutSuiteSectionText.Text = _resourceLoader.Loc("AboutSection_Suite");
+            LabelOmniConsoleText.Text = _resourceLoader.Loc("Label_OmniConsole");
         }
 
         // ItemsWrapGrid 自身 Loaded 事件以 sender 取得並快取的面板實例。
@@ -958,6 +997,196 @@ namespace OmniConsole.Pages
             string mode = item.Tag as string ?? SettingsService.MouseModeAuto;
             SettingsService.SetMouseMode(mode);
             ApplyMouseModeEnabledState();
+        }
+
+        // ─── 顯示語言下拉選單 ──────────────────────────────────────────────────────
+
+        /// <summary>官方語言（編譯進 PRI、切換需重啟）。社群語言另由偵測到的外掛語言動態補。</summary>
+        private static readonly string[] OfficialLanguages = { "en-US", "zh-TW", "zh-CN" };
+
+        /// <summary>
+        /// 填充顯示語言下拉選單：官方語言 + 社群語言（外掛 .resw 偵測到的）動態補加「(社群)」標記。
+        /// 顯示文字＝語言原名（CultureInfo.NativeName）+ 代碼；Tag=BCP47 碼。空偏好＝跟隨系統＝選官方第一項。
+        /// 還原選取期間以旗標抑制 SelectionChanged，避免誤觸發儲存／重啟提示。
+        /// </summary>
+        private void PopulateLanguageCombo()
+        {
+            _suppressLanguageChange = true;
+            try
+            {
+                LanguageCombo.Items.Clear();
+
+                // 社群語言＝外掛偵測到、且不在官方清單內的（避免官方語言又被當社群重列）。
+                var community = PhantomLocalizer.Instance.AvailableLanguages
+                    .Where(l => !OfficialLanguages.Contains(l, StringComparer.OrdinalIgnoreCase))
+                    .ToArray();
+
+                string communityTag = _resourceLoader.Loc("LanguageItem_CommunitySuffix");             // 「(社群)」
+                string communityWithTranslator = _resourceLoader.Loc("LanguageItem_CommunityWithTranslator"); // 「(社群 - {0})」
+                string translatorSeparator = _resourceLoader.Loc("ManageLanguages_TranslatorSeparator");      // 「、」
+
+                // 置頂「跟隨系統」項（Tag=空字串）：選它＝寫空偏好、不覆寫 PrimaryLanguageOverride、隨系統語言。
+                // 剛裝好（無偏好）即為此狀態，預設選中此項。
+                LanguageCombo.Items.Add(new ComboBoxItem
+                {
+                    Content = _resourceLoader.Loc("LanguageItem_SystemDefault"),
+                    Tag = string.Empty,
+                });
+
+                foreach (var bcp47 in OfficialLanguages)
+                    LanguageCombo.Items.Add(new ComboBoxItem { Content = DescribeLanguage(bcp47), Tag = bcp47 });
+
+                foreach (var bcp47 in community)
+                {
+                    // 譯者名取自下載時寫入的本機資料，多人以分隔符串接顯示為「(社群 - 譯者A…)」；
+                    // 無譯者（手動側載、無 metadata）退回「(社群)」。多人完整串接，超長時由固定 Width 的下拉框自動截斷（…）。
+                    var translators = TranslationProfileStore.GetInstalledTranslators(bcp47);
+                    string tag = translators.Count > 0
+                        ? SafeFormat(communityWithTranslator, string.Join(translatorSeparator, translators))
+                        : communityTag;
+                    LanguageCombo.Items.Add(new ComboBoxItem
+                    {
+                        Content = $"{DescribeLanguage(bcp47)} {tag}",
+                        Tag = bcp47,
+                    });
+                }
+
+                // 還原選取：偏好為空（跟系統）→ 置頂「跟隨系統」項（index 0）；否則比對 Tag。
+                // 比不到（外掛已移除）→ 退回 index 0＝跟隨系統（合理回退，比退到任意官方語言好）。
+                string current = SettingsService.GetUiLanguage();
+                int sel = 0;
+                if (!string.IsNullOrEmpty(current))
+                {
+                    for (int i = 0; i < LanguageCombo.Items.Count; i++)
+                    {
+                        if (LanguageCombo.Items[i] is ComboBoxItem it &&
+                            string.Equals(it.Tag as string, current, StringComparison.OrdinalIgnoreCase))
+                        {
+                            sel = i;
+                            break;
+                        }
+                    }
+                }
+                LanguageCombo.SelectedIndex = sel;
+            }
+            finally
+            {
+                _suppressLanguageChange = false;
+            }
+        }
+
+        /// <summary>容錯 string.Format：譯者若在 .resw 刪掉格式字串的 {0} 佔位符會擲出 FormatException，
+        /// 故 try/catch，失敗回退原格式字串（不崩）。</summary>
+        private static string SafeFormat(string format, string arg)
+        {
+            try { return string.Format(format, arg); }
+            catch { return format; }
+        }
+
+        /// <summary>
+        /// 取語言顯示名稱＝原名（CultureInfo.NativeName）+ 代碼，如「中文（台灣）(zh-TW)」。
+        /// 取不到原名（無效碼等）時 try/catch 回退純 BCP47 碼（graceful degrade 不崩）。
+        /// </summary>
+        private static string DescribeLanguage(string bcp47)
+        {
+            try
+            {
+                string native = CultureInfo.GetCultureInfo(bcp47).NativeName;
+                if (!string.IsNullOrWhiteSpace(native))
+                    return $"{native} ({bcp47})";
+            }
+            catch { /* 無效碼等：回退 BCP47 */ }
+            return bcp47;
+        }
+
+        /// <summary>
+        /// 顯示語言下拉選單變更：寫共用偏好（Shared.ini），再提示重啟。
+        /// 官方／社群一律走重啟（並非全部字串都能 live 重套）→ 統一重啟最乾淨、零遺漏、行為一致。
+        /// </summary>
+        private async void LanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressLanguageChange) return;
+            if (LanguageCombo.SelectedItem is not ComboBoxItem item) return;
+            // Tag 為 BCP47 碼；空字串＝「跟隨系統」項（合法、寫空偏好不覆寫 PrimaryLanguageOverride）。
+            if (item.Tag is not string bcp47) return;
+
+            SettingsService.SetUiLanguage(bcp47);   // 空字串＝跟隨系統
+            await PromptRestartForLanguageAsync();
+        }
+
+        /// <summary>
+        /// 官方語言切換後提示重啟（重用 GamepadMessageDialog，手把導航內建）。
+        /// primary=「立即重啟」→ CoreApplication.RequestRestartAsync（既有重啟機制）；close=「稍後」→ 下次啟動生效。
+        /// </summary>
+        private async Task PromptRestartForLanguageAsync()
+        {
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
+            try
+            {
+                var dialog = new GamepadMessageDialog(
+                    this.XamlRoot,
+                    _resourceLoader.Loc("LanguageRestartDialog_Title"),
+                    _resourceLoader.Loc("LanguageRestartDialog_Body"),
+                    _resourceLoader.Loc("LanguageRestartDialog_Restart"),
+                    _resourceLoader.Loc("LanguageRestartDialog_Later"),
+                    defaultToPrimary: true); // 預設醒目「立即重啟」方便直接確認
+                await dialog.ShowAsync();
+
+                if (dialog.Result)
+                {
+                    // 重啟後導回設定頁，使用者才看得到語言已套用（沿用 PhantomLink 安裝完重啟的旗標機制）。
+                    SettingsService.SetPendingSettingsRestart(true);
+
+                    // 優先用 AppInstance.Restart（同實例重啟，立即終止本行程並由系統重新拉起）；失敗才回退 RequestRestartAsync。
+                    var result = Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
+                    DebugLogger.Log($"[Language] AppInstance.Restart returned {result}");
+                    // 走到這裡表示 Restart 未成功終止本行程 → 回退（清旗標避免下次誤導回設定頁則不清，保留以利重開後就位）
+                    await Windows.ApplicationModel.Core.CoreApplication.RequestRestartAsync("");
+                }
+                else
+                {
+                    // 「稍後」：對話方塊關閉後焦點返回語言下拉選單。
+                    DispatcherQueue.TryEnqueue(() => LanguageCombo.Focus(FocusStateHelper.Preferred));
+                }
+            }
+            finally
+            {
+                _isDialogOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// 「管理社群語言」按鈕：開瀏覽/下載/移除對話方塊。關閉後若有變動 → 重掃語言資料夾 + 重新整理下拉選單
+        /// （新裝語言才會立即出現），並把焦點還原至此按鈕。
+        /// </summary>
+        private async void ManageLanguagesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
+            bool needRestart = false;
+            try
+            {
+                var dialog = new ManageLanguagesDialog(this.XamlRoot);
+                await dialog.ShowAsync();
+
+                if (dialog.Changed)
+                {
+                    PhantomLocalizer.Instance.RescanFolder(); // 重掃才能偵測到新裝/移除的語言
+                    PopulateLanguageCombo();
+                }
+                needRestart = dialog.NeedsRestartForCurrentLanguage;
+            }
+            finally
+            {
+                _isDialogOpen = false;
+                DispatcherQueue.TryEnqueue(() => ManageLanguagesButton.Focus(FocusStateHelper.Preferred));
+            }
+
+            // 更新了目前使用中語言 → 彈重啟提示（必在管理對話方塊關閉、_isDialogOpen 還原後彈：
+            // 兩個 ContentDialog 不能同時開，且 PromptRestartForLanguageAsync 有 _isDialogOpen 門檻）。
+            if (needRestart)
+                await PromptRestartForLanguageAsync();
         }
 
         /// <summary>
@@ -1141,6 +1370,16 @@ namespace OmniConsole.Pages
             _ = LoadPlatformAvailabilityAsync();
         }
 
+        /// <summary>回傳指定平台 Id 在目前卡片清單中的索引；找不到回 -1。</summary>
+        private int IndexOfCard(string id)
+        {
+            for (int i = 0; i < _cardItems.Count; i++)
+            {
+                if (_cardItems[i].Id == id) return i;
+            }
+            return -1;
+        }
+
         /// <summary>
         /// 程式化將焦點設給 PlatformGridView 指定索引的卡片容器；容器尚未實體化時掛 LayoutUpdated 延後聚焦。
         /// 與貓又清單刪除後的焦點還原行為一致，使刪除後白框停在被刪項的前後。
@@ -1187,8 +1426,15 @@ namespace OmniConsole.Pages
         /// </summary>
         private void CardContextMenu_Opening(object sender, object e)
         {
+            if (sender is not MenuFlyout flyout) return;
             if (_currentCategoryTag != "User")
-                (sender as MenuFlyout)?.Hide();
+            {
+                flyout.Hide();
+                return;
+            }
+            // 彈出時 code-behind 設 Text（走 Loc() 在地化）；flyout 在卡片 DataTemplate 內，故從 sender 取 item。
+            if (flyout.Items.Count > 0 && flyout.Items[0] is MenuFlyoutItem exportItem)
+                exportItem.Text = _resourceLoader.Loc("CardMenu_Export");
         }
 
         /// <summary>
@@ -1226,7 +1472,7 @@ namespace OmniConsole.Pages
                 _exportTipTimer.Stop();
                 ExportSuccessTeachingTip.IsOpen = false;
 
-                var dialog = new ImportPlatformDialog(this.XamlRoot, _resourceLoader);
+                var dialog = new ImportPlatformDialog(this.XamlRoot);
                 var result = await dialog.ShowAsync();
                 if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
 
@@ -1303,7 +1549,7 @@ namespace OmniConsole.Pages
 
                 bool isEdit = existingEntry != null;
                 var dialog = new PlatformEditDialog(
-                    this.XamlRoot, _resourceLoader, existingEntry);
+                    this.XamlRoot, existingEntry);
 
                 ContentDialogResult result;
 
@@ -1317,7 +1563,7 @@ namespace OmniConsole.Pages
 
                     // 顯示自製檔案選擇器
                     var pickerDialog = new FilePickerDialog(
-                        this.XamlRoot, _resourceLoader, dialog.FilePickerRequest!);
+                        this.XamlRoot, dialog.FilePickerRequest!);
                     var pickerResult = await pickerDialog.ShowAsync();
 
                     string? selectedPath = null;
@@ -1353,16 +1599,16 @@ namespace OmniConsole.Pages
                         UserPlatformStore.Add(entry);
 
                     LoadPlatformCards();
+
+                    // 焦點（白框）還原回剛被儲存的那張卡片（編輯=原卡片、新增=新加的那張），與刪除分支一致。
+                    int savedIndex = IndexOfCard(entry.Id);
+                    if (savedIndex >= 0) FocusPlatformCard(savedIndex);
                 }
                 else if (result == ContentDialogResult.Secondary && isEdit && existingEntry != null)
                 {
                     // 刪除平台：從 Store 移除後，視剩餘數量決定留在使用者索引標籤或切回系統索引標籤
                     // 刪除前先記下被刪卡片索引、以及被刪的是否正是目前預設平台（底色那張）。
-                    int prevIndex = -1;
-                    for (int i = 0; i < _cardItems.Count; i++)
-                    {
-                        if (_cardItems[i].Id == existingEntry.Id) { prevIndex = i; break; }
-                    }
+                    int prevIndex = IndexOfCard(existingEntry.Id);
                     bool deletedDefault = _selectedPlatformId == existingEntry.Id;
 
                     UserPlatformStore.Delete(existingEntry.Id);
@@ -1404,6 +1650,14 @@ namespace OmniConsole.Pages
                         _currentCategoryTag = "";
                         SwitchCategoryTab("System");
                     }
+                }
+                else
+                {
+                    // 取消（或未套用任何變更）：焦點（白框）還原回操作前那張卡片。
+                    // 編輯模式是被編輯的卡片、新增模式落回目前選取的卡片，避免關閉後白框懸空。
+                    var anchorId = existingEntry?.Id ?? _selectedPlatformId;
+                    int anchorIndex = IndexOfCard(anchorId);
+                    if (anchorIndex >= 0) FocusPlatformCard(anchorIndex);
                 }
             }
             finally
@@ -1496,6 +1750,11 @@ namespace OmniConsole.Pages
                 // 匯入按鈕（使用者索引標籤可見時）：開啟匯入對話方塊
                 case Button btn when ReferenceEquals(btn, ImportPlatformButton):
                     ImportPlatformButton_Click(this, new RoutedEventArgs());
+                    break;
+
+                // 管理社群語言按鈕：開啟語言檔管理對話方塊
+                case Button btn when ReferenceEquals(btn, ManageLanguagesButton):
+                    ManageLanguagesButton_Click(this, new RoutedEventArgs());
                     break;
 
                 // PhantomKey 手把輸入開關，已移除（FSE 常駐），保留註解以利復原
@@ -1707,7 +1966,7 @@ namespace OmniConsole.Pages
             _isCheckingUpdate = true;
 
             CheckDeveloperMode(); // 使用者可能從設定頁回來後狀態已變更
-            UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_Checking");
+            UpdateCheckStatusText.Text = _resourceLoader.Loc("UpdateCheck_Checking");
             UpdateCheckStatusText.Visibility = Visibility.Visible;
             CheckUpdateProgressRing.Visibility = Visibility.Visible;
             CheckUpdateProgressRing.IsActive = true;
@@ -1724,7 +1983,7 @@ namespace OmniConsole.Pages
             switch (kind)
             {
                 case UpdateCheckService.UpdateKind.MissingPhantomLink:
-                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
+                    UpdateCheckStatusText.Text = _resourceLoader.Loc("UpdateInfoBar_MissingPhantomLink_Title");
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
                     DownloadInstallButton.Visibility = Visibility.Visible;
                     ShowSettingsUpdateInfoBar();
@@ -1732,14 +1991,14 @@ namespace OmniConsole.Pages
 
                 case UpdateCheckService.UpdateKind.MainAppUpdate:
                     UpdateCheckStatusText.Text = string.Format(
-                        _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), version);
+                        _resourceLoader.Loc("UpdateCheck_NewVersion_Subtitle"), version);
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
                     DownloadInstallButton.Visibility = Visibility.Visible;
                     ShowSettingsUpdateInfoBar();
                     break;
 
                 case UpdateCheckService.UpdateKind.None:
-                    UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateCheck_UpToDate_Subtitle");
+                    UpdateCheckStatusText.Text = _resourceLoader.Loc("UpdateCheck_UpToDate_Subtitle");
                     UpdateCheckStatusText.Visibility = Visibility.Visible;
                     DownloadInstallButton.Visibility = Visibility.Collapsed;
                     SettingsUpdateInfoBar.IsOpen = false;
@@ -1829,7 +2088,7 @@ namespace OmniConsole.Pages
             if (!await CheckAndPromptLockedAppsAsync())
                 return;
 
-            var dialog = new UpdateProgressDialog(this.XamlRoot, _resourceLoader);
+            var dialog = new UpdateProgressDialog(this.XamlRoot);
 
             try
             {
@@ -1879,7 +2138,7 @@ namespace OmniConsole.Pages
                 DebugLogger.Log($"[SettingsPage] Download/install failed: {ex.Message}");
                 dialog.RequestClose();
                 MainWindow.IsUpdateInstallInProgress = false;
-                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateDownload_Failed");
+                UpdateCheckStatusText.Text = _resourceLoader.Loc("UpdateDownload_Failed");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
             }
             finally
@@ -1921,8 +2180,8 @@ namespace OmniConsole.Pages
             if (kindStr == UpdateCheckService.UpdateKind.MissingPhantomLink.ToString()
                 && !string.IsNullOrEmpty(cached))
             {
-                SettingsUpdateInfoBar.Title = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
-                SettingsUpdateInfoBar.Message = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Message");
+                SettingsUpdateInfoBar.Title = _resourceLoader.Loc("UpdateInfoBar_MissingPhantomLink_Title");
+                SettingsUpdateInfoBar.Message = _resourceLoader.Loc("UpdateInfoBar_MissingPhantomLink_Message");
                 SettingsUpdateInfoBar.IsOpen = true;
             }
             else if (kindStr == UpdateCheckService.UpdateKind.MainAppUpdate.ToString()
@@ -1930,7 +2189,7 @@ namespace OmniConsole.Pages
             {
                 SettingsUpdateInfoBar.Title = "";
                 SettingsUpdateInfoBar.Message = string.Format(
-                    _resourceLoader.GetString("UpdateAvailable_InfoBar_Settings"), cached);
+                    _resourceLoader.Loc("UpdateAvailable_InfoBar_Settings"), cached);
                 SettingsUpdateInfoBar.IsOpen = true;
             }
             else
@@ -1950,7 +2209,7 @@ namespace OmniConsole.Pages
             if (kindStr == UpdateCheckService.UpdateKind.MissingPhantomLink.ToString()
                 && !string.IsNullOrEmpty(cached))
             {
-                UpdateCheckStatusText.Text = _resourceLoader.GetString("UpdateInfoBar_MissingPhantomLink_Title");
+                UpdateCheckStatusText.Text = _resourceLoader.Loc("UpdateInfoBar_MissingPhantomLink_Title");
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
                 DownloadInstallButton.Visibility = Visibility.Visible;
             }
@@ -1958,7 +2217,7 @@ namespace OmniConsole.Pages
                 && !string.IsNullOrEmpty(cached))
             {
                 UpdateCheckStatusText.Text = string.Format(
-                    _resourceLoader.GetString("UpdateCheck_NewVersion_Subtitle"), cached);
+                    _resourceLoader.Loc("UpdateCheck_NewVersion_Subtitle"), cached);
                 UpdateCheckStatusText.Visibility = Visibility.Visible;
                 DownloadInstallButton.Visibility = Visibility.Visible;
             }
@@ -1977,7 +2236,7 @@ namespace OmniConsole.Pages
             bool enabled = UpdateCheckService.IsDeveloperModeEnabled();
             DeveloperModeWarningPanel.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
             if (!enabled)
-                DeveloperModeWarningText.Text = _resourceLoader.GetString("DeveloperMode_Warning");
+                DeveloperModeWarningText.Text = _resourceLoader.Loc("DeveloperMode_Warning");
             DownloadInstallButton.IsEnabled = enabled;
         }
 

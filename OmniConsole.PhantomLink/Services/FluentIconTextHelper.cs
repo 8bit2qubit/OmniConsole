@@ -33,14 +33,21 @@ namespace OmniConsole.PhantomLink.Services
         /// <summary>寫入 AutoFormat attached property 值。</summary>
         public static void SetAutoFormat(DependencyObject obj, bool value) => obj.SetValue(AutoFormatProperty, value);
 
-        /// <summary>依 AutoFormat 新值掛上或解掛 TextBlock 的 Loaded handler。</summary>
+        /// <summary>依 AutoFormat 新值掛上或解掛 TextBlock 的 Loaded handler 與 Text 變更監聽。</summary>
         private static void OnAutoFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is TextBlock tb)) return;
             if ((bool)e.NewValue)
+            {
                 tb.Loaded += OnTextBlockLoaded;
+                // 監聽 Text 變更：外掛翻譯會在 Loaded 後 SetValue(TextProperty,...)，把 ApplyFluentIcons 拆好的
+                // Inlines 沖掉、圖示消失。改監聽 Text，誰改 Text 都重套圖示，兩者協同。
+                tb.RegisterPropertyChangedCallback(TextBlock.TextProperty, OnTextChanged);
+            }
             else
+            {
                 tb.Loaded -= OnTextBlockLoaded;
+            }
         }
 
         /// <summary>Loaded handler：對 TextBlock 套用 PUA 拆 Run 處理。</summary>
@@ -50,28 +57,50 @@ namespace OmniConsole.PhantomLink.Services
                 ApplyFluentIcons(tb);
         }
 
-        /// <summary>掃 TextBlock.Text 將 PUA 字元與一般字元分組，重建 Inlines 為對應的 Run 序列（會清空既有 Inlines）。</summary>
+        // 防止 ApplyFluentIcons 重建 Inlines 時，內部變更又遞迴觸發 callback。
+        private static bool _applying;
+
+        /// <summary>Text 變更時重套 icon（外掛翻譯覆蓋 Text 後 icon 不致消失）。</summary>
+        private static void OnTextChanged(DependencyObject d, DependencyProperty dp)
+        {
+            if (_applying) return;
+            if (d is TextBlock tb)
+                ApplyFluentIcons(tb);
+        }
+
+        /// <summary>掃 TextBlock.Text 將 PUA 字元與一般字元分組，重建 Inlines 為對應的 Run 序列（會清空既有 Inlines）。
+        /// _applying 包裹：重建 Inlines 期間任何屬性變更不再遞迴觸發 OnTextChanged。
+        /// UWP 與 WinUI3 差異：UWP TextBlock 一旦 Text 屬性有「明確本機值（local value）」（如外掛 SetValue(Text,...)），
+        /// 就只渲染純 Text、無視 Inlines（PUA 用預設字型＝框框）；WinUI3 是「後設定的贏」故重建 Inlines 即生效。
+        /// 解法：重建前先 ClearValue(TextProperty) 清掉明確 Text 值，Inlines 才能在 UWP 接管渲染。
+        /// 順序＝先讀 text → 清 Text → 再建 Inlines（避免清 Text 時連帶抹掉剛建的 Inlines）。</summary>
         private static void ApplyFluentIcons(TextBlock tb)
         {
             string text = tb.Text;
             if (string.IsNullOrEmpty(text)) return;
             if (!ContainsPua(text)) return;
 
-            tb.Inlines.Clear();
-            var buffer = new StringBuilder();
-            bool bufferIsIcon = IsPua(text[0]);
-
-            foreach (char c in text)
+            _applying = true;
+            try
             {
-                bool currentIsIcon = IsPua(c);
-                if (currentIsIcon != bufferIsIcon)
+                tb.ClearValue(TextBlock.TextProperty);   // UWP：移除明確 Text 本機值，讓 Inlines 渲染
+                tb.Inlines.Clear();
+                var buffer = new StringBuilder();
+                bool bufferIsIcon = IsPua(text[0]);
+
+                foreach (char c in text)
                 {
-                    FlushBuffer(tb, buffer, bufferIsIcon);
-                    bufferIsIcon = currentIsIcon;
+                    bool currentIsIcon = IsPua(c);
+                    if (currentIsIcon != bufferIsIcon)
+                    {
+                        FlushBuffer(tb, buffer, bufferIsIcon);
+                        bufferIsIcon = currentIsIcon;
+                    }
+                    buffer.Append(c);
                 }
-                buffer.Append(c);
+                FlushBuffer(tb, buffer, bufferIsIcon);
             }
-            FlushBuffer(tb, buffer, bufferIsIcon);
+            finally { _applying = false; }
         }
 
         /// <summary>把緩衝區內容輸出為一個 Run；isIcon 為 true 時套 Segoe Fluent Icons 字型。</summary>

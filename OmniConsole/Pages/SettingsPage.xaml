@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="OmniConsole.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -179,6 +179,7 @@
                         IsPaneOpen="False"
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"
+                        OpenPaneLength="340"
                         SelectionChanged="SettingsNav_SelectionChanged"
                         XYFocusKeyboardNavigation="Enabled">
 
@@ -253,22 +254,22 @@
 
             <!-- 主要導覽項目 -->
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Nav_General" Tag="General" IsSelected="True" FontSize="24">
+                <NavigationViewItem x:Uid="Nav_General" services:Localized.Uid="Nav_General" Tag="General" IsSelected="True" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF0E2;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Nav_Advanced" Tag="Advanced" FontSize="24">
+                <NavigationViewItem x:Uid="Nav_Advanced" services:Localized.Uid="Nav_Advanced" Tag="Advanced" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Nav_GamepadMapping" Tag="GamepadMapping" FontSize="24">
+                <NavigationViewItem x:Uid="Nav_GamepadMapping" services:Localized.Uid="Nav_GamepadMapping" Tag="GamepadMapping" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF191;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Nav_Troubleshoot" Tag="Troubleshoot" FontSize="24">
+                <NavigationViewItem x:Uid="Nav_Troubleshoot" services:Localized.Uid="Nav_Troubleshoot" Tag="Troubleshoot" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE90F;" />
                     </NavigationViewItem.Icon>
@@ -298,7 +299,8 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,16">
-                            <TextBlock x:Uid="SettingsTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <!-- 含品牌名：改由 code-behind 設值（注入品牌）；保留 Localized.Uid 讓社群語言外掛切換仍能套用。 -->
+                            <TextBlock x:Name="SettingsTitleText" services:Localized.Uid="SettingsTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
                             <TextBlock x:Name="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center"/>
                         </StackPanel>
 
@@ -321,12 +323,12 @@
                             </NavigationView.Resources>
 
                             <NavigationView.MenuItems>
-                                <NavigationViewItem x:Uid="Nav_SystemPlatforms" Tag="System" IsSelected="True">
+                                <NavigationViewItem x:Uid="Nav_SystemPlatforms" services:Localized.Uid="Nav_SystemPlatforms" Tag="System" IsSelected="True">
                                     <NavigationViewItem.Icon>
                                         <FontIcon Glyph="&#xE7FC;" />
                                     </NavigationViewItem.Icon>
                                 </NavigationViewItem>
-                                <NavigationViewItem x:Uid="Nav_UserPlatforms" Tag="User">
+                                <NavigationViewItem x:Uid="Nav_UserPlatforms" services:Localized.Uid="Nav_UserPlatforms" Tag="User">
                                     <NavigationViewItem.Icon>
                                         <FontIcon Glyph="&#xE77B;" />
                                     </NavigationViewItem.Icon>
@@ -335,7 +337,7 @@
 
                             <NavigationView.PaneFooter>
                                 <Button x:Name="ImportPlatformButton"
-                                        x:Uid="ImportPlatformButton"
+                                        x:Uid="ImportPlatformButton" services:Localized.Uid="ImportPlatformButton"
                                         Visibility="Collapsed"
                                         Click="ImportPlatformButton_Click"
                                         Background="Transparent"
@@ -453,8 +455,10 @@
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 Opacity="{x:Bind CardOpacity}">
                                             <Border.ContextFlyout>
+                                                <!-- MenuFlyoutItem 不掛 x:Uid/Localized.Uid（彈出型控制項不適用）；
+                                                     Text 改由 code-behind 於 Opening 事件設定。同 ComboBox 慣例。 -->
                                                 <MenuFlyout Opening="CardContextMenu_Opening">
-                                                    <MenuFlyoutItem x:Uid="CardMenu_Export" Click="CardExport_Click"/>
+                                                    <MenuFlyoutItem Click="CardExport_Click"/>
                                                 </MenuFlyout>
                                             </Border.ContextFlyout>
                                             <Grid>
@@ -487,14 +491,14 @@
                                     <FontIcon Glyph="&#xE7BA;" FontSize="48"
                                               HorizontalAlignment="Center"
                                               Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
-                                    <TextBlock x:Uid="CustomPlatform_ConsentTitle"
+                                    <TextBlock x:Uid="CustomPlatform_ConsentTitle" services:Localized.Uid="CustomPlatform_ConsentTitle"
                                                FontSize="24" FontWeight="Bold"
                                                HorizontalAlignment="Center" TextAlignment="Center"/>
-                                    <TextBlock x:Uid="CustomPlatform_ConsentBody"
+                                    <TextBlock x:Uid="CustomPlatform_ConsentBody" services:Localized.Uid="CustomPlatform_ConsentBody"
                                                FontSize="14" TextWrapping="Wrap"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     <Button x:Name="CustomConsentAcceptButton"
-                                            x:Uid="CustomPlatform_ConsentAccept"
+                                            x:Uid="CustomPlatform_ConsentAccept" services:Localized.Uid="CustomPlatform_ConsentAccept"
                                             Click="CustomConsentAcceptButton_Click"
                                             HorizontalAlignment="Center"
                                             Style="{StaticResource AccentButtonStyle}"
@@ -511,11 +515,11 @@
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                   Padding="0">
                     <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="700">
-                        <TextBlock x:Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock x:Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <TextBlock x:Uid="AdvancedTitle" services:Localized.Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock x:Uid="AdvancedDescription" services:Localized.Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
                         <!-- 更新分類標題 -->
-                        <TextBlock x:Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="AdvancedSection_Updates" services:Localized.Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
@@ -539,22 +543,22 @@
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock x:Uid="VersionInfo_Title" FontWeight="SemiBold" FontSize="16" />
+                                            <TextBlock x:Uid="VersionInfo_Title" services:Localized.Uid="VersionInfo_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
                                             <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
                                         <StackPanel x:Name="DeveloperModeWarningPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
                                             <TextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                            <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
+                                            <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" services:Localized.Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
                                         </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Button x:Name="DownloadInstallButton" x:Uid="DownloadInstallButton"
+                                        <Button x:Name="DownloadInstallButton" x:Uid="DownloadInstallButton" services:Localized.Uid="DownloadInstallButton"
                                                 Click="DownloadInstallButton_Click"
                                                 Visibility="Collapsed"
                                                 FontSize="14" Padding="24,8"/>
-                                        <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton"
+                                        <Button x:Name="CheckForUpdatesButton" x:Uid="CheckForUpdatesButton" services:Localized.Uid="CheckForUpdatesButton"
                                                 Click="CheckForUpdatesButton_Click"
                                                 FontSize="14" Padding="24,8"/>
                                         <ProgressRing x:Name="CheckUpdateProgressRing"
@@ -590,8 +594,8 @@
                                     <FontIcon Glyph="&#xE895;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="AutoUpdateCheck_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="AutoUpdateCheck_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="AutoUpdateCheck_Title" services:Localized.Uid="AutoUpdateCheck_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="AutoUpdateCheck_Description" services:Localized.Uid="AutoUpdateCheck_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                     </StackPanel>
 
                                     <ToggleSwitch x:Name="AutoUpdateCheckSwitch"
@@ -603,7 +607,7 @@
                         </Border>
 
                         <!-- 手把輸入分類標題 -->
-                        <TextBlock x:Uid="AdvancedSection_GamepadInput" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="AdvancedSection_GamepadInput" services:Localized.Uid="AdvancedSection_GamepadInput" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
@@ -626,9 +630,9 @@
                                     <FontIcon Glyph="&#xE961;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="PhantomKeySetting_Description" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="PhantomKeySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Uid="PhantomKeySetting_Title" services:Localized.Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="PhantomKeySetting_Description" services:Localized.Uid="PhantomKeySetting_Description" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="PhantomKeySetting_Note" services:Localized.Uid="PhantomKeySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
                                     <!--
@@ -653,9 +657,9 @@
                                     <FontIcon Glyph="&#xEA5B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Title" services:Localized.Uid="SteamInGameOverlaySetting_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Description" services:Localized.Uid="SteamInGameOverlaySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="SteamInGameOverlaySetting_Note" services:Localized.Uid="SteamInGameOverlaySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
                                     <ToggleSwitch x:Name="UsePhantomKeySteamInGameOverlaySwitch"
@@ -678,19 +682,17 @@
                                     <FontIcon Glyph="&#xE962;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="MouseModeSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="MouseModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="MouseModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                                        <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="MouseModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                                        <TextBlock x:Uid="MouseModeSetting_Title" services:Localized.Uid="MouseModeSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="MouseModeSetting_Description" services:Localized.Uid="MouseModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="MouseModeSetting_Note" services:Localized.Uid="MouseModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="MouseModeSetting_BuiltInMappingNote" services:Localized.Uid="MouseModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
                                     </StackPanel>
 
+                                    <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。
+                                         此為 ComboBox i18n 慣例（同貓又編輯器）。 -->
                                     <ComboBox x:Name="MouseModeCombo" Grid.Column="2"
                                               SelectionChanged="MouseModeCombo_SelectionChanged"
-                                              MinWidth="120" VerticalAlignment="Center">
-                                        <ComboBoxItem x:Uid="MouseModeItem_Off"     Tag="Off"/>
-                                        <ComboBoxItem x:Uid="MouseModeItem_Auto"    Tag="Auto"/>
-                                        <ComboBoxItem x:Uid="MouseModeItem_ForceOn" Tag="ForceOn"/>
-                                    </ComboBox>
+                                              MinWidth="120" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <!-- Mouse Mode 版面配置切換 (OmniNav / Classic) -->
@@ -704,12 +706,12 @@
                                     <FontIcon Glyph="&#xE8AB;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="MouseModeLayoutSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="MouseModeLayoutSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="MouseModeLayoutSetting_Title" services:Localized.Uid="MouseModeLayoutSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="MouseModeLayoutSetting_Description" services:Localized.Uid="MouseModeLayoutSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                     </StackPanel>
 
                                     <ToggleSwitch x:Name="MouseModeLayoutSwitch"
-                                                  x:Uid="MouseModeLayoutSwitch"
+                                                  x:Uid="MouseModeLayoutSwitch" services:Localized.Uid="MouseModeLayoutSwitch"
                                                   Toggled="MouseModeLayoutSwitch_Toggled"
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
@@ -726,8 +728,8 @@
                                     <FontIcon Glyph="&#xE7C9;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="CursorSpeedSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="CursorSpeedSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="CursorSpeedSetting_Title" services:Localized.Uid="CursorSpeedSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="CursorSpeedSetting_Description" services:Localized.Uid="CursorSpeedSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                     </StackPanel>
 
                                     <ComboBox x:Name="CursorSpeedCombo" Grid.Column="2"
@@ -737,8 +739,69 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- 介面顯示分類標題 -->
+                        <TextBlock x:Uid="AdvancedSection_Display" services:Localized.Uid="AdvancedSection_Display" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="2,0,0,0"/>
+
+                        <!-- 介面顯示群組卡片 -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="700">
+                            <StackPanel>
+                                <!-- 顯示語言 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xF2B7;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="LanguageSetting_Title" services:Localized.Uid="LanguageSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="LanguageSetting_Description" services:Localized.Uid="LanguageSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <!-- 項目由 code-behind 動態填入、不在 XAML 宣告（ComboBox i18n 慣例，同 MouseModeCombo）。 -->
+                                    <!-- 固定 Width（非 MinWidth）：避免長語言項撐寬導致展開 popup 對齊跑掉；超長項在收合框截斷（…），展開後完整顯示。 -->
+                                    <ComboBox x:Name="LanguageCombo" Grid.Column="2"
+                                              SelectionChanged="LanguageCombo_SelectionChanged"
+                                              Width="280" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- 分隔線 -->
+                                <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                                <!-- 管理社群語言 -->
+                                <Grid Padding="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Glyph="&#xE774;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Uid="ManageLanguagesSetting_Title" services:Localized.Uid="ManageLanguagesSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="ManageLanguagesSetting_Description" services:Localized.Uid="ManageLanguagesSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <Button x:Name="ManageLanguagesButton" Grid.Column="2"
+                                            x:Uid="ManageLanguagesButton" services:Localized.Uid="ManageLanguagesButton"
+                                            Click="ManageLanguagesButton_Click"
+                                            MinWidth="120" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <!-- 介面音效分類標題 -->
-                        <TextBlock x:Uid="AdvancedSection_Sound" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="AdvancedSection_Sound" services:Localized.Uid="AdvancedSection_Sound" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
@@ -761,8 +824,8 @@
                                     <FontIcon Glyph="&#xE995;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="NavigationSoundsSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="NavigationSoundsSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="NavigationSoundsSetting_Title" services:Localized.Uid="NavigationSoundsSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="NavigationSoundsSetting_Description" services:Localized.Uid="NavigationSoundsSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                     </StackPanel>
 
                                     <ToggleSwitch x:Name="NavigationSoundsSwitch"
@@ -779,11 +842,13 @@
                             而 Passthrough 目前僅 Xbox 平台有對應 URI，其它平台尚未發現可用入口，
                             開放給使用者調整反而容易踩雷（誤設後會無法從 Game Bar 媒體櫃進入 OmniConsole 設定介面）。
                             因此 UI 暫時隱藏，強制走 SettingsService 的預設值；待開發人員模式頁完工後再搬移過去。
+                            還原時注意：PassthroughSetting_Description 含品牌名，還原啟用後須比照其他含品牌控制項
+                            改由 code-behind 設值（見 ApplyBrandedTitles），否則品牌佔位會顯示字面。
                             （XAML 不支援巢狀註解，原本各小節的 <!~~ Game Bar 分類標題 ~~> /
                               <!~~ Game Bar 群組卡片 ~~> / <!~~ 媒體櫃按鈕開啟設定 ~~> /
                               <!~~ 分隔線 ~~> / <!~~ 直接導向平台 ~~> 子註解，於還原時依下列順序補回原位。）
 
-                        <TextBlock x:Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="AdvancedSection_GameBar" services:Localized.Uid="AdvancedSection_GameBar" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
@@ -804,11 +869,11 @@
                                     <FontIcon Glyph="&#xE8F1;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="GameBarLibrarySetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="GameBarLibrarySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="GameBarLibrarySetting_Title" services:Localized.Uid="GameBarLibrarySetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="GameBarLibrarySetting_Description" services:Localized.Uid="GameBarLibrarySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                                     </StackPanel>
 
-                                    <ToggleSwitch x:Name="UseGameBarLibrarySwitch" x:Uid="UseGameBarLibrarySwitch"
+                                    <ToggleSwitch x:Name="UseGameBarLibrarySwitch" x:Uid="UseGameBarLibrarySwitch" services:Localized.Uid="UseGameBarLibrarySwitch"
                                                   Toggled="UseGameBarLibrarySwitch_Toggled"
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
@@ -826,12 +891,12 @@
                                     <FontIcon Glyph="&#xE71B;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="PassthroughSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Uid="PassthroughSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                        <TextBlock x:Uid="PassthroughSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <TextBlock x:Uid="PassthroughSetting_Title" services:Localized.Uid="PassthroughSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock x:Uid="PassthroughSetting_Description" services:Localized.Uid="PassthroughSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Uid="PassthroughSetting_Note" services:Localized.Uid="PassthroughSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     </StackPanel>
 
-                                    <ToggleSwitch x:Name="EnablePassthroughSwitch" x:Uid="EnablePassthroughSwitch"
+                                    <ToggleSwitch x:Name="EnablePassthroughSwitch" x:Uid="EnablePassthroughSwitch" services:Localized.Uid="EnablePassthroughSwitch"
                                                   Toggled="EnablePassthroughSwitch_Toggled"
                                                   FlowDirection="RightToLeft"
                                                   Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
@@ -849,11 +914,11 @@
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                   Padding="0">
                     <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="700">
-                        <TextBlock x:Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock x:Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <TextBlock x:Uid="TroubleshootTitle" services:Localized.Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock x:Uid="TroubleshootDescription" services:Localized.Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
                         <!-- FSE 分類標題 -->
-                        <TextBlock x:Uid="TroubleshootSection_Fse" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock x:Uid="TroubleshootSection_Fse" services:Localized.Uid="TroubleshootSection_Fse" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="2,0,0,0"/>
 
@@ -874,13 +939,13 @@
                                 <FontIcon Glyph="&#xE72C;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock x:Uid="ResetGameBarSetting_Title" FontWeight="SemiBold" FontSize="16" />
-                                    <TextBlock x:Uid="ResetGameBarSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                                    <!-- <TextBlock x:Uid="ResetGameBarSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/> -->
+                                    <TextBlock x:Uid="ResetGameBarSetting_Title" services:Localized.Uid="ResetGameBarSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                    <TextBlock x:Uid="ResetGameBarSetting_Description" services:Localized.Uid="ResetGameBarSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                    <!-- <TextBlock x:Uid="ResetGameBarSetting_Note" services:Localized.Uid="ResetGameBarSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/> -->
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton"
+                                    <Button x:Name="ResetGameBarButton" x:Uid="ResetGameBarButton" services:Localized.Uid="ResetGameBarButton"
                                             Click="ResetGameBarButton_Click"
                                             FontSize="14" Padding="24,8"/>
                                     <ProgressRing x:Name="ResetGameBarProgressRing"
@@ -926,14 +991,15 @@
                         <!-- 標題（跨兩欄，置中） -->
                         <StackPanel x:Name="AboutTitleGroup" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                                     Spacing="8" HorizontalAlignment="Center" Width="700" Margin="0,0,0,0">
-                            <TextBlock x:Uid="AboutTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                            <TextBlock x:Uid="AboutDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap"/>
+                            <!-- 含品牌名：改由 code-behind 設值（同 SettingsTitleText）。 -->
+                            <TextBlock x:Name="AboutTitleText" services:Localized.Uid="AboutTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock x:Uid="AboutDescription" services:Localized.Uid="AboutDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <!-- 動作群組（WideState：Row 1 col 1，與發行資訊並排；NarrowState：Row 2 跨單欄） -->
                         <StackPanel x:Name="AboutActionsGroup" Grid.Row="1" Grid.Column="1"
                                     Spacing="8" HorizontalAlignment="Center" Width="700">
-                            <TextBlock x:Uid="AboutSection_Actions" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_Actions" services:Localized.Uid="AboutSection_Actions" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -949,21 +1015,19 @@
                                     </Grid.ColumnDefinitions>
                                     <FontIcon Glyph="&#xE8C8;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Uid="AboutActions_Title" FontWeight="SemiBold" FontSize="16"/>
+                                        <TextBlock x:Uid="AboutActions_Title" services:Localized.Uid="AboutActions_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap"/>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock x:Uid="Label_CapturedAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Uid="Label_CapturedAt" services:Localized.Uid="Label_CapturedAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                             <TextBlock x:Name="AboutCapturedAtText" FontSize="14" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Button x:Name="CopyAboutButton" x:Uid="CopyAboutButton"
+                                        <Button x:Name="CopyAboutButton" x:Uid="CopyAboutButton" services:Localized.Uid="CopyAboutButton"
                                                 Click="CopyAboutButton_Click"
-                                                FontSize="14" Padding="24,8"
-                                                XYFocusUp="{x:Bind CertDetailsButton}"/>
-                                        <Button x:Name="RefreshAboutButton" x:Uid="RefreshAboutButton"
+                                                FontSize="14" Padding="24,8"/>
+                                        <Button x:Name="RefreshAboutButton" x:Uid="RefreshAboutButton" services:Localized.Uid="RefreshAboutButton"
                                                 Click="RefreshAboutButton_Click"
-                                                FontSize="14" Padding="24,8"
-                                                XYFocusUp="{x:Bind CertDetailsButton}"/>
+                                                FontSize="14" Padding="24,8"/>
                                         <!-- 進度環用 Opacity 切顯隱（保持 20×20 佔位）避免按鈕 row 重排造成寬度抖動 -->
                                         <ProgressRing x:Name="RefreshAboutProgressRing"
                                                       IsActive="False" Opacity="0"
@@ -977,7 +1041,7 @@
                              卡片內顯示 commit hash 與 build 時間兩列；憑證指紋、source URL 由詳細資訊按鈕開啟對話方塊顯示 -->
                         <StackPanel x:Name="AboutReleaseInfoGroup" Grid.Row="1" Grid.Column="0"
                                     Spacing="8" HorizontalAlignment="Center" Width="700">
-                            <TextBlock x:Uid="AboutSection_ReleaseInfo" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_ReleaseInfo" services:Localized.Uid="AboutSection_ReleaseInfo" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -995,58 +1059,56 @@
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Spacing="2">
                                         <!-- Commit row -->
                                         <StackPanel x:Name="AboutReleaseInfoCommitRow" Orientation="Horizontal" Spacing="4">
-                                            <TextBlock x:Uid="Label_CommitHash" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Uid="Label_CommitHash" services:Localized.Uid="Label_CommitHash" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                             <HyperlinkButton x:Name="AboutReleaseInfoCommitLink"
-                                                             x:Uid="OpenCommitOnGitHubAccessibleName"
-                                                             FontSize="14" FontFamily="Consolas" Padding="0" Margin="0" VerticalAlignment="Center"
-                                                             XYFocusRight="{x:Bind CertDetailsButton}"
-                                                             XYFocusDown="{x:Bind CopyAboutButton}"/>
+                                                             x:Uid="OpenCommitOnGitHubAccessibleName" services:Localized.Uid="OpenCommitOnGitHubAccessibleName"
+                                                             FontSize="14" FontFamily="Consolas" Padding="0" Margin="0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <!-- Built row -->
                                         <StackPanel x:Name="AboutReleaseInfoBuiltRow" Orientation="Horizontal" Spacing="4">
-                                            <TextBlock x:Uid="Label_BuiltAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Uid="Label_BuiltAt" services:Localized.Uid="Label_BuiltAt" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                             <TextBlock x:Name="AboutReleaseInfoBuiltText" FontSize="14" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </StackPanel>
-                                    <Button x:Name="CertDetailsButton" x:Uid="CertDetailsButton" Grid.Column="2"
+                                    <Button x:Name="CertDetailsButton" x:Uid="CertDetailsButton" services:Localized.Uid="CertDetailsButton" Grid.Column="2"
                                             Click="CertDetailsButton_Click"
-                                            FontSize="14" Padding="24,8" VerticalAlignment="Center"
-                                            XYFocusLeft="{x:Bind AboutReleaseInfoCommitLink}"
-                                            XYFocusDown="{x:Bind CopyAboutButton}"/>
+                                            FontSize="14" Padding="24,8" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
                         </StackPanel>
 
                         <!-- OmniConsole Suite 群組（WideState：Row 3 col 0；NarrowState：Row 3 col 0） -->
                         <StackPanel x:Name="AboutSuiteGroup" Grid.Row="3" Grid.Column="0" Spacing="8" Width="700">
-                            <TextBlock x:Uid="AboutSection_Suite" FontSize="14" FontWeight="SemiBold"
+                            <!-- 含品牌名：改由 code-behind 設值（同 SettingsTitleText）。 -->
+                            <TextBlock x:Name="AboutSuiteSectionText" services:Localized.Uid="AboutSection_Suite" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_OmniConsole" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <!-- 含品牌名：改由 code-behind 設值（同 SettingsTitleText）。 -->
+                                        <TextBlock x:Name="LabelOmniConsoleText" services:Localized.Uid="Label_OmniConsole" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutOmniConsoleVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomBridge" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomBridge" services:Localized.Uid="Label_PhantomBridge" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomBridgeVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomKey" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomKey" services:Localized.Uid="Label_PhantomKey" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomLink" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomLink" services:Localized.Uid="Label_PhantomLink" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomLinkVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomPaw" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomPaw" services:Localized.Uid="Label_PhantomPaw" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomPawVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
@@ -1055,29 +1117,29 @@
 
                         <!-- PhantomKey 健康狀況群組（WideState：Row 4 col 0） -->
                         <StackPanel x:Name="AboutPhantomKeyGroup" Grid.Row="4" Grid.Column="0" Spacing="8" Width="700">
-                            <TextBlock x:Uid="AboutSection_PhantomKey" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_PhantomKey" services:Localized.Uid="AboutSection_PhantomKey" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomKeyProcess" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomKeyProcess" services:Localized.Uid="Label_PhantomKeyProcess" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyProcessText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomKeyUptime" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomKeyUptime" services:Localized.Uid="Label_PhantomKeyUptime" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyUptimeText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomKeyIntegrity" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomKeyIntegrity" services:Localized.Uid="Label_PhantomKeyIntegrity" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyIntegrityText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_PhantomKeyResponsiveness" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_PhantomKeyResponsiveness" services:Localized.Uid="Label_PhantomKeyResponsiveness" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyResponsivenessText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
@@ -1086,7 +1148,7 @@
 
                         <!-- XFSET 群組（WideState：Row 5 col 0） -->
                         <StackPanel x:Name="AboutXfsetGroup" Grid.Row="5" Grid.Column="0" Spacing="8" Width="700">
-                            <TextBlock x:Uid="AboutSection_Xfset" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_Xfset" services:Localized.Uid="AboutSection_Xfset" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
@@ -1107,34 +1169,34 @@
 
                         <!-- 硬體群組（WideState：Row 3 col 1） -->
                         <StackPanel x:Name="AboutHardwareGroup" Grid.Row="3" Grid.Column="1" Spacing="8" Width="700">
-                            <TextBlock x:Uid="AboutSection_Hardware" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_Hardware" services:Localized.Uid="AboutSection_Hardware" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_System" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_System" services:Localized.Uid="Label_System" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutSystemText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_Baseboard" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_Baseboard" services:Localized.Uid="Label_Baseboard" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutBaseboardText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_Cpu" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_Cpu" services:Localized.Uid="Label_Cpu" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutCpuText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_Ram" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_Ram" services:Localized.Uid="Label_Ram" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutRamText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_Gpu" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_Gpu" services:Localized.Uid="Label_Gpu" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutGpuText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
@@ -1143,39 +1205,39 @@
 
                         <!-- 系統群組（WideState：Row 4 col 1） -->
                         <StackPanel x:Name="AboutSystemGroup" Grid.Row="4" Grid.Column="1" Spacing="8" Width="700">
-                            <TextBlock x:Uid="AboutSection_System" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Uid="AboutSection_System" services:Localized.Uid="AboutSection_System" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Margin="2,0,0,0"/>
                             <ContentControl Style="{StaticResource AboutCardFocusStyle}" HorizontalAlignment="Stretch">
                                 <StackPanel Padding="16" Spacing="8">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_WindowsBuild" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_WindowsBuild" services:Localized.Uid="Label_WindowsBuild" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutWindowsBuildText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_FseState" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_FseState" services:Localized.Uid="Label_FseState" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutFseStateText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_MaxTouchPoints" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_MaxTouchPoints" services:Localized.Uid="Label_MaxTouchPoints" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutMaxTouchPointsText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_Locale" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_Locale" services:Localized.Uid="Label_Locale" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutLocaleText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_CountryRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_CountryRegion" services:Localized.Uid="Label_CountryRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutCountryRegionText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock x:Uid="Label_DeviceRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Uid="Label_DeviceRegion" services:Localized.Uid="Label_DeviceRegion" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutDeviceRegionText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
@@ -1204,7 +1266,7 @@
                         </StackPanel>
                     </NavigationViewItem.Content>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Nav_About" Tag="About" FontSize="24">
+                <NavigationViewItem x:Uid="Nav_About" services:Localized.Uid="Nav_About" Tag="About" FontSize="24">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE946;"/>
                     </NavigationViewItem.Icon>
@@ -1227,7 +1289,7 @@
                 <FontIcon Glyph="&#xF10D;" FontSize="22"
                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                           VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock x:Uid="GamepadHint_SwitchTab" FontSize="14"
+                <TextBlock x:Uid="GamepadHint_SwitchTab" services:Localized.Uid="GamepadHint_SwitchTab" FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -1235,7 +1297,7 @@
                 <FontIcon Glyph="&#xF093;" FontSize="22"
                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                           VerticalAlignment="Center"/>
-                <TextBlock x:Uid="GamepadHint_Select" FontSize="14"
+                <TextBlock x:Uid="GamepadHint_Select" services:Localized.Uid="GamepadHint_Select" FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -1249,7 +1311,7 @@
                     <FontIcon Glyph="&#xF095;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Add" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Add" services:Localized.Uid="GamepadHint_Add" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1264,7 +1326,7 @@
                     <FontIcon Glyph="&#xF096;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Edit" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Edit" services:Localized.Uid="GamepadHint_Edit" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1279,7 +1341,7 @@
                     <FontIcon Glyph="&#xEDE3;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Launch" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Launch" services:Localized.Uid="GamepadHint_Launch" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1294,7 +1356,7 @@
                     <FontIcon Glyph="&#xF096;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_DeleteProfile" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_DeleteProfile" services:Localized.Uid="GamepadHint_DeleteProfile" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1307,7 +1369,7 @@
                 <FontIcon Glyph="&#xF10D;" FontSize="22"
                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                           VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <TextBlock x:Uid="GamepadHint_SwitchPage" FontSize="14"
+                <TextBlock x:Uid="GamepadHint_SwitchPage" services:Localized.Uid="GamepadHint_SwitchPage" FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -1321,7 +1383,7 @@
                     <FontIcon Glyph="&#xF095;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Search" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Search" services:Localized.Uid="GamepadHint_Search" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1336,7 +1398,7 @@
                     <FontIcon Glyph="&#xF094;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_SaveReturn" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_SaveReturn" services:Localized.Uid="GamepadHint_SaveReturn" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1350,7 +1412,7 @@
                     <FontIcon Glyph="&#xF094;" FontSize="22"
                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                               VerticalAlignment="Center"/>
-                    <TextBlock x:Uid="GamepadHint_Exit" FontSize="14"
+                    <TextBlock x:Uid="GamepadHint_Exit" services:Localized.Uid="GamepadHint_Exit" FontSize="14"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -1358,13 +1420,13 @@
         </StackPanel>
         <!-- 匯出成功提示（IsLightDismissEnabled：點選任意處關閉） -->
         <TeachingTip x:Name="ExportSuccessTeachingTip"
-                     x:Uid="ExportSuccessTeachingTip"
+                     x:Uid="ExportSuccessTeachingTip" services:Localized.Uid="ExportSuccessTeachingTip"
                      PreferredPlacement="Bottom"
                      IsLightDismissEnabled="False"/>
 
         <!-- 關於頁複製成功提示：樣式與 ExportSuccessTeachingTip 一致 -->
         <TeachingTip x:Name="AboutCopyConfirmTeachingTip"
-                     x:Uid="AboutCopyConfirmTeachingTip"
+                     x:Uid="AboutCopyConfirmTeachingTip" services:Localized.Uid="AboutCopyConfirmTeachingTip"
                      PreferredPlacement="Bottom"
                      IsLightDismissEnabled="False"/>
     </Grid>

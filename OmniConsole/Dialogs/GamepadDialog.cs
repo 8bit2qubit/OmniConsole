@@ -51,6 +51,16 @@ namespace OmniConsole.Dialogs
             _keyboardAvoidanceCleanup = null;
         }
 
+        // ── 虛擬化清單捲動 / 聚焦的共用時序工具（雙欄 ListView 對話方塊共用） ──────────
+
+        /// <summary>把虛擬化清單捲到指定索引項目（等容器就緒再捲、根治 ScrollIntoView 時序問題）。</summary>
+        protected static void ScrollIntoViewWhenReady(ListView list, int index)
+            => FocusNavHelper.ScrollIntoViewWhenReady(list, index);
+
+        /// <summary>同上但容器就緒後再聚焦該項（捲＋聚焦合一）。</summary>
+        protected static void FocusListItemWhenReady(ListView list, int index)
+            => FocusNavHelper.FocusListItemWhenReady(list, index);
+
         // ── IGamepadInputScope（A/B 鍵與焦點搜尋根的預設語意；子類可覆寫，OnB 最常見） ──────────
 
         UIElement IGamepadInputScope.SearchRoot => this;

@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -20,7 +19,7 @@ namespace OmniConsole.Dialogs
     /// </summary>
     public sealed partial class FilePickerDialog : GamepadDialog
     {
-        private readonly ResourceLoader _resourceLoader;
+        private readonly ResourceLoader _resourceLoader = new();
         private readonly FilePickerOptions _options;
         private readonly List<SidebarItem> _sidebarItems = [];
         private CancellationTokenSource? _previewCts;
@@ -42,36 +41,36 @@ namespace OmniConsole.Dialogs
         /// <summary>
         /// 初始化檔案選擇器，設定版面配置模式、側邊欄、在地化文字與事件繫結。
         /// </summary>
-        public FilePickerDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader, FilePickerOptions options)
+        public FilePickerDialog(XamlRoot xamlRoot, FilePickerOptions options)
         {
             InitializeComponent();
             XamlRoot = xamlRoot;
-            _resourceLoader = resourceLoader;
             _options = options;
 
-            Title = resourceLoader.GetString("FilePickerDialog_Title");
-            PrimaryButtonText = resourceLoader.GetString("FilePickerDialog_Select");
-            CloseButtonText = resourceLoader.GetString("PlatformDialog_Cancel");
+            Title = _resourceLoader.Loc("FilePickerDialog_Title");
+            PrimaryButtonText = _resourceLoader.Loc("FilePickerDialog_Select");
+            CloseButtonText = _resourceLoader.Loc("PlatformDialog_Cancel");
             IsPrimaryButtonEnabled = false;
 
             FileTypeFilterText.Text = options.FilterDisplayName ?? string.Join("; ", options.FileTypeFilters.Select(f => $"*{f}"));
 
-            // 根據模式設定寬度：有預覽時加寬
+            // 根據模式設定寬度（恆定，不隨檔名/項目抖動）：有預覽時加寬。
+            // 寬度的「真開關」在這裡，不在 XAML（XAML 設 RootGrid.Width 會被此處覆蓋）。
             if (options.ShowImagePreview)
             {
-                RootGrid.Width = 780;
-                PreviewColumn.Width = new GridLength(180);
+                RootGrid.Width = 1040; // 有預覽：加寬以容納側邊欄 + 檔案清單 + 預覽欄
+                PreviewColumn.Width = new GridLength(280);
                 PreviewPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                RootGrid.Width = 600;
+                RootGrid.Width = 820; // 無預覽：較窄（無預覽欄、檔案清單佔剩餘寬度）
             }
 
             BuildSidebar();
 
-            ToolTipService.SetToolTip(NavigateUpButton, resourceLoader.GetString("FilePickerDialog_NavigateUp"));
-            LegacyPickerButtonText.Text = resourceLoader.GetString("FilePickerDialog_LegacyPicker");
+            ToolTipService.SetToolTip(NavigateUpButton, _resourceLoader.Loc("FilePickerDialog_NavigateUp"));
+            LegacyPickerButtonText.Text = _resourceLoader.Loc("FilePickerDialog_LegacyPicker");
 
             // 事件
             NavigateUpButton.Click += NavigateUpButton_Click;
@@ -133,12 +132,12 @@ namespace OmniConsole.Dialogs
         /// <summary>將快速存取資料夾英文名稱轉為在地化顯示名稱。</summary>
         private string GetLocalizedFolderName(string englishName) => englishName switch
         {
-            "Desktop" => _resourceLoader.GetString("FilePickerDialog_Desktop"),
-            "Downloads" => _resourceLoader.GetString("FilePickerDialog_Downloads"),
-            "Documents" => _resourceLoader.GetString("FilePickerDialog_Documents"),
-            "Pictures" => _resourceLoader.GetString("FilePickerDialog_Pictures"),
-            "Music" => _resourceLoader.GetString("FilePickerDialog_Music"),
-            "Videos" => _resourceLoader.GetString("FilePickerDialog_Videos"),
+            "Desktop" => _resourceLoader.Loc("FilePickerDialog_Desktop"),
+            "Downloads" => _resourceLoader.Loc("FilePickerDialog_Downloads"),
+            "Documents" => _resourceLoader.Loc("FilePickerDialog_Documents"),
+            "Pictures" => _resourceLoader.Loc("FilePickerDialog_Pictures"),
+            "Music" => _resourceLoader.Loc("FilePickerDialog_Music"),
+            "Videos" => _resourceLoader.Loc("FilePickerDialog_Videos"),
             _ => englishName
         };
 
@@ -165,6 +164,7 @@ namespace OmniConsole.Dialogs
             DebugLogger.Log($"[NavigateTo] path={path}, focusItemName={focusItemName}");
             _currentPath = path;
             CurrentPathText.Text = path;
+            SyncSidebarSelection(path);
             _selectedFile = null;
             SelectedFilePath = null;
             IsPrimaryButtonEnabled = false;
@@ -196,7 +196,7 @@ namespace OmniConsole.Dialogs
                 AccessDeniedText.Visibility = Visibility.Collapsed;
 
                 if (EmptyFolderText.Visibility == Visibility.Visible)
-                    EmptyFolderText.Text = _resourceLoader.GetString("FilePickerDialog_EmptyFolder");
+                    EmptyFolderText.Text = _resourceLoader.Loc("FilePickerDialog_EmptyFolder");
 
                 // 強制版面配置後把焦點設到目標項目（返回上層時定位到剛才的資料夾）
                 if (items.Count == 0)
@@ -224,7 +224,7 @@ namespace OmniConsole.Dialogs
                 FileListView.Visibility = Visibility.Collapsed;
                 EmptyFolderText.Visibility = Visibility.Collapsed;
                 AccessDeniedText.Visibility = Visibility.Visible;
-                AccessDeniedText.Text = _resourceLoader.GetString("FilePickerDialog_AccessDenied");
+                AccessDeniedText.Text = _resourceLoader.Loc("FilePickerDialog_AccessDenied");
             }
 
             // 上層按鈕狀態
@@ -243,35 +243,10 @@ namespace OmniConsole.Dialogs
             };
         }
 
-        /// <summary>強制版面配置後將焦點設到指定索引的檔案清單項目。容器尚未生成時透過 ContainerContentChanging 等待生成。</summary>
+        /// <summary>將焦點設到指定索引的檔案清單項目（捲＋聚焦由 GamepadDialog 基底類別處理）。</summary>
         private void FocusFileListItem(int index)
         {
-            var items = FileListView.ItemsSource as List<FileListItem>;
-            if (items == null || index >= items.Count) return;
-
-            // 先捲動到目標項目，確保虛擬化容器被生成
-            FileListView.ScrollIntoView(items[index]);
-            FileListView.UpdateLayout();
-
-            var c1 = FileListView.ContainerFromIndex(index);
-            DebugLogger.Log($"[FocusFile] after ScrollIntoView+UpdateLayout: index={index}, container={c1?.GetType().Name}");
-
-            if (c1 is SelectorItem container)
-            {
-                container.Focus(FocusStateHelper.Preferred);
-                return;
-            }
-
-            // 容器尚未生成：等 ContainerContentChanging 觸發
-            void OnContainerReady(ListViewBase sender, ContainerContentChangingEventArgs args)
-            {
-                if (args.ItemIndex == index)
-                {
-                    FileListView.ContainerContentChanging -= OnContainerReady;
-                    args.ItemContainer.Focus(FocusStateHelper.Preferred);
-                }
-            }
-            FileListView.ContainerContentChanging += OnContainerReady;
+            FocusListItemWhenReady(FileListView, index);
         }
 
         /// <summary>上層按鈕點選：返回上層目錄。</summary>
@@ -285,6 +260,36 @@ namespace OmniConsole.Dialogs
         {
             if (e.ClickedItem is SidebarItem item && !string.IsNullOrEmpty(item.Path))
                 NavigateTo(item.Path);
+        }
+
+        /// <summary>
+        /// 依目前路徑同步側邊欄選取狀態，讓 selection 指示器亮在對應捷徑/磁碟上（focus 與 selection 合一）。
+        /// 規則＝亮「最具體的祖先」：目前路徑落在多個側邊欄項底下時（分類資料夾如「下載」本身也在 C: 底下會重疊），
+        /// 選路徑最長者（分類 > 磁碟）。都不沾則清空選取。SingleSelectionFollowsFocus=False 下設 SelectedItem
+        /// 只改 selection 視覺、不搶焦點，故不干擾「焦點落右側檔案清單」。
+        /// </summary>
+        private void SyncSidebarSelection(string path)
+        {
+            string current = path.TrimEnd('\\');
+            SidebarItem? best = null;
+            int bestLen = -1;
+            foreach (var item in _sidebarItems)
+            {
+                if (string.IsNullOrEmpty(item.Path)) continue; // 跳過分隔線空項
+                string itemPath = item.Path.TrimEnd('\\');
+
+                // 目前路徑 == 該項，或在該項底下（前綴須止於目錄邊界，避免 C:\Downloads 誤命中 C:\DownloadsBackup）
+                bool isSelfOrDescendant =
+                    string.Equals(current, itemPath, StringComparison.OrdinalIgnoreCase)
+                    || current.StartsWith(itemPath + "\\", StringComparison.OrdinalIgnoreCase);
+
+                if (isSelfOrDescendant && itemPath.Length > bestLen)
+                {
+                    best = item;
+                    bestLen = itemPath.Length; // 路徑越長 = 越具體的祖先（分類資料夾勝過其所在磁碟）
+                }
+            }
+            SidebarListView.SelectedItem = best; // null = 目前路徑不在任何側邊欄項底下
         }
 
         /// <summary>
@@ -369,7 +374,8 @@ namespace OmniConsole.Dialogs
                 using var stream = await file.OpenReadAsync();
                 if (token.IsCancellationRequested) return;
 
-                var bitmap = new BitmapImage { DecodePixelWidth = 200 };
+                // DecodePixelWidth 512＝預覽 Border 寬 256 的 2x，高 DPI 下仍清晰（200 配舊 160 框、放大後模糊）。
+                var bitmap = new BitmapImage { DecodePixelWidth = 512 };
                 await bitmap.SetSourceAsync(stream);
                 if (token.IsCancellationRequested) return;
 
@@ -449,7 +455,7 @@ namespace OmniConsole.Dialogs
 
     // ── ListView 項目資料模型 ──────────────────────────────────────────────
     // 放在 namespace 層級（非 nested）：x:DataType 須經 xmlns 引用，nested type XAML 不易引；internal 即可。
-    // 用 x:Bind 不用 {Binding}：後者走反射，Native AOT 下屬性路徑被 trim，清單只剩空白容器。
+    // 用 x:Bind 不用 {Binding}：後者走反射，Native AOT 下屬性路徑被裁剪，清單只剩空白容器。
 
     /// <summary>側邊欄項目。</summary>
     internal sealed record SidebarItem(string DisplayName, string Path, string Glyph);

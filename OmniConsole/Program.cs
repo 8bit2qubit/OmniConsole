@@ -20,6 +20,18 @@ namespace OmniConsole
 
             DebugLogger.Log("=== Main() started ===");
 
+            // 語言：PrimaryLanguageOverride 必須在「任何資源載入前」設定（故置於 Main 最早處）。
+            // 太晚設的話，x:Uid 綁定的 PRI 資源已用啟動當下的語言解析完、來不及改（要重啟才正確）。
+            // 偏好讀自共用設定（空＝跟隨系統）。此設定只影響官方語言的 PRI 解析（外掛語言另由翻譯層處理）。
+            try
+            {
+                var uiLang = SettingsService.GetUiLanguage();
+                // 覆寫設定會持久化：「跟隨系統」（空偏好）時必須主動設空字串「清除」殘留（非「不設」），否則回不到系統語言。
+                Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = uiLang ?? string.Empty;
+                DebugLogger.Log($"PrimaryLanguageOverride set early = '{uiLang}' (empty = cleared, follow system)");
+            }
+            catch (Exception ex) { DebugLogger.Log($"PrimaryLanguageOverride FAIL: {ex.Message}"); }
+
             // 偵測是否透過特定方式啟動（Settings 入口或 Protocol URIs）
             bool isSettingsEntry = false;
             var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
@@ -114,12 +126,14 @@ namespace OmniConsole
                     }
                 }
 
-                // 3. PhantomLink 安裝完成後透過 RequestRestartAsync 重啟，導向設定頁
-                if (!isSettingsEntry && SettingsService.GetPendingSettingsRestart())
+                // 3. 「重啟後導向設定頁」旗標（更新流程或語言切換等重啟場景會設）。
+                //    必須「無條件消費」（先讀後清、勿加 !isSettingsEntry 短路）：否則旗標殘留會污染下次啟動、誤進設定頁。
+                bool pendingSettingsRestart = SettingsService.GetPendingSettingsRestart();
+                if (pendingSettingsRestart)
                 {
                     SettingsService.SetPendingSettingsRestart(false);
                     isSettingsEntry = true;
-                    DebugLogger.Log("PendingSettingsRestart = True → settings entry");
+                    DebugLogger.Log("PendingSettingsRestart = True → settings entry (consumed)");
                 }
 
                 // 4. 檢查是否為首次啟動或更新後的首次啟動

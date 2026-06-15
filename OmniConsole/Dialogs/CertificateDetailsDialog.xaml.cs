@@ -15,6 +15,7 @@ namespace OmniConsole.Dialogs
     public sealed partial class CertificateDetailsDialog : GamepadDialog
     {
         private readonly string _thumbprint;
+        private readonly ResourceLoader _resourceLoader = new();
 
         /// <summary>建構：接收指紋（冒號分隔大寫）、設定按鈕文字、掛上事件。Source URL 指向官方 repo。</summary>
         public CertificateDetailsDialog(XamlRoot xamlRoot, string thumbprint)
@@ -23,10 +24,11 @@ namespace OmniConsole.Dialogs
             XamlRoot = xamlRoot;
             _thumbprint = thumbprint ?? string.Empty;
 
-            var loader = new ResourceLoader();
-            Title = loader.GetString("CertDetailsDialog_Title");
-            PrimaryButtonText = loader.GetString("CertDetailsDialog_CopyButton");
-            CloseButtonText = loader.GetString("CertDetailsDialog_CloseButton");
+            Title = _resourceLoader.Loc("CertDetailsDialog_Title");
+            PrimaryButtonText = _resourceLoader.Loc("CertDetailsDialog_CopyButton");
+            CloseButtonText = _resourceLoader.Loc("CertDetailsDialog_CloseButton");
+            // 含品牌名：由 code-behind 設值（注入品牌）。
+            BodyText.Text = _resourceLoader.Loc("CertDetailsDialog_Body");
 
             ThumbprintText.Text = _thumbprint;
 

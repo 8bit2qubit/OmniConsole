@@ -8,7 +8,7 @@
     RequestedTheme="Dark">
 
     <dialogs:GamepadDialog.Resources>
-        <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
+        <x:Double x:Key="ContentDialogMaxWidth">1120</x:Double>
         <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
         <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
         <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
@@ -18,7 +18,9 @@
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
     </dialogs:GamepadDialog.Resources>
 
-    <Grid x:Name="RootGrid" MinHeight="400">
+    <!-- 固定 Height 恆定（檔案數變動不撐高/縮回，Row 1(*) 與 FileListView 填滿、內部捲動）。
+         Width 不在此設：由 code-behind 建構式依「選圖/非選圖」模式設 RootGrid.Width（設這裡會被覆蓋）。 -->
+    <Grid x:Name="RootGrid" Height="500">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -102,13 +104,13 @@
                 <Border CornerRadius="4"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         BorderThickness="1"
-                        Width="160" Height="112"
+                        Width="256" Height="180"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <Image x:Name="PreviewImage" Stretch="Uniform"/>
                 </Border>
                 <TextBlock x:Name="PreviewFileName" FontSize="12"
                            HorizontalAlignment="Center"
-                           TextTrimming="CharacterEllipsis" MaxWidth="160"/>
+                           TextTrimming="CharacterEllipsis" MaxWidth="256"/>
                 <TextBlock x:Name="PreviewDimensions" FontSize="11"
                            HorizontalAlignment="Center"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>

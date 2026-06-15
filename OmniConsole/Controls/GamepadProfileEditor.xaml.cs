@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
 using OmniConsole.Models;
 using OmniConsole.Services;
@@ -7,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Resources;
 using static OmniConsole.Services.GamepadProfileMappingHelper;
 
 namespace OmniConsole.Controls
@@ -20,7 +20,7 @@ namespace OmniConsole.Controls
         // 玩家手動切到「自訂」後即使 4 子列湊巧等價於某預設組合，主行維持「自訂」
         private bool _dpadEditingCustom = false;
 
-        private readonly ResourceLoader _resw = ResourceLoader.GetForViewIndependentUse();
+        private readonly ResourceLoader _resourceLoader = new();
         private Dictionary<GamepadInputId, (ComboBox combo, Button? keyBtn)> _rows = new();
         private GamepadProfile? _editing;
         private bool _isNew;
@@ -113,7 +113,7 @@ namespace OmniConsole.Controls
         {
             combo.Items.Add(new ComboBoxItem
             {
-                Content = _resw.Loc(reswKey),
+                Content = _resourceLoader.Loc(reswKey),
                 Tag = opt
             });
         }
@@ -328,7 +328,7 @@ namespace OmniConsole.Controls
             if (!show) return;
 
             var a = _editing!.Get(id);
-            string baseText = _resw.Loc("GamepadMappingChangeKeyButton").TrimEnd('…');
+            string baseText = _resourceLoader.Loc("GamepadMappingChangeKeyButton").TrimEnd('…');
             if (string.IsNullOrEmpty(baseText) || baseText == "GamepadMappingChangeKeyButton") baseText = "Change key";
             string keyText = (opt == ActionOption.KeyCombo) ? ComboName(a) : KeyName(a.Vk);
             keyBtn.Content = baseText + ": " + keyText;
@@ -365,7 +365,7 @@ namespace OmniConsole.Controls
             if (!Enum.TryParse<GamepadInputId>(tagStr, out var id)) return;
             var a = _editing.Get(id);
             bool isCombo = a.Kind == GamepadActionKind.KeyCombo;
-            var dlg = new ChangeKeyDialog(XamlRoot, _resw, a, isCombo);
+            var dlg = new ChangeKeyDialog(XamlRoot, a, isCombo);
             await ShowDialogAsync(dlg);
             if (dlg.Result != null)
             {
@@ -383,10 +383,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                _resw.Loc("GamepadMappingResetConfirmTitle"),
-                _resw.Loc("GamepadMappingResetConfirmBody"),
-                _resw.Loc("GamepadMappingResetConfirmYes"),
-                _resw.Loc("GamepadKeyPickerCancel"));
+                _resourceLoader.Loc("GamepadMappingResetConfirmTitle"),
+                _resourceLoader.Loc("GamepadMappingResetConfirmBody"),
+                _resourceLoader.Loc("GamepadMappingResetConfirmYes"),
+                _resourceLoader.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -403,10 +403,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                _resw.Loc("GamepadMappingResetClassicConfirmTitle"),
-                _resw.Loc("GamepadMappingResetClassicConfirmBody"),
-                _resw.Loc("GamepadMappingResetClassicConfirmYes"),
-                _resw.Loc("GamepadKeyPickerCancel"));
+                _resourceLoader.Loc("GamepadMappingResetClassicConfirmTitle"),
+                _resourceLoader.Loc("GamepadMappingResetClassicConfirmBody"),
+                _resourceLoader.Loc("GamepadMappingResetClassicConfirmYes"),
+                _resourceLoader.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -423,10 +423,10 @@ namespace OmniConsole.Controls
             Button? originBtn = sender as Button;
             if (_editing == null) return;
             var dlg = new GamepadMessageDialog(XamlRoot,
-                _resw.Loc("GamepadMappingClearAllConfirmTitle"),
-                _resw.Loc("GamepadMappingClearAllConfirmBody"),
-                _resw.Loc("GamepadMappingClearAllConfirmYes"),
-                _resw.Loc("GamepadKeyPickerCancel"));
+                _resourceLoader.Loc("GamepadMappingClearAllConfirmTitle"),
+                _resourceLoader.Loc("GamepadMappingClearAllConfirmBody"),
+                _resourceLoader.Loc("GamepadMappingClearAllConfirmYes"),
+                _resourceLoader.Loc("GamepadKeyPickerCancel"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
@@ -450,7 +450,7 @@ namespace OmniConsole.Controls
             catch { return; }
             if (others.Count == 0) return;
 
-            var dlg = new CopyFromProfileDialog(XamlRoot, _resw, others);
+            var dlg = new CopyFromProfileDialog(XamlRoot, others);
             await ShowDialogAsync(dlg);
             if (dlg.SelectedAppId != null)
             {
@@ -474,15 +474,18 @@ namespace OmniConsole.Controls
         public async void DeleteCurrent()
         {
             if (_editing == null || _isNew) { Closed?.Invoke(this, EventArgs.Empty); return; }
+            var appId = _editing.AppId;
+            if (appId == null) { Closed?.Invoke(this, EventArgs.Empty); return; }
+            string appName = !string.IsNullOrEmpty(_editing.DisplayName) ? _editing.DisplayName : (appId.Value ?? string.Empty);
             var dlg = new GamepadMessageDialog(XamlRoot,
-                _resw.Loc("GamepadMappingDeleteConfirmTitle"),
-                _resw.Loc("GamepadMappingDeleteConfirmBody"),
-                _resw.Loc("GamepadMappingDeleteConfirmYes"),
-                _resw.Loc("GamepadMappingDeleteConfirmNo"));
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmTitle"),
+                string.Format(_resourceLoader.Loc("GamepadMappingDeleteConfirmBody"), appName),
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmYes"),
+                _resourceLoader.Loc("GamepadMappingDeleteConfirmNo"));
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
-                GamepadProfileStore.Delete(_editing.AppId);
+                GamepadProfileStore.Delete(appId);
                 Deleted?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -501,9 +504,9 @@ namespace OmniConsole.Controls
             if (GamepadProfileStore.IsBlacklisted(_editing.AppId))
             {
                 var dlg = new GamepadMessageDialog(XamlRoot,
-                    _resw.Loc("GamepadMappingBlacklistedTitle"),
-                    _resw.Loc("GamepadMappingBlacklistedBody"),
-                    _resw.Loc("GamepadKeyPickerOk"),
+                    _resourceLoader.Loc("GamepadMappingBlacklistedTitle"),
+                    _resourceLoader.Loc("GamepadMappingBlacklistedBody"),
+                    _resourceLoader.Loc("GamepadKeyPickerOk"),
                     null);
                 await ShowDialogAsync(dlg);
                 return;
@@ -512,10 +515,10 @@ namespace OmniConsole.Controls
             if (_editing.IsEffectivelyEmpty())
             {
                 var dlg = new GamepadMessageDialog(XamlRoot,
-                    _resw.Loc("GamepadMappingEmptyRemoveTitle"),
-                    _resw.Loc("GamepadMappingEmptyRemoveBody"),
-                    _resw.Loc("GamepadMappingEmptyRemoveYes"),
-                    _resw.Loc("GamepadKeyPickerCancel"));
+                    _resourceLoader.Loc("GamepadMappingEmptyRemoveTitle"),
+                    _resourceLoader.Loc("GamepadMappingEmptyRemoveBody"),
+                    _resourceLoader.Loc("GamepadMappingEmptyRemoveYes"),
+                    _resourceLoader.Loc("GamepadKeyPickerCancel"));
                 await ShowDialogAsync(dlg);
                 if (!dlg.Result) return;
 
@@ -552,7 +555,7 @@ namespace OmniConsole.Controls
             {
                 if (!string.IsNullOrEmpty(entry.ReswKey))
                 {
-                    string s = _resw.Loc(entry.ReswKey);
+                    string s = _resourceLoader.Loc(entry.ReswKey);
                     if (!string.IsNullOrEmpty(s) && s != entry.ReswKey) return s;
                 }
                 return entry.FallbackText;
@@ -564,10 +567,10 @@ namespace OmniConsole.Controls
         private string ComboName(GamepadAction a)
         {
             var parts = new List<string>();
-            if ((a.Mods & GamepadModifier.Ctrl) != 0) parts.Add(_resw.Loc("GamepadModifier_Ctrl"));
-            if ((a.Mods & GamepadModifier.Shift) != 0) parts.Add(_resw.Loc("GamepadModifier_Shift"));
-            if ((a.Mods & GamepadModifier.Alt) != 0) parts.Add(_resw.Loc("GamepadModifier_Alt"));
-            if ((a.Mods & GamepadModifier.Win) != 0) parts.Add(_resw.Loc("GamepadModifier_Win"));
+            if ((a.Mods & GamepadModifier.Ctrl) != 0) parts.Add(_resourceLoader.Loc("GamepadModifier_Ctrl"));
+            if ((a.Mods & GamepadModifier.Shift) != 0) parts.Add(_resourceLoader.Loc("GamepadModifier_Shift"));
+            if ((a.Mods & GamepadModifier.Alt) != 0) parts.Add(_resourceLoader.Loc("GamepadModifier_Alt"));
+            if ((a.Mods & GamepadModifier.Win) != 0) parts.Add(_resourceLoader.Loc("GamepadModifier_Win"));
             parts.Add(KeyName(a.Vk));
             return string.Join("+", parts);
         }
@@ -590,8 +593,8 @@ namespace OmniConsole.Controls
         {
             if (appId == null) return string.Empty;
             string prefix = appId.Kind == IdKind.Aumid
-                ? _resw.Loc("AppIdAumidPrefix")
-                : _resw.Loc("AppIdProcessPrefix");
+                ? _resourceLoader.Loc("AppIdAumidPrefix")
+                : _resourceLoader.Loc("AppIdProcessPrefix");
             return prefix + (appId.Value ?? string.Empty);
         }
     }

@@ -121,7 +121,7 @@
     <value>正在啟動...</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
-    <value>OmniConsole 設定</value>
+    <value>{OmniConsole} 設定</value>
   </data>
   <data name="SettingsDescription" xml:space="preserve">
     <value>預設平台：{0}</value>
@@ -148,19 +148,19 @@
     <value>返回桌面</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Xbox 模式 (FSE) 尚未啟用，請先啟用後手動重啟 OmniConsole。</value>
+    <value>Xbox 模式 (FSE) 尚未啟用，請先啟用後手動重啟 {OmniConsole}。</value>
   </data>
   <data name="FseHandheldRequired" xml:space="preserve">
-    <value>偵測到 PC 限制版 Xbox 模式 (FSE)，但 OmniConsole 需要掌機完整版。請使用 Xbox Full Screen Experience Tool 啟用後，手動重啟 OmniConsole。</value>
+    <value>偵測到 PC 限制版 Xbox 模式 (FSE)，但 {OmniConsole} 需要掌機完整版。請使用 Xbox Full Screen Experience Tool 啟用後，手動重啟 {OmniConsole}。</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>請前往 Windows 設定 → 遊戲 → Xbox 模式 (FSE)，在「選擇主畫面應用程式」中指定 OmniConsole，完成後手動重啟 OmniConsole。</value>
+    <value>請前往 Windows 設定 → 遊戲 → Xbox 模式 (FSE)，在「選擇主畫面應用程式」中指定 {OmniConsole}，完成後手動重啟 {OmniConsole}。</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
     <value>啟用 Xbox 模式 (FSE)</value>
   </data>
   <data name="OpenFseSettingsButton.Content" xml:space="preserve">
-    <value>將 OmniConsole 設為主畫面應用程式</value>
+    <value>將 {OmniConsole} 設為主畫面應用程式</value>
   </data>
   <data name="Platform_SteamBigPicture" xml:space="preserve">
     <value>Steam Big Picture</value>
@@ -265,13 +265,13 @@
   <data name="MouseModeSetting_Description.Text" xml:space="preserve">
     <value>關閉：停用。自動：見下方支援清單。強制開啟：所有應用程式。</value>
   </data>
-  <data name="MouseModeItem_Off.Content" xml:space="preserve">
+  <data name="MouseModeItem_Off" xml:space="preserve">
     <value>關閉</value>
   </data>
-  <data name="MouseModeItem_Auto.Content" xml:space="preserve">
+  <data name="MouseModeItem_Auto" xml:space="preserve">
     <value>自動</value>
   </data>
-  <data name="MouseModeItem_ForceOn.Content" xml:space="preserve">
+  <data name="MouseModeItem_ForceOn" xml:space="preserve">
     <value>強制開啟</value>
   </data>
   <data name="MouseModeSetting_Note.Text" xml:space="preserve">
@@ -311,7 +311,7 @@
     <value>直接導向平台</value>
   </data>
   <data name="PassthroughSetting_Description.Text" xml:space="preserve">
-    <value>「首頁」和「媒體櫃」按鈕將直接導向預設平台，跳過 OmniConsole。</value>
+    <value>「首頁」和「媒體櫃」按鈕將直接導向預設平台，跳過 {OmniConsole}。</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
     <value>目前僅支援 Xbox App。媒體櫃按鈕以上方設定為優先。</value>
@@ -386,7 +386,7 @@
     <value>建議尺寸：800 x 560 px（10:7）</value>
   </data>
   <data name="PlatformDialog_ConfigWarning" xml:space="preserve">
-    <value>注意：配置不正確可能導致平台啟動失敗或產生非預期的行為。</value>
+    <value>注意：組態不正確可能導致平台啟動失敗或產生非預期的行為。</value>
   </data>
   <data name="PlatformDialog_ValidationNameTooLong" xml:space="preserve">
     <value>名稱不可超過 50 個字元。</value>
@@ -404,7 +404,7 @@
     <value>系統沒有已登錄的應用程式可處理此 URI 配置。</value>
   </data>
   <data name="PlatformDialog_ValidationUriSelf" xml:space="preserve">
-    <value>無法將 OmniConsole 自身加為平台，這會導致循環重新啟動。</value>
+    <value>無法將 {OmniConsole} 自身加為平台，這會導致循環重新啟動。</value>
   </data>
   <data name="PlatformDialog_ValidationPathInvalid" xml:space="preserve">
     <value>路徑格式無效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
@@ -419,12 +419,12 @@
     <value>自訂平台支援（實驗性功能）</value>
   </data>
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
-    <value>此功能允許您自行新增自訂平台啟動配置。請在繼續之前仔細閱讀以下內容：
+    <value>此功能允許您自行新增自訂平台啟動組態。請在繼續之前仔細閱讀以下內容：
 
 - 本軟體按「現狀」提供，不提供明示或默示的擔保；此自訂功能為實驗性質，更不提供任何保證。
-- 配置錯誤的平台可能無法正常啟動，進而導致 Xbox 模式 (FSE) 環境崩潰，甚至必須重設應用程式才能恢復正常。
-- 開發者不對因使用本程式或自訂平台配置所造成的任何損害、資料遺失或其他問題承擔責任。
-- 您需自行確保所有配置的安全性、正確性及合法性。
+- 組態錯誤的平台可能無法正常啟動，進而導致 Xbox 模式 (FSE) 環境崩潰，甚至必須重設應用程式才能恢復正常。
+- 開發者不對因使用本程式或自訂平台組態所造成的任何損害、資料遺失或其他問題承擔責任。
+- 您需自行確保所有組態的安全性、正確性及合法性。
 
 點選「我了解並接受」即表示您已充分了解上述風險，並同意完全自行斟酌決定，承擔使用此功能的一切責任與後果。</value>
   </data>
@@ -477,7 +477,7 @@
     <value>請選取封裝套件。</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppSelf" xml:space="preserve">
-    <value>無法將 OmniConsole 本身加入為平台。</value>
+    <value>無法將 {OmniConsole} 本身加入為平台。</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppGameBar" xml:space="preserve">
     <value>無法將 Game Bar 加入為平台。</value>
@@ -485,7 +485,7 @@
   <data name="PlatformDialog_ValidationPackagedAppNotAllowed" xml:space="preserve">
     <value>此套件無法作為平台使用（例如延伸模組、背景服務或執行時期元件）。</value>
   </data>
-  <data name="CardMenu_Export.Text" xml:space="preserve">
+  <data name="CardMenu_Export" xml:space="preserve">
     <value>匯出</value>
   </data>
   <data name="ImportPlatformButton.Content" xml:space="preserve">
@@ -495,7 +495,7 @@
     <value>匯入平台</value>
   </data>
   <data name="ImportPlatformDialog_Warning" xml:space="preserve">
-    <value>注意：請僅匯入來自信任來源的配置。惡意配置可能啟動有害的程式。</value>
+    <value>注意：請僅匯入來自信任來源的組態。惡意組態可能啟動有害的程式。</value>
   </data>
   <data name="ImportPlatformDialog_Placeholder" xml:space="preserve">
     <value>在此貼上 JSON… 例如
@@ -534,7 +534,7 @@
     <value>系統沒有已登錄的應用程式可處理此 URI 配置。</value>
   </data>
   <data name="Import_Error_UriSelf" xml:space="preserve">
-    <value>無法匯入 OmniConsole 自身作為平台。</value>
+    <value>無法匯入 {OmniConsole} 自身作為平台。</value>
   </data>
   <data name="Import_Error_InvalidExecutable" xml:space="preserve">
     <value>執行檔路徑須以 .exe 結尾。</value>
@@ -549,7 +549,7 @@
     <value>已複製！</value>
   </data>
   <data name="ExportSuccessTeachingTip.Subtitle" xml:space="preserve">
-    <value>平台配置已複製到剪貼簿。</value>
+    <value>平台組態已複製到剪貼簿。</value>
   </data>
   <data name="FilePickerDialog_Title" xml:space="preserve">
     <value>選取檔案</value>
@@ -612,37 +612,37 @@
     <value>下載並安裝</value>
   </data>
   <data name="UpdateCheck_NewVersion_Subtitle" xml:space="preserve">
-    <value>OmniConsole v{0} 已可下載。</value>
+    <value>{OmniConsole} v{0} 已可下載。</value>
   </data>
   <data name="UpdateCheck_UpToDate_Subtitle" xml:space="preserve">
-    <value>OmniConsole 目前為最新版本。</value>
+    <value>{OmniConsole} 目前為最新版本。</value>
   </data>
   <data name="UpdateCheck_Failed_Subtitle" xml:space="preserve">
     <value>請確認網路連線後再試。</value>
   </data>
   <data name="UpdateAvailable_InfoBar" xml:space="preserve">
-    <value>OmniConsole v{0} 已可下載。</value>
+    <value>{OmniConsole} v{0} 已可下載。</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Launch_GameBar" xml:space="preserve">
-    <value>OmniConsole v{0} 已可下載。從「Game Bar &gt; 媒體櫃」開啟 OmniConsole 設定，前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>{OmniConsole} v{0} 已可下載。從「Game Bar &gt; 媒體櫃」開啟 {OmniConsole} 設定，前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Launch_StartMenu" xml:space="preserve">
-    <value>OmniConsole v{0} 已可下載。從「開始 &gt; 所有應用程式」開啟 OmniConsole 設定，前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>{OmniConsole} v{0} 已可下載。從「開始 &gt; 所有應用程式」開啟 {OmniConsole} 設定，前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateAvailable_InfoBar_Settings" xml:space="preserve">
-    <value>OmniConsole v{0} 已可下載。前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>{OmniConsole} v{0} 已可下載。前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Title" xml:space="preserve">
     <value>OmniCharm 小工具已可安裝。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Message" xml:space="preserve">
-    <value>在遊戲中快速切換 OmniConsole 功能、貓又各程式手把映射的 Game Bar 小工具。前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>在遊戲中快速切換 {OmniConsole} 功能、貓又各程式手把映射的 Game Bar 小工具。前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_GameBar" xml:space="preserve">
-    <value>OmniCharm 小工具已可安裝。從「Game Bar &gt; 媒體櫃」開啟 OmniConsole 設定，前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>OmniCharm 小工具已可安裝。從「Game Bar &gt; 媒體櫃」開啟 {OmniConsole} 設定，前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateInfoBar_MissingPhantomLink_Launch_StartMenu" xml:space="preserve">
-    <value>OmniCharm 小工具已可安裝。從「開始 &gt; 所有應用程式」開啟 OmniConsole 設定，前往「☰ &gt; 進階」下載並安裝。</value>
+    <value>OmniCharm 小工具已可安裝。從「開始 &gt; 所有應用程式」開啟 {OmniConsole} 設定，前往「☰ &gt; 進階」下載並安裝。</value>
   </data>
   <data name="UpdateCheck_Checking" xml:space="preserve">
     <value>檢查中...</value>
@@ -657,7 +657,7 @@
     <value>下載失敗，請再試一次。</value>
   </data>
   <data name="UpdateProgressDialog_Title" xml:space="preserve">
-    <value>正在更新 OmniConsole</value>
+    <value>正在更新 {OmniConsole}</value>
   </data>
   <data name="UpdateProgressDialog_Hint" xml:space="preserve">
     <value>請勿關閉應用程式或主機，直到更新完成。</value>
@@ -669,16 +669,19 @@
     <value>正在安裝 OmniCharm 小工具（1 / 2）...</value>
   </data>
   <data name="UpdateProgress_Phase2Download" xml:space="preserve">
-    <value>正在下載 OmniConsole（2 / 2）...</value>
+    <value>正在下載 {OmniConsole}（2 / 2）...</value>
   </data>
   <data name="UpdateProgress_Phase2Install" xml:space="preserve">
-    <value>正在安裝 OmniConsole（2 / 2），即將重新啟動...</value>
+    <value>正在安裝 {OmniConsole}（2 / 2），即將重新啟動...</value>
+  </data>
+  <data name="UpdateProgress_LanguageSync" xml:space="preserve">
+    <value>正在更新社群語言檔...</value>
   </data>
   <data name="ResumeUpdateDialog_Title" xml:space="preserve">
     <value>是否繼續更新？</value>
   </data>
   <data name="ResumeUpdateDialog_Content" xml:space="preserve">
-    <value>上次更新到 v{0} 未完成。立即繼續以確保 OmniCharm 小工具與 OmniConsole 版本一致。</value>
+    <value>上次更新到 v{0} 未完成。立即繼續以確保 OmniCharm 小工具與 {OmniConsole} 版本一致。</value>
   </data>
   <data name="ResumeUpdateDialog_Resume" xml:space="preserve">
     <value>繼續</value>
@@ -696,13 +699,13 @@
     <value>關於</value>
   </data>
   <data name="AboutTitle.Text" xml:space="preserve">
-    <value>關於 OmniConsole</value>
+    <value>關於 {OmniConsole}</value>
   </data>
   <data name="AboutDescription.Text" xml:space="preserve">
     <value>顯示版本與環境資訊，協助回報升級或相容性問題。</value>
   </data>
   <data name="AboutSection_Suite.Text" xml:space="preserve">
-    <value>OmniConsole Suite</value>
+    <value>{OmniConsole} Suite</value>
   </data>
   <data name="AboutSection_Xfset.Text" xml:space="preserve">
     <value>XFSET (Xbox Full Screen Experience Tool)</value>
@@ -777,7 +780,7 @@
     <value>顯示卡</value>
   </data>
   <data name="Label_OmniConsole.Text" xml:space="preserve">
-    <value>OmniConsole</value>
+    <value>{OmniConsole}</value>
   </data>
   <data name="Label_PhantomBridge.Text" xml:space="preserve">
     <value>PhantomBridge</value>
@@ -867,7 +870,7 @@
     <value>阻擋此程式接收原生 XInput 與 DirectInput 輸入訊號，避免與模擬鍵鼠同時作動。</value>
   </data>
   <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
-    <value>需重啟遊戲生效。請勿對含反作弊的遊戲（例如 EAC、BattlEye、VAC）啟用，否則可能觸發違規。</value>
+    <value>需重啟程式生效。請勿對含反作弊的遊戲（例如 EAC、BattlEye、VAC）啟用，否則可能觸發違規。</value>
   </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
     <value>清除全部</value>
@@ -921,7 +924,7 @@
     <value>AUMID: </value>
   </data>
   <data name="GamepadProfile_PathBoundLabel.Text" xml:space="preserve">
-    <value>綁定執行檔路徑：</value>
+    <value>繫結執行檔路徑：</value>
   </data>
   <data name="GamepadAction_None" xml:space="preserve">
     <value>無</value>
@@ -1076,11 +1079,14 @@
   <data name="GamepadMappingCopyFromHint" xml:space="preserve">
     <value>選一個現有設定檔，將其按鍵設定複製過來。</value>
   </data>
+  <data name="GamepadMappingCopyFromPlaceholder" xml:space="preserve">
+    <value>輸入以篩選程式...</value>
+  </data>
   <data name="GamepadMappingDeleteConfirmTitle" xml:space="preserve">
     <value>刪除此設定檔？</value>
   </data>
   <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
-    <value>此程式的自訂按鍵設定檔將被移除，改由內建版面配置接手。</value>
+    <value>此「{0}」的自訂按鍵設定檔將被移除，改由內建版面配置接手。</value>
   </data>
   <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
     <value>刪除</value>
@@ -1091,16 +1097,16 @@
   <data name="GamepadMappingSearchBox.PlaceholderText" xml:space="preserve">
     <value>搜尋程式…</value>
   </data>
-  <data name="GamepadMappingSortAddOrderDesc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortAddOrderDesc" xml:space="preserve">
     <value>新增順序：新→舊</value>
   </data>
-  <data name="GamepadMappingSortAddOrderAsc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortAddOrderAsc" xml:space="preserve">
     <value>新增順序：舊→新</value>
   </data>
-  <data name="GamepadMappingSortNameAsc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortNameAsc" xml:space="preserve">
     <value>名稱：A→Z</value>
   </data>
-  <data name="GamepadMappingSortNameDesc.Content" xml:space="preserve">
+  <data name="GamepadMappingSortNameDesc" xml:space="preserve">
     <value>名稱：Z→A</value>
   </data>
   <data name="GamepadMappingNoSearchResultHint.Text" xml:space="preserve">
@@ -1295,6 +1301,108 @@
   <data name="GamepadHint_SaveReturn.Text" xml:space="preserve">
     <value>儲存並返回</value>
   </data>
+  <data name="AdvancedSection_Display.Text" xml:space="preserve">
+    <value>介面顯示</value>
+  </data>
+  <data name="LanguageSetting_Title.Text" xml:space="preserve">
+    <value>顯示語言</value>
+  </data>
+  <data name="LanguageSetting_Description.Text" xml:space="preserve">
+    <value>選擇介面語言。</value>
+  </data>
+  <data name="LanguageItem_SystemDefault" xml:space="preserve">
+    <value>跟隨系統</value>
+  </data>
+  <data name="LanguageItem_CommunitySuffix" xml:space="preserve">
+    <value>(社群)</value>
+  </data>
+  <data name="LanguageItem_CommunityWithTranslator" xml:space="preserve">
+    <value>(社群 - {0})</value>
+  </data>
+  <data name="LanguageRestartDialog_Title" xml:space="preserve">
+    <value>需要重新啟動</value>
+  </data>
+  <data name="LanguageRestartDialog_Body" xml:space="preserve">
+    <value>語言切換需要重新啟動才會生效。要現在重新啟動嗎？</value>
+  </data>
+  <data name="LanguageRestartDialog_Restart" xml:space="preserve">
+    <value>立即重新啟動</value>
+  </data>
+  <data name="LanguageRestartDialog_Later" xml:space="preserve">
+    <value>稍後</value>
+  </data>
+  <data name="ManageLanguagesSetting_Title.Text" xml:space="preserve">
+    <value>社群語言</value>
+  </data>
+  <data name="ManageLanguagesSetting_Description.Text" xml:space="preserve">
+    <value>瀏覽、下載與更新社群貢獻的翻譯。</value>
+  </data>
+  <data name="ManageLanguagesButton.Content" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="ManageLanguages_Title" xml:space="preserve">
+    <value>社群語言</value>
+  </data>
+  <data name="ManageLanguages_Close" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="ManageLanguages_Loading" xml:space="preserve">
+    <value>正在載入可用語言...</value>
+  </data>
+  <data name="ManageLanguages_Downloading" xml:space="preserve">
+    <value>正在下載...</value>
+  </data>
+  <data name="ManageLanguages_Error" xml:space="preserve">
+    <value>無法連線到翻譯儲存庫，請檢查網路連線後再試一次。</value>
+  </data>
+  <data name="ManageLanguages_Empty" xml:space="preserve">
+    <value>此版本目前尚無可用的社群語言。</value>
+  </data>
+  <data name="ManageLanguages_SelectHint" xml:space="preserve">
+    <value>選擇語言以查看詳細資訊。</value>
+  </data>
+  <data name="ManageLanguages_Translators" xml:space="preserve">
+    <value>譯者：{0}</value>
+  </data>
+  <data name="ManageLanguages_TranslatorSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="ManageLanguages_Status_NotInstalled" xml:space="preserve">
+    <value>未安裝</value>
+  </data>
+  <data name="ManageLanguages_Status_Installed" xml:space="preserve">
+    <value>已安裝</value>
+  </data>
+  <data name="ManageLanguages_Status_UpdateAvailable" xml:space="preserve">
+    <value>有可用更新</value>
+  </data>
+  <data name="ManageLanguages_Action_Install" xml:space="preserve">
+    <value>下載並安裝</value>
+  </data>
+  <data name="ManageLanguages_Action_Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="ManageLanguages_Action_Uninstall" xml:space="preserve">
+    <value>解除安裝</value>
+  </data>
+  <data name="ManageLanguages_Revision" xml:space="preserve">
+    <value>版本 {0}</value>
+  </data>
+  <data name="ManageLanguages_Revision_Installed" xml:space="preserve">
+    <value>版本 {0}（已安裝）</value>
+  </data>
+  <data name="ManageLanguages_Revision_UpdateAvailable" xml:space="preserve">
+    <value>版本 {0}（已安裝 {1}）</value>
+  </data>
+  <data name="ManageLanguages_Result_Downloaded" xml:space="preserve">
+    <value>已安裝完成。</value>
+  </data>
+  <data name="ManageLanguages_Result_Removed" xml:space="preserve">
+    <value>已移除。</value>
+  </data>
+  <data name="ManageLanguages_Result_Failed" xml:space="preserve">
+    <value>發生錯誤，請檢查網路連線後再試一次。</value>
+  </data>
   <data name="AdvancedSection_Sound.Text" xml:space="preserve">
     <value>介面音效</value>
   </data>
@@ -1305,7 +1413,7 @@
     <value>操作時播放導覽音效。</value>
   </data>
   <data name="AppsUsingPhantomPawDialog_Header.Text" xml:space="preserve">
-    <value>以下應用程式正在使用 PhantomPaw，請先關閉再重試更新：</value>
+    <value>以下應用程式正在使用貓又的 PhantomPaw，請先關閉再重試更新：</value>
   </data>
   <data name="AppsUsingPhantomPawDialog_Hint.Text" xml:space="preserve">
     <value>關閉應用程式後按「重試」，或按「取消」稍後再更新。</value>
@@ -1335,7 +1443,7 @@
     <value>憑證詳細資訊</value>
   </data>
   <data name="CertDetailsDialog_Body.Text" xml:space="preserve">
-    <value>這份 OmniConsole 由以下憑證簽署。將下方 SHA-256 指紋與官方儲存庫的 AUTHENTICITY.zh-TW.md 公布值比對。若數值不一致，這份建置便不是來自官方來源。OmniCharm 小工具由同一張憑證簽署；逐個套件的完整驗證請見 AUTHENTICITY.zh-TW.md。</value>
+    <value>這份 {OmniConsole} 由以下憑證簽署。將下方 SHA-256 指紋與官方儲存庫的 AUTHENTICITY.zh-TW.md 公布值比對。若數值不一致，這份建置便不是來自官方來源。OmniCharm 小工具由同一張憑證簽署；逐個套件的完整驗證請見 AUTHENTICITY.zh-TW.md。</value>
   </data>
   <data name="CertDetailsDialog_OpenAuthenticity.Content" xml:space="preserve">
     <value>開啟 AUTHENTICITY.zh-TW.md 檢視公布指紋</value>

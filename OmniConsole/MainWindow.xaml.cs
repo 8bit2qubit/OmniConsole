@@ -20,7 +20,7 @@ namespace OmniConsole
 
         /// <summary>
         /// 全域唯一的手把導航服務（Pull 模型）。整個 App 生命週期單一實例、計時器全程運轉，
-        /// 每 Tick 自動解析當前最頂 modal dialog 或目前 page scope。取代過去「每 page/dialog 各自 new」。
+        /// 每 Tick 自動解析目前最頂 modal dialog 或目前 page scope。取代過去「每 page/dialog 各自 new」。
         /// </summary>
         private GamepadNavigationService? _gamepad;
 
@@ -207,12 +207,12 @@ namespace OmniConsole
                         XamlRoot = this.Content.XamlRoot,
                         Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
                         RequestedTheme = ElementTheme.Dark,
-                        Title = loader.GetString("ResumeUpdateDialog_Title"),
+                        Title = loader.Loc("ResumeUpdateDialog_Title"),
                         Content = string.Format(
-                            loader.GetString("ResumeUpdateDialog_Content"),
+                            loader.Loc("ResumeUpdateDialog_Content"),
                             targetVersion),
-                        PrimaryButtonText = loader.GetString("ResumeUpdateDialog_Resume"),
-                        CloseButtonText = loader.GetString("ResumeUpdateDialog_Later"),
+                        PrimaryButtonText = loader.Loc("ResumeUpdateDialog_Resume"),
+                        CloseButtonText = loader.Loc("ResumeUpdateDialog_Later"),
                         DefaultButton = ContentDialogButton.Primary
                     };
 
@@ -237,6 +237,54 @@ namespace OmniConsole
                 {
                     DebugLogger.Log($"[MainWindow] Resume dialog failed: {ex.Message}");
                     tcs.SetException(ex);
+                }
+            });
+            await tcs.Task;
+        }
+
+        /// <summary>
+        /// app 更新後首啟：把已裝社群語言檔同步到「目前 app 版本」（語言檔按 app 版本分 repo 資料夾）。
+        /// 重用 UpdateProgressDialog 顯示逐語言進度（一口氣做完、不重啟）。
+        /// </summary>
+        public async Task TrySyncLanguagesAsync()
+        {
+            // 看 ShouldSync 決定是否彈進度 UI。
+            var decision = await TranslationRepoService.EvaluateSyncDecisionAsync();
+            if (!decision.ShouldSync) return;
+
+            await _visualTreeReady.Task;
+
+            var tcs = new TaskCompletionSource<bool>();
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                UpdateProgressDialog? dialog = null;
+                try
+                {
+                    dialog = new UpdateProgressDialog(this.Content.XamlRoot);
+                    dialog.ReportStatus("LanguageSync");
+                    dialog.ReportProgress(0);
+                    _ = dialog.ShowAsync();
+
+                    var progress = new Progress<(int done, int total)>(p =>
+                    {
+                        double pct = p.total > 0 ? (double)p.done / p.total * 100 : 100;
+                        dialog.ReportProgress(pct);
+                    });
+
+                    var result = await TranslationRepoService.SyncAllInstalledLanguagesAsync(progress, default);
+
+                    // 記錄同步結果；versionChanged/today 沿用決策時基準（非現在重算）。
+                    TranslationRepoService.RecordSyncOutcome(result.AllSucceeded, decision.VersionChanged, decision.Today);
+                    DebugLogger.Log($"[MainWindow] Language sync: {result.Succeeded}/{result.Total}, allOk={result.AllSucceeded}");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"[MainWindow] Language sync failed: {ex.Message}");
+                }
+                finally
+                {
+                    dialog?.RequestClose();
+                    tcs.SetResult(true);
                 }
             });
             await tcs.Task;

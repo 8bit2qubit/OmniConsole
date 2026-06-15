@@ -16,8 +16,10 @@
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
     </dialogs:GamepadDialog.Resources>
 
-    <StackPanel Spacing="8" MinWidth="320">
+    <!-- 固定 Width（非 MinWidth）：AutoSuggestBox 選不同項時 Text 換成長度不一的 label，MinWidth 會被撐大造成
+         對話方塊寬度抖動（變瘦變胖）；固定寬度後 AutoSuggestBox Stretch 填滿、長文字在框內水平捲動、對話方塊寬度恆定。 -->
+    <StackPanel Spacing="8" Width="440">
         <TextBlock x:Name="HintText" TextWrapping="Wrap" FontSize="14"/>
-        <ComboBox x:Name="ProfileCombo" HorizontalAlignment="Stretch"/>
+        <AutoSuggestBox x:Name="ProfileSuggestBox" HorizontalAlignment="Stretch"/>
     </StackPanel>
 </dialogs:GamepadDialog>

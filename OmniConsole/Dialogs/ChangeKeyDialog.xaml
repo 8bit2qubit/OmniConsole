@@ -1,7 +1,8 @@
-<dialogs:GamepadDialog
+﻿<dialogs:GamepadDialog
     x:Class="OmniConsole.Dialogs.ChangeKeyDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:OmniConsole.Services"
     xmlns:dialogs="using:OmniConsole.Dialogs"
     Style="{StaticResource DefaultContentDialogStyle}"
     DefaultButton="Primary"
@@ -16,20 +17,61 @@
         <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
     </dialogs:GamepadDialog.Resources>
 
-    <StackPanel Spacing="12" MinWidth="320">
+    <StackPanel Spacing="12" MinWidth="480">
         <StackPanel x:Name="ModifiersPanel" Visibility="Collapsed" Spacing="6">
-            <TextBlock x:Uid="GamepadModifiersLabel" FontSize="13"/>
+            <TextBlock x:Uid="GamepadModifiersLabel" services:Localized.Uid="GamepadModifiersLabel" FontSize="13"/>
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <ToggleButton x:Name="ModCtrl"  x:Uid="GamepadModifier_Ctrl"  MinWidth="64"/>
-                <ToggleButton x:Name="ModShift" x:Uid="GamepadModifier_Shift" MinWidth="64"/>
-                <ToggleButton x:Name="ModAlt"   x:Uid="GamepadModifier_Alt"   MinWidth="64"/>
-                <ToggleButton x:Name="ModWin"   x:Uid="GamepadModifier_Win"   MinWidth="64"/>
+                <ToggleButton x:Name="ModCtrl"  x:Uid="GamepadModifier_Ctrl" services:Localized.Uid="GamepadModifier_Ctrl"  MinWidth="64"/>
+                <ToggleButton x:Name="ModShift" x:Uid="GamepadModifier_Shift" services:Localized.Uid="GamepadModifier_Shift" MinWidth="64"/>
+                <ToggleButton x:Name="ModAlt"   x:Uid="GamepadModifier_Alt" services:Localized.Uid="GamepadModifier_Alt"   MinWidth="64"/>
+                <ToggleButton x:Name="ModWin"   x:Uid="GamepadModifier_Win" services:Localized.Uid="GamepadModifier_Win"   MinWidth="64"/>
             </StackPanel>
         </StackPanel>
 
         <StackPanel Spacing="6">
-            <TextBlock x:Uid="GamepadKeyLabel" FontSize="13"/>
-            <ComboBox x:Name="KeyCombo" HorizontalAlignment="Stretch"/>
+            <!-- 「按鍵」標籤：僅組合鍵模式顯示（與上方「修飾鍵」標籤對稱，標示下欄是選主鍵）；純按鍵模式整個對話方塊就是選鍵、不需標籤。 -->
+            <TextBlock x:Name="KeyLabel" x:Uid="GamepadKeyLabel" services:Localized.Uid="GamepadKeyLabel" FontSize="13" Visibility="Collapsed"/>
+            <!-- 雙欄 picker（比照檔案選擇器）：左欄分類、右欄該類 VK 鍵。 -->
+            <Border CornerRadius="4"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <!-- Height 400：容納左欄全部 9 個分類不需捲動；右欄項目較多時照常捲動。 -->
+                <Grid Height="400">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 宣告順序刻意「右欄在前、左欄在後」（視覺位置仍由 Grid.Column 決定不變）：讓框架預設焦點
+                         落右欄選中項而非左欄。D-pad 走幾何 XYFocus、不看宣告順序，左右導航不受影響。勿調換順序。 -->
+
+                    <!-- 右欄：該分類的 VK 鍵（比照檔案選擇器 FileListView） -->
+                    <ListView x:Name="KeyList" Grid.Column="1"
+                              SelectionMode="Single"
+                              SingleSelectionFollowsFocus="True"
+                              IsItemClickEnabled="True">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="dialogs:KeyPickerRow">
+                                <TextBlock Text="{x:Bind DisplayName}" FontSize="14" Padding="2,4"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- 左欄：VK 分類（比照檔案選擇器 SidebarListView） -->
+                    <ListView x:Name="CategoryList" Grid.Column="0"
+                              SelectionMode="Single"
+                              SingleSelectionFollowsFocus="False"
+                              IsItemClickEnabled="True"
+                              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                              BorderThickness="0,0,1,0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="dialogs:KeyCategoryRow">
+                                <TextBlock Text="{x:Bind DisplayName}" FontSize="13" Padding="2,4"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
         </StackPanel>
     </StackPanel>
 </dialogs:GamepadDialog>

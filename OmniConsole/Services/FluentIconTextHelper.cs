@@ -33,20 +33,34 @@ namespace OmniConsole.Services
         /// <summary>寫入 AutoFormat attached property 值。</summary>
         public static void SetAutoFormat(DependencyObject obj, bool value) => obj.SetValue(AutoFormatProperty, value);
 
-        /// <summary>依 AutoFormat 新值掛上或解掛 TextBlock 的 Loaded handler。</summary>
+        /// <summary>依 AutoFormat 新值掛上或解掛 TextBlock 的 Loaded handler 與 Text 變更監聽。</summary>
         private static void OnAutoFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not TextBlock tb) return;
             if ((bool)e.NewValue)
+            {
                 tb.Loaded += OnTextBlockLoaded;
+                // 監聽 Text 變更：外掛翻譯會在 Loaded 後 SetValue(TextProperty,...)，把 ApplyFluentIcons 拆好的
+                // Inlines 沖掉、圖示消失。改監聽 Text，誰改 Text 都重套圖示，兩者協同。
+                tb.RegisterPropertyChangedCallback(TextBlock.TextProperty, OnTextChanged);
+            }
             else
+            {
                 tb.Loaded -= OnTextBlockLoaded;
+            }
         }
 
         /// <summary>Loaded handler：對 TextBlock 套用 PUA 拆 Run 處理。</summary>
         private static void OnTextBlockLoaded(object sender, RoutedEventArgs e)
         {
             if (sender is TextBlock tb)
+                ApplyFluentIcons(tb);
+        }
+
+        /// <summary>Text 變更時重套圖示（外掛翻譯覆蓋 Text 後圖示不致消失）。</summary>
+        private static void OnTextChanged(DependencyObject d, DependencyProperty dp)
+        {
+            if (d is TextBlock tb)
                 ApplyFluentIcons(tb);
         }
 

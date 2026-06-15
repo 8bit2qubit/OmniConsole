@@ -1,7 +1,8 @@
-<UserControl
+﻿<UserControl
     x:Class="OmniConsole.Controls.GamepadProfileListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:OmniConsole.Services"
     xmlns:local="using:OmniConsole.Controls">
 
     <UserControl.Resources>
@@ -22,8 +23,8 @@
 
         <!-- Row 0：標題區（釘住不捲） -->
         <StackPanel Grid.Row="0" Spacing="16" HorizontalAlignment="Center" Margin="0,0,0,16">
-            <TextBlock x:Uid="GamepadMappingTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-            <TextBlock x:Uid="GamepadMappingDescription" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+            <TextBlock x:Uid="GamepadMappingTitle" services:Localized.Uid="GamepadMappingTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+            <TextBlock x:Uid="GamepadMappingDescription" services:Localized.Uid="GamepadMappingDescription" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
         </StackPanel>
 
         <!-- Row 1：工具列（搜尋方塊 + 排序下拉選單，釘住不捲） -->
@@ -46,18 +47,14 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="SearchBox" Grid.Column="0"
-                             x:Uid="GamepadMappingSearchBox"
+                             x:Uid="GamepadMappingSearchBox" services:Localized.Uid="GamepadMappingSearchBox"
                              TextChanged="SearchBox_TextChanged"
                              KeyDown="SearchBox_KeyDown"/>
 
+                    <!-- 項目由 code-behind 動態填入（Content 走 .Loc 已在地化）。ComboBox i18n 慣例，見 code-behind。 -->
                     <ComboBox x:Name="SortCombo" Grid.Column="1"
                               MinWidth="200"
-                              SelectionChanged="SortCombo_SelectionChanged">
-                        <ComboBoxItem x:Uid="GamepadMappingSortAddOrderDesc"/>
-                        <ComboBoxItem x:Uid="GamepadMappingSortAddOrderAsc"/>
-                        <ComboBoxItem x:Uid="GamepadMappingSortNameAsc"/>
-                        <ComboBoxItem x:Uid="GamepadMappingSortNameDesc"/>
-                    </ComboBox>
+                              SelectionChanged="SortCombo_SelectionChanged"/>
                 </Grid>
             </Border>
 
@@ -121,7 +118,7 @@
 
                     <!-- 搜尋無結果提示，疊在 ListView 上方同一個 Grid cell -->
                     <TextBlock x:Name="NoSearchResultHint"
-                               x:Uid="GamepadMappingNoSearchResultHint"
+                               x:Uid="GamepadMappingNoSearchResultHint" services:Localized.Uid="GamepadMappingNoSearchResultHint"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                FontSize="14"
                                HorizontalAlignment="Center"
@@ -151,7 +148,7 @@
                                VerticalAlignment="Stretch"/>
                     </Border>
                     <TextBlock x:Name="EmptyHint"
-                               x:Uid="GamepadMappingEmptyHint"
+                               x:Uid="GamepadMappingEmptyHint" services:Localized.Uid="GamepadMappingEmptyHint"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                FontSize="14"
                                TextWrapping="Wrap"

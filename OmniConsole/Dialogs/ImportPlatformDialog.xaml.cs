@@ -12,7 +12,7 @@ namespace OmniConsole.Dialogs
     /// </summary>
     public sealed partial class ImportPlatformDialog : GamepadDialog
     {
-        private readonly ResourceLoader _resourceLoader;
+        private readonly ResourceLoader _resourceLoader = new();
 
         /// <summary>B 鍵不動作，避免誤觸關閉對話方塊遺失輸入（回 false = 不處理、不關閉）。</summary>
         public override bool OnB() => false;
@@ -27,18 +27,16 @@ namespace OmniConsole.Dialogs
         /// 建立匯入平台對話方塊。
         /// </summary>
         /// <param name="xamlRoot">呼叫端視窗的 XamlRoot，ContentDialog 顯示所需。</param>
-        /// <param name="resourceLoader">在地化字串載入器。</param>
-        public ImportPlatformDialog(XamlRoot xamlRoot, ResourceLoader resourceLoader)
+        public ImportPlatformDialog(XamlRoot xamlRoot)
         {
             InitializeComponent();
             XamlRoot = xamlRoot;
-            _resourceLoader = resourceLoader;
 
-            Title = resourceLoader.GetString("ImportPlatformDialog_Title");
-            SecurityWarning.Text = resourceLoader.GetString("ImportPlatformDialog_Warning");
-            JsonInputBox.PlaceholderText = resourceLoader.GetString("ImportPlatformDialog_Placeholder");
-            PrimaryButtonText = resourceLoader.GetString("ImportPlatformDialog_Primary");
-            CloseButtonText = resourceLoader.GetString("PlatformDialog_Cancel");
+            Title = _resourceLoader.Loc("ImportPlatformDialog_Title");
+            SecurityWarning.Text = _resourceLoader.Loc("ImportPlatformDialog_Warning");
+            JsonInputBox.PlaceholderText = _resourceLoader.Loc("ImportPlatformDialog_Placeholder");
+            PrimaryButtonText = _resourceLoader.Loc("ImportPlatformDialog_Primary");
+            CloseButtonText = _resourceLoader.Loc("PlatformDialog_Cancel");
 
             PrimaryButtonClick += ImportPlatformDialog_PrimaryButtonClick;
             Opened += ImportPlatformDialog_Opened;
@@ -70,7 +68,7 @@ namespace OmniConsole.Dialogs
 
                 if (errorKey is not null)
                 {
-                    ErrorText.Text = _resourceLoader.GetString(errorKey);
+                    ErrorText.Text = _resourceLoader.Loc(errorKey);
                     ErrorText.Visibility = Visibility.Visible;
                     args.Cancel = true;
                 }
