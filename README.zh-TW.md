@@ -13,7 +13,7 @@
 <p align="center">
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat&color=blue" alt="最新版本"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total?style=flat" alt="總下載次數"></a>
-<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="技術堆疊"></a>
+<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%2010%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="技術堆疊"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue?style=flat" alt="授權"></a>
 </p>
 
@@ -49,6 +49,7 @@ OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 
 - **原生 Xbox 模式 (FSE) 整合** – 透過 Windows 11 Xbox 模式 (FSE) 官方 API 註冊為主畫面應用程式。
 - **內建應用程式更新** – 自動檢查 GitHub 最新版本，可在「進階」設定頁面中直接下載與安裝。
 - **多語介面** – 英文、繁體中文與簡體中文。
+- **社群語言** – 在「進階」設定頁面的「社群語言」按下「管理」開啟管理介面，瀏覽、下載並更新由社群貢獻的語言，主程式與 OmniCharm 小工具一次到位，並隨版本自動保持最新。
 
 ---
 
@@ -112,6 +113,13 @@ OmniConsole 會在**首次啟動**或**應用程式更新後**彈出設定介面
 - **開機**：啟用「**啟動時進入 Xbox 模式 (FSE)**」即可開機自動啟動。
 - **開始功能表**：直接啟動 OmniConsole 即可自動觸發進入 Xbox 模式 (FSE)。
 
+### 5. 更新 OmniConsole
+
+已安裝過 OmniConsole？直接在「OmniConsole 設定」內更新：
+
+1.  開啟 **OmniConsole 設定**，前往 **☰ → 進階**。
+2.  點選**檢查更新**，再點**下載並安裝**。OmniConsole 會自動下載新版本並完成安裝。
+
 ---
 
 ## 🔄 如何還原
@@ -143,28 +151,9 @@ OmniConsole 的官方來源只有 [GitHub Releases](https://github.com/8bit2qubi
 
 ## 💻 技術堆疊
 
-- **主要堆疊**：C# & .NET 8, C++
+- **主要堆疊**：C# & .NET 10, C++
 - **UI 框架**：WinUI 3
 - **封裝**：MSIX
-
----
-
-## 🛠️ 本機開發
-
-1.  **複製儲存庫**
-
-    ```bash
-    git clone https://github.com/8bit2qubit/OmniConsole.git
-    cd OmniConsole
-    ```
-
-2.  **以 Visual Studio 開啟**
-
-    使用 Visual Studio 2026 (18.0+) 開啟 `OmniConsole.sln`。確保已安裝 **WinUI 應用程式開發**工作負載。
-
-3.  **開發模式執行**
-
-    將組建設定設為 `Debug`，選擇平台（`x64`），按 `F5` 建置並執行。
 
 ---
 
@@ -182,6 +171,4 @@ OmniConsole 的官方來源只有 [GitHub Releases](https://github.com/8bit2qubi
 
 ## 📄 授權
 
-OmniConsole 採用 [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權。
-
-在個人與非營利用途下，你可以自由使用、修改與散布 OmniConsole；衍生作須採同樣授權。完整條款請參閱 [PolyForm Noncommercial License 1.0.0 官方條款](https://polyformproject.org/licenses/noncommercial/1.0.0)。
+OmniConsole 採用 [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE) 授權，完整條款請參閱 [官方條款](https://polyformproject.org/licenses/noncommercial/1.0.0)。

@@ -13,7 +13,7 @@
 <p align="center">
 <a href="https://github.com/8bit2qubit/OmniConsole/releases/latest"><img src="https://img.shields.io/github/v/release/8bit2qubit/OmniConsole?style=flat&color=blue" alt="Latest Release"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/releases"><img src="https://img.shields.io/github/downloads/8bit2qubit/OmniConsole/total?style=flat" alt="Total Downloads"></a>
-<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%208%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="Tech"></a>
+<a href="#"><img src="https://img.shields.io/badge/tech-C%23%20%26%20C%2B%2B%20%7C%20.NET%2010%20%7C%20WinUI%203-blueviolet.svg?style=flat" alt="Tech"></a>
 <a href="https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue?style=flat" alt="License"></a>
 </p>
 
@@ -49,6 +49,7 @@ Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming 
 - **Native Xbox Mode (FSE) integration** – Registered as a Windows 11 Xbox Mode (FSE) Home App through the official API.
 - **In-app updates** – Automatic checks for the latest GitHub releases, with download and install built into the Advanced settings page.
 - **Multilingual UI** – English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文).
+- **Community languages** – On the Advanced settings page, click **Manage** next to **Community Languages** to browse, download, and update community-contributed languages — for both the main app and the OmniCharm widget at once — and they stay up to date automatically across versions.
 
 ---
 
@@ -112,6 +113,13 @@ Your gaming platform now launches via any of these entry points:
 - **Boot**: Enable **"Enter Xbox mode (FSE) on startup"** for automatic launch at boot.
 - **Start Menu**: Launch OmniConsole directly to automatically activate Xbox Mode (FSE).
 
+### 5. Updating OmniConsole
+
+Already have OmniConsole installed? Update from within **OmniConsole Settings**:
+
+1.  Open **OmniConsole Settings**, then go to **☰ → Advanced**.
+2.  Click **Check for Updates**, then **Download & Install**. OmniConsole downloads the new version and installs it for you.
+
 ---
 
 ## 🔄 How to Revert
@@ -143,28 +151,9 @@ The only official sources for OmniConsole are the [GitHub releases](https://gith
 
 ## 💻 Tech Stack
 
-- **Primary Stack**: C# & .NET 8, C++
+- **Primary Stack**: C# & .NET 10, C++
 - **UI Framework**: WinUI 3
 - **Packaging**: MSIX
-
----
-
-## 🛠️ Local Development
-
-1.  **Clone the Repository**
-
-    ```bash
-    git clone https://github.com/8bit2qubit/OmniConsole.git
-    cd OmniConsole
-    ```
-
-2.  **Open in Visual Studio**
-
-    Open `OmniConsole.sln` with Visual Studio 2026 (18.0+). Ensure the **WinUI application development** workload is installed.
-
-3.  **Run for Development**
-
-    Set the build configuration to `Debug`, select your platform (`x64`), and press `F5`.
 
 ---
 
@@ -182,6 +171,4 @@ The only official sources for OmniConsole are the [GitHub releases](https://gith
 
 ## 📄 License
 
-OmniConsole is licensed under the [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE).
-
-You are free to use, modify, and redistribute OmniConsole for personal and nonprofit use under the same license. For the full terms, see the [official PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+OmniConsole is licensed under the [PolyForm Noncommercial License 1.0.0](https://github.com/8bit2qubit/OmniConsole/blob/main/LICENSE); for the full terms, see the [official terms](https://polyformproject.org/licenses/noncommercial/1.0.0).

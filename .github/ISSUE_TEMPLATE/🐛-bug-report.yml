@@ -16,7 +16,7 @@ body:
             I have searched the [**existing Issues**](https://github.com/8bit2qubit/OmniConsole/issues) to ensure my problem is not already reported.
           required: true
         - label: >-
-            I understand this template is for **reproducible bugs only**. If this is a feature request, I am aware that the **source code is available** and I can build and implement it myself locally.
+            I understand this template is for **reproducible bugs only**, **not feature requests**.
           required: true
         - label: >-
             I have checked that this bug is **specific to OmniConsole** — it is not a quirk of **Xbox Mode (FSE)**, the gaming platform itself (Steam, Xbox App, etc.), or a recent **Windows update**.
@@ -77,6 +77,7 @@ body:
     attributes:
       label: "4. Which OmniConsole version are you using?"
       options:
+        - v3.1.0.0
         - v2.9.0.0
         - v2.7.0.0
         - v2.5.2.0
