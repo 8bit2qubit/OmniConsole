@@ -58,7 +58,8 @@ namespace OmniConsole.Dialogs
         /// 「焦點落內容元素、明確可控」的設計，不靠 XAML DefaultButton 框架機制。排 dispatcher 待佈局完成。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            DispatcherQueue.TryEnqueue(() => SourceLink.Focus(FocusStateHelper.Preferred));
+            DispatcherQueue.TryEnqueue(() =>
+                SourceLink.Focus(FocusStateHelper.Preferred));
         }
 
         /// <summary>Copy 按下：取消預設關閉、將冒號分隔大寫指紋寫入剪貼簿、顯示「已複製」提示。</summary>

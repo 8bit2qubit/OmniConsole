@@ -164,6 +164,12 @@
   <data name="Widget_Layout_Title.Text" xml:space="preserve">
     <value>控制器布局</value>
   </data>
+  <data name="Widget_Layout_OmniNav.Content" xml:space="preserve">
+    <value>OmniNav</value>
+  </data>
+  <data name="Widget_Layout_Classic.Content" xml:space="preserve">
+    <value>经典</value>
+  </data>
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>光标速度</value>
   </data>

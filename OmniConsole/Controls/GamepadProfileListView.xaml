@@ -22,9 +22,9 @@
         </Grid.RowDefinitions>
 
         <!-- Row 0：標題區（釘住不捲） -->
-        <StackPanel Grid.Row="0" Spacing="16" HorizontalAlignment="Center" Margin="0,0,0,16">
-            <TextBlock x:Uid="GamepadMappingTitle" services:Localized.Uid="GamepadMappingTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-            <TextBlock x:Uid="GamepadMappingDescription" services:Localized.Uid="GamepadMappingDescription" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+        <StackPanel Grid.Row="0" Spacing="8" HorizontalAlignment="Center" Margin="0,0,0,16">
+            <TextBlock x:Uid="GamepadMappingTitle" services:Localized.Uid="GamepadMappingTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+            <TextBlock x:Uid="GamepadMappingDescription" services:Localized.Uid="GamepadMappingDescription" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
         </StackPanel>
 
         <!-- Row 1：工具列（搜尋方塊 + 排序下拉選單，釘住不捲） -->

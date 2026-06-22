@@ -108,7 +108,8 @@ namespace OmniConsole.Dialogs
         /// <summary>對話方塊開啟：初始焦點到 AutoSuggestBox（排 dispatcher 待佈局完成）。手把導航與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            DispatcherQueue.TryEnqueue(() => ProfileSuggestBox.Focus(FocusStateHelper.Preferred));
+            DispatcherQueue.TryEnqueue(() =>
+                ProfileSuggestBox.Focus(FocusStateHelper.Preferred));
         }
     }
 }

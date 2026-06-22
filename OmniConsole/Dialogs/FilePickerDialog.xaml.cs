@@ -54,17 +54,14 @@ namespace OmniConsole.Dialogs
 
             FileTypeFilterText.Text = options.FilterDisplayName ?? string.Join("; ", options.FileTypeFilters.Select(f => $"*{f}"));
 
-            // 根據模式設定寬度（恆定，不隨檔名/項目抖動）：有預覽時加寬。
+            // 兩模式總寬恆定一致（920，塞進 1024 螢幕）：
             // 寬度的「真開關」在這裡，不在 XAML（XAML 設 RootGrid.Width 會被此處覆蓋）。
+            // 選圖模式：清單(*) + 預覽欄(280)；無預覽模式：清單(*) 獨吃 → 清單寬 = 選圖時的「清單+預覽」。
+            RootGrid.Width = 920;
             if (options.ShowImagePreview)
             {
-                RootGrid.Width = 1040; // 有預覽：加寬以容納側邊欄 + 檔案清單 + 預覽欄
-                PreviewColumn.Width = new GridLength(280);
+                PreviewColumn.Width = new GridLength(280); // 預覽欄固定；側邊欄 140 不動
                 PreviewPanel.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                RootGrid.Width = 820; // 無預覽：較窄（無預覽欄、檔案清單佔剩餘寬度）
             }
 
             BuildSidebar();

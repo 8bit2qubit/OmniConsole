@@ -247,23 +247,19 @@ namespace OmniConsole.Pages
             PlatformCategoryNav.SelectedItem = isUserPlatform
                 ? PlatformCategoryNav.MenuItems[1]
                 : PlatformCategoryNav.MenuItems[0];
-            LoadPlatformCards();
+
+            // 綁卡前先用視窗寬評估保守初始解碼寬（視窗寬佈局前即可取得，不像 GridView ActualWidth 要等佈局）。
+            CardIconCache.SeedDecodeWidthFromWindow(Hwnd);
+
+            // 先還原上次儲存的選取平台，LoadPlatformCards 在算好可用性後會據此選取對應卡片。
+            _selectedPlatformId = currentPlatform.Id;
+            _ = LoadPlatformCards();
 
             // 顯示版本號
             VersionText.Text = $"v{SettingsService.GetAppVersion()}";
 
             // FSE 不可用時反灰按鈕而非隱藏
             ResetGameBarButton.IsEnabled = FseService.CanActivate();
-
-            // 還原上次儲存的選取狀態
-            var current = SettingsService.GetDefaultPlatform();
-            _selectedPlatformId = current.Id;
-
-            var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
-            if (selectedCard != null)
-            {
-                PlatformGridView.SelectedItem = selectedCard;
-            }
 
             UpdateSettingsDescription();
             ApplyBrandedTitles();   // 含品牌名的標題（由 code-behind 設、注入品牌）
@@ -405,6 +401,24 @@ namespace OmniConsole.Pages
         // ── NavigationView 事件 ───────────────────────────────────────────────
 
         /// <summary>
+        /// 側邊欄展開／收合時，調整 NavigationView 與底部手把提示列的疊放關係，避免浮層
+        /// 最下方項目（如「關於」）被較長的提示列壓住。
+        /// </summary>
+        private void SettingsNav_PaneOpening(NavigationView sender, object args)
+        {
+            FocusNavHelper.ApplyPaneOverlayZIndex(SettingsNav, paneOpen: true);
+        }
+
+        /// <summary>
+        /// 側邊欄收合時，把 NavigationView 還原回底層，讓底部手把提示列浮回上層、維持滑鼠可點。
+        /// 與 <see cref="SettingsNav_PaneOpening"/> 對稱。
+        /// </summary>
+        private void SettingsNav_PaneClosing(NavigationView sender, NavigationViewPaneClosingEventArgs args)
+        {
+            FocusNavHelper.ApplyPaneOverlayZIndex(SettingsNav, paneOpen: false);
+        }
+
+        /// <summary>
         /// 處理 NavigationView 選項變更，切換內容頁面。
         /// </summary>
         private void SettingsNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -529,7 +543,8 @@ namespace OmniConsole.Pages
         {
             var dialog = new CertificateDetailsDialog(XamlRoot, BuildIdentity.CertificateThumbprint);
             await dialog.ShowAsync();
-            DispatcherQueue.TryEnqueue(() => CertDetailsButton.Focus(FocusStateHelper.Preferred));
+            DispatcherQueue.TryEnqueue(() =>
+                CertDetailsButton.Focus(FocusStateHelper.Preferred));
         }
 
         /// <summary>
@@ -769,6 +784,9 @@ namespace OmniConsole.Pages
             string targetState = narrow ? "NarrowAboutState" : "WideAboutState";
             // VSG 掛在 SettingsPage 根 Grid 上，與 SettingsNavPage / GeneralContent / GamepadHints 並列。
             VisualStateManager.GoToState(this, targetState, false);
+            // 把標題區 MaxWidth 設為實際可用寬減去左右邊距。
+            const double TitleSideMargin = 48; // 左右各 24
+            if (available > TitleSideMargin) AboutTitleGroup.MaxWidth = available - TitleSideMargin;
             ApplyAboutFocusNavigation(narrow);
         }
 
@@ -782,56 +800,6 @@ namespace OmniConsole.Pages
             _aboutNarrowFocus = narrow;
             FocusNavHelper.ApplyTwoColumnFocusNav(
                 narrow, AboutReleaseInfoCommitLink, CertDetailsButton, CopyAboutButton, RefreshAboutButton);
-        }
-
-        // ── 平台可用性 ────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// 非同步查詢所有平台的安裝狀態，更新 IsAvailable 後重新指定 ItemsSource 重新整理 OneTime 繫結。
-        /// 若目前選取的平台不可用，自動切換至第一個可用的平台。
-        /// </summary>
-        private async Task LoadPlatformAvailabilityAsync()
-        {
-            bool[] available = await Task.WhenAll(
-                _cardItems.Select(c => ProcessLauncherService.CheckPlatformAvailableAsync(c.Platform)));
-
-            for (int i = 0; i < _cardItems.Count; i++)
-            {
-                if (_cardItems[i].IsAvailable == available[i]) continue;
-                // PlatformCardItem 無屬性變更通知（INotifyPropertyChanged），IsAvailable 變更不會通知 OneTime 繫結；
-                // 以同位置取代觸發集合「取代」通知，讓該容器重新繫結、CardOpacity 更新（集合實例不換）。
-                _cardItems[i] = new PlatformCardItem
-                {
-                    Platform = _cardItems[i].Platform,
-                    DisplayName = _cardItems[i].DisplayName,
-                    IsAvailable = available[i],
-                };
-            }
-
-            // 若目前選取的平台已停用，先調整選取的 Id
-            var currentSelected = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
-            if (currentSelected is { IsAvailable: false })
-            {
-                var firstAvailable = _cardItems.FirstOrDefault(c => c.IsAvailable);
-                if (firstAvailable != null)
-                {
-                    _selectedPlatformId = firstAvailable.Id;
-                }
-                else
-                {
-                    // 所有平台都不可用，清除選取 Id
-                    _selectedPlatformId = "";
-                }
-            }
-
-            // ItemsSource 已繫結固定的 _cardItems 實例；上方 Replace 已增量重整變更項，無需重設 ItemsSource
-
-            // 還原選取狀態
-            var selectedCard = _cardItems.FirstOrDefault(c => c.Id == _selectedPlatformId);
-            if (selectedCard != null)
-            {
-                PlatformGridView.SelectedItem = selectedCard;
-            }
         }
 
         // ── 平台卡片事件 ──────────────────────────────────────────────────────
@@ -914,16 +882,12 @@ namespace OmniConsole.Pages
         {
             if (_platformWrapGrid is null || availableWidth <= 0)
                 return;
-            // 根據可用寬度決定欄數
-            // ≥1100px → 4 欄, ≥700px → 3 欄, <700px → 2 欄
-            int columns = availableWidth >= 1100 ? 4 : availableWidth >= 700 ? 3 : 2;
-            double itemWidth = Math.Floor(availableWidth / columns);
-            double remainder = availableWidth - itemWidth * columns;
-            // 非整除且餘數極小時 ItemsWrapGrid 因精度問題換行，減 1 迴避
-            if (remainder > 0 && remainder < 1)
-                itemWidth -= 1;
+            double itemWidth = CardIconCache.ComputeItemWidth(availableWidth);
             _platformWrapGrid.ItemWidth = itemWidth;
             _platformWrapGrid.ItemHeight = Math.Floor(itemWidth * 0.7); // 維持約 7:10 的高寬比
+            // GridView 真實寬就緒後，把卡片圖解碼寬縮到精準值（卡寬 × DPI）。
+            if (XamlRoot is not null)
+                CardIconCache.UpdateDecodeWidth(availableWidth, XamlRoot.RasterizationScale);
         }
 
         // ── 設定控制項事件 ────────────────────────────────────────────────────
@@ -1147,7 +1111,8 @@ namespace OmniConsole.Pages
                 else
                 {
                     // 「稍後」：對話方塊關閉後焦點返回語言下拉選單。
-                    DispatcherQueue.TryEnqueue(() => LanguageCombo.Focus(FocusStateHelper.Preferred));
+                    DispatcherQueue.TryEnqueue(() =>
+                        LanguageCombo.Focus(FocusStateHelper.Preferred));
                 }
             }
             finally
@@ -1180,7 +1145,8 @@ namespace OmniConsole.Pages
             finally
             {
                 _isDialogOpen = false;
-                DispatcherQueue.TryEnqueue(() => ManageLanguagesButton.Focus(FocusStateHelper.Preferred));
+                DispatcherQueue.TryEnqueue(() =>
+                    ManageLanguagesButton.Focus(FocusStateHelper.Preferred));
             }
 
             // 更新了目前使用中語言 → 彈重啟提示（必在管理對話方塊關閉、_isDialogOpen 還原後彈：
@@ -1274,7 +1240,7 @@ namespace OmniConsole.Pages
         private void CustomConsentAcceptButton_Click(object sender, RoutedEventArgs e)
         {
             SettingsService.SetCustomPlatformConsentAccepted(true);
-            LoadPlatformCards();
+            _ = LoadPlatformCards();
             UpdateGamepadHints();
         }
 
@@ -1309,7 +1275,7 @@ namespace OmniConsole.Pages
                 }
             }
 
-            LoadPlatformCards();
+            _ = LoadPlatformCards();
             UpdateGamepadHints();
             // NavigationViewItem 預設無 Sound 觸發，補 Invoke 音；走 PlaySound 共用 50ms 去重表，
             // 避免「手把 LB/RB → SwitchCategoryTab → PlatformCategoryNav.SelectedItem 賦值 → SelectionChanged → 再進 SwitchCategoryTab」連鎖播兩次
@@ -1320,7 +1286,7 @@ namespace OmniConsole.Pages
         /// 根據目前分類索引標籤載入對應的平台卡片清單。
         /// 使用者索引標籤需先通過免責聲明同意檢查。
         /// </summary>
-        private void LoadPlatformCards()
+        private async Task LoadPlatformCards()
         {
             bool isUserTab = _currentCategoryTag == "User";
             bool isConsented = SettingsService.GetCustomPlatformConsentAccepted();
@@ -1353,8 +1319,19 @@ namespace OmniConsole.Pages
                     .ToList();
             }
 
+            // 先算好每張卡的可用性再寫進 IsAvailable，然後才同步到清單。
+            bool[] available = await Task.WhenAll(
+                newCards.Select(c => ProcessLauncherService.CheckPlatformAvailableAsync(c.Platform)));
+            for (int i = 0; i < newCards.Count; i++)
+                newCards[i].IsAvailable = available[i];
+
+            // 若目前選取的平台不可用，改選第一張可用的（系統平台都不可用時清除選取）
+            var currentSelected = newCards.FirstOrDefault(c => c.Id == _selectedPlatformId);
+            if (currentSelected is { IsAvailable: false })
+                _selectedPlatformId = newCards.FirstOrDefault(c => c.IsAvailable)?.Id ?? "";
+
             // 增量同步到固定的 _cardItems 實例（新增／移除／取代，見 ReplaceCards）；
-            // 涵蓋切索引標籤／匯入／新增／編輯／刪除所有重載路徑。ItemsSource 僅首次（為 null 時）繫結一次。
+            // 涵蓋切索引標籤／匯入／新增／編輯／刪除所有重新載入路徑。ItemsSource 僅首次（為 null 時）繫結一次。
             ReplaceCards(newCards);
             if (PlatformGridView.ItemsSource is null)
                 PlatformGridView.ItemsSource = _cardItems;
@@ -1365,9 +1342,43 @@ namespace OmniConsole.Pages
             {
                 PlatformGridView.SelectedItem = selectedCard;
             }
+        }
 
-            // 非同步查詢可用性
-            _ = LoadPlatformAvailabilityAsync();
+        /// <summary>
+        /// 編輯／新增單張使用者平台後的「局部更新」路徑：只動該張卡，不重新載入整個清單。
+        /// 既有卡片 → 原地更新欄位（PlatformCardItem 走 INPC，UI 原地更新、容器不重建）；
+        /// 新卡片 → 新增一筆。可用性 IO 只查這一張。僅使用者索引標籤呼叫。
+        /// </summary>
+        /// <returns>true 表示新插入了卡片；false 表示原地更新既有卡片。</returns>
+        private async Task<bool> UpdateOrInsertCard(string id)
+        {
+            var entry = UserPlatformStore.FindEntryById(id);
+            if (entry is null) return false;
+
+            var platform = entry.ToPlatformDefinition();
+            // entry 存在即用其 DisplayName（非可空、預設 ""）；此處 entry 已非 null，直接用。
+            string displayName = entry.DisplayName;
+            bool available = await ProcessLauncherService.CheckPlatformAvailableAsync(platform);
+
+            var existing = _cardItems.FirstOrDefault(c => c.Id == id);
+            if (existing != null)
+            {
+                // 原地更新既有實例：INPC 通知讓 OneWay 繫結更新（改名／換圖／可用性變化都涵蓋），不換實例。
+                existing.Platform = platform;
+                existing.DisplayName = displayName;
+                existing.IsAvailable = available;
+                return false;
+            }
+            else
+            {
+                _cardItems.Add(new PlatformCardItem
+                {
+                    Platform = platform,
+                    DisplayName = displayName,
+                    IsAvailable = available,
+                });
+                return true;
+            }
         }
 
         /// <summary>回傳指定平台 Id 在目前卡片清單中的索引；找不到回 -1。</summary>
@@ -1406,7 +1417,47 @@ namespace OmniConsole.Pages
         }
 
         /// <summary>
-        /// 以 Id 為鍵做增量比對，把 _cardItems 內容同步成 newCards（不換 ItemsSource、不發重設通知，少重建、不閃）。
+        /// 新增卡片後，平滑捲動到清單尾端的新卡並給予焦點（白框）。
+        /// 取代 <see cref="FocusPlatformCard"/> 在新增情境下走的 ScrollIntoView 路徑，改用平滑捲動。
+        /// 內部用 ScrollViewer.ChangeView 帶動畫平滑捲到底（新卡恆附加在尾端），捲完再聚焦。
+        /// </summary>
+        private void SmoothScrollToNewCardAndFocus(int index)
+        {
+            if (index < 0 || index >= _cardItems.Count) return;
+
+            var scrollViewer = VisualTreeHelpers.FindDescendant<ScrollViewer>(PlatformGridView);
+            if (scrollViewer is null)
+            {
+                // 找不到內部 ScrollViewer → 退回 FocusPlatformCard，至少焦點正確。
+                FocusPlatformCard(index);
+                return;
+            }
+
+            // 新卡剛新增，ScrollableHeight 要等一次佈局才反映新列高度；等 LayoutUpdated 後再捲。
+            EventHandler<object>? layoutHandler = null;
+            layoutHandler = (s, e) =>
+            {
+                PlatformGridView.LayoutUpdated -= layoutHandler;
+
+                // 捲完（IsIntermediate=false）後再聚焦容器。
+                EventHandler<ScrollViewerViewChangedEventArgs>? viewChanged = null;
+                viewChanged = (sv, args) =>
+                {
+                    if (args.IsIntermediate) return;
+                    scrollViewer.ViewChanged -= viewChanged;
+                    if (PlatformGridView.ContainerFromIndex(index) is SelectorItem c)
+                        c.Focus(FocusStateHelper.Preferred);
+                };
+                scrollViewer.ViewChanged += viewChanged;
+
+                // 新卡恆在尾端 → 平滑捲到底（disableAnimation:false）。
+                scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight, null, false);
+            };
+            PlatformGridView.LayoutUpdated += layoutHandler;
+        }
+
+        /// <summary>
+        /// 以 Id 為鍵做增量比對，把 _cardItems 內容同步成 newCards（不換 ItemsSource、不發重設通知，少重建）。
         /// 增量演算法在 <see cref="ObservableCollectionDiff.Apply{T}"/>，此處只提供身分／內容比對。
         /// </summary>
         private void ReplaceCards(IReadOnlyList<PlatformCardItem> newCards)
@@ -1416,7 +1467,8 @@ namespace OmniConsole.Pages
                 newCards,
                 static (a, b) => a.Id == b.Id,
                 static (a, b) => a.DisplayName == b.DisplayName
-                              && a.IconAsset == b.IconAsset);
+                              && a.IconAsset == b.IconAsset
+                              && a.IsAvailable == b.IsAvailable);
         }
 
         // ── 平台匯出 / 匯入 ───────────────────────────────────────────────────
@@ -1476,8 +1528,9 @@ namespace OmniConsole.Pages
                 var result = await dialog.ShowAsync();
                 if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
 
-                UserPlatformStore.Add(dialog.ResultEntry);
-                LoadPlatformCards();
+                UserPlatformStore.Add(dialog.ResultEntry);   // entry.Id 若空會在此被填上
+                // 局部更新：只新增匯入的那張卡，不整批重新載入。
+                await UpdateOrInsertCard(dialog.ResultEntry.Id);
             }
             finally
             {
@@ -1596,13 +1649,21 @@ namespace OmniConsole.Pages
                     if (isEdit)
                         UserPlatformStore.Update(entry);
                     else
-                        UserPlatformStore.Add(entry);
+                        UserPlatformStore.Add(entry);   // entry.Id 若空會在此被填上
 
-                    LoadPlatformCards();
+                    // 局部更新單張卡（不整批重新載入）：編輯原地改既有卡片欄位、新增一筆。
+                    // 既有卡走 INPC 原地更新、容器不重建。
+                    // 須 await：FocusPlatformCard 依賴 _cardItems 已被更新／插入完成。
+                    bool inserted = await UpdateOrInsertCard(entry.Id);
 
-                    // 焦點（白框）還原回剛被儲存的那張卡片（編輯=原卡片、新增=新加的那張），與刪除分支一致。
+                    // 焦點（白框）落到剛儲存的那張卡片。新增（新卡在尾端、需大幅捲動）走平滑捲動；
+                    // 編輯（原卡通常已在視野內）維持原 FocusPlatformCard。
                     int savedIndex = IndexOfCard(entry.Id);
-                    if (savedIndex >= 0) FocusPlatformCard(savedIndex);
+                    if (savedIndex >= 0)
+                    {
+                        if (inserted) SmoothScrollToNewCardAndFocus(savedIndex);
+                        else FocusPlatformCard(savedIndex);
+                    }
                 }
                 else if (result == ContentDialogResult.Secondary && isEdit && existingEntry != null)
                 {
@@ -1621,7 +1682,7 @@ namespace OmniConsole.Pages
 
                         // 選取（底色／預設平台）：刪非預設平台時維持不變（原預設仍在，由 LoadPlatformCards
                         // 還原底色）；刪到預設平台時不能讓預設遺失，改選 target 那張並即儲存為新預設
-                        // （若 target 不可用，LoadPlatformAvailabilityAsync 會在可用性載入後自動改選第一張可用的）。
+                        // （此處不必判 target 可用性，不可用時由後續載入流程自動改選）。
                         if (deletedDefault)
                         {
                             _selectedPlatformId = remainingUser[target].Id;
@@ -1632,7 +1693,7 @@ namespace OmniConsole.Pages
                             UpdateSettingsDescription();
                         }
 
-                        LoadPlatformCards();
+                        await LoadPlatformCards();   // await：FocusPlatformCard 依賴 _cardItems 已填好
                         FocusPlatformCard(target);
                     }
                     else

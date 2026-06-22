@@ -51,7 +51,8 @@ namespace OmniConsole.Dialogs
                 contentRoot.XYFocusDown = primaryButton;
             }
             // 顯式把初始焦點設到內容區第一個可聚焦元素（JsonInputBox）
-            DispatcherQueue.TryEnqueue(() => JsonInputBox.Focus(FocusStateHelper.Preferred));
+            DispatcherQueue.TryEnqueue(() =>
+                JsonInputBox.Focus(FocusStateHelper.Preferred));
             // 手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。
         }
 

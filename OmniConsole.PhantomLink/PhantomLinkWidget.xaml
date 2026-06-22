@@ -168,14 +168,14 @@
                 <StackPanel Spacing="6">
                     <TextBlock x:Uid="Widget_Layout_Title" services:Localized.Uid="Widget_Layout_Title" FontWeight="SemiBold"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ToggleButton x:Name="LayoutNavBtn" Content="OmniNav"
+                        <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_Layout_OmniNav" services:Localized.Uid="Widget_Layout_OmniNav"
                                       Click="LayoutBtn_Click" Tag="OmniNav"
                                       UseSystemFocusVisuals="True" MinWidth="96"
                                       XYFocusUp="{x:Bind ModeOffBtn}"
                                       XYFocusLeft="{x:Bind LayoutNavBtn}"
                                       XYFocusRight="{x:Bind LayoutClassicBtn}"
                                       XYFocusDown="{x:Bind CursorSpeedSlider}"/>
-                        <ToggleButton x:Name="LayoutClassicBtn" Content="Classic"
+                        <ToggleButton x:Name="LayoutClassicBtn" x:Uid="Widget_Layout_Classic" services:Localized.Uid="Widget_Layout_Classic"
                                       Click="LayoutBtn_Click" Tag="Classic"
                                       UseSystemFocusVisuals="True" MinWidth="96"
                                       XYFocusUp="{x:Bind ModeForceOnBtn}"

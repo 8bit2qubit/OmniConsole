@@ -126,7 +126,8 @@ namespace OmniConsole.Dialogs
                 contentRoot.XYFocusDown = primaryButton;
             }
             // 顯式把初始焦點設到內容區第一個可聚焦元素（NameBox）
-            DispatcherQueue.TryEnqueue(() => NameBox.Focus(FocusStateHelper.Preferred));
+            DispatcherQueue.TryEnqueue(() =>
+                NameBox.Focus(FocusStateHelper.Preferred));
         }
 
         // ── 控制項可見性 ────────────────────────────────────────────────────

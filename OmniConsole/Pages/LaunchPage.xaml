@@ -86,8 +86,9 @@
                        Stretch="UniformToFill"/>
             </Border>
 
-            <!-- 狀態文字：顯示目前的啟動進度或錯誤訊息 -->
-            <TextBlock x:Name="StatusText" x:Uid="StatusText" services:Localized.Uid="StatusText"
+            <!-- 狀態文字：內容由 code-behind 動態設（啟動中/FSE 引導/各種錯誤），故不掛 x:Uid/Localized.Uid。
+                 掛了會讓 PhantomLocalizer 引擎 ApplyAll 在切社群語言時用靜態值蓋掉 code-behind 動態值。 -->
+            <TextBlock x:Name="StatusText"
                        FontSize="28"
                        HorizontalAlignment="Center"
                        TextWrapping="Wrap"

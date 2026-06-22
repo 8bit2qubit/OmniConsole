@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="StatusText.Text" xml:space="preserve">
-    <value>正在啟動...</value>
-  </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>{OmniConsole} 設定</value>
   </data>
@@ -290,7 +287,7 @@
     <value>OmniNav</value>
   </data>
   <data name="MouseModeLayoutSwitch.OnContent" xml:space="preserve">
-    <value>Classic</value>
+    <value>經典</value>
   </data>
   <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
     <value>游標速度</value>

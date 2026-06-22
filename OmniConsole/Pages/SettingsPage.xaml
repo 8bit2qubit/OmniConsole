@@ -181,6 +181,8 @@
                         IsSettingsVisible="False"
                         OpenPaneLength="340"
                         SelectionChanged="SettingsNav_SelectionChanged"
+                        PaneOpening="SettingsNav_PaneOpening"
+                        PaneClosing="SettingsNav_PaneClosing"
                         XYFocusKeyboardNavigation="Enabled">
 
             <!-- 掌機最佳化：覆寫漢堡選單按鈕樣式以符合 64px 導覽列寬度 -->
@@ -300,8 +302,8 @@
 
                         <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,16">
                             <!-- 含品牌名：改由 code-behind 設值（注入品牌）；保留 Localized.Uid 讓社群語言外掛切換仍能套用。 -->
-                            <TextBlock x:Name="SettingsTitleText" services:Localized.Uid="SettingsTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center"/>
+                            <TextBlock x:Name="SettingsTitleText" services:Localized.Uid="SettingsTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+                            <TextBlock x:Name="SettingsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
                         </StackPanel>
 
                         <!-- 分類索引標籤 + 平台卡片 -->
@@ -450,10 +452,10 @@
                                 <GridView.ItemTemplate>
                                     <DataTemplate x:DataType="models:PlatformCardItem">
                                         <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
-                                        <!-- 可用性更新在 LoadPlatformAvailabilityAsync 以同位取代觸發重新繫結（不換 ItemsSource） -->
+                                        <!-- OneWay：PlatformCardItem 實作 INPC，編輯改名／可用性變化原地更新、不換實例不重建容器 -->
                                         <Border CornerRadius="16" Margin="8"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                Opacity="{x:Bind CardOpacity}">
+                                                Opacity="{x:Bind CardOpacity, Mode=OneWay}">
                                             <Border.ContextFlyout>
                                                 <!-- MenuFlyoutItem 不掛 x:Uid/Localized.Uid（彈出型控制項不適用）；
                                                      Text 改由 code-behind 於 Opening 事件設定。同 ComboBox 慣例。 -->
@@ -463,12 +465,12 @@
                                             </Border.ContextFlyout>
                                             <Grid>
                                                 <!-- 平台圖片作為全滿卡片背景 -->
-                                                <Image Source="{x:Bind IconAsset}" Stretch="UniformToFill"/>
+                                                <Image Source="{x:Bind IconSource, Mode=OneWay}" Stretch="UniformToFill"/>
                                                 <!-- 底部文字區域，半透明暗底確保文字可讀性 -->
                                                 <Border VerticalAlignment="Bottom"
                                                         CornerRadius="0,0,12,12"
                                                         Background="#BB000000">
-                                                    <TextBlock Text="{x:Bind DisplayName}"
+                                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
                                                                FontSize="14"
                                                                FontWeight="SemiBold"
                                                                HorizontalAlignment="Center"
@@ -514,9 +516,12 @@
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                   Padding="0">
-                    <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="700">
-                        <TextBlock x:Uid="AdvancedTitle" services:Localized.Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock x:Uid="AdvancedDescription" services:Localized.Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- 標題/副標滿版置中，不受卡片 700 寬度限制；左右 Margin 24 避開右側捲軸（撐滿時不壓到 ScrollBar）。 -->
+                        <TextBlock x:Uid="AdvancedTitle" services:Localized.Uid="AdvancedTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+                        <TextBlock x:Uid="AdvancedDescription" services:Localized.Uid="AdvancedDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+                        <!-- 卡片內容群組：維持 700 窄欄 -->
+                        <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,8,0,0">
 
                         <!-- 更新分類標題 -->
                         <TextBlock x:Uid="AdvancedSection_Updates" services:Localized.Uid="AdvancedSection_Updates" FontSize="14" FontWeight="SemiBold"
@@ -905,6 +910,7 @@
                         </Border>
                         -->
 
+                        </StackPanel>
                     </StackPanel>
                     </ScrollViewer>
 
@@ -913,9 +919,12 @@
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                   Padding="0">
-                    <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="700">
-                        <TextBlock x:Uid="TroubleshootTitle" services:Localized.Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock x:Uid="TroubleshootDescription" services:Localized.Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- 標題/副標滿版置中，不受卡片 700 寬度限制；左右 Margin 24 避開右側捲軸（撐滿時不壓到 ScrollBar）。 -->
+                        <TextBlock x:Uid="TroubleshootTitle" services:Localized.Uid="TroubleshootTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+                        <TextBlock x:Uid="TroubleshootDescription" services:Localized.Uid="TroubleshootDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+                        <!-- 卡片內容群組：維持 700 窄欄 -->
+                        <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,8,0,0">
 
                         <!-- FSE 分類標題 -->
                         <TextBlock x:Uid="TroubleshootSection_Fse" services:Localized.Uid="TroubleshootSection_Fse" FontSize="14" FontWeight="SemiBold"
@@ -954,6 +963,7 @@
                                 </StackPanel>
                             </Grid>
                         </Border>
+                        </StackPanel>
                     </StackPanel>
                     </ScrollViewer>
 
@@ -989,10 +999,11 @@
                         </Grid.RowDefinitions>
 
                         <!-- 標題（跨兩欄，置中） -->
+                        <!-- MaxWidth 由 AboutPage_SizeChanged 動態設成實際可用寬（比照其他頁靠 ScrollViewer 視窗全寬的換行依據）。 -->
                         <StackPanel x:Name="AboutTitleGroup" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                                    Spacing="8" HorizontalAlignment="Center" Width="700" Margin="0,0,0,0">
+                                    Spacing="8" HorizontalAlignment="Center" Margin="0,0,0,0">
                             <!-- 含品牌名：改由 code-behind 設值（同 SettingsTitleText）。 -->
-                            <TextBlock x:Name="AboutTitleText" services:Localized.Uid="AboutTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="AboutTitleText" services:Localized.Uid="AboutTitle" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
                             <TextBlock x:Uid="AboutDescription" services:Localized.Uid="AboutDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap"/>
                         </StackPanel>
 
