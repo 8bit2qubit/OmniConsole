@@ -23,7 +23,7 @@ BEGIN
             VALUE "FileVersion",      VERSION_STR
             VALUE "InternalName",     "PhantomKey"
             VALUE "LegalCopyright",   "Copyright (C) 2026 8bit2qubit"
-            VALUE "OriginalFilename", "Steam.exe"
+            VALUE "OriginalFilename", "OmniConsole.PhantomKey.exe"
             VALUE "ProductName",      "OmniConsole"
             VALUE "ProductVersion",   VERSION_STR
         END

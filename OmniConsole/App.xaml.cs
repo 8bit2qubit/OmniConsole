@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using OmniConsole.Services;
 using OmniConsole.Startup;
@@ -70,6 +70,7 @@ namespace OmniConsole
 
                 case StartupRoute.StartWithMainWindow:
                     SettingsService.ApplyNavigationSoundsSetting();
+                    BackgroundMaterialService.ApplyAppResources(SettingsService.GetBackgroundMaterial());
                     var mainWindow = new MainWindow();
                     _window = mainWindow;
                     _dispatcherQueue = mainWindow.DispatcherQueue;
@@ -84,13 +85,13 @@ namespace OmniConsole
 
                         WindowForegroundService.BringToForeground(mainWindow);
 
-                        // 語言同步只在「進 Settings」路徑做：同步對話方塊僅限設定情境，不可彈在 LaunchPage 啟動平台時擋住流程。
+                        // 語言同步只在「進 Settings」路徑做：同步對話方塊僅限設定情境，不可彈在 LaunchView 啟動平台時擋住流程。
                         _ = mainWindow.TrySyncLanguagesAsync();
                     }
                     else
                     {
                         // 啟動即全螢幕（雙保險：FSE Activate 前生效、桌面 window ready 後補救）
-                        // 此路徑（正常啟動 → 去 LaunchPage 啟動平台）不做語言同步：避免同步對話方塊打斷啟動平台。
+                        // 此路徑（正常啟動 → 去 LaunchView 啟動平台）不做語言同步：避免同步對話方塊打斷啟動平台。
                         mainWindow.ActivateFullScreen();
                     }
                     break;
@@ -109,7 +110,7 @@ namespace OmniConsole
                 string lang = SettingsService.GetUiLanguage();   // 空＝跟系統
                 // 注意：PrimaryLanguageOverride 已在 Program.Main 最早處設定（須在資源載入前）；此處不再重設，只處理外掛翻譯層。
 
-                // 載入外掛翻譯資料夾（共享 PublisherCacheFolder\OmniConsoleShared\Translations\OmniConsole）。
+                // 載入外掛翻譯資料夾（共用 PublisherCacheFolder\OmniConsoleShared\Translations\OmniConsole）。
                 // 只載「目前語言」內容（掃目錄記可選清單、不全載），避免把所有語言塞進記憶體浪費。
                 try
                 {
@@ -133,6 +134,7 @@ namespace OmniConsole
         private void ShowGuidanceWindow(Action<MainWindow> show)
         {
             SettingsService.ApplyNavigationSoundsSetting();
+            BackgroundMaterialService.ApplyAppResources(SettingsService.GetBackgroundMaterial());
             var win = new MainWindow();
             _window = win;
             _dispatcherQueue = win.DispatcherQueue;

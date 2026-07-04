@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -16,7 +16,7 @@ namespace OmniConsole.Dialogs
     /// <summary>
     /// 「改鍵」對話方塊：選擇單一 VK（KeyTap / KeyHold）或修飾鍵組合 + VK（KeyCombo）。
     /// </summary>
-    public sealed partial class ChangeKeyDialog : GamepadDialog
+    public sealed partial class ChangeKeyDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
         private readonly bool _isCombo;
@@ -54,9 +54,6 @@ namespace OmniConsole.Dialogs
             PrimaryButtonClick += OnPrimary;
             Opened += OnOpened;
 
-            // 焦點守衛：對抗 ContentDialog 框架預設焦點搶位的賽跑，開啟初期把焦點拉回右欄選中項（見 EnforceInitialFocus）。
-            GotFocus += EnforceInitialFocus;
-
             // 預設選到目前 VK 所屬分類（連帶填右欄、選中該鍵）；找不到則退第一個分類。
             var currentEntry = VirtualKeys.FindByVk(current.Vk);
             int catIdx = currentEntry != null ? IndexOfCategory(currentEntry.Group) : -1;
@@ -69,8 +66,6 @@ namespace OmniConsole.Dialogs
         private KeyPickerRow? _selectedRow;
         /// <summary>建構期記住要在右欄預選的 VK，待對應分類填好後套用一次。</summary>
         private int _pendingVk;
-        /// <summary>開啟初期「焦點守衛」開關：期間把焦點拉回右欄選中項，短視窗後關閉、放行手把導航。</summary>
-        private bool _guardInitialFocus;
 
         /// <summary>建左欄分類清單：依 VirtualKeys 出現順序去重；組合鍵模式跳過 Modifiers 分組。</summary>
         private void BuildCategories()
@@ -127,7 +122,7 @@ namespace OmniConsole.Dialogs
         }
 
         /// <summary>
-        /// 將焦點設到右欄指定 VK 列的容器（捲＋聚焦由基底類別處理；
+        /// 將焦點設到右欄指定 VK 列的容器（捲動 + 聚焦由基底類別處理；
         /// 白框僅在手把/FSE 的 Keyboard 焦點狀態下顯示，桌面滑鼠為 Pointer 不顯屬正常）。
         /// </summary>
         private void FocusKeyListItem(KeyPickerRow row)
@@ -194,42 +189,34 @@ namespace OmniConsole.Dialogs
             }
         }
 
-        /// <summary>焦點守衛（GotFocus）：開啟初期只要焦點不在右欄選中項上就拉回，視窗結束後不再干預、放行手把 D-pad 導航。</summary>
-        private void EnforceInitialFocus(object sender, RoutedEventArgs e)
+        /// <summary>開啟初期焦點是否已落在右欄選中項上（焦點守衛的達標判斷）。</summary>
+        private bool IsFocusOnSelectedKey()
         {
-            if (!_guardInitialFocus || _selectedRow == null) return;
-
+            if (_selectedRow == null) return true; // 無選中項則無守衛目標，視為達標
             var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(XamlRoot);
             var target = KeyList.ContainerFromItem(_selectedRow);
-            if (target != null && ReferenceEquals(focused, target)) return; // 已在右欄選中項，達標、不干預
-
-            FocusKeyListItem(_selectedRow);
+            return target != null && ReferenceEquals(focused, target);
         }
 
-        /// <summary>對話方塊開啟：初始焦點落右欄選中項（靠 GotFocus 焦點守衛確保）。手把導航由 GamepadDialog 基底類別自動提供。</summary>
+        /// <summary>對話方塊開啟：初始焦點落右欄選中項（靠基底焦點守衛確保）。手把導航由 GamepadDialogBase 基底類別自動提供。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            _guardInitialFocus = true;
+            // 掛上焦點守衛：開啟初期焦點被框架搶走時，於守衛時窗內拉回右欄選中項。
+            GuardInitialFocus(IsFocusOnSelectedKey, () =>
+            {
+                if (_selectedRow != null) FocusKeyListItem(_selectedRow);
+            });
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                // 兩欄都用「等容器就緒再捲」（捲動由基底類別處理）。
+                // 兩欄都用「等容器就緒再捲動」（捲動由基底類別處理）。
                 if (CategoryList.SelectedItem is KeyCategoryRow cat)
                     ScrollIntoViewWhenReady(CategoryList, _categories.IndexOf(cat));
 
-                // 首次嘗試聚焦右欄選中項（若被框架搶走，GotFocus 守衛會再拉回）。
+                // 首次嘗試聚焦右欄選中項（若被框架搶走，守衛會再拉回）。
                 if (_selectedRow != null) FocusKeyListItem(_selectedRow);
                 else KeyList.Focus(FocusStateHelper.Preferred);
             });
-
-            // 短視窗後關閉守衛，放行手把 D-pad 導航（700ms 綽綽有餘）。
-            var guardTimer = new DispatcherTimer { Interval = System.TimeSpan.FromMilliseconds(700) };
-            guardTimer.Tick += (s, e) =>
-            {
-                guardTimer.Stop();
-                _guardInitialFocus = false;
-            };
-            guardTimer.Start();
         }
 
         /// <summary>取 VK 條目的顯示名稱（resw → FallbackText 兩段回退）。</summary>

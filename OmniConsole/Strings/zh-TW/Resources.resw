@@ -163,7 +163,7 @@
     <value>Steam Big Picture</value>
   </data>
   <data name="Platform_XboxApp" xml:space="preserve">
-    <value>Xbox App</value>
+    <value>Xbox 應用程式</value>
   </data>
   <data name="Platform_EpicGames" xml:space="preserve">
     <value>Epic Games Store</value>
@@ -172,7 +172,7 @@
     <value>Armoury Crate SE</value>
   </data>
   <data name="Platform_PlayniteFullscreen" xml:space="preserve">
-    <value>Playnite Fullscreen</value>
+    <value>Playnite 全螢幕</value>
   </data>
   <data name="AppDisplayName" xml:space="preserve">
     <value>OmniConsole</value>
@@ -281,7 +281,7 @@
     <value>控制器版面配置</value>
   </data>
   <data name="MouseModeLayoutSetting_Description.Text" xml:space="preserve">
-    <value>OmniNav：左搖桿控制游標。Classic：右搖桿控制游標。</value>
+    <value>OmniNav：左搖桿控制游標。經典：右搖桿控制游標。</value>
   </data>
   <data name="MouseModeLayoutSwitch.OffContent" xml:space="preserve">
     <value>OmniNav</value>
@@ -294,6 +294,24 @@
   </data>
   <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
     <value>相對於預設值（100%）縮放游標移動速度。</value>
+  </data>
+  <data name="BackgroundMaterialSetting_Title.Text" xml:space="preserve">
+    <value>背景材質</value>
+  </data>
+  <data name="BackgroundMaterialSetting_Description.Text" xml:space="preserve">
+    <value>選擇背景的材質效果。</value>
+  </data>
+  <data name="BackgroundMaterialSetting_Note.Text" xml:space="preserve">
+    <value>需要啟用 Windows 透明效果。</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomClassic" xml:space="preserve">
+    <value>幻影經典</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomGlass" xml:space="preserve">
+    <value>幻影玻璃</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomGlassDeep" xml:space="preserve">
+    <value>幻影深玻璃</value>
   </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>

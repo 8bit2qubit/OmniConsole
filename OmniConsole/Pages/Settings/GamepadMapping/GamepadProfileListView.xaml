@@ -1,15 +1,20 @@
-﻿<UserControl
-    x:Class="OmniConsole.Controls.GamepadProfileListView"
+<Page
+    x:Class="OmniConsole.Pages.Settings.GamepadMapping.GamepadProfileListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:services="using:OmniConsole.Services"
-    xmlns:local="using:OmniConsole.Controls">
+    xmlns:local="using:OmniConsole.Pages.Settings.GamepadMapping">
 
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-        <!-- 關掉 ListViewItem 左側 selection accent bar，焦點視覺僅保留白框。 -->
-        <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
-    </UserControl.Resources>
+    <Page.Resources>
+        <ResourceDictionary>
+            <!-- 跨頁共用：CardBackgroundFillColorDefaultBrush（#25282C）。 -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../PhantomViewStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 關掉 ListViewItem 左側 selection accent bar，焦點視覺僅保留白框。 -->
+            <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
+        </ResourceDictionary>
+    </Page.Resources>
 
     <!-- 三段式版面：標題區(Auto) / 工具列(Auto) / 清單區(*) 撐滿剩餘高度。
          外層不再用 ScrollViewer，捲動權交回 ListView 自身，虛擬化才會生效，
@@ -101,12 +106,6 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
 
-                        <ListView.ItemContainerTransitions>
-                            <TransitionCollection>
-                                <EntranceThemeTransition/>
-                            </TransitionCollection>
-                        </ListView.ItemContainerTransitions>
-
                         <!-- 顯式 ItemsPanel + Loaded 快取：WinAppSDK 2.x 的 ItemsPanelRoot 不可靠讀回 null，
                              改在 panel 自身 Loaded 取 sender 快取，供 PageBy 算每頁可見項數。 -->
                         <ListView.ItemsPanel>
@@ -157,4 +156,4 @@
                 </StackPanel>
             </Grid>
     </Grid>
-</UserControl>
+</Page>

@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName>Steam</TargetName>
+    <TargetName>OmniConsole.PhantomKey</TargetName>
     <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\Intermediate\</IntDir>
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
@@ -76,9 +76,9 @@
   <PropertyGroup>
     <OmniTimestampArg Condition="'$(OMNI_SKIP_TIMESTAMP)' != '1'">/t http://timestamp.digicert.com</OmniTimestampArg>
   </PropertyGroup>
-  <Target Name="SignSteamExe" AfterTargets="Link"
+  <Target Name="SignPhantomKeyExe" AfterTargets="Link"
           Condition="'$(OMNI_PFX_PATH)' != '' AND Exists('$(OMNI_PFX_PATH)')">
-    <Exec Command="signtool sign /fd SHA256 /f &quot;$(OMNI_PFX_PATH)&quot; /p &quot;$(OMNI_PFX_PASSWORD)&quot; $(OmniTimestampArg) &quot;$(OutDir)Steam.exe&quot;"
+    <Exec Command="signtool sign /fd SHA256 /f &quot;$(OMNI_PFX_PATH)&quot; /p &quot;$(OMNI_PFX_PASSWORD)&quot; $(OmniTimestampArg) &quot;$(OutDir)OmniConsole.PhantomKey.exe&quot;"
           IgnoreStandardErrorWarningFormat="true" />
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

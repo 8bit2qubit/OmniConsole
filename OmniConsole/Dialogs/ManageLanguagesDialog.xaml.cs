@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;   // SelectorItem（net10 Release 下清單容器的基底型別）
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -24,7 +24,7 @@ namespace OmniConsole.Dialogs
     /// 社群語言檔管理對話方塊：左欄列出 repo（目前 app 版本）可裝語言、右欄詳情 + 下載/更新/移除動作。
     /// 版面比照 ChangeKeyDialog 雙欄；async fetch index 故多載入/錯誤態。
     /// </summary>
-    public sealed partial class ManageLanguagesDialog : GamepadDialog
+    public sealed partial class ManageLanguagesDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
 
@@ -40,12 +40,7 @@ namespace OmniConsole.Dialogs
         /// <summary>下載/移除進行中：鎖住對話方塊關閉（CloseButton/X/Esc/手把 B），避免操作中途被中斷。</summary>
         private bool _busy;
 
-        // ── 初始焦點守衛（比照 ChangeKeyDialog；機制詳見 EnforceInitialFocus）──
-        // 與 ChangeKeyDialog 唯一差異＝守衛目標是動態的（右欄按鈕 或 左欄第一項，視目前語言而定），故多一個 _initialFocusTarget。
-        private Microsoft.UI.Xaml.Controls.Control? _initialFocusTarget;   // 守衛期間焦點要停的目標
-        private bool _guardInitialFocus;
-
-        /// <summary>建立社群語言管理對話方塊；設定標題/按鈕文字、掛事件與初始焦點守衛（清單在 Opened 後才載入）。</summary>
+        /// <summary>建立社群語言管理對話方塊；設定標題/按鈕文字、掛事件（清單在 Opened 後才載入）。</summary>
         public ManageLanguagesDialog(XamlRoot xamlRoot)
         {
             InitializeComponent();
@@ -61,39 +56,16 @@ namespace OmniConsole.Dialogs
 
             Opened += OnOpened;
             Closing += OnClosing;
-
-            // 焦點守衛：對抗 ContentDialog 框架預設焦點搶位的賽跑，開啟初期把焦點拉回初始目標（見 EnforceInitialFocus）。
-            GotFocus += EnforceInitialFocus;
         }
 
         /// <summary>
-        /// 焦點守衛：開啟初期，只要焦點不在初始目標上（ContentDialog 框架會把預設焦點搶到「樹中第一個可聚焦元素」
-        /// ＝左欄第一項），就把它拉回初始目標（右欄按鈕 或 左欄第一項，視目前語言而定）。
-        /// GotFocus 是冒泡 routed event、框架的搶焦點動作必觸發它，故無論框架在哪個時點搶，這裡都能即時糾正、不必猜時序。
-        /// 視窗結束（_guardInitialFocus=false）後不再干預，放行手把 D-pad 導航。
+        /// 焦點落指定目標並守衛：對抗「框架開啟時把預設焦點搶到樹中第一個可聚焦元素（左欄第一項）」。
+        /// 目標達標判斷含其虛擬化清單項容器（右欄按鈕 或 左欄第一項，視目前語言而定）。
         /// </summary>
-        private void EnforceInitialFocus(object sender, RoutedEventArgs e)
+        private void GuardFocusOn(Microsoft.UI.Xaml.Controls.Control target)
         {
-            if (!_guardInitialFocus || _initialFocusTarget == null) return;
-            if (IsFocusWithin(_initialFocusTarget)) return;   // 已在目標（含其清單項容器）內＝達標、不干預
-            _initialFocusTarget.Focus(FocusStateHelper.Preferred);
-        }
-
-        /// <summary>啟動初始焦點守衛：記下目標、先 Focus 一次，掛 700ms 視窗後關閉守衛、放行 D-pad 導航
-        /// （框架的一次性預設焦點必在開啟後極短時間內完成，700ms 綽綽有餘；比照 ChangeKeyDialog）。</summary>
-        private void BeginFocusGuard(Microsoft.UI.Xaml.Controls.Control target)
-        {
-            _initialFocusTarget = target;
-            _guardInitialFocus = true;
+            GuardInitialFocus(() => IsFocusWithin(target), () => target.Focus(FocusStateHelper.Preferred));
             target.Focus(FocusStateHelper.Preferred);
-
-            var guardTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(700) };
-            guardTimer.Tick += (s, e) =>
-            {
-                guardTimer.Stop();
-                _guardInitialFocus = false;
-            };
-            guardTimer.Start();
         }
 
         /// <summary>進行中時攔截所有關閉路徑（CloseButton/X/Esc）。手把 B 另由 OnB 覆寫攔截。</summary>
@@ -209,7 +181,7 @@ namespace OmniConsole.Dialogs
                     LanguageList.SelectedIndex = sel;        // 左欄選中目前語言（SelectionChanged → ShowDetail 填右欄）
                     ScrollIntoViewWhenReady(LanguageList, sel);        // 選中項捲進視野（焦點雖在右欄、左欄選中項仍可見）
                     // 焦點落右欄按鈕：用守衛對抗「框架開啟時搶左欄 index 0」（單純 Focus() 會被框架隨後奪走）。
-                    BeginFocusGuard(ActionButton);
+                    GuardFocusOn(ActionButton);
                 }
                 else
                 {
@@ -354,14 +326,14 @@ namespace OmniConsole.Dialogs
             ActionMessage.Visibility = Visibility.Visible;
         }
 
-        /// <summary>顯示訊息態（無語言／載入失敗），文字置於訊息面板。</summary>
+        /// <summary>顯示訊息態（無語言/載入失敗），文字置於訊息面板。</summary>
         private void ShowMessage(string text)
         {
             MessageText.Text = text;
             ShowPanel(loading: false, message: true, content: false);
         }
 
-        /// <summary>切換三種面板（載入中／訊息／內容）的顯示，三選一。</summary>
+        /// <summary>切換三種面板（載入中/訊息/內容）的顯示，三選一。</summary>
         private void ShowPanel(bool loading, bool message, bool content)
         {
             LoadingPanel.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;

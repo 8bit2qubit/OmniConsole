@@ -1,0 +1,84 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 跨頁共用：CardBackgroundFillColorDefaultBrush（#25282C）由 PhantomViewStyles 提供。 -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../PhantomViewStyles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- 平台卡片網格的選取/懸停底色（System/User 兩子頁共用，避免兩份各自不一致） -->
+    <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemAccentColorDark2}"/>
+    <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemAccentColorDark1}"/>
+    <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemAccentColorDark3}"/>
+    <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SystemAccentColorDark3}"/>
+    <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="{ThemeResource SystemAccentColorDark2}"/>
+
+    <!-- 自訂 GridViewItem 樣板：圓角選取/焦點效果（預設 ListViewItemPresenter 的 CornerRadius 對焦點框與選取邊框無效，須完整覆寫樣板用明確 Border + CornerRadius）。 -->
+    <Style x:Key="PlatformGridViewItemStyle" TargetType="GridViewItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <!-- 停用系統預設直角焦點框，改由樣板內的 FocusBorder 處理 -->
+        <Setter Property="UseSystemFocusVisuals" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridViewItem">
+                    <Grid x:Name="RootGrid">
+                        <!-- 選取/懸停背景（圓角） -->
+                        <Border x:Name="BackgroundBorder" CornerRadius="14" Background="Transparent"/>
+                        <!-- 手把/鍵盤焦點白框（圓角） -->
+                        <Border x:Name="FocusBorder" CornerRadius="14" BorderThickness="3" BorderBrush="Transparent"/>
+                        <ContentPresenter x:Name="ContentPresenter"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Margin="{TemplateBinding Padding}"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPointerOver}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundPressed}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelected}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOverSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PressedSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackgroundBorder.Background" Value="{ThemeResource GridViewItemBackgroundSelectedPressed}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="FocusStates">
+                                <VisualState x:Name="Focused">
+                                    <VisualState.Setters>
+                                        <Setter Target="FocusBorder.BorderBrush" Value="White"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Unfocused"/>
+                                <VisualState x:Name="PointerFocused"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

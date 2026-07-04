@@ -1,4 +1,4 @@
-<dialogs:GamepadDialog
+<dialogs:GamepadDialogBase
     x:Class="OmniConsole.Dialogs.FilePickerDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,16 +7,14 @@
     DefaultButton="None"
     RequestedTheme="Dark">
 
-    <dialogs:GamepadDialog.Resources>
-        <x:Double x:Key="ContentDialogMaxWidth">1120</x:Double>
-        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
-        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
-        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
-        <!-- Phantom 配色：對話方塊內卡片背景 #25282C -->
-        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-    </dialogs:GamepadDialog.Resources>
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <x:Double x:Key="ContentDialogMaxWidth">1120</x:Double>
+        </ResourceDictionary>
+    </dialogs:GamepadDialogBase.Resources>
 
     <!-- 固定 Height 恆定（檔案數變動不撐高/縮回，Row 1(*) 與 FileListView 填滿、內部捲動）。
          Width 不在此設：由 code-behind 建構式依「選圖/非選圖」模式設 RootGrid.Width（設這裡會被覆蓋）。 -->
@@ -154,4 +152,4 @@
         </Grid>
     </Grid>
 
-</dialogs:GamepadDialog>
+</dialogs:GamepadDialogBase>

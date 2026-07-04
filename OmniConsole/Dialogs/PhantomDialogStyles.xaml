@@ -1,0 +1,15 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Phantom 配色：各 ContentDialog 共用的背景/頂部覆蓋/邊框/分隔線。
+         由各對話方塊在自身 Resources 內以 ResourceDictionary 引用（控制項層級、非 App.xaml 全域）。 -->
+    <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
+    <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
+    <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
+    <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
+    <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
+
+    <!-- 普通卡片背景（資訊卡片 Border 用；同 #25282C）。部分對話方塊內含卡片時引用。 -->
+    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
+</ResourceDictionary>

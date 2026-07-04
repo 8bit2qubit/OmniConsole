@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<UserControl
-    x:Class="OmniConsole.Pages.LaunchPage"
+<Page
+    x:Class="OmniConsole.Pages.LaunchView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:services="using:OmniConsole.Services">
+    xmlns:services="using:OmniConsole.Services"
+    NavigationCacheMode="Enabled">
 
     <Grid>
         <VisualStateManager.VisualStateGroups>
@@ -18,7 +18,7 @@
                         <Setter Target="LaunchProgressRing.IsActive" Value="True"/>
                     </VisualState.Setters>
                 </VisualState>
-                <!-- LaunchingSlow：啟動超過 15 秒，顯示緩和提示 -->
+                <!-- LaunchingSlow：啟動超過特定秒數後，顯示緩和提示 -->
                 <VisualState x:Name="LaunchingSlow">
                     <VisualState.Setters>
                         <Setter Target="LaunchIconBorder.Visibility" Value="Visible"/>
@@ -102,7 +102,7 @@
                           HorizontalAlignment="Center"
                           Visibility="Collapsed"/>
 
-            <!-- 啟動時間過長時顯示的緩和提示（15 秒後才出現） -->
+            <!-- 啟動時間過長時顯示的緩和提示（特定秒數後才出現） -->
             <TextBlock x:Name="LaunchSlowWarningText" x:Uid="LaunchSlowWarningText" services:Localized.Uid="LaunchSlowWarningText"
                        FontSize="16"
                        HorizontalAlignment="Center"
@@ -171,4 +171,4 @@
             </Button>
         </StackPanel>
     </Grid>
-</UserControl>
+</Page>

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace OmniConsole.Pages
 {
     /// <summary>
-    /// 啟動畫面 UserControl。
+    /// 啟動畫面 Page。
     /// 負責平台自動啟動、FSE 引導畫面及啟動失敗時的操作按鈕。
     /// </summary>
-    public sealed partial class LaunchPage : UserControl, IGamepadInputScope
+    public sealed partial class LaunchView : Page, IGamepadInputScope
     {
         // ── 對外事件 ──────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ namespace OmniConsole.Pages
         private bool _hasLaunchedOnce = false;
         private readonly ResourceLoader _resourceLoader = new();
 
-        public LaunchPage()
+        public LaunchView()
         {
             InitializeComponent();
         }
@@ -66,7 +66,6 @@ namespace OmniConsole.Pages
             try
             {
                 // 重設為初始狀態，確保上次失敗殘留的按鈕等元素被收合
-                // 注意：SettingsPage 的可見性由呼叫方 MainWindow 在進入此方法前已處理
                 VisualStateManager.GoToState(this, "Idle", false);
 
                 // 讀取快取的更新資訊，有新版時顯示 InfoBar
@@ -112,74 +111,15 @@ namespace OmniConsole.Pages
                     // 但 Win+F11、工作檢視、開機自動進入等路徑不經過該清理，仍需此防禦。
                     FseService.KillIgnoredBackgroundServices();
 
-                    // 輪詢前景視窗：一旦前景確實是目標平台（非過渡窗）即可安全退出。
-                    const int pollIntervalMs = 500;
-                    const int slowWarningSeconds = 20;
-                    const int timeoutSeconds = 60;            // 「平台沒起來」的逾時（前景一直是殼層／過渡窗）
-                    const int extendedTimeoutSeconds = 300;   // 「平台啟動中但慢」的寬限硬上限（全新 Steam 跨更新可達數分鐘）
-
-                    bool platformToForeground = false;
-                    int elapsed = 0;
-
-                    IntPtr lastFg = IntPtr.Zero;
-                    DebugLogger.Log($"[LP-DIAG] poll start self=0x{Hwnd.ToInt64():X} platform={platform.Id}");
-
-                    bool slowWarningShown = false;
-                    bool sawBootstrap = false;   // 本次啟動「曾見過該平台 bootstrap 在前景：證明平台確實在啟動、給寬限
-                    while (elapsed < extendedTimeoutSeconds * 1000)
-                    {
-                        await Task.Delay(pollIntervalMs);
-                        elapsed += pollIntervalMs;
-                        IntPtr fg = WindowForegroundService.GetForeground();
-
-                        if (!slowWarningShown && elapsed >= slowWarningSeconds * 1000)
-                        {
-                            slowWarningShown = true;
-                            VisualStateManager.GoToState(this, "LaunchingSlow", false);
-                        }
-
-                        var ev = WindowForegroundService.EvaluatePlatformForeground(
-                            Hwnd,
-                            ProcessLauncherService.GetEffectiveForegroundProcessNames(platform),
-                            ProcessLauncherService.GetEffectiveForegroundAumidSubstrings(platform));
-                        if (ProcessLauncherService.IsForegroundLaunchingPlatform(ev.fgProc, ev.fgPid, platform))
-                            sawBootstrap = true;
-
-                        if (fg != lastFg)
-                        {
-                            lastFg = fg;
-                            bool ig = (fg != Hwnd) && FseService.IsIgnoredForegroundWindow(fg);
-                            DebugLogger.Log($"[LP-DIAG] t={elapsed}ms ignored={ig} sawBootstrap={sawBootstrap} {WindowForegroundService.ForegroundFocusSnapshot(Hwnd)}");
-                        }
-
-                        if (elapsed >= timeoutSeconds * 1000 && !sawBootstrap)
-                        {
-                            DebugLogger.Log($"[LP-DIAG] t={elapsed}ms timeout (fgProc={ev.fgProc} not platform bootstrap), give up");
-                            break;
-                        }
-
-                        if (fg != Hwnd)
-                        {
-                            if (FseService.IsIgnoredForegroundWindow(fg))
-                                continue;
-
-                            bool ready = ev.hasExpected
-                                ? (ev.procMatch || ev.aumidMatch)
-                                : ev.focusOnFg;
-
-                            if (!ready)
-                            {
-                                DebugLogger.Log($"[LP-DIAG] t={elapsed}ms NOT ready (fgProc={ev.fgProc} hasExp={ev.hasExpected} procMatch={ev.procMatch} aumidMatch={ev.aumidMatch} focusOnFg={ev.focusOnFg} sawBootstrap={sawBootstrap}), keep waiting");
-                                continue;
-                            }
-                            platformToForeground = true;
-                            break;
-                        }
-                    }
+                    // 輪詢前景視窗，等目標平台就位（非過渡窗）後回傳。
+                    // 慢啟動達提示時機時回呼，於此切 UI 狀態顯示「啟動較慢」提示。
+                    bool platformToForeground = await WindowForegroundService.WaitForPlatformForegroundAsync(
+                        Hwnd,
+                        platform,
+                        () => VisualStateManager.GoToState(this, "LaunchingSlow", false));
 
                     if (platformToForeground)
                     {
-                        DebugLogger.Log($"[LP-DIAG] >>> EXIT DECISION (platform to fg). FINAL: {WindowForegroundService.ForegroundFocusSnapshot(Hwnd)}");
                         // FSE 環境下啟動 PhantomKey 手把輸入服務（常駐，不再檢查使用者開關）
                         //if (FseService.IsActive() && SettingsService.GetUsePhantomKey())
                         if (FseService.IsActive())
@@ -304,27 +244,11 @@ namespace OmniConsole.Pages
         /// <summary>焦點搜尋根：D-pad 在啟動面板內找下一個焦點元素。</summary>
         UIElement IGamepadInputScope.SearchRoot => this.LaunchPanel;
 
-        /// <summary>A 鍵：焦點在按鈕時觸發點選。</summary>
-        void IGamepadInputScope.OnA() => OnLaunchPanelGamepadAButtonPressed();
+        /// <summary>A 鍵：等同點選焦點按鈕（AutomationPeer Invoke）。</summary>
+        void IGamepadInputScope.OnA() => GamepadNavigationService.ActivateFocusedElement(this.XamlRoot);
 
         /// <summary>B 鍵：觸發退出流程。回 true 表示已處理。</summary>
         bool IGamepadInputScope.OnB() { OnGamepadBButtonPressed(); return true; }
-
-        /// <summary>
-        /// LaunchPanel 中手把 'A' 鍵的處理：焦點在按鈕時觸發點選。
-        /// </summary>
-        private void OnLaunchPanelGamepadAButtonPressed()
-        {
-            var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(this.XamlRoot);
-            if (ReferenceEquals(focused, OpenSettingsButton))
-                OpenSettingsButton_Click(this, new RoutedEventArgs());
-            else if (ReferenceEquals(focused, ReturnToDesktopButton))
-                ReturnToDesktopButton_Click(this, new RoutedEventArgs());
-            else if (ReferenceEquals(focused, EnableFseButton))
-                EnableFseButton_Click(this, new RoutedEventArgs());
-            else if (ReferenceEquals(focused, OpenFseSettingsButton))
-                OpenFseSettingsButton_Click(this, new RoutedEventArgs());
-        }
 
         /// <summary>
         /// 手把 'B' 鍵：觸發退出流程。

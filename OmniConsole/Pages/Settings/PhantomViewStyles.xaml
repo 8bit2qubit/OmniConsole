@@ -1,0 +1,46 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 設定頁跨頁共用樣式。 -->
+
+    <!-- 卡片背景 CardBackgroundFillColorDefaultBrush 由 BackgroundMaterialService 於 App 啟動時依背景材質提供
+         （None＝Phantom 純色 #25282C；材質模式＝移除覆寫，回退 WinUI 內建預設 brush）。 -->
+
+    <!-- 可聚焦資訊卡片容器：IsTabStop=True 讓 D-pad 焦點可落在資訊區塊上
+         （ScrollViewer 內建會自動把取得焦點的子元素捲入可視範圍，無需手動處理）。
+         焦點視覺由 system focus visual（白色 3px 外框）提供：
+         系統焦點框會讀控制項的 CornerRadius 畫圓角（WinUI 內建）→ 設 CornerRadius=8 讓白框跟卡片圓角一致。
+         ContentControl 預設無控制項樣板（故無 FocusStates 可觸發；不像 Button 等控制項內建樣板與 FocusStates），
+         自畫 FocusBorder+VisualState 永遠不觸發，改用 UseSystemFocusVisuals=True 並設 CornerRadius 即可圓角。
+         FocusVisualMargin=-3 讓框貼在卡片外緣。 -->
+    <Style x:Key="InfoCardStyle" TargetType="ContentControl">
+        <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="FocusVisualPrimaryBrush" Value="White"/>
+        <Setter Property="FocusVisualPrimaryThickness" Value="3"/>
+        <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
+        <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
+        <Setter Property="FocusVisualMargin" Value="-3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border CornerRadius="{TemplateBinding CornerRadius}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

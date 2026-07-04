@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
@@ -10,7 +10,7 @@ namespace OmniConsole.Dialogs
     /// 無 Primary/Close 按鈕，B 鍵與 Esc 皆無作用，Closing 事件擋下所有關閉請求；
     /// 由呼叫端在更新流程結束（成功或失敗）後顯式呼叫 Hide。
     /// </summary>
-    public sealed partial class UpdateProgressDialog : GamepadDialog
+    public sealed partial class UpdateProgressDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
         private bool _allowClose;
@@ -33,7 +33,7 @@ namespace OmniConsole.Dialogs
             ProgressText.Text = "0%";
 
             Closing += UpdateProgressDialog_Closing;
-            // 手把導航由 GamepadDialog 基底類別提供；本對話方塊 A/B 皆不轉送（見上方 override）。
+            // 手把導航由 GamepadDialogBase 基底類別提供；本對話方塊 A/B 皆不轉送（見上方 override）。
         }
 
         /// <summary>除呼叫端顯式 RequestClose() 之外，所有關閉請求一律拒絕。</summary>

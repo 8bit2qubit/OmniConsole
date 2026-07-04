@@ -1,4 +1,4 @@
-using Microsoft.UI.Windowing;
+﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using OmniConsole.Dialogs;
@@ -18,9 +18,15 @@ namespace OmniConsole
         private IntPtr _hwnd;
         private CancellationTokenSource? _fseExitCts;
 
+        // 頂層 Frame 導覽的兩個畫面：各為 Page、設 NavigationCacheMode=Enabled 由框架快取重用。
+        // LaunchView 持有可達數分鐘的啟動輪詢、SettingsHostView 持有跨進出常駐狀態與安裝流程，故留著重用而非每次切換重建。
+        // 這兩個欄位是目前 Frame 內容的快取參照：每次 NavigateRoot 後從 Frame.Content 取得並重訂事件、注入 HWND。
+        private OmniConsole.Pages.LaunchView? _launchView;
+        private OmniConsole.Pages.Settings.SettingsHostView? _settingsHostView;
+
         /// <summary>
         /// 全域唯一的手把導航服務（Pull 模型）。整個 App 生命週期單一實例、計時器全程運轉，
-        /// 每 Tick 自動解析目前最頂 modal dialog 或目前 page scope。取代過去「每 page/dialog 各自 new」。
+        /// 每 Tick 自動解析目前最頂層 modal dialog 或目前 page scope。
         /// </summary>
         private GamepadNavigationService? _gamepad;
 
@@ -29,13 +35,13 @@ namespace OmniConsole
 
         /// <summary>
         /// 更新安裝期間設為 true，AppWindow.Closing 與 ESC/B 鍵退出路徑均拒絕關閉。
-        /// 由 SettingsPage.RunInstallBundleWithDialogAsync 在開始/結束時切換。
+        /// 由 SettingsHostView.RunInstallBundleWithDialogAsync 在開始/結束時切換。
         /// </summary>
         public static bool IsUpdateInstallInProgress { get; set; }
 
         /// <summary>
         /// 整段安裝流程（含前置 AppsUsingPhantomPawDialog + 下載 + 安裝）期間設為 true。
-        /// 由 SettingsPage.RunInstallBundleWithDialogAsync 包整段 try/finally；
+        /// 由 SettingsHostView.RunInstallBundleWithDialogAsync 包整段 try/finally；
         /// 較 IsUpdateInstallInProgress 更早 true、更晚 false：開頭涵蓋下載前的前置對話方塊等待，
         /// 結尾在 Phase2Install 把 IsUpdateInstallInProgress 設 false（讓 OS graceful close 通過）後仍維持 true。
         /// 供外部入口（開始功能表 / Game Bar 首頁 / 媒體櫃）的 redirect handler 提前 return。
@@ -48,6 +54,9 @@ namespace OmniConsole
         {
             InitializeComponent();
 
+            // 套用持久化的背景材質（視窗背景：設根 Grid 背景與自繪桌布玻璃層）。
+            ApplyBackgroundMaterialToWindow(SettingsService.GetBackgroundMaterial());
+
             // MSIX 更新後 LocalSettings 保留，若快取的新版本不再大於目前版本則清除，
             // 避免 InfoBar 誤顯示「有新版可下載」
             UpdateCheckService.InvalidateCacheIfCurrentVersion();
@@ -58,11 +67,9 @@ namespace OmniConsole
                 "Assets", "AppIcon.ico");
             this.AppWindow.SetIcon(iconPath);
 
-            // 訂閱兩個 Page 的導覽與退出事件
-            LaunchPageControl.NavigateToSettingsRequested += (_, _) => ShowSettings();
-            LaunchPageControl.ExitApplicationRequested += (_, _) => RequestExitApplication();
-            SettingsPageControl.ExitApplicationRequested += (_, _) => RequestExitApplication();
-            SettingsPageControl.LaunchPlatformDirectlyRequested += (_, _) => LaunchPlatformDirectly();
+            // 開場導覽到啟動頁；NavigateRoot 後 _launchView 即就緒，供下方建立手把服務。
+            // settings 啟動路徑會在隨後由 ShowSettings 切到 SettingsHostView。
+            NavigateRoot(typeof(OmniConsole.Pages.LaunchView));
 
             this.Activated += MainWindow_Activated;
 
@@ -72,10 +79,10 @@ namespace OmniConsole
                 rootElement.Loaded += (_, _) =>
                 {
                     _visualTreeReady.TrySetResult();
-                    // FSE 開場點亮焦點框
-                    var scope = LaunchPageControl.Visibility == Visibility.Visible
-                        ? (DependencyObject)LaunchPageControl
-                        : SettingsPageControl;
+                    // FSE 開場點亮焦點白框
+                    var scope = RootContentFrame.Content is OmniConsole.Pages.LaunchView
+                        ? (DependencyObject)_launchView!
+                        : _settingsHostView!;
                     FocusStateHelper.PrimeFirstFocusable(scope, this.DispatcherQueue);
                 };
             }
@@ -95,11 +102,10 @@ namespace OmniConsole
                 DisposeGamepadServices();
             };
 
-            // 建立全域唯一手把導航服務並注入給 GamepadDialog（須早於任何 dialog 開啟）。
-            // 初始 page scope = LaunchPage（啟動先顯示啟動頁），計時器全程運轉：之後切頁只換 scope、
-            // dialog 開關只進出 _openDialogs，都不需重啟計時器。
-            _gamepad = new GamepadNavigationService(this.DispatcherQueue, LaunchPageControl);
-            GamepadDialog.AttachService(_gamepad);
+            // 建立全域唯一手把導航服務並注入給 GamepadDialogBase，須早於任何對話方塊開啟。
+            // 初始 page scope 為 LaunchView，計時器全程運轉：之後切頁只換 scope、對話方塊開關只進出 _openDialogs，都不需重啟計時器。
+            _gamepad = new GamepadNavigationService(this.DispatcherQueue, _launchView!);
+            GamepadDialogBase.AttachService(_gamepad);
             _gamepad.Start();
         }
 
@@ -135,17 +141,18 @@ namespace OmniConsole
         }
 
         /// <summary>
-        /// 處理視窗啟動事件，負責初始化全螢幕狀態並在符合條件時自動啟動預設平台。
+        /// 處理視窗啟動事件：注入 HWND，並在符合條件時自動啟動預設平台。
         /// </summary>
         private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             // 僅在視窗取得前景焦點時啟動，且防止重入
             if (args.WindowActivationState == WindowActivationState.Deactivated) return;
 
-            // 注入 HWND 至兩個 Page（LaunchPage 供 WS_EX_TOOLWINDOW 設定，SettingsPage 供 ShowWindow 退出隱藏使用）
+            // 注入 HWND（LaunchView 供 WS_EX_TOOLWINDOW 設定，SettingsHostView 供 ShowWindow 退出隱藏使用）。
+            // 已建立的 Page 立即注入；尚未導覽過的 Page 由 NavigateRoot 在其首次導覽時補注入。
             _hwnd = WindowNative.GetWindowHandle(this);
-            LaunchPageControl.Hwnd = _hwnd;
-            SettingsPageControl.Hwnd = _hwnd;
+            if (_launchView != null) _launchView.Hwnd = _hwnd;
+            if (_settingsHostView != null) _settingsHostView.Hwnd = _hwnd;
 
             // 設定模式不自動啟動平台
             if (_isSettingsMode) return;
@@ -153,36 +160,116 @@ namespace OmniConsole
             // 若設定面板正在顯示，不自動啟動
             if (_isShowingSettings) return;
 
-            // 已成功完成一次啟動嘗試，不因視窗重新取得焦點而再次啟動
-            if (LaunchPageControl.HasLaunchedOnce) return;
+            // 確保視覺樹已經載入完畢（由 Loaded 觸發完成）
+            if (!_visualTreeReady.Task.IsCompleted)
+            {
+                await _visualTreeReady.Task;
+            }
 
-            await LaunchPageControl.LaunchDefaultPlatformAsync();
+            // 已成功完成一次啟動嘗試，不因視窗重新取得焦點而再次啟動
+            if (_launchView!.HasLaunchedOnce) return;
+
+            await _launchView!.LaunchDefaultPlatformAsync();
         }
+
+        // ── 頂層 Frame 導覽（NavigationCacheMode=Enabled 框架快取重用、不用完即丟）─────────
+
+        /// <summary>目前 Frame 內容是啟動頁時取其參照（非該頁時為 null）。</summary>
+        private OmniConsole.Pages.LaunchView? CurrentLaunch => RootContentFrame.Content as OmniConsole.Pages.LaunchView;
+
+        /// <summary>目前 Frame 內容是設定頁時取其參照（非該頁時為 null）。</summary>
+        private OmniConsole.Pages.Settings.SettingsHostView? CurrentSettings => RootContentFrame.Content as OmniConsole.Pages.Settings.SettingsHostView;
+
+        /// <summary>
+        /// 頂層 Frame 導覽到指定 Page，套用頁面切換動畫。
+        /// 兩 Page 設 NavigationCacheMode=Enabled，Navigate 重用框架快取的同一實例、不 new 新的。
+        /// 導覽後另給頁元素掛元素自身進場動畫、把 Frame.Content 存進快取參照欄位、
+        /// 以具名 handler 重訂事件（-= 再 +=，重用實例避免重複訂閱）、注入 HWND。
+        /// </summary>
+        private void NavigateRoot(Type pageType)
+        {
+            FocusNavHelper.NavigatePage(RootContentFrame, pageType);
+
+            FocusNavHelper.ApplyEntranceTransitions(RootContentFrame.Content as UIElement);
+
+            if (RootContentFrame.Content is OmniConsole.Pages.LaunchView launchView)
+            {
+                _launchView = launchView;
+                launchView.NavigateToSettingsRequested -= LaunchView_NavigateToSettingsRequested;
+                launchView.NavigateToSettingsRequested += LaunchView_NavigateToSettingsRequested;
+                launchView.ExitApplicationRequested -= View_ExitApplicationRequested;
+                launchView.ExitApplicationRequested += View_ExitApplicationRequested;
+                if (_hwnd != IntPtr.Zero) launchView.Hwnd = _hwnd;
+            }
+            else if (RootContentFrame.Content is OmniConsole.Pages.Settings.SettingsHostView settingsHostView)
+            {
+                _settingsHostView = settingsHostView;
+                settingsHostView.ExitApplicationRequested -= View_ExitApplicationRequested;
+                settingsHostView.ExitApplicationRequested += View_ExitApplicationRequested;
+                settingsHostView.LaunchPlatformDirectlyRequested -= SettingsHostView_LaunchPlatformDirectlyRequested;
+                settingsHostView.LaunchPlatformDirectlyRequested += SettingsHostView_LaunchPlatformDirectlyRequested;
+                settingsHostView.BackgroundMaterialChangeRequested -= SettingsHostView_BackgroundMaterialChangeRequested;
+                settingsHostView.BackgroundMaterialChangeRequested += SettingsHostView_BackgroundMaterialChangeRequested;
+                if (_hwnd != IntPtr.Zero) settingsHostView.Hwnd = _hwnd;
+            }
+        }
+
+        /// <summary>具名事件 handler（供 -= 重訂，重用實例避免重複訂閱）。</summary>
+        private void LaunchView_NavigateToSettingsRequested(object? sender, EventArgs e) => ShowSettings();
+        private void View_ExitApplicationRequested(object? sender, EventArgs e) => RequestExitApplication();
+        private void SettingsHostView_LaunchPlatformDirectlyRequested(object? sender, EventArgs e) => LaunchPlatformDirectly();
+        private void SettingsHostView_BackgroundMaterialChangeRequested(object? sender, string material) => ApplyBackgroundMaterialToWindow(material);
 
         // ── 頁面切換 ─────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 切換至設定介面：隱藏 LaunchPage、顯示 SettingsPage 並啟動手把輪詢。
+        /// 切換至設定介面：頂層 Frame 切到 SettingsHostView 並啟動手把輪詢。
         /// </summary>
         public void ShowSettings()
         {
-            // 切 page scope 到設定頁；全域服務計時器全程運轉，故只需切 scope（即使 dialog 開著時從外部入
+            // 頂層 Frame 切到設定頁；NavigateRoot 後 CurrentSettings 即就緒並已注入 HWND/訂妥事件。
+            NavigateRoot(typeof(OmniConsole.Pages.Settings.SettingsHostView));
+            var settingsHostView = CurrentSettings!;
+
+            // 切 page scope 到設定頁；全域服務計時器全程運轉，故只需切 scope（即使對話方塊開著時從外部入
             // 口重入也只是重設同一 scope，不會再像舊架構重啟出第二套輪詢）。
-            _gamepad?.SetPageScope(SettingsPageControl);
+            _gamepad?.SetPageScope(settingsHostView);
             _gamepad?.Start();
             _isShowingSettings = true;
-            LaunchPageControl.Visibility = Visibility.Collapsed;
-            SettingsPageControl.Visibility = Visibility.Visible;
 
             // 設定模式也要全螢幕；用 ActivateFullScreen 雙保險（FSE Activate 前生效、桌面 ready 後補救）
             ActivateFullScreen();
 
-            SettingsPageControl.ShowSettings();
+            settingsHostView.ShowSettings();
+        }
+
+        /// <summary>
+        /// 背景材質的視窗背景：依材質字串設根 Grid 背景與自繪桌布玻璃層。
+        /// 啟動套用持久化值與使用者即時切換共用此入口。背景為錦上添花，全程不外拋以免危及啟動。
+        /// </summary>
+        private void ApplyBackgroundMaterialToWindow(string material)
+        {
+            try
+            {
+                RootGrid.Background = BackgroundMaterialService.GetRootBackground(material);
+                ApplyWallpaperBackdrop(material);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[MainWindow] ApplyBackgroundMaterialToWindow failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>自繪桌布玻璃層：依材質把桌布底圖與遮罩兩層元素鋪設就位。</summary>
+        private void ApplyWallpaperBackdrop(string material)
+        {
+            BackgroundMaterialService.ApplyWallpaperLayers(
+                material, WallpaperBackdrop, WallpaperScrim, typeof(MainWindow).Assembly);
         }
 
         /// <summary>
         /// 偵測待續更新狀態，有未完成的階段時彈出確認對話方塊；使用者選擇續做時呼叫
-        /// SettingsPage.RunInstallBundleWithDialogAsync 從中斷的階段接續。
+        /// SettingsHostView.RunInstallBundleWithDialogAsync 從中斷的階段接續。
         /// </summary>
         public async Task TryHandlePendingUpdateAsync()
         {
@@ -194,25 +281,26 @@ namespace OmniConsole
             // 等待 Content.Loaded 取得有效 XamlRoot，再排到 UI 執行緒顯示對話方塊
             await _visualTreeReady.Task;
 
-            var settingsPage = SettingsPageControl;
+            // 待續更新路徑必經 App 啟動時的 ShowSettings（已導覽設定頁），故 CurrentSettings 已就緒。
+            var settingsHostView = CurrentSettings!;
             var tcs = new TaskCompletionSource<bool>();
             DispatcherQueue.TryEnqueue(async () =>
             {
                 try
                 {
-                    var loader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-                    // 用 GamepadDialog 基底類別（A=觸發焦點元素、B=關閉皆自動）；Pull 模型自動讓背景設定頁輪詢避讓。
-                    var dialog = new GamepadDialog
+                    var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+                    // 用 GamepadDialogBase 基底類別（A=觸發焦點元素、B=關閉皆自動）；Pull 模型自動讓背景設定頁輪詢避讓。
+                    var dialog = new GamepadDialogBase
                     {
                         XamlRoot = this.Content.XamlRoot,
                         Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
                         RequestedTheme = ElementTheme.Dark,
-                        Title = loader.Loc("ResumeUpdateDialog_Title"),
+                        Title = resourceLoader.Loc("ResumeUpdateDialog_Title"),
                         Content = string.Format(
-                            loader.Loc("ResumeUpdateDialog_Content"),
+                            resourceLoader.Loc("ResumeUpdateDialog_Content"),
                             targetVersion),
-                        PrimaryButtonText = loader.Loc("ResumeUpdateDialog_Resume"),
-                        CloseButtonText = loader.Loc("ResumeUpdateDialog_Later"),
+                        PrimaryButtonText = resourceLoader.Loc("ResumeUpdateDialog_Resume"),
+                        CloseButtonText = resourceLoader.Loc("ResumeUpdateDialog_Later"),
                         DefaultButton = ContentDialogButton.Primary
                     };
 
@@ -227,7 +315,7 @@ namespace OmniConsole
 
                     bool resumeFromPhase2 = phase == "Phase2";
                     // 待續恢復路徑一律走完整 Phase 2 安裝；mainSkippable 僅用於同版本快速重啟
-                    await settingsPage.RunInstallBundleWithDialogAsync(
+                    await settingsHostView.RunInstallBundleWithDialogAsync(
                         plUrl, mainUrl, targetVersion,
                         mainSkippable: false,
                         resumeFromPhase2: resumeFromPhase2);
@@ -294,15 +382,16 @@ namespace OmniConsole
 
         /// <summary>
         /// 手把 Menu 鍵觸發：直接啟動設定頁中已選取的平台，跳過手動 FSE 切換流程。
-        /// 切換回 LaunchPage 並重新執行啟動流程。
+        /// 切換回 LaunchView 並重新執行啟動流程。
         /// </summary>
         private void LaunchPlatformDirectly()
         {
-            _gamepad?.SetPageScope(LaunchPageControl);
+            // 頂層 Frame 切回啟動頁；NavigateRoot 後 CurrentLaunch 即就緒。
+            NavigateRoot(typeof(OmniConsole.Pages.LaunchView));
+            var launchView = CurrentLaunch!;
+            _gamepad?.SetPageScope(launchView);
             _isShowingSettings = false;
-            SettingsPageControl.Visibility = Visibility.Collapsed;
-            LaunchPageControl.Visibility = Visibility.Visible;
-            LaunchPageControl.Reactivate();
+            launchView.Reactivate();
         }
 
         // ── 全域退出 ─────────────────────────────────────────────────────────
@@ -400,15 +489,15 @@ namespace OmniConsole
             switch (route)
             {
                 case StartupRoute.GuidanceFseNotAvailable:
-                    LaunchPageControl.ShowFseNotAvailable();
+                    ShowFseNotAvailable();
                     return;
 
                 case StartupRoute.GuidanceFseHandheldRequired:
-                    LaunchPageControl.ShowFseNotAvailable(handheldRequired: true);
+                    ShowFseNotAvailable(handheldRequired: true);
                     return;
 
                 case StartupRoute.GuidanceFseHomeAppNotSet:
-                    LaunchPageControl.ShowFseHomeAppNotSet();
+                    ShowFseHomeAppNotSet();
                     return;
 
                 case StartupRoute.TryActivateFse:
@@ -417,15 +506,22 @@ namespace OmniConsole
                     return;
 
                 case StartupRoute.StartWithMainWindow:
-                    // 已在 FSE 中：直接重設畫面回 LaunchPage 並重啟平台。
+                    // 已在 FSE 中：直接重設畫面回 LaunchView 並重啟平台。
                     break;
             }
 
             _isShowingSettings = false;
-            SettingsPageControl.Visibility = Visibility.Collapsed;
-            LaunchPageControl.Visibility = Visibility.Visible;
+            // 頂層 Frame 切回啟動頁；NavigateRoot 後 CurrentLaunch 即就緒。
+            var launchView = NavigateToLaunch();
             EnsureFullScreen(); // 維持全螢幕（presenter 通常已是全螢幕，這裡是保險）
-            LaunchPageControl.Reactivate();
+            launchView.Reactivate();
+        }
+
+        /// <summary>頂層 Frame 切到啟動頁並回傳其參照。FSE 引導/重導等切回啟動頁的路徑共用。</summary>
+        private OmniConsole.Pages.LaunchView NavigateToLaunch()
+        {
+            NavigateRoot(typeof(OmniConsole.Pages.LaunchView));
+            return CurrentLaunch!;
         }
 
         /// <summary>
@@ -434,7 +530,7 @@ namespace OmniConsole
         /// </summary>
         public void ShowFseNotAvailable(bool handheldRequired = false)
         {
-            LaunchPageControl.ShowFseNotAvailable(handheldRequired);
+            NavigateToLaunch().ShowFseNotAvailable(handheldRequired);
         }
 
         /// <summary>
@@ -442,7 +538,7 @@ namespace OmniConsole
         /// </summary>
         public void ShowFseHomeAppNotSet()
         {
-            LaunchPageControl.ShowFseHomeAppNotSet();
+            NavigateToLaunch().ShowFseHomeAppNotSet();
         }
     }
 }

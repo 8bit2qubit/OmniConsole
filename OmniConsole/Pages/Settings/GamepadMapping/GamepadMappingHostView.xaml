@@ -1,0 +1,8 @@
+<Page
+    x:Class="OmniConsole.Pages.Settings.GamepadMapping.GamepadMappingHostView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 手把映射頁的內層宿主：清單與編輯器各為獨立 Page、由 InnerFrame 互相導覽（切走即銷毀）。 -->
+    <Frame x:Name="InnerFrame"/>
+</Page>

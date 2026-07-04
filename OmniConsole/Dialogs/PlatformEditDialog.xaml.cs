@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -16,7 +16,7 @@ namespace OmniConsole.Dialogs
     /// 驗證通過後，結果項目存於 <see cref="ResultEntry"/>，待選圖示存於 <see cref="PendingIconFile"/>，
     /// 由 MainWindow 在 <c>ShowAsync</c> 返回後統一儲存。
     /// </summary>
-    public sealed partial class PlatformEditDialog : GamepadDialog
+    public sealed partial class PlatformEditDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
         private readonly string _ownFamilyName;
@@ -116,7 +116,7 @@ namespace OmniConsole.Dialogs
             Opened += PlatformEditDialog_Opened;
         }
 
-        /// <summary>對話方塊開啟時設定 XYFocus。手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。</summary>
+        /// <summary>對話方塊開啟時設定 XYFocus。手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialogBase 基底類別自動提供。</summary>
         private void PlatformEditDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             // D-pad 向下離開內容區時，優先跳到「儲存」(Primary) 而非「取消」(Close)
@@ -173,7 +173,7 @@ namespace OmniConsole.Dialogs
         // ── 瀏覽按鈕 ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 請求開啟 .exe 檔案選擇器。Hide 對話方塊，由 SettingsPage 協調顯示 FilePickerDialog。
+        /// 請求開啟 .exe 檔案選擇器。Hide 對話方塊，由 SettingsHostView 協調顯示 FilePickerDialog。
         /// </summary>
         private void BrowseExeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -190,7 +190,7 @@ namespace OmniConsole.Dialogs
         }
 
         /// <summary>
-        /// 請求開啟圖片檔案選擇器。Hide 對話方塊，由 SettingsPage 協調顯示 FilePickerDialog。
+        /// 請求開啟圖片檔案選擇器。Hide 對話方塊，由 SettingsHostView 協調顯示 FilePickerDialog。
         /// </summary>
         private void BrowseIconButton_Click(object sender, RoutedEventArgs e)
         {
@@ -291,42 +291,10 @@ namespace OmniConsole.Dialogs
 
         // ── 封裝應用程式清單 ─────────────────────────────────────────────────
 
-        /// <summary>
-        /// 載入已安裝封裝應用程式清單（延遲初始化快取）。
-        /// 框架套件、資源套件、系統內建套件由此處篩除；名稱層級過濾（延伸模組、背景服務等）
-        /// 委由 <see cref="PlatformFieldValidator.IsAllowedPackageFamilyName"/> 統一處理。
-        /// </summary>
+        /// <summary>載入已安裝封裝應用程式清單（延遲初始化快取）；列舉與過濾規則由 PlatformFieldValidator 統一處理。</summary>
         private List<(string DisplayName, string PackageFamilyName)> EnsurePackagedAppCache()
         {
-            if (_packagedAppCache != null) return _packagedAppCache;
-
-            _packagedAppCache = [];
-            try
-            {
-                var pm = new Windows.Management.Deployment.PackageManager();
-                foreach (var pkg in pm.FindPackagesForUser(string.Empty))
-                {
-                    try
-                    {
-                        if (pkg.IsFramework || pkg.IsResourcePackage || pkg.IsBundle) continue;
-                        if (pkg.SignatureKind == Windows.ApplicationModel.PackageSignatureKind.System) continue;
-                        // 名稱層級過濾（延伸模組、背景服務、無進入點的執行時期套件等）由 PlatformFieldValidator 統一管理
-                        if (!PlatformFieldValidator.IsAllowedPackageFamilyName(pkg.Id.FamilyName, _ownFamilyName)) continue;
-
-                        string displayName = pkg.DisplayName;
-                        if (string.IsNullOrWhiteSpace(displayName)) continue;
-                        _packagedAppCache.Add((displayName, pkg.Id.FamilyName));
-                    }
-                    catch { /* 部分系統套件存取 DisplayName 會拋例外 */ }
-                }
-                _packagedAppCache = _packagedAppCache
-                    .OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.Log($"[PackagedApp] Package enumeration failed: {ex.Message}");
-            }
+            _packagedAppCache ??= PlatformFieldValidator.EnumerateInstalledPackagedApps(_ownFamilyName);
             return _packagedAppCache;
         }
 

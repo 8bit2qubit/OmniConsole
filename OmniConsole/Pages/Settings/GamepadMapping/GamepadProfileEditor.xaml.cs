@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
 using OmniConsole.Models;
@@ -10,12 +11,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using static OmniConsole.Services.GamepadProfileMappingHelper;
 
-namespace OmniConsole.Controls
+namespace OmniConsole.Pages.Settings.GamepadMapping
 {
+    /// <summary>Frame.Navigate 帶入編輯器的目標：要編輯的 AppId 與顯示名稱。</summary>
+    internal sealed record GamepadProfileEditorParam(AppId AppId, string DisplayName);
+
     /// <summary>
-    /// 玩家 per-App 手把 profile 編輯器（16 個 XInput 輸入位 → 動作）。DPad 4 子列依主行選擇條件展開。
+    /// 玩家各 App 的手把 profile 編輯器（16 個 XInput 輸入位 → 動作）。DPad 4 子列依主行選擇條件展開。
+    /// 由 GamepadMappingHostView 透過內層 Frame.Navigate 載入（切走即銷毀）；目標 AppId/顯示名稱經 OnNavigatedTo 帶入。
     /// </summary>
-    public sealed partial class GamepadProfileEditor : UserControl
+    public sealed partial class GamepadProfileEditor : Page
     {
         // 玩家手動切到「自訂」後即使 4 子列湊巧等價於某預設組合，主行維持「自訂」
         private bool _dpadEditingCustom = false;
@@ -25,7 +30,7 @@ namespace OmniConsole.Controls
         private GamepadProfile? _editing;
         private bool _isNew;
 
-        /// <summary>編輯器存檔／取消後通知宿主關閉（CloseEditor）。</summary>
+        /// <summary>編輯器存檔/取消後通知宿主關閉（CloseEditor）。</summary>
         public event EventHandler? Closed;
 
         /// <summary>使用者按底部 (X) 刪除確認後通知宿主關閉。</summary>
@@ -125,8 +130,31 @@ namespace OmniConsole.Controls
 
         // ── 載入 / 重新整理 ───────────────────────────────────────────────
 
+        /// <summary>Frame 導覽進來時依帶入的 AppId/顯示名稱載入或新建 profile，並把白框焦點落在頁首卡片。</summary>
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (e.Parameter is GamepadProfileEditorParam p)
+                Load(p.AppId, p.DisplayName);
+            FocusHeaderCard();
+        }
+
+        /// <summary>程式化把白框焦點落在頁首卡片；版面尚未佈局完成導致首次 Focus 落空時掛 LayoutUpdated 延後重試。</summary>
+        private void FocusHeaderCard()
+        {
+            if (HeaderCard.Focus(FocusStateHelper.Preferred)) return;
+
+            EventHandler<object>? handler = null;
+            handler = (s, e) =>
+            {
+                if (HeaderCard.Focus(FocusStateHelper.Preferred))
+                    HeaderCard.LayoutUpdated -= handler;
+            };
+            HeaderCard.LayoutUpdated += handler;
+        }
+
         /// <summary>載入或新建某 App 的 profile：既有 → 拷貝；新建 → 套 OmniNav 當底。</summary>
-        public void Load(AppId appId, string displayName)
+        private void Load(AppId appId, string displayName)
         {
             var existing = GamepadProfileStore.Find(appId);
             _isNew = existing == null;
@@ -214,7 +242,7 @@ namespace OmniConsole.Controls
             return ActionOption.DpadCustom;
         }
 
-        /// <summary>檢查 4 個 DPad KeyId 是否都是 KeyTap 且 VK 與 expected 逐位相符。</summary>
+        /// <summary>檢查 4 個 DPad KeyId 是否都是 KeyTap 且 VK 與傳入的預設值逐位相符。</summary>
         private bool MatchDpadVks(int[] expected)
         {
             if (_editing == null) return false;
@@ -494,7 +522,7 @@ namespace OmniConsole.Controls
         /// 給宿主 B 鍵呼叫：存檔並關閉。
         /// 分支：
         ///   - 黑名單 → 顯提示不關閉
-        ///   - 全 None：等同於沒有自訂配置 → 彈「移除此程式的自訂配置？」確認；確認後既有 profile 走 Delete + Deleted 事件、新建中直接 Closed（不寫入 store）
+        ///   - 全 None：等同於沒有自訂設定檔 → 彈「移除此程式的自訂設定檔？」確認；確認後既有 profile 走 Delete + Deleted 事件、新建中直接 Closed（不寫入 store）
         ///   - 其他 → Upsert + Closed
         /// </summary>
         public async void Save()
@@ -588,7 +616,7 @@ namespace OmniConsole.Controls
             PathHintText.Text = _editing.AppId.FullPath ?? string.Empty;
         }
 
-        /// <summary>appId 副文字（在地化 prefix + 完整識別值；Win32 → 「行程: <name>」、packaged → 「AUMID: <full>」）。</summary>
+        /// <summary>appId 副文字（在地化 prefix + 完整識別值；process 類 → 「行程: <name>」、aumid 類 → 「AUMID: <full>」）。</summary>
         private string AppIdSubtitle(AppId appId)
         {
             if (appId == null) return string.Empty;

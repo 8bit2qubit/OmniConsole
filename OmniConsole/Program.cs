@@ -1,6 +1,7 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using OmniConsole.Services;
+using OmniConsole.Startup;
 using System;
 using System.Threading;
 using Windows.ApplicationModel.Activation;
@@ -21,7 +22,7 @@ namespace OmniConsole
             DebugLogger.Log("=== Main() started ===");
 
             // 語言：PrimaryLanguageOverride 必須在「任何資源載入前」設定（故置於 Main 最早處）。
-            // 太晚設的話，x:Uid 綁定的 PRI 資源已用啟動當下的語言解析完、來不及改（要重啟才正確）。
+            // 太晚設的話，x:Uid 繫結的 PRI 資源已用啟動當下的語言解析完、來不及改（要重啟才正確）。
             // 偏好讀自共用設定（空＝跟隨系統）。此設定只影響官方語言的 PRI 解析（外掛語言另由翻譯層處理）。
             try
             {
@@ -52,72 +53,22 @@ namespace OmniConsole
                         var uriStr = protocolArgs.Uri.ToString();
                         DebugLogger.Log($"Protocol URI = {uriStr}");
 
-                        if (protocolArgs.Uri.Host == "show-settings")
-                        {
-                            isSettingsEntry = true;
-                            DebugLogger.Log("→ show-settings matched");
-                        }
-                        // PhantomLink widget「自訂此 App」走此 URI；視為設定入口並暫存待編輯的 appId / displayName
-                        else if (protocolArgs.Uri.Host == "edit-gamepad-profile")
-                        {
-                            isSettingsEntry = true;
+                        // edit-gamepad-profile 進設定頁前先暫存待編輯的 appId / displayName
+                        if (ActivationRouter.IsEditGamepadProfile(protocolArgs.Uri.Host))
                             PendingEditProfileService.Stash(protocolArgs.Uri);
-                            DebugLogger.Log("→ edit-gamepad-profile matched");
-                        }
-                        // Game Bar 媒體櫃按鈕
-                        else if (uriStr.Equals("windows.gaming:///library", StringComparison.OrdinalIgnoreCase))
-                        {
-                            bool libForSettings = SettingsService.GetUseGameBarLibraryForSettings();
-                            bool passthrough = SettingsService.GetEnablePassthrough();
-                            DebugLogger.Log($"→ library matched. LibForSettings={libForSettings}, Passthrough={passthrough}");
 
-                            // 優先順序 1：媒體櫃→設定介面
-                            if (libForSettings)
-                            {
+                        var route = ActivationRouter.RouteProtocol(protocolArgs.Uri.Host, uriStr);
+                        DebugLogger.Log($"→ route = {route?.Kind.ToString() ?? "(null, unmatched)"}");
+                        switch (route?.Kind)
+                        {
+                            case ActivationRouteKind.ShowSettings:
                                 isSettingsEntry = true;
-                                DebugLogger.Log("→ library → settings (priority 1)");
-                            }
-                            // 優先順序 2：Passthrough 到平台媒體櫃
-                            else if (passthrough)
-                            {
-                                var platform = SettingsService.GetDefaultPlatform();
-                                DebugLogger.Log($"→ platform={platform.Id}, LibraryUri={platform.LibraryUri ?? "(null)"}");
-                                if (platform.LibraryUri != null)
-                                {
-                                    DebugLogger.Log($"→ PASSTHROUGH to {platform.LibraryUri}");
-                                    Windows.System.Launcher.LaunchUriAsync(new Uri(platform.LibraryUri)).AsTask().GetAwaiter().GetResult();
-                                    DebugLogger.Log("→ LaunchUriAsync completed");
-                                    return 0;
-                                }
-                                DebugLogger.Log("→ LibraryUri is null, fallthrough to normal");
-                            }
-                            // 優先順序 3：正常啟動流程（不做任何設定，繼續往下）
-                        }
-                        // Game Bar 首頁按鈕
-                        else if (uriStr.Equals("windows.gaming:///home", StringComparison.OrdinalIgnoreCase))
-                        {
-                            bool passthrough = SettingsService.GetEnablePassthrough();
-                            DebugLogger.Log($"→ home matched. Passthrough={passthrough}");
-
-                            // Passthrough 到平台首頁
-                            if (passthrough)
-                            {
-                                var platform = SettingsService.GetDefaultPlatform();
-                                DebugLogger.Log($"→ platform={platform.Id}, HomeUri={platform.HomeUri ?? "(null)"}");
-                                if (platform.HomeUri != null)
-                                {
-                                    DebugLogger.Log($"→ PASSTHROUGH to {platform.HomeUri}");
-                                    Windows.System.Launcher.LaunchUriAsync(new Uri(platform.HomeUri)).AsTask().GetAwaiter().GetResult();
-                                    DebugLogger.Log("→ LaunchUriAsync completed");
-                                    return 0;
-                                }
-                                DebugLogger.Log("→ HomeUri is null, fallthrough to normal");
-                            }
-                            // 無 HomeUri 或 Passthrough 關閉：正常啟動流程
-                        }
-                        else
-                        {
-                            DebugLogger.Log($"→ URI not matched: {uriStr}");
+                                break;
+                            case ActivationRouteKind.Passthrough:
+                                DebugLogger.Log($"→ PASSTHROUGH to {route.Value.PassthroughUri}");
+                                Windows.System.Launcher.LaunchUriAsync(new Uri(route.Value.PassthroughUri!)).AsTask().GetAwaiter().GetResult();
+                                return 0;
+                                // NormalLaunch / null（未匹配）：繼續往下走正常流程
                         }
                     }
                     else
@@ -212,65 +163,22 @@ namespace OmniConsole
                     var uriStr = protocolArgs.Uri.ToString();
                     DebugLogger.Log($"Redirect Protocol URI = {uriStr}");
 
-                    if (protocolArgs.Uri.Host == "show-settings")
-                    {
-                        DebugLogger.Log("→ Redirect: show-settings");
-                        App.ShowSettingsFromRedirect();
-                        return;
-                    }
-                    else if (protocolArgs.Uri.Host == "edit-gamepad-profile")
-                    {
-                        DebugLogger.Log("→ Redirect: edit-gamepad-profile");
+                    // edit-gamepad-profile 進設定頁前先暫存待編輯的 appId / displayName
+                    if (ActivationRouter.IsEditGamepadProfile(protocolArgs.Uri.Host))
                         PendingEditProfileService.Stash(protocolArgs.Uri);
-                        App.ShowSettingsFromRedirect();
-                        return;
-                    }
-                    // Game Bar 媒體櫃按鈕
-                    else if (uriStr.Equals("windows.gaming:///library", StringComparison.OrdinalIgnoreCase))
-                    {
-                        bool libForSettings = SettingsService.GetUseGameBarLibraryForSettings();
-                        bool passthrough = SettingsService.GetEnablePassthrough();
-                        DebugLogger.Log($"→ Redirect library. LibForSettings={libForSettings}, Passthrough={passthrough}");
 
-                        if (libForSettings)
-                        {
-                            DebugLogger.Log("→ Redirect: library → settings");
+                    var route = ActivationRouter.RouteProtocol(protocolArgs.Uri.Host, uriStr);
+                    DebugLogger.Log($"→ Redirect route = {route?.Kind.ToString() ?? "(null, unmatched)"}");
+                    switch (route?.Kind)
+                    {
+                        case ActivationRouteKind.ShowSettings:
                             App.ShowSettingsFromRedirect();
                             return;
-                        }
-                        else if (passthrough)
-                        {
-                            var platform = SettingsService.GetDefaultPlatform();
-                            DebugLogger.Log($"→ Redirect platform={platform.Id}, LibraryUri={platform.LibraryUri ?? "(null)"}");
-                            if (platform.LibraryUri != null)
-                            {
-                                DebugLogger.Log($"→ Redirect PASSTHROUGH to {platform.LibraryUri}");
-                                App.PassthroughFromRedirect(platform.LibraryUri);
-                                return;
-                            }
-                        }
-                    }
-                    // Game Bar 首頁按鈕
-                    else if (uriStr.Equals("windows.gaming:///home", StringComparison.OrdinalIgnoreCase))
-                    {
-                        bool passthrough = SettingsService.GetEnablePassthrough();
-                        DebugLogger.Log($"→ Redirect home. Passthrough={passthrough}");
-
-                        if (passthrough)
-                        {
-                            var platform = SettingsService.GetDefaultPlatform();
-                            DebugLogger.Log($"→ Redirect platform={platform.Id}, HomeUri={platform.HomeUri ?? "(null)"}");
-                            if (platform.HomeUri != null)
-                            {
-                                DebugLogger.Log($"→ Redirect PASSTHROUGH to {platform.HomeUri}");
-                                App.PassthroughFromRedirect(platform.HomeUri);
-                                return;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        DebugLogger.Log($"→ Redirect URI not matched: {uriStr}");
+                        case ActivationRouteKind.Passthrough:
+                            DebugLogger.Log($"→ Redirect PASSTHROUGH to {route.Value.PassthroughUri}");
+                            App.PassthroughFromRedirect(route.Value.PassthroughUri!);
+                            return;
+                            // NormalLaunch / null（未匹配）：落到下方 ReactivateFromRedirect
                     }
                 }
             }
@@ -278,6 +186,5 @@ namespace OmniConsole
             DebugLogger.Log("→ Redirect: ReactivateFromRedirect()");
             App.ReactivateFromRedirect();
         }
-
     }
 }

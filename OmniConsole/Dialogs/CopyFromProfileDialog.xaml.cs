@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -10,7 +10,7 @@ using System.Linq;
 namespace OmniConsole.Dialogs
 {
     /// <summary>「從其他程式讀入」對話方塊：用 AutoSuggestBox 篩選並選一個現有 profile，回傳其 AppId 供呼叫端複製 bindings。</summary>
-    public sealed partial class CopyFromProfileDialog : GamepadDialog
+    public sealed partial class CopyFromProfileDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
 
@@ -105,7 +105,7 @@ namespace OmniConsole.Dialogs
                 args.Cancel = true;
         }
 
-        /// <summary>對話方塊開啟：初始焦點到 AutoSuggestBox（排 dispatcher 待佈局完成）。手把導航與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。</summary>
+        /// <summary>對話方塊開啟：初始焦點到 AutoSuggestBox（排 dispatcher 待佈局完成）。手把導航與螢幕鍵盤閃避由 GamepadDialogBase 基底類別自動提供。</summary>
         private void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             DispatcherQueue.TryEnqueue(() =>

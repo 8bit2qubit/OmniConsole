@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -10,10 +10,10 @@ using System.Collections.ObjectModel;
 namespace OmniConsole.Dialogs
 {
     /// <summary>
-    /// 顯示「目前正鎖住 PhantomPaw dll 的應用程式清單」，並提供「重試／取消」兩動作。
+    /// 顯示「目前正鎖住 PhantomPaw dll 的應用程式清單」，並提供「重試/取消」兩動作。
     /// 重試會即時重新查詢、清單動態更新；清單變空時帶 Primary 結果關閉、呼叫端拿到 Primary 才繼續安裝流程。
     /// </summary>
-    public sealed partial class AppsUsingPhantomPawDialog : GamepadDialog
+    public sealed partial class AppsUsingPhantomPawDialog : GamepadDialogBase
     {
         private readonly ObservableCollection<LockingApp> _lockedApps = new();
         private readonly ResourceLoader _resourceLoader = new();

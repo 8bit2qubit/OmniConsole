@@ -1,4 +1,4 @@
-<dialogs:GamepadDialog
+<dialogs:GamepadDialogBase
     x:Class="OmniConsole.Dialogs.ManageLanguagesDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,17 +7,16 @@
     DefaultButton="Close"
     RequestedTheme="Dark">
 
-    <dialogs:GamepadDialog.Resources>
-        <!-- 解除 ContentDialog 內建 MaxWidth（預設約 548）：不覆寫的話下方 Border Width=600 會被 clamp 到 548。
-             想讓對話方塊寬於 548 必覆寫此鍵（比照 FilePickerDialog）。 -->
-        <x:Double x:Key="ContentDialogMaxWidth">700</x:Double>
-        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
-        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
-        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
-        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-    </dialogs:GamepadDialog.Resources>
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 解除 ContentDialog 內建 MaxWidth（預設約 548）：不覆寫的話下方 Border Width=600 會被 clamp 到 548。
+                 想讓對話方塊寬於 548 必覆寫此鍵（比照 FilePickerDialog）。 -->
+            <x:Double x:Key="ContentDialogMaxWidth">700</x:Double>
+        </ResourceDictionary>
+    </dialogs:GamepadDialogBase.Resources>
 
     <!-- 比照 ChangeKeyDialog：固定 Width 的 Border 為主結構（框線恆在、撐滿固定 Width）。
          loading / message / content 三態疊在 Border 內切換 Visibility → 置中天然相對 Border（已撐滿）。
@@ -90,7 +89,7 @@
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Button x:Name="ActionButton" Click="ActionButton_Click"
-                                MinWidth="120" HorizontalAlignment="Left"/>
+                                FontSize="14" Padding="24,8" HorizontalAlignment="Left"/>
                         <ProgressRing x:Name="ActionProgress" IsActive="False" Visibility="Collapsed"
                                       Width="24" Height="24" HorizontalAlignment="Left"/>
                         <!-- 動作結果訊息（成功/失敗）：風格比照 CertificateDetailsDialog 的「已複製」提示
@@ -103,4 +102,4 @@
             </Grid>
         </Grid>
     </Border>
-</dialogs:GamepadDialog>
+</dialogs:GamepadDialogBase>

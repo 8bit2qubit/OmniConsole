@@ -1,0 +1,98 @@
+<local:PlatformsViewBase
+    x:Class="OmniConsole.Pages.Settings.General.UserPlatformsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:OmniConsole.Models"
+    xmlns:services="using:OmniConsole.Services"
+    xmlns:local="using:OmniConsole.Pages.Settings.General">
+
+    <local:PlatformsViewBase.Resources>
+        <ResourceDictionary Source="PlatformGridStyles.xaml"/>
+    </local:PlatformsViewBase.Resources>
+
+    <Grid x:Name="UserRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <!-- 使用者自訂平台卡片網格（依可用寬度自動決定欄數，垂直捲動）。 -->
+        <GridView x:Name="PlatformGridView"
+                  SelectionMode="Single"
+                  SingleSelectionFollowsFocus="False"
+                  HorizontalAlignment="Stretch"
+                  IsTabStop="False"
+                  SizeChanged="PlatformGridView_SizeChanged"
+                  SelectionChanged="PlatformGridView_SelectionChanged">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid x:Name="PlatformWrapGrid" Orientation="Horizontal" Loaded="PlatformWrapGrid_Loaded"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+
+            <GridView.ItemContainerStyle>
+                <StaticResource ResourceKey="PlatformGridViewItemStyle"/>
+            </GridView.ItemContainerStyle>
+
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="models:PlatformCardItem">
+                    <!-- Opacity 由 CardOpacity 決定：1.0 = 已安裝，0.2 = 未安裝 -->
+                    <!-- OneWay：PlatformCardItem 實作 INPC，編輯改名/可用性變化原地更新、不換實例不重建容器 -->
+                    <Border CornerRadius="16" Margin="8"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            Opacity="{x:Bind CardOpacity, Mode=OneWay}">
+                        <Border.ContextFlyout>
+                            <!-- MenuFlyoutItem 不掛 x:Uid/Localized.Uid（彈出型控制項不適用）；
+                                 Text 改由 code-behind 於 Opening 事件設定。同 ComboBox 慣例。 -->
+                            <MenuFlyout Opening="CardContextMenu_Opening">
+                                <MenuFlyoutItem Click="CardExport_Click"/>
+                            </MenuFlyout>
+                        </Border.ContextFlyout>
+                        <Grid>
+                            <!-- 平台圖片作為全滿卡片背景 -->
+                            <Image Source="{x:Bind IconSource, Mode=OneWay}" Stretch="UniformToFill"/>
+                            <!-- 底部文字區域，半透明暗底確保文字可讀性 -->
+                            <Border VerticalAlignment="Bottom"
+                                    CornerRadius="0,0,12,12"
+                                    Background="#BB000000">
+                                <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           Margin="8,5,8,5"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+
+        <!-- 自訂平台免責聲明（首次進入使用者索引標籤、未同意時顯示，接受後隱藏）。 -->
+        <ScrollViewer x:Name="CustomConsentPanel" Visibility="Collapsed"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        MaxWidth="650" Spacing="16" Padding="0,32">
+                <FontIcon Glyph="&#xE7BA;" FontSize="48"
+                          HorizontalAlignment="Center"
+                          Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                <TextBlock x:Uid="CustomPlatform_ConsentTitle" services:Localized.Uid="CustomPlatform_ConsentTitle"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center" TextAlignment="Center"
+                           TextWrapping="Wrap"/>
+                <TextBlock x:Uid="CustomPlatform_ConsentBody" services:Localized.Uid="CustomPlatform_ConsentBody"
+                           FontSize="14" TextWrapping="Wrap"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <Button x:Name="CustomConsentAcceptButton"
+                        x:Uid="CustomPlatform_ConsentAccept" services:Localized.Uid="CustomPlatform_ConsentAccept"
+                        Click="CustomConsentAcceptButton_Click"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource AccentButtonStyle}"
+                        FontSize="16" Padding="32,12" Margin="0,8,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 匯出成功提示。 -->
+        <TeachingTip x:Name="ExportSuccessTeachingTip"
+                     x:Uid="ExportSuccessTeachingTip" services:Localized.Uid="ExportSuccessTeachingTip"
+                     PreferredPlacement="Bottom"
+                     IsLightDismissEnabled="False"/>
+    </Grid>
+</local:PlatformsViewBase>

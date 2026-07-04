@@ -1,4 +1,4 @@
-<dialogs:GamepadDialog
+<dialogs:GamepadDialogBase
     x:Class="OmniConsole.Dialogs.CopyFromProfileDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,14 +7,9 @@
     DefaultButton="Primary"
     RequestedTheme="Dark">
 
-    <dialogs:GamepadDialog.Resources>
-        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
-        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
-        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
-        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-    </dialogs:GamepadDialog.Resources>
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+    </dialogs:GamepadDialogBase.Resources>
 
     <!-- 固定 Width（非 MinWidth）：AutoSuggestBox 選不同項時 Text 換成長度不一的 label，MinWidth 會被撐大造成
          對話方塊寬度抖動（變瘦變胖）；固定寬度後 AutoSuggestBox Stretch 填滿、長文字在框內水平捲動、對話方塊寬度恆定。 -->
@@ -22,4 +17,4 @@
         <TextBlock x:Name="HintText" TextWrapping="Wrap" FontSize="14"/>
         <AutoSuggestBox x:Name="ProfileSuggestBox" HorizontalAlignment="Stretch"/>
     </StackPanel>
-</dialogs:GamepadDialog>
+</dialogs:GamepadDialogBase>

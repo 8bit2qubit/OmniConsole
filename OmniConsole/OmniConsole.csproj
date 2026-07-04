@@ -65,6 +65,16 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<!-- 內建回退桌布：玻璃材質讀不到系統桌布時使用。 -->
+	<ItemGroup>
+		<Content Remove="Assets\Backdrops\**" />
+		<PRIResource Remove="Assets\Backdrops\**" />
+		<None Remove="Assets\Backdrops\**" />
+		<EmbeddedResource Include="Assets\Backdrops\Backdrop.jpg" Condition="Exists('$(MSBuildProjectDirectory)\Assets\Backdrops\Backdrop.jpg')">
+			<LogicalName>OmniConsole.Embedded.Backdrop.jpg</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+
 	<!-- PhantomKey：建置 C++ 專案並封裝進 MSIX -->
 	<!-- OmniConsole 建置時自動觸發 PhantomKey 建置，跟隨 OmniConsole 的 Configuration -->
 	<!-- Debug 版會輸出 PhantomKeyTrace.log，Release 版日誌完全移除 -->
@@ -72,9 +82,9 @@
 		<MSBuild Projects="..\OmniConsole.PhantomKey\OmniConsole.PhantomKey.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
 	</Target>
 	<ItemGroup>
-		<Content Include="..\OmniConsole.PhantomKey\x64\$(Configuration)\Steam.exe">
+		<Content Include="..\OmniConsole.PhantomKey\x64\$(Configuration)\OmniConsole.PhantomKey.exe">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Link>Steam.exe</Link>
+			<Link>OmniConsole.PhantomKey.exe</Link>
 		</Content>
 		<Content Include="Phantom\OmniConsole.PhantomKey.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

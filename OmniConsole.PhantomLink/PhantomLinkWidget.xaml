@@ -100,7 +100,7 @@
                      Trigger 條件可見性（FSE + 預設平台為 SteamBigPicture）由 ReloadFromStore 處理；
                      不可見時 Off/On 的水平 XYFocus 由程式碼動態改指對方。 -->
                 <StackPanel x:Name="SteamInGameOverlaySection" Spacing="6">
-                    <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" services:Localized.Uid="Widget_SteamInGameOverlay_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" services:Localized.Uid="Widget_SteamInGameOverlay_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel x:Name="SteamInGameOverlayButtonRow" Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off" services:Localized.Uid="Widget_SteamInGameOverlay_Off"
                                       Click="SteamInGameOverlayBtn_Click" Tag="Off"
@@ -138,7 +138,7 @@
 
                 <!-- Mouse Mode: 3 ToggleButton 水平組 -->
                 <StackPanel x:Name="ModeSection" Spacing="6">
-                    <TextBlock x:Uid="Widget_MouseMode_Title" services:Localized.Uid="Widget_MouseMode_Title" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_MouseMode_Title" services:Localized.Uid="Widget_MouseMode_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off" services:Localized.Uid="Widget_Mode_Off"
                                       Click="ModeBtn_Click" Tag="Off"
@@ -166,7 +166,7 @@
 
                 <!-- Layout: 2 ToggleButton 水平組 -->
                 <StackPanel Spacing="6">
-                    <TextBlock x:Uid="Widget_Layout_Title" services:Localized.Uid="Widget_Layout_Title" FontWeight="SemiBold"/>
+                    <TextBlock x:Uid="Widget_Layout_Title" services:Localized.Uid="Widget_Layout_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_Layout_OmniNav" services:Localized.Uid="Widget_Layout_OmniNav"
                                       Click="LayoutBtn_Click" Tag="OmniNav"
@@ -192,7 +192,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="Widget_CursorSpeed_Title" services:Localized.Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold"/>
+                        <TextBlock x:Uid="Widget_CursorSpeed_Title" services:Localized.Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                         <TextBlock x:Name="CursorSpeedValueText" Grid.Column="1"
                                    VerticalAlignment="Center" FontWeight="SemiBold"/>
                     </Grid>

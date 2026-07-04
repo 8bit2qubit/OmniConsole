@@ -12,7 +12,7 @@ namespace OmniConsole.Dialogs
     /// 需要 B 鍵特殊行為（擋掉 / 上層目錄等）的對話方塊覆寫 <see cref="OnB"/>；
     /// 需要螢幕鍵盤閃避的覆寫 <see cref="EnableKeyboardAvoidanceOnOpen"/> 為 true。
     /// </summary>
-    public partial class GamepadDialog : ContentDialog, IGamepadInputScope
+    public partial class GamepadDialogBase : ContentDialog, IGamepadInputScope
     {
         private static GamepadNavigationService? s_service;
         private Action? _keyboardAvoidanceCleanup;
@@ -20,8 +20,8 @@ namespace OmniConsole.Dialogs
         /// <summary>App 啟動早期注入全域服務，供所有對話方塊自我註冊。須在任何對話方塊開啟前呼叫。</summary>
         public static void AttachService(GamepadNavigationService service) => s_service = service;
 
-        /// <summary>掛上 Opened／Closed 事件，開啟時自我註冊進全域服務、關閉時反註冊並清理。</summary>
-        public GamepadDialog()
+        /// <summary>掛上 Opened/Closed 事件，開啟時自我註冊進全域服務、關閉時反註冊並清理。</summary>
+        public GamepadDialogBase()
         {
             Opened += OnGamepadDialogOpened;
             Closed += OnGamepadDialogClosed;
@@ -57,9 +57,16 @@ namespace OmniConsole.Dialogs
         protected static void ScrollIntoViewWhenReady(ListView list, int index)
             => FocusNavHelper.ScrollIntoViewWhenReady(list, index);
 
-        /// <summary>同上但容器就緒後再聚焦該項（捲＋聚焦合一）。</summary>
+        /// <summary>同上但容器就緒後再聚焦該項（捲動 + 聚焦合一）。</summary>
         protected static void FocusListItemWhenReady(ListView list, int index)
             => FocusNavHelper.FocusListItemWhenReady(list, index);
+
+        /// <summary>
+        /// 開啟初期焦點守衛：對抗 ContentDialog 框架預設焦點搶位，短視窗內把焦點拉回目標。
+        /// 子類在 OnOpened 呼叫，傳「焦點是否已在目標上」與「聚焦目標」兩個委派；呼叫後自行做首次聚焦嘗試。
+        /// </summary>
+        protected void GuardInitialFocus(Func<bool> isOnTarget, Action focusTarget)
+            => FocusNavHelper.GuardInitialFocus(this, isOnTarget, focusTarget);
 
         // ── IGamepadInputScope（A/B 鍵與焦點搜尋根的預設語意；子類可覆寫，OnB 最常見） ──────────
 

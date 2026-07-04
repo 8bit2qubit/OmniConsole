@@ -21,16 +21,15 @@
                 <Setter Property="svc:BusyCursorFix.AutoFix" Value="True"/>
             </Style>
 
-            <!-- Phantom 配色：NavigationView 面板背景純色 -->
-            <!-- LeftMinimal overlay pane 內部走 SplitView.PaneBackground = NavigationViewDefaultPaneBackground（generic.xaml line 17640） -->
+            <!-- NavigationView 內容區與頂部面板設為透明，讓底層背景材質透出。
+                 面板主背景 NavigationViewDefaultPaneBackground 不在此設，由 BackgroundMaterialService
+                 於 App 啟動時依背景材質覆寫。 -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
-                    <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#25282C"/>
                     <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
                     <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#25282C"/>
                     <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>
                     <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
                 </ResourceDictionary>

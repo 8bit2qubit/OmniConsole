@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Models;
@@ -10,7 +10,7 @@ namespace OmniConsole.Dialogs
     /// 讓使用者貼上 JSON 字串以匯入自訂平台的對話方塊。
     /// 驗證通過後將結果存入 <see cref="ResultEntry"/>，由呼叫端寫入 UserPlatformStore。
     /// </summary>
-    public sealed partial class ImportPlatformDialog : GamepadDialog
+    public sealed partial class ImportPlatformDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
 
@@ -53,7 +53,7 @@ namespace OmniConsole.Dialogs
             // 顯式把初始焦點設到內容區第一個可聚焦元素（JsonInputBox）
             DispatcherQueue.TryEnqueue(() =>
                 JsonInputBox.Focus(FocusStateHelper.Preferred));
-            // 手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialog 基底類別自動提供。
+            // 手把導航（A=觸發焦點元素、B 不動作）與螢幕鍵盤閃避由 GamepadDialogBase 基底類別自動提供。
         }
 
         /// <summary>

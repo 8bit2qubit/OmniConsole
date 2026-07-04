@@ -1,4 +1,4 @@
-﻿<dialogs:GamepadDialog
+﻿<dialogs:GamepadDialogBase
     x:Class="OmniConsole.Dialogs.AppsUsingPhantomPawDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,40 +9,39 @@
     DefaultButton="Primary"
     RequestedTheme="Dark">
 
-    <dialogs:GamepadDialog.Resources>
-        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
-        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
-        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
-        <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#25282C"/>
-        <!-- 關掉 ListViewItem 左側 selection accent bar，焦點視覺僅保留系統圓角白框（比照貓又清單）。 -->
-        <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 關掉 ListViewItem 左側 selection accent bar，焦點視覺僅保留系統圓角白框（比照貓又清單）。 -->
+            <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
 
-        <!-- 卡片外觀（底色/邊框/圓角）；不自畫焦點白框、不可聚焦，焦點落外層 ListViewItem、用系統圓角白框（比照貓又）。 -->
-        <Style x:Key="LockedAppCardStyle" TargetType="ContentControl">
-            <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
-            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ContentControl">
-                        <Border CornerRadius="8"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </dialogs:GamepadDialog.Resources>
+            <!-- 卡片外觀（底色/邊框/圓角）；不自畫焦點白框、不可聚焦，焦點落外層 ListViewItem、用系統圓角白框（比照貓又）。 -->
+            <Style x:Key="LockedAppCardStyle" TargetType="ContentControl">
+                <Setter Property="IsTabStop" Value="False"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContentControl">
+                            <Border CornerRadius="8"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </dialogs:GamepadDialogBase.Resources>
 
     <!-- 三段式 Grid 版面（標題 Auto / 清單 * / 提示 Auto），比照貓又清單 GamepadProfileListView：
          ListView 直坐 Row、外層無 ScrollViewer 等包裝。D-pad 上下走 WinUI 預設 directional focus。 -->
@@ -107,4 +106,4 @@
                    TextWrapping="Wrap" Margin="0,12,0,0"/>
 
     </Grid>
-</dialogs:GamepadDialog>
+</dialogs:GamepadDialogBase>

@@ -1,0 +1,22 @@
+# 原始碼與專案檔維持 CRLF（適用 Visual Studio 生態，避免工作目錄換行混用）
+*.cs           eol=crlf
+*.xaml         eol=crlf
+*.cpp          eol=crlf
+*.h            eol=crlf
+*.hpp          eol=crlf
+*.c            eol=crlf
+*.idl          eol=crlf
+*.def          eol=crlf
+*.rc           eol=crlf
+*.vcxproj      eol=crlf
+*.filters      eol=crlf
+*.props        eol=crlf
+*.targets      eol=crlf
+*.csproj       eol=crlf
+
+# 專案／資源描述檔（VS 生態同走 CRLF）
+*.resw         eol=crlf
+*.appxmanifest eol=crlf
+*.manifest     eol=crlf
+*.pubxml       eol=crlf
+*.sln          eol=crlf

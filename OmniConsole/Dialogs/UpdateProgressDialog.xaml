@@ -1,4 +1,4 @@
-<dialogs:GamepadDialog
+<dialogs:GamepadDialogBase
     x:Class="OmniConsole.Dialogs.UpdateProgressDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,14 +6,9 @@
     Style="{StaticResource DefaultContentDialogStyle}"
     RequestedTheme="Dark">
 
-    <dialogs:GamepadDialog.Resources>
-        <!-- Phantom 配色：與 PlatformEditDialog 行為相同 -->
-        <SolidColorBrush x:Key="ContentDialogBackground" Color="#25282C"/>
-        <SolidColorBrush x:Key="ContentDialogTopOverlay" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="ContentDialogBorderBrush" Color="Transparent"/>
-        <SolidColorBrush x:Key="ContentDialogSeparatorBorderBrush" Color="Transparent"/>
-        <Thickness x:Key="ContentDialogSeparatorThickness">0</Thickness>
-    </dialogs:GamepadDialog.Resources>
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+    </dialogs:GamepadDialogBase.Resources>
 
     <StackPanel Width="420" Spacing="12">
 
@@ -39,4 +34,4 @@
                    TextWrapping="Wrap"/>
 
     </StackPanel>
-</dialogs:GamepadDialog>
+</dialogs:GamepadDialogBase>

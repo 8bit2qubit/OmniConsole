@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
@@ -12,7 +12,7 @@ namespace OmniConsole.Dialogs
     /// 指紋由呼叫端透過建構式傳入（已是冒號分隔大寫格式），Copy 將其原樣寫入剪貼簿。
     /// Source URL 顯示為可點 HyperlinkButton 開啟 GitHub repo 首頁；另有 AUTHENTICITY 連結依語系開對應的真偽說明文件。
     /// </summary>
-    public sealed partial class CertificateDetailsDialog : GamepadDialog
+    public sealed partial class CertificateDetailsDialog : GamepadDialogBase
     {
         private readonly string _thumbprint;
         private readonly ResourceLoader _resourceLoader = new();
@@ -51,7 +51,7 @@ namespace OmniConsole.Dialogs
 
             PrimaryButtonClick += OnCopyClick;
             Opened += OnOpened;
-            // 手把導航（A=觸發焦點元素、B=關閉）由 GamepadDialog 基底類別自動提供。
+            // 手把導航（A=觸發焦點元素、B=關閉）由 GamepadDialogBase 基底類別自動提供。
         }
 
         /// <summary>對話方塊開啟：顯式把初始焦點設到內容區第一個可聚焦元素（SourceLink），比照其他對話方塊

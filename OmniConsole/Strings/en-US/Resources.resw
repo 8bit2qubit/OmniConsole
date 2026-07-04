@@ -295,6 +295,24 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
     <value>Scale cursor movement speed relative to the default (100%).</value>
   </data>
+  <data name="BackgroundMaterialSetting_Title.Text" xml:space="preserve">
+    <value>Background Material</value>
+  </data>
+  <data name="BackgroundMaterialSetting_Description.Text" xml:space="preserve">
+    <value>Choose the background material.</value>
+  </data>
+  <data name="BackgroundMaterialSetting_Note.Text" xml:space="preserve">
+    <value>Requires Windows transparency effects to be enabled.</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomClassic" xml:space="preserve">
+    <value>Phantom Classic</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomGlass" xml:space="preserve">
+    <value>Phantom Glass</value>
+  </data>
+  <data name="BackgroundMaterialItem_PhantomGlassDeep" xml:space="preserve">
+    <value>Phantom Glass Deep</value>
+  </data>
   <data name="AdvancedSection_GameBar.Text" xml:space="preserve">
     <value>Game Bar</value>
   </data>

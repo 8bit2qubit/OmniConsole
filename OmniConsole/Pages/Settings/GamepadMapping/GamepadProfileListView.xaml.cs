@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
 using OmniConsole.Models;
@@ -9,12 +10,11 @@ using OmniConsole.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
 
-namespace OmniConsole.Controls
+namespace OmniConsole.Pages.Settings.GamepadMapping
 {
     /// <summary>x:Bind 用的清單列項目（顯示名稱 + appId 副文字）。</summary>
     public sealed class GamepadProfileRow
@@ -42,8 +42,8 @@ namespace OmniConsole.Controls
         NameDesc
     }
 
-    /// <summary>手把映射「清單頁」UserControl：列出所有 per-App profile，提供搜尋／排序／編輯／刪除入口。</summary>
-    public sealed partial class GamepadProfileListView : UserControl
+    /// <summary>手把映射「清單頁」：列出各 App 的 profile，提供搜尋/排序/編輯/刪除入口。由 GamepadMappingHostView 透過內層 Frame.Navigate 載入（切走即銷毀）。</summary>
+    public sealed partial class GamepadProfileListView : Page
     {
         private readonly ResourceLoader _resourceLoader = new();
 
@@ -87,11 +87,30 @@ namespace OmniConsole.Controls
             _searchDebounceTimer?.Stop();
         }
 
-        /// <summary>每次容器產生或重用時，只在 index 0 容器設 XYFocusUp 指向搜尋方塊，其餘讓 ListView 自己處理往上跳前一項。</summary>
+        // 左側導覽漢堡鈕（NavigationView 內建樣板的 TogglePaneButton）快取，供 row 設 XYFocusLeft。
+        // ListView 的 item 互為軸向相近候選，XYFocusLeftNavigationStrategy 會在 row 間斜跳而非跳出 ListView，
+        // 故清單頁不走策略、改以明確 XYFocusLeft 指向漢堡鈕（不會被鄰近 item 搶走）。
+        private DependencyObject? _paneToggleButton;
+
+        /// <summary>取左側導覽漢堡鈕參照（首次查詢後快取）；從 XamlRoot 視覺樹找內建樣板的 TogglePaneButton。</summary>
+        private DependencyObject? PaneToggleButton
+        {
+            get
+            {
+                if (_paneToggleButton == null && XamlRoot?.Content is DependencyObject root)
+                    _paneToggleButton = VisualTreeHelpers.FindDescendantByName(root, "TogglePaneButton");
+                return _paneToggleButton;
+            }
+        }
+
+        /// <summary>每次容器產生或重用時，index 0 的 XYFocusUp 指向搜尋方塊（其餘讓 ListView 自己往上跳前一項），並一律設 XYFocusLeft 指向漢堡鈕讓低位 row 向左能回左側導覽。</summary>
         private void ProfileList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.ItemContainer is SelectorItem item)
+            {
                 item.XYFocusUp = args.ItemIndex == 0 ? (DependencyObject)SearchBox : null;
+                item.XYFocusLeft = PaneToggleButton;
+            }
         }
 
         /// <summary>
@@ -174,7 +193,7 @@ namespace OmniConsole.Controls
         /// <summary>
         /// 以 Id 為鍵（AppId.MatchesExact）做增量比對，把 <paramref name="newRows"/> 套進固定實例 _items，
         /// 取代過去 _items.Clear()+逐項 Add（Clear 發 Reset 讓 ListView 整批重建容器 → 刪中間會閃）。
-        /// 增量演算法在 <see cref="ObservableCollectionDiff.Apply{T}"/>，此處只提供身分／內容比對。
+        /// 增量演算法在 <see cref="ObservableCollectionDiff.Apply{T}"/>，此處只提供身分/內容比對。
         /// </summary>
         private void DiffApply(IEnumerable<GamepadProfileRow> newRows)
         {
@@ -224,29 +243,12 @@ namespace OmniConsole.Controls
             }
         }
 
-        /// <summary>聚焦到 index 0 的 SelectorItem container；container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
+        /// <summary>聚焦到 index 0 的清單項（捲動 + 容器就緒後聚焦）。</summary>
         private void FocusFirstListItem()
         {
             if (_items.Count == 0) return;
             ProfileList.SelectedIndex = 0;
-            ProfileList.ScrollIntoView(_items[0]);
-            if (ProfileList.ContainerFromIndex(0) is SelectorItem lvi)
-            {
-                lvi.Focus(FocusStateHelper.Preferred);
-            }
-            else
-            {
-                EventHandler<object>? handler = null;
-                handler = (s, e) =>
-                {
-                    if (ProfileList.ContainerFromIndex(0) is SelectorItem deferred)
-                    {
-                        deferred.Focus(FocusStateHelper.Preferred);
-                        ProfileList.LayoutUpdated -= handler;
-                    }
-                };
-                ProfileList.LayoutUpdated += handler;
-            }
+            FocusNavHelper.FocusListItemImmediate(ProfileList, 0);
         }
 
         /// <summary>排序下拉選單變動：依目前 SelectedIndex 對應 SortMode 重排清單。</summary>
@@ -273,7 +275,7 @@ namespace OmniConsole.Controls
         /// 以 EmptyState 容器（撐滿 Grid Row 2）的可用高度為基準設定 MascotBorder 尺寸，
         /// 扣掉 EmptyHint 文字與內距後套 16:9 比例，並以 UserControl 寬度為上限。
         /// EmptyState 是 Stretch 的 Grid（非內容驅動高度），ActualHeight 即 Row 2 真實可用空間，
-        /// 立繪才不會反向撐出容器高度造成循環縮小。內層 StackPanel 負責把立繪+提示置中。
+        /// 立繪才不會反向撐出容器高度造成循環縮小。內層 StackPanel 負責把立繪 + 提示置中。
         /// </summary>
         private void ResizeMascot()
         {
@@ -309,48 +311,30 @@ namespace OmniConsole.Controls
             DebugLogger.Log($"[Mascot] resize: cell={cellH:F0}, reserved={reserved:F0}, target={targetW:F0}x{targetH:F0}");
         }
 
-        /// <summary>從 embedded resource 載入 mascot 立繪到 MascotImage；資源不存在或載入失敗時將 MascotBorder 設為 Collapsed。</summary>
+        /// <summary>
+        /// 載入貓又立繪到 MascotImage（原生解析度）；
+        /// 載好後顯示並調整尺寸，資源不存在或載入失敗時將 MascotBorder 設為 Collapsed。
+        /// </summary>
         private async void TryLoadMascot()
         {
             if (MascotImage.Source != null) return;
-            try
-            {
-                var asm = typeof(GamepadProfileListView).Assembly;
-                using var stream = asm.GetManifestResourceStream("OmniConsole.Embedded.Nekomata.jpg");
-                if (stream == null)
-                {
-                    DebugLogger.Log("[Mascot] embedded resource not found");
-                    MascotBorder.Visibility = Visibility.Collapsed;
-                    return;
-                }
 
-                using var memStream = new System.IO.MemoryStream();
-                await stream.CopyToAsync(memStream);
-                memStream.Position = 0;
-
-                var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
-                bmp.ImageFailed += (s, e) =>
-                {
-                    DebugLogger.Log($"[Mascot] load failed: {e.ErrorMessage}");
-                    MascotBorder.Visibility = Visibility.Collapsed;
-                };
-                bmp.ImageOpened += (s, e) =>
-                {
-                    DebugLogger.Log($"[Mascot] loaded {bmp.PixelWidth}x{bmp.PixelHeight}");
-                    MascotBorder.Visibility = Visibility.Visible;
-                    ResizeMascot();
-                };
-                MascotImage.Source = bmp;
-                await bmp.SetSourceAsync(memStream.AsRandomAccessStream());
-            }
-            catch (Exception ex)
+            var bmp = await BackgroundMaterialService.LoadMascotAsync(typeof(GamepadProfileListView).Assembly);
+            if (bmp == null)
             {
-                DebugLogger.Log($"[Mascot] exception: {ex.Message}");
+                DebugLogger.Log("[Mascot] embedded resource not found or load failed");
                 MascotBorder.Visibility = Visibility.Collapsed;
+                return;
             }
+
+            // helper 回傳時圖已解碼完成（等同 ImageOpened 已成立），直接顯示並調整尺寸。
+            DebugLogger.Log($"[Mascot] loaded {bmp.PixelWidth}x{bmp.PixelHeight}");
+            MascotImage.Source = bmp;
+            MascotBorder.Visibility = Visibility.Visible;
+            ResizeMascot();
         }
 
-        /// <summary>程式化聚焦到 SelectedIndex 對應的 SelectorItem；清單為空時回退到 ListView 容器，container 未實體化時掛 LayoutUpdated 延後聚焦。</summary>
+        /// <summary>程式化聚焦到 SelectedIndex 對應的清單項；清單為空時回退到 ListView 容器。</summary>
         public void FocusList()
         {
             if (_items.Count == 0)
@@ -361,41 +345,47 @@ namespace OmniConsole.Controls
             int idx = ProfileList.SelectedIndex;
             if (idx < 0 || idx >= _items.Count) idx = 0;
             ProfileList.SelectedIndex = idx;
-            ProfileList.ScrollIntoView(_items[idx]);
-            if (ProfileList.ContainerFromIndex(idx) is SelectorItem lvi)
-            {
-                lvi.Focus(FocusStateHelper.Preferred);
-            }
-            else
-            {
-                int targetIdx = idx;
-                EventHandler<object>? handler = null;
-                handler = (s, e) =>
-                {
-                    if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
-                    {
-                        deferred.Focus(FocusStateHelper.Preferred);
-                        ProfileList.LayoutUpdated -= handler;
-                    }
-                };
-                ProfileList.LayoutUpdated += handler;
-            }
+            FocusNavHelper.FocusListItemImmediate(ProfileList, idx);
         }
 
         /// <summary>將焦點程式化設給搜尋方塊（宿主 Y 鍵從清單移動焦點時呼叫）。</summary>
         public void FocusSearchBox() => SearchBox.Focus(FocusStateHelper.Preferred);
 
-        /// <summary>編輯器入口處先呼叫，記錄即將編輯的 AppId 供 CloseEditor 還原焦點使用。</summary>
-        public void SetLastEditedHint(AppId appId) => _lastEditedAppId = appId;
-
-        /// <summary>聚焦回 _lastEditedAppId 對應 row；無紀錄或該 row 不在 _items 內時回退到 FocusList。</summary>
-        public void FocusLastEdited()
+        /// <summary>
+        /// Frame 導覽進來時重抓清單並還原焦點。
+        /// 參數為剛編輯過的 AppId（從編輯器返回）時聚焦回對應 row、否則聚焦清單首項。
+        /// </summary>
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (_lastEditedAppId != null && FocusListItem(_lastEditedAppId)) return;
-            FocusList();
+            base.OnNavigatedTo(e);
+            _lastEditedAppId = e.Parameter as AppId;
+            Refresh();
+            // 導覽當下清單尚未 Loaded（Frame.Navigate 全新實例、未上視覺樹）→ UpdateLayout 逼不出容器、聚焦落空、
+            // 焦點停在漢堡鈕造成閃動。故將還原焦點延到清單 Loaded 後（此時 UpdateLayout 有效、走立即路徑零空窗）。
+            FocusAfterListLoaded(() =>
+            {
+                if (_lastEditedAppId != null && FocusListItem(_lastEditedAppId)) return;
+                FocusList();
+            });
         }
 
-        /// <summary>依 AppId 在 _items 中找對應 row，命中則 SelectedIndex + ScrollIntoView + 容器取得後 Focus；找不到回 false。</summary>
+        /// <summary>清單已 Loaded 則立即執行聚焦動作；否則掛一次性 Loaded handler 延後（消除頁面未上樹時聚焦落空的漢堡鈕閃動）。</summary>
+        private void FocusAfterListLoaded(Action focusAction)
+        {
+            if (ProfileList.IsLoaded)
+            {
+                focusAction();
+                return;
+            }
+            void OnceLoaded(object s, RoutedEventArgs args)
+            {
+                ProfileList.Loaded -= OnceLoaded;
+                focusAction();
+            }
+            ProfileList.Loaded += OnceLoaded;
+        }
+
+        /// <summary>依 AppId 在 _items 中找對應 row，命中則選取並捲動聚焦到該 row（容器就緒後再捲落定）；找不到回 false。</summary>
         private bool FocusListItem(AppId appId)
         {
             for (int i = 0; i < _items.Count; i++)
@@ -403,25 +393,10 @@ namespace OmniConsole.Controls
                 if (_items[i].AppId != null && _items[i].AppId.MatchesExact(appId))
                 {
                     ProfileList.SelectedIndex = i;
-                    ProfileList.ScrollIntoView(_items[i]);
-                    if (ProfileList.ContainerFromIndex(i) is SelectorItem lvi)
-                    {
-                        lvi.Focus(FocusStateHelper.Preferred);
-                        return true;
-                    }
-                    // 容器尚未實體化（虛擬化清單捲動到目標前不會建 container）；
-                    // 用 LayoutUpdated 等實體化完成後再聚焦
-                    int targetIdx = i;
-                    EventHandler<object>? handler = null;
-                    handler = (s, e) =>
-                    {
-                        if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
-                        {
-                            deferred.Focus(FocusStateHelper.Preferred);
-                            ProfileList.LayoutUpdated -= handler;
-                        }
-                    };
-                    ProfileList.LayoutUpdated += handler;
+                    // 虛擬化清單剛重建（從編輯器返回為 Frame.Navigate 全新實例）時，目標 row 容器尚未實體化、
+                    // 第一次 ScrollIntoView 算不準位置；FocusListItemImmediate 先 UpdateLayout 逼佈局使容器即刻就緒、
+                    // 焦點同一拍落定，消除返回時焦點先飄漢堡鈕再落定的閃動。
+                    FocusNavHelper.FocusListItemImmediate(ProfileList, i);
                     return true;
                 }
             }
@@ -444,9 +419,9 @@ namespace OmniConsole.Controls
         }
 
         /// <summary>
-        /// 當下「每頁可見項數」：取快取 ItemsStackPanel 即時回報的 LastVisibleIndex-FirstVisibleIndex+1。
-        /// 此值隨視窗高度（解析度）動態變化，作為 PageBy 跳頁步距。
-        /// 面板尚未實體化（清單剛載入）時回報無效值，回傳 0 由呼叫端做回退處理。
+        /// 目前畫面看得到幾個項目（給 PageBy 當一次翻幾格用）。值會隨視窗高度變。
+        /// 注意：最底下那個「只露出一半、沒完整顯示」的項目也算進來，所以這個數字會比「完整看到的項目數」多 1。
+        /// 清單剛載入、面板還沒建好時回 0，由呼叫端自己給預設值。
         /// </summary>
         private int GetPageSize()
         {
@@ -458,12 +433,15 @@ namespace OmniConsole.Controls
             return 0;
         }
 
-        /// <summary>跳頁實作：step = 可見項數 × direction（±1），clamp 到 [0, _items.Count-1] 後重設 SelectedIndex 與焦點。</summary>
+        /// <summary>翻一頁：往指定方向（±1）移動一頁的距離，重設選取與焦點。</summary>
         private void PageBy(int direction)
         {
             if (_items.Count == 0) return;
 
-            int step = GetPageSize();
+            // 一次翻「看得到的項目數 - 1」格：
+            // 減 1 是因為 GetPageSize 把最底下「只露一半」的項目也算進去了，直接用會剛好跳過它。
+            // 減 1 後，那個原本只露一半的項目會變成翻頁後畫面的第一個（完整顯示），既不跳過、翻頁也更有連續感。
+            int step = GetPageSize() - 1;
             if (step <= 0) step = 10;
 
             int currentIdx = ProfileList.SelectedIndex;
@@ -480,25 +458,7 @@ namespace OmniConsole.Controls
             if (newIdx == currentIdx) return;
 
             ProfileList.SelectedIndex = newIdx;
-            ProfileList.ScrollIntoView(_items[newIdx]);
-            if (ProfileList.ContainerFromIndex(newIdx) is SelectorItem lvi)
-            {
-                lvi.Focus(FocusStateHelper.Preferred);
-            }
-            else
-            {
-                int targetIdx = newIdx;
-                EventHandler<object>? handler = null;
-                handler = (s, e) =>
-                {
-                    if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
-                    {
-                        deferred.Focus(FocusStateHelper.Preferred);
-                        ProfileList.LayoutUpdated -= handler;
-                    }
-                };
-                ProfileList.LayoutUpdated += handler;
-            }
+            FocusNavHelper.FocusListItemImmediate(ProfileList, newIdx);
         }
 
         /// <summary>取目前作用中的 row：先看焦點 SelectorItem（D-pad 移動只動焦點不更新 SelectedItem），回退到 SelectedItem。</summary>
@@ -531,7 +491,7 @@ namespace OmniConsole.Controls
             return Task.CompletedTask;
         }
 
-        /// <summary>滑鼠／手把 A 點某列：記下目標 AppId 並發出 EditRequested。</summary>
+        /// <summary>滑鼠/手把 A 點某列：記下目標 AppId 並發出 EditRequested。</summary>
         private void ProfileList_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is GamepadProfileRow row && row.AppId != null)
@@ -583,25 +543,7 @@ namespace OmniConsole.Controls
                 {
                     int target = Math.Min(prevIndex, _items.Count - 1);
                     ProfileList.SelectedIndex = target;
-                    ProfileList.ScrollIntoView(_items[target]);
-                    if (ProfileList.ContainerFromIndex(target) is SelectorItem lvi)
-                    {
-                        lvi.Focus(FocusStateHelper.Preferred);
-                    }
-                    else
-                    {
-                        int targetIdx = target;
-                        EventHandler<object>? handler = null;
-                        handler = (s, e) =>
-                        {
-                            if (ProfileList.ContainerFromIndex(targetIdx) is SelectorItem deferred)
-                            {
-                                deferred.Focus(FocusStateHelper.Preferred);
-                                ProfileList.LayoutUpdated -= handler;
-                            }
-                        };
-                        ProfileList.LayoutUpdated += handler;
-                    }
+                    FocusNavHelper.FocusListItemImmediate(ProfileList, target);
                 }
                 else
                 {
