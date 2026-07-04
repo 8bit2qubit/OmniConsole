@@ -190,7 +190,7 @@
     <value>设置默认游戏平台、Game Bar 行为与自定义启动目标。</value>
   </data>
   <data name="ResetGameBarButton.Content" xml:space="preserve">
-    <value>执行</value>
+    <value>运行</value>
   </data>
   <data name="Nav_General.Content" xml:space="preserve">
     <value>常规</value>

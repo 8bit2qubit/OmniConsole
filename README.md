@@ -37,6 +37,8 @@ Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming 
 - **Platform import & export** – Share custom platform configurations as JSON. Right-click or long-press a card to export; use the Import button to import shared configurations.
 - **Gamepad-compatible file picker** – A custom-built file picker that replaces the system FileOpenPicker (which does not support gamepad input), letting you browse for executables and cover images with a controller. A "Browse (Windows)" button is also available for users who prefer the system file picker.
 - **Card-grid settings UI** – Large icon cards designed for large-screen and handheld use, operable with **mouse**, **touch**, or **Xbox controller**.
+- **Phantom Glass backgrounds** – A frosted glass background that softly blurs and tints your desktop wallpaper behind the app. Choose from **Phantom Glass**, **Phantom Glass Deep**, or the solid **Phantom Classic** in Settings.
+- **Fluent motion throughout** – The Launch screen and Settings glide in with smooth entrance animations, and every move between screens flows with a transition.
 - **Game Bar integration** – Game Bar's **"Home"** button launches your gaming platform; **"Library"** opens OmniConsole Settings.
 - **Troubleshoot page** – A dedicated page for Xbox Mode (FSE) recovery: restarts Game Bar to fix issues such as the "Restart for better performance" dialog not appearing, then enters Xbox Mode (FSE).
 - **Environment snapshot** – An "About" page that captures your system, hardware, and OmniConsole health status, with one-click copy as a Markdown report for easy bug reporting.
@@ -48,8 +50,7 @@ Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming 
 - **Dedicated Settings entry** – A separate "**OmniConsole Settings**" entry in All Apps lets you change your default platform anytime.
 - **Native Xbox Mode (FSE) integration** – Registered as a Windows 11 Xbox Mode (FSE) Home App through the official API.
 - **In-app updates** – Automatic checks for the latest GitHub releases, with download and install built into the Advanced settings page.
-- **Multilingual UI** – English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文).
-- **Community languages** – On the Advanced settings page, click **Manage** next to **Community Languages** to browse, download, and update community-contributed languages for both the main app and the OmniCharm widget at once. They stay up to date automatically across versions.
+- **Multilingual UI** – English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文) built in, along with community-contributed languages: on the Advanced settings page, click **Manage** next to **Community Languages** to browse, download, and update them for both the main app and the OmniCharm widget at once. They stay up to date automatically across versions.
 
 ---
 
