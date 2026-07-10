@@ -66,6 +66,9 @@
     <ClCompile Include="PhantomBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <!-- 從主程式 Package.appxmanifest 同步版本號產生 version.h，供 resources.rc 使用 -->

@@ -108,12 +108,12 @@
                 </StackPanel>
             </Border>
 
-            <!-- 手把輸入分類標題 -->
-            <TextBlock x:Uid="AdvancedSection_GamepadInput" services:Localized.Uid="AdvancedSection_GamepadInput" FontSize="14" FontWeight="SemiBold"
+            <!-- Steam 分類標題 -->
+            <TextBlock x:Uid="AdvancedSection_Steam" services:Localized.Uid="AdvancedSection_Steam" FontSize="14" FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        Margin="2,0,0,0"/>
 
-            <!-- 手把輸入群組卡片 -->
+            <!-- Steam 群組卡片 -->
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -129,12 +129,11 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <FontIcon Glyph="&#xE961;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <FontIcon Glyph="&#xE90C;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock x:Uid="PhantomKeySetting_Title" services:Localized.Uid="PhantomKeySetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="PhantomKeySetting_Title" services:Localized.Uid="PhantomKeySetting_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
                             <TextBlock x:Uid="PhantomKeySetting_Description" services:Localized.Uid="PhantomKeySetting_Description" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                            <TextBlock x:Uid="PhantomKeySetting_Note" services:Localized.Uid="PhantomKeySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                         </StackPanel>
 
                         <!--
@@ -161,7 +160,7 @@
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                             <TextBlock x:Uid="SteamInGameOverlaySetting_Title" services:Localized.Uid="SteamInGameOverlaySetting_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
                             <TextBlock x:Uid="SteamInGameOverlaySetting_Description" services:Localized.Uid="SteamInGameOverlaySetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                            <TextBlock x:Uid="SteamInGameOverlaySetting_Note" services:Localized.Uid="SteamInGameOverlaySetting_Note" services:FluentIconTextHelper.AutoFormat="True" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <TextBlock x:Uid="SteamInGameOverlaySetting_Note" services:Localized.Uid="SteamInGameOverlaySetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                         </StackPanel>
 
                         <ToggleSwitch x:Name="UsePhantomKeySteamInGameOverlaySwitch"
@@ -169,10 +168,22 @@
                                       FlowDirection="RightToLeft"
                                       Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
                     </Grid>
+                </StackPanel>
+            </Border>
 
-                    <!-- 分隔線 -->
-                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+            <!-- 貓又分類標題 -->
+            <TextBlock x:Uid="AdvancedSection_Nekomata" services:Localized.Uid="AdvancedSection_Nekomata" FontSize="14" FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Margin="2,0,0,0"/>
 
+            <!-- 貓又群組卡片：手把滑鼠模式 / 控制器版面配置 / 游標速度 -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    HorizontalAlignment="Stretch"
+                    MinWidth="700">
+                <StackPanel>
                     <!-- Gamepad Mouse Mode 主開關 -->
                     <Grid Padding="16">
                         <Grid.ColumnDefinitions>
@@ -181,21 +192,23 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <FontIcon Glyph="&#xE962;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <PathIcon Data="F1 M4.671 11.142C3.298 13.201 2.611 16.634 2.611 19.495C2.611 22.127 3.298 23.5 5.472 23.5L7.074 23.5C7.303 22.47 8.218 22.47 8.447 23.5L10.621 23.5C12.452 23.5 13.139 22.127 13.139 19.495C13.139 16.634 12.452 13.201 11.079 11.142ZM2.726 0.637C2.451 0.5 2.108 0.706 2.108 1.049L2.451 4.001C1.558 4.894 1.009 6.061 1.009 7.366C1.009 10.387 4.099 12.858 7.875 12.858C11.651 12.858 14.741 10.387 14.741 7.366C14.741 6.061 14.191 4.894 13.299 4.001L13.642 1.049C13.676 0.706 13.299 0.5 13.024 0.637L10.552 2.285C9.729 2.01 8.836 1.873 7.875 1.873C6.914 1.873 6.021 2.01 5.197 2.285L2.726 0.637ZM4.854 6.954C5.197 6.954 5.815 7.297 5.815 7.709C5.815 8.121 5.197 8.464 4.854 8.464C4.511 8.464 4.236 8.121 4.236 7.709C4.236 7.297 4.511 6.954 4.854 6.954ZM10.896 6.954C11.239 6.954 11.514 7.297 11.514 7.709C11.514 8.121 11.239 8.464 10.896 8.464C10.552 8.464 9.935 8.121 9.935 7.709C9.935 7.297 10.552 6.954 10.896 6.954ZM7.875 8.739C8.355 8.739 8.767 8.945 8.767 9.288C8.767 9.563 8.355 9.769 7.875 9.769C7.394 9.769 6.982 9.563 6.982 9.288C6.982 8.945 7.394 8.739 7.875 8.739ZM11.193 22.585C14.969 22.813 17.258 20.296 17.83 16.863C18.173 14.803 17.83 12.515 16.8 10.684C16.686 10.455 16.4 10.455 16.285 10.684C15.427 12.286 15.828 14.575 15.542 16.52C15.084 19.381 13.253 20.868 11.079 21.097ZM11.765 23.386C15.542 23.5 19.203 22.241 21.263 19.381C22.293 17.779 22.865 15.948 22.979 14.231C22.991 13.945 22.636 13.774 22.464 14.025C21.892 15.719 21.263 17.435 19.947 18.923C18.173 20.925 15.427 21.898 11.937 21.726Z" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock x:Uid="MouseModeSetting_Title" services:Localized.Uid="MouseModeSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
-                            <TextBlock x:Uid="MouseModeSetting_Description" services:Localized.Uid="MouseModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                            <TextBlock x:Uid="MouseModeSetting_Note" services:Localized.Uid="MouseModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                            <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="MouseModeSetting_BuiltInMappingNote" services:Localized.Uid="MouseModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            <TextBlock x:Uid="GamepadMappingModeSetting_Title" services:Localized.Uid="GamepadMappingModeSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="GamepadMappingModeSetting_Description" services:Localized.Uid="GamepadMappingModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                            <TextBlock x:Uid="GamepadMappingModeSetting_Note" services:Localized.Uid="GamepadMappingModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="GamepadMappingModeSetting_BuiltInMappingNote" services:Localized.Uid="GamepadMappingModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
                         </StackPanel>
 
-                        <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。
-                             此為 ComboBox i18n 慣例（同貓又編輯器）。 -->
-                        <ComboBox x:Name="MouseModeCombo" Grid.Column="2"
-                                  SelectionChanged="MouseModeCombo_SelectionChanged"
-                                  MinWidth="120" VerticalAlignment="Center"/>
+                        <ToggleSwitch x:Name="MouseModeSwitch"
+                                      Toggled="MouseModeSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
                     </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
 
                     <!-- Mouse Mode 版面配置切換 (OmniNav / Classic) -->
                     <Grid Padding="16">
@@ -208,16 +221,18 @@
                         <FontIcon Glyph="&#xE8AB;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock x:Uid="MouseModeLayoutSetting_Title" services:Localized.Uid="MouseModeLayoutSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
-                            <TextBlock x:Uid="MouseModeLayoutSetting_Description" services:Localized.Uid="MouseModeLayoutSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                            <TextBlock x:Uid="ControllerLayoutPresetSetting_Title" services:Localized.Uid="ControllerLayoutPresetSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="ControllerLayoutPresetSetting_Description" services:Localized.Uid="ControllerLayoutPresetSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                         </StackPanel>
 
-                        <ToggleSwitch x:Name="MouseModeLayoutSwitch"
-                                      x:Uid="MouseModeLayoutSwitch" services:Localized.Uid="MouseModeLayoutSwitch"
-                                      Toggled="MouseModeLayoutSwitch_Toggled"
-                                      FlowDirection="RightToLeft"
-                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                        <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 CursorSpeedCombo。 -->
+                        <ComboBox x:Name="MouseModeLayoutCombo" Grid.Column="2"
+                                  SelectionChanged="MouseModeLayoutCombo_SelectionChanged"
+                                  MinWidth="120" VerticalAlignment="Center"/>
                     </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
 
                     <!-- Cursor Speed 下拉選單 -->
                     <Grid Padding="16">
@@ -270,7 +285,7 @@
                             <TextBlock x:Uid="BackgroundMaterialSetting_Note" services:Localized.Uid="BackgroundMaterialSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                         </StackPanel>
 
-                        <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 MouseModeCombo。 -->
+                        <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 CursorSpeedCombo。 -->
                         <!-- 固定 Width（非 MinWidth）：避免長項撐寬導致展開 popup 對齊跑掉、偏移右側。同 LanguageCombo 慣例。 -->
                         <ComboBox x:Name="BackgroundMaterialCombo" Grid.Column="2"
                                   SelectionChanged="BackgroundMaterialCombo_SelectionChanged"
@@ -295,7 +310,7 @@
                             <TextBlock x:Uid="LanguageSetting_Description" services:Localized.Uid="LanguageSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                         </StackPanel>
 
-                        <!-- 項目由 code-behind 動態填入、不在 XAML 宣告（ComboBox i18n 慣例，同 MouseModeCombo）。 -->
+                        <!-- 項目由 code-behind 動態填入、不在 XAML 宣告（ComboBox i18n 慣例，同 CursorSpeedCombo）。 -->
                         <!-- 固定 Width（非 MinWidth）：避免長語言項撐寬導致展開 popup 對齊跑掉；超長項在收合框截斷（…），展開後完整顯示。 -->
                         <ComboBox x:Name="LanguageCombo" Grid.Column="2"
                                   SelectionChanged="LanguageCombo_SelectionChanged"

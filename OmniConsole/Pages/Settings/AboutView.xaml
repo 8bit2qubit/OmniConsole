@@ -104,9 +104,8 @@
                                         <Button x:Name="RefreshAboutButton" x:Uid="RefreshAboutButton" services:Localized.Uid="RefreshAboutButton"
                                                 Click="RefreshAboutButton_Click"
                                                 FontSize="14" Padding="24,8"/>
-                                        <!-- 進度環用 Opacity 切顯隱（保持 20×20 佔位）避免按鈕 row 重排造成寬度抖動 -->
                                         <ProgressRing x:Name="RefreshAboutProgressRing"
-                                                      IsActive="False" Opacity="0"
+                                                      IsActive="False" Visibility="Collapsed"
                                                       Width="20" Height="20"/>
                                     </StackPanel>
                                 </Grid>

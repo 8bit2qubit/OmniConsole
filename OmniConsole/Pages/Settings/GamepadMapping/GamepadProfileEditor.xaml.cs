@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
@@ -27,6 +28,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
         private readonly ResourceLoader _resourceLoader = new();
         private Dictionary<GamepadInputId, (ComboBox combo, Button? keyBtn)> _rows = new();
+        // 每個輸入位的「長按連發」ToggleButton；DPad 4 向共用主行那顆（key 統一記 DPadUp）
+        private Dictionary<GamepadInputId, ToggleButton> _repeatBtns = new();
         private GamepadProfile? _editing;
         private bool _isNew;
 
@@ -36,11 +39,14 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         /// <summary>使用者按底部 (X) 刪除確認後通知宿主關閉。</summary>
         public event EventHandler? Deleted;
 
+
         /// <summary>建構子：建立 row 對照表並對每個 ComboBox 填入合法動作選項。</summary>
         public GamepadProfileEditor()
         {
             InitializeComponent();
             BuildRows();
+            // 向左撞牆時把焦點送回左側導覽漢堡鈕
+            FocusNavHelper.WireBackToPaneOnLeftWall(RootScrollViewer);
         }
 
         /// <summary>建 _rows 對照表：14 個按鈕類列 + 2 個搖桿列 = 16 個（DPad 4 子列各帶 KeyBtn）；DPad 主行 ComboDPad 另外處理。</summary>
@@ -70,6 +76,38 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
             // DPad 主行 ComboBox 另外填預設組合選項
             PopulateDPadMainCombo();
+
+            // 行程優先權下拉選單：索引 0=標準、1=效能優先（對應 GamepadProcessPriority）
+            ProcessPriorityCombo.Items.Clear();
+            ProcessPriorityCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadProcessPriority_Standard") });
+            ProcessPriorityCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("GamepadProcessPriority_Performance") });
+
+            // 長按連發 ToggleButton 對照表：14 按鈕列 + 2 搖桿列 + DPad 主行（DPadUp 那顆套四向）
+            _repeatBtns = new Dictionary<GamepadInputId, ToggleButton>
+            {
+                [GamepadInputId.A] = RepeatBtnA,
+                [GamepadInputId.B] = RepeatBtnB,
+                [GamepadInputId.X] = RepeatBtnX,
+                [GamepadInputId.Y] = RepeatBtnY,
+                [GamepadInputId.LB] = RepeatBtnLB,
+                [GamepadInputId.RB] = RepeatBtnRB,
+                [GamepadInputId.LT] = RepeatBtnLT,
+                [GamepadInputId.RT] = RepeatBtnRT,
+                [GamepadInputId.LS] = RepeatBtnLS,
+                [GamepadInputId.RS] = RepeatBtnRS,
+                [GamepadInputId.LStick] = RepeatBtnLStick,
+                [GamepadInputId.RStick] = RepeatBtnRStick,
+                [GamepadInputId.DPadUp] = RepeatBtnDPad,
+            };
+        }
+
+        /// <summary>該 ActionOption 是否「會送鍵盤鍵」（連發才有意義）：KeyTap / KeyCombo / 方向類。</summary>
+        private static bool OptionSendsKey(ActionOption opt)
+        {
+            return opt == ActionOption.KeyTap || opt == ActionOption.KeyCombo
+                || opt == ActionOption.StickArrows || opt == ActionOption.StickWasd
+                || opt == ActionOption.DpadArrows || opt == ActionOption.DpadWasd
+                || opt == ActionOption.DpadNumpad || opt == ActionOption.DpadCustom;
         }
 
         /// <summary>對某輸入位填入合法動作選項（按鈕類含 DPad 4 子列；搖桿類獨立）。</summary>
@@ -153,26 +191,35 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             HeaderCard.LayoutUpdated += handler;
         }
 
-        /// <summary>載入或新建某 App 的 profile：既有 → 拷貝；新建 → 套 OmniNav 當底。</summary>
+        /// <summary>
+        /// 載入或新建某 App 的 profile：既有 → 拷貝；新建 → 依進階頁版面配置設定套用預設。
+        /// 命中內建導覽清單（瀏覽器 / 檔案總管 / Discord 等）→ 套內建導覽套組（DPad 連發），
+        /// 忠實反映內建當下行為，覆寫存 JSON 後不丟連發；其餘 → 套純版面樣板。
+        /// </summary>
         private void Load(AppId appId, string displayName)
         {
             var existing = GamepadProfileStore.Find(appId);
             _isNew = existing == null;
+            string layout = SettingsService.GetMouseModeLayout();
+            bool isBuiltInNavApp = GamepadBuiltInLayouts.IsBuiltInNavApp(appId);
             _editing = existing?.Clone() ?? new GamepadProfile
             {
-                AppId = new AppId { Kind = appId.Kind, Value = appId.Value, FullPath = appId.FullPath },
+                AppId = new AppId { Kind = appId.Kind, Value = appId.Value, FullPath = appId.FullPath, VersionAgnosticPath = appId.VersionAgnosticPath },
                 DisplayName = displayName,
-                Bindings = GamepadBuiltInLayouts.OmniNav()
+                Bindings = isBuiltInNavApp
+                    ? GamepadBuiltInLayouts.NavForLayout(layout)
+                    : GamepadBuiltInLayouts.ForLayout(layout)
             };
             if (!_isNew && !string.IsNullOrEmpty(displayName))
                 _editing.DisplayName = displayName;
 
-            // protocol / widget 帶進來的 path 寫入未繫結路徑的 _editing；已 path-bound profile 不被覆寫
+            // protocol / widget 帶進來的 path 與版本無關旗標寫入未繫結路徑的 _editing；已 path-bound profile 不被覆寫
             if (appId.Kind == IdKind.Process
                 && !string.IsNullOrEmpty(appId.FullPath)
                 && string.IsNullOrEmpty(_editing.AppId.FullPath))
             {
                 _editing.AppId.FullPath = appId.FullPath;
+                _editing.AppId.VersionAgnosticPath = appId.VersionAgnosticPath;
             }
 
             AppNameText.Text = !string.IsNullOrEmpty(_editing.DisplayName) ? _editing.DisplayName : (_editing.AppId.Value ?? string.Empty);
@@ -193,6 +240,9 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
             if (_rows.Count == 0) BuildRows();
 
+            // 檔案總管：十字鍵一律不帶值（含既有 profile 殘留值），清成 None
+            ClearExplorerDpadIfNeeded();
+
             // 載入既存 profile：依 model 偵測主行 DPad 模式，Custom 則自動展開
             _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
 
@@ -202,9 +252,48 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             _suppressBlockNativeGamepadInputToggled = true;
             BlockNativeGamepadInputSwitch.IsOn = _editing.BlockNativeGamepadInput;
             _suppressBlockNativeGamepadInputToggled = false;
+
+            // 同步行程優先權到下拉選單（_suppress 旗標讓 SelectionChanged handler 不寫回 _editing）
+            _suppressProcessPrioritySelection = true;
+            ProcessPriorityCombo.SelectedIndex = _editing.ProcessPriority == GamepadProcessPriority.Performance ? 1 : 0;
+            _suppressProcessPrioritySelection = false;
+
+            ApplyBuiltInAppControlLocks(appId);
+        }
+
+        /// <summary>目前編輯對象是不是檔案總管。</summary>
+        private bool IsEditingExplorer(AppId? appId)
+        {
+            return appId != null && GamepadBuiltInLayouts.IsFileExplorer(appId);
+        }
+
+        /// <summary>依編輯對象停用不適用的控制項（保留當下值）：阻擋雙重輸入對啟動器/導覽介面無效、十字鍵在檔案總管上行為異常。</summary>
+        private void ApplyBuiltInAppControlLocks(AppId appId)
+        {
+            // 阻擋雙重輸入：對啟動器/導覽介面（檔案總管、桌面 Steam、Epic、桌面 Playnite 等）無效，一律停用
+            bool blockInputEnabled = !GamepadBuiltInLayouts.IsBlockNativeInputIneffective(appId);
+            BlockNativeGamepadInputSwitch.IsEnabled = blockInputEnabled;
+
+            // 十字鍵：僅檔案總管行為異常需停用（桌面 Steam 保留導覽版含連發）
+            bool dpadEnabled = !IsEditingExplorer(appId);
+            ComboDPad.IsEnabled = dpadEnabled;
+            RepeatBtnDPad.IsEnabled = dpadEnabled;
+
+            // 十字鍵自訂模式的 4 子列（下拉選單 + 改鍵鈕）一併鎖住
+            foreach (var k in DpadKeys)
+                if (_rows.TryGetValue(k, out var pair))
+                {
+                    pair.combo.IsEnabled = dpadEnabled;
+                    if (pair.keyBtn != null) pair.keyBtn.IsEnabled = dpadEnabled;
+                }
+
+            // 設定頁首 → 阻擋雙重輸入開關 → 行程優先權的上下焦點鏈，開關停用時上下避開它
+            FocusNavHelper.ApplyDisablableMiddleChainFocusNav(HeaderCard, BlockNativeGamepadInputSwitch, ProcessPriorityCombo, blockInputEnabled);
+            ProcessPriorityCombo.XYFocusDown = ResetClassicButton;
         }
 
         private bool _suppressBlockNativeGamepadInputToggled = false;
+        private bool _suppressProcessPrioritySelection = false;
 
         /// <summary>BlockNativeGamepadInput ToggleSwitch 切換 → 寫回 _editing。</summary>
         private void BlockNativeGamepadInputSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -212,6 +301,15 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             if (_suppressBlockNativeGamepadInputToggled) return;
             if (_editing == null) return;
             _editing.BlockNativeGamepadInput = BlockNativeGamepadInputSwitch.IsOn;
+        }
+
+        /// <summary>行程優先權下拉選單切換 → 寫回 _editing（索引 1=效能優先，其餘標準）。</summary>
+        private void ProcessPriorityCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressProcessPrioritySelection) return;
+            if (_editing == null) return;
+            _editing.ProcessPriority = ProcessPriorityCombo.SelectedIndex == 1
+                ? GamepadProcessPriority.Performance : GamepadProcessPriority.Standard;
         }
 
         /// <summary>把 _editing 的所有 binding 同步回 UI（ComboBox 選項 + KeyBtn 顯示）。</summary>
@@ -271,6 +369,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             ComboDPad.SelectionChanged += ComboDPad_SelectionChanged;
 
             UpdateDPadExpandedVisibility(opt);
+            UpdateRepeatButton(GamepadInputId.DPadUp, opt);
         }
 
         /// <summary>主行為 Custom 時展開 4 子列，否則收起。</summary>
@@ -304,6 +403,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                 if (_rows.TryGetValue(k, out var pair))
                     SyncRowFromModel(k, pair.combo, pair.keyBtn);
             UpdateDPadExpandedVisibility(opt);
+            UpdateRepeatButton(GamepadInputId.DPadUp, opt);
         }
 
         /// <summary>把 4 個 DPad KeyId 各自寫入 expected[] 對應 VK 的 KeyTap 動作。</summary>
@@ -312,6 +412,14 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             if (_editing == null) return;
             for (int i = 0; i < 4; i++)
                 _editing.Bindings[DpadKeys[i]] = new GamepadAction { Kind = GamepadActionKind.KeyTap, Vk = vks[i] };
+        }
+
+        /// <summary>檔案總管：套用預設或重設後把十字鍵強制清為 None。</summary>
+        private void ClearExplorerDpadIfNeeded()
+        {
+            if (_editing == null || !IsEditingExplorer(_editing.AppId)) return;
+            ApplyDPadAllNone();
+            _dpadEditingCustom = false;
         }
 
         /// <summary>把 4 個 DPad KeyId 全部清為 None（自訂模式起點、主行選 None 時亦走此路徑）。</summary>
@@ -337,6 +445,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             combo.SelectionChanged += ActionCombo_SelectionChanged;
 
             UpdateKeyButton(id, opt, keyBtn);
+            UpdateRepeatButton(id, opt);
         }
 
         /// <summary>找出 ComboBox 內 Tag 為 opt 的 index；未找到回 -1。</summary>
@@ -362,6 +471,42 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             keyBtn.Content = baseText + ": " + keyText;
         }
 
+        /// <summary>
+        /// 更新某輸入位的連發 ToggleButton：opt 會送鍵盤鍵時顯示、勾選態同步 model；否則隱藏並清旗標。
+        /// DPad 走主行那顆（id 傳 DPadUp），狀態取 DPadUp 的 RepeatOnHold。
+        /// </summary>
+        private void UpdateRepeatButton(GamepadInputId id, ActionOption opt)
+        {
+            if (!_repeatBtns.TryGetValue(id, out var btn)) return;
+            bool show = OptionSendsKey(opt);
+            btn.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            if (!show) return;
+            btn.Click -= RepeatToggle_Click;
+            btn.IsChecked = _editing!.Get(id).RepeatOnHold;
+            btn.Click += RepeatToggle_Click;
+        }
+
+        /// <summary>連發 ToggleButton 切換 → 寫回 model。DPad（Tag=DPadUp）套用到 4 個十字鍵。</summary>
+        private void RepeatToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_editing == null) return;
+            if (sender is not ToggleButton btn || btn.Tag is not string tagStr) return;
+            if (!Enum.TryParse<GamepadInputId>(tagStr, out var id)) return;
+            bool on = btn.IsChecked == true;
+            if (id == GamepadInputId.DPadUp)
+            {
+                // DPad 主行連發套用到 4 向（各鍵 model 已由主行選擇建好，只改旗標）
+                foreach (var dk in DpadKeys)
+                    if (_editing.Bindings.TryGetValue(dk, out var da) && da != null) da.RepeatOnHold = on;
+            }
+            else
+            {
+                var a = _editing.Get(id);
+                a.RepeatOnHold = on;
+                _editing.Bindings[id] = a;
+            }
+        }
+
         // ── ComboBox 選項變動 → 寫回 model ───────────────────────────────────
 
         /// <summary>ComboBox 選項變動：依新選的 ActionOption 更新 _editing 並重新整理對應 KeyBtn。</summary>
@@ -376,11 +521,14 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
             var prev = _editing.Get(id);
             var newAction = OptionToAction(opt, prev);
+            // 保留原連發旗標（切換動作型別時不無故清掉使用者設的連發）
+            newAction.RepeatOnHold = prev.RepeatOnHold && OptionSendsKey(opt);
             _editing.Bindings[id] = newAction;
 
-            // 同步該列的 KeyBtn
+            // 同步該列的 KeyBtn 與連發鈕
             if (_rows.TryGetValue(id, out var pair))
                 UpdateKeyButton(id, opt, pair.keyBtn);
+            UpdateRepeatButton(id, opt);
         }
 
         // ── 改鍵 / 重設 / 從其他程式讀入 ────────────────────────────────────
@@ -418,7 +566,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
-                _editing.Bindings = GamepadBuiltInLayouts.OmniNav();
+                _editing.Bindings = BuiltInLayoutForCurrentApp("OmniNav");
+                ClearExplorerDpadIfNeeded();
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
@@ -438,11 +587,23 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             await ShowDialogAsync(dlg);
             if (dlg.Result)
             {
-                _editing.Bindings = GamepadBuiltInLayouts.Classic();
+                _editing.Bindings = BuiltInLayoutForCurrentApp("Classic");
+                ClearExplorerDpadIfNeeded();
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
             originBtn?.Focus(FocusStateHelper.Preferred);
+        }
+
+        /// <summary>
+        /// 取指定版面的內建 bindings：目前編輯的是內建導覽 app（瀏覽器 / 檔案總管 / Discord 等）時套導覽版
+        /// （DPad 連發），忠實反映內建行為；一般 app 套純版面（DPad 不連發）。
+        /// </summary>
+        private Dictionary<GamepadInputId, GamepadAction> BuiltInLayoutForCurrentApp(string layout)
+        {
+            return _editing != null && GamepadBuiltInLayouts.IsBuiltInNavApp(_editing.AppId)
+                ? GamepadBuiltInLayouts.NavForLayout(layout)
+                : GamepadBuiltInLayouts.ForLayout(layout);
         }
 
         /// <summary>「清除全部」：彈確認後把 16 個輸入位全設為 None。</summary>
@@ -488,6 +649,10 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                     var newBindings = new Dictionary<GamepadInputId, GamepadAction>();
                     foreach (var kv in src.Bindings)
                         newBindings[kv.Key] = kv.Value?.Clone() ?? new GamepadAction();
+                    // 檔案總管的十字鍵被鎖定：讀入時保留當下值，不讓來源覆蓋
+                    if (IsEditingExplorer(_editing.AppId))
+                        foreach (var k in DpadKeys)
+                            newBindings[k] = _editing.Get(k).Clone();
                     _editing.Bindings = newBindings;
                     _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                     RefreshAllRows();

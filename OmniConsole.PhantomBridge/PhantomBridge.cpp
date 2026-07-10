@@ -1,7 +1,10 @@
-﻿#include <Windows.h>
+#include <Windows.h>
+#include "Common.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
 {
+    ::SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+
     wchar_t dllPath[MAX_PATH];
     if (::GetModuleFileNameW(nullptr, dllPath, MAX_PATH) == 0) return 1;
 
@@ -10,7 +13,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
     *(lastSlash + 1) = L'\0';
     if (wcscat_s(dllPath, MAX_PATH, L"OmniConsole.PhantomBridge.dll") != 0) return 1;
 
-    HMODULE dll = ::LoadLibraryW(dllPath);
+    HMODULE dll = Common::Load(dllPath);
     if (dll == nullptr) return 2;
 
     using RunFn = int(WINAPI*)();

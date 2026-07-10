@@ -23,7 +23,7 @@ namespace OmniConsole.Pages
 
         // ── 對外屬性 ──────────────────────────────────────────────────────────
 
-        /// <summary>由 MainWindow 在 Activated 事件後注入，供 WS_EX_TOOLWINDOW 設定使用。</summary>
+        /// <summary>由 MainWindow 在 Activated 事件後注入，供輪詢前景判定與退場隱藏視窗使用。</summary>
         public IntPtr Hwnd { get; set; }
 
         /// <summary>
@@ -38,6 +38,10 @@ namespace OmniConsole.Pages
         private bool _hasLaunchedOnce = false;
         private readonly ResourceLoader _resourceLoader = new();
 
+        // 啟動流程世代序號：每輪啟動遞增，舊流程在各 await 檢查點發現序號不符即自行退場。
+        // 宣告為 static 讓序號跨頁面實例共用，頁面被 Frame 重建時舊實例的殘留流程一併失效。
+        private static int s_launchGeneration = 0;
+
         public LaunchView()
         {
             InitializeComponent();
@@ -49,10 +53,20 @@ namespace OmniConsole.Pages
         /// 自動啟動已設定的預設平台。
         /// 先預檢可用性，不可用則顯示錯誤訊息；啟動成功後隱藏視窗，
         /// 輪詢前景視窗確認平台已到前景後結束應用程式。
+        /// <paramref name="restart"/>=true 時取代仍在進行中的啟動流程重新開始（首頁按鈕重導等）；
+        /// false 時若已有流程進行中則不重複觸發。
+        /// 平台 bootstrap 已在前景出現過（平台確實在啟動中）時，restart 也不重跑，維持原輪等待。
         /// </summary>
-        public async Task LaunchDefaultPlatformAsync()
+        public async Task LaunchDefaultPlatformAsync(bool restart = false)
         {
-            if (_isLaunching) return;
+            if (_isLaunching)
+            {
+                if (!restart) return;
+
+                // 平台 bootstrap 已在前景出現過（如 Steam 啟動前更新）＝平台確實在啟動中：維持原輪等待、不重跑，保留寬限逾時；
+                // 重跑後新一輪看不到已過去的 bootstrap，會落回基本逾時提早放棄
+                if (WindowForegroundService.HasSeenPlatformBootstrap) return;
+            }
 
             // 首次執行或版本更新時不自動啟動，轉至設定介面讓使用者確認預設平台
             if (SettingsService.IsFirstRunOrUpdate())
@@ -61,6 +75,8 @@ namespace OmniConsole.Pages
                 return;
             }
 
+            // 遞增世代序號使進行中的舊流程失效；卡在前景輪詢的舊流程由 WaitForPlatformForegroundAsync 在新一輪進入時取消喚醒
+            int generation = ++s_launchGeneration;
             _isLaunching = true;
 
             try
@@ -75,7 +91,12 @@ namespace OmniConsole.Pages
                 string platformName = ProcessLauncherService.GetPlatformDisplayName(platform);
 
                 // 預檢平台可用性，不可用則直接顯示訊息，避免無謂的啟動嘗試與逾時等待
-                if (!await ProcessLauncherService.CheckPlatformAvailableAsync(platform))
+                bool available = await ProcessLauncherService.CheckPlatformAvailableAsync(platform);
+
+                // 已有較新的啟動流程接手：本輪退場、不再動 UI
+                if (generation != s_launchGeneration) return;
+
+                if (!available)
                 {
                     StatusText.Text = string.Format(_resourceLoader.Loc("PlatformNotAvailable"), platformName);
                     VisualStateManager.GoToState(this, "LaunchError", false);
@@ -94,16 +115,15 @@ namespace OmniConsole.Pages
 
                 _hasLaunchedOnce = true;
 
+                // 已有較新的啟動流程接手：本輪退場、不再動 UI
+                if (generation != s_launchGeneration) return;
+
                 if (success)
                 {
                     // 啟動成功：顯示狀態，等待目標平台進入前景後結束應用程式
                     // 給予足夠的逾時時間來確保平台順利到前景，避免 FSE 重啟首頁
                     // 結束後開設定或 Game Bar 重導都是冷啟動全新實例，避免視窗恢復問題
                     StatusText.Text = string.Format(_resourceLoader.Loc("LaunchSuccess"), platformName);
-
-                    // 立即從工作檢視和工作列隱藏
-                    int exStyle = WindowForegroundService.GetExStyle(Hwnd);
-                    WindowForegroundService.SetExStyle(Hwnd, exStyle | WindowForegroundService.WS_EX_TOOLWINDOW);
 
                     // [Windows Bug] 部分應用程式在 FSE 中會被最大化並搶走前景焦點，
                     // 在輪詢前先終止，避免干擾前景判定。
@@ -118,6 +138,9 @@ namespace OmniConsole.Pages
                         platform,
                         () => VisualStateManager.GoToState(this, "LaunchingSlow", false));
 
+                    // 已有較新的啟動流程接手：本輪退場、不再動 UI 也不退出應用程式
+                    if (generation != s_launchGeneration) return;
+
                     if (platformToForeground)
                     {
                         // FSE 環境下啟動 PhantomKey 手把輸入服務（常駐，不再檢查使用者開關）
@@ -130,8 +153,7 @@ namespace OmniConsole.Pages
                         return;
                     }
 
-                    // 若逾時仍未取得前景，還原視窗狀態並進入失敗流程
-                    WindowForegroundService.SetExStyle(Hwnd, exStyle);
+                    // 逾時仍未取得前景，進入失敗流程
                     success = false;
                     isTimeout = true;
                 }
@@ -145,19 +167,26 @@ namespace OmniConsole.Pages
                     OpenSettingsButton.Focus(FocusStateHelper.Preferred);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // 前景輪詢被較新一輪啟動流程取消：不動 UI，交由新流程接手
+            }
             finally
             {
-                _isLaunching = false;
+                // 僅當本輪仍是最新世代才歸還旗標，避免被取代的舊流程清掉新流程的進行中狀態
+                if (generation == s_launchGeneration)
+                    _isLaunching = false;
             }
         }
 
         /// <summary>
         /// 從 FSE/Game Bar 重導時呼叫，重設啟動狀態並重新啟動平台。
+        /// 前一輪啟動流程仍在等待平台就位時，取消該輪重跑。
         /// </summary>
         public async void Reactivate()
         {
             _hasLaunchedOnce = false;
-            await LaunchDefaultPlatformAsync();
+            await LaunchDefaultPlatformAsync(restart: true);
         }
 
         /// <summary>

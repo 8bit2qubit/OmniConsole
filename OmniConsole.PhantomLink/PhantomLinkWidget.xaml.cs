@@ -21,9 +21,9 @@ namespace OmniConsole.PhantomLink
         private bool _builtInMapping;
 
         // 前景程式狀態：顯示文字 + 「自訂此 App」按鈕傳給 PhantomBridge.OpenProfileEditor 的 appId / name
-        private string _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
-        private string _foregroundAppName;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
-        private string _foregroundFullPath;  // 前景 exe 完整路徑（Win32 桌面 process 才有，packaged 為空字串）；用於建 profile 時帶入 AppId.FullPath
+        private string? _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
+        private string _foregroundAppName = string.Empty;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
+        private string _foregroundFullPath = string.Empty;  // 前景 exe 完整路徑（Win32 桌面 process 才有，packaged 為空字串）；用於建 profile 時帶入 AppId.FullPath
 
         // 焦點從外部進入後，自動從哨兵前進到第一個真 section 的去重旗標（GettingFocus 進入時連發數次，只前進一次）
         private bool _advancePending;
@@ -220,7 +220,7 @@ namespace OmniConsole.PhantomLink
         /// <summary>
         /// 走到 RootPanel 的直屬子元素，作為「section」代表。
         /// </summary>
-        private FrameworkElement FindSection(DependencyObject node)
+        private FrameworkElement? FindSection(DependencyObject? node)
         {
             while (node != null)
             {
@@ -235,7 +235,7 @@ namespace OmniConsole.PhantomLink
         /// Section 內挑焦點目標：checked ToggleButton > 第一顆 ToggleButton > Slider > ComboBox > Button。
         /// Button 回退 供 Quick Actions 等只含一次性動作按鈕的 section 使用（無 checked 狀態）。
         /// </summary>
-        private Control PickFocusTarget(FrameworkElement section)
+        private Control? PickFocusTarget(FrameworkElement? section)
         {
             if (section == null) return null;
             var toggles = FindDescendants<ToggleButton>(section).Where(t => t.IsEnabled).ToList();
@@ -296,11 +296,10 @@ namespace OmniConsole.PhantomLink
                 SteamInGameOverlayOnBtn.IsChecked = overlay;
                 SteamInGameOverlayOffBtn.IsChecked = !overlay;
 
-                // Mouse Mode
+                // Mouse Mode（Off / On 兩態）
                 string mode = PhantomKeyStore.GetMouseMode();
                 ModeOffBtn.IsChecked = mode == PhantomKeyStore.MouseModeOff;
-                ModeAutoBtn.IsChecked = mode == PhantomKeyStore.MouseModeAuto;
-                ModeForceOnBtn.IsChecked = mode == PhantomKeyStore.MouseModeForceOn;
+                ModeOnBtn.IsChecked = mode != PhantomKeyStore.MouseModeOff;
 
                 // Layout
                 string layout = PhantomKeyStore.GetMouseModeLayout();
@@ -339,10 +338,11 @@ namespace OmniConsole.PhantomLink
             string aumid = string.Empty;
             string displayName = string.Empty;
             bool isElevated = false;
+            bool isBigPicture = false;
             try
             {
                 var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated);
+                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture);
             }
             catch (Exception ex)
             {
@@ -380,10 +380,10 @@ namespace OmniConsole.PhantomLink
 
             bool isUwp = !string.IsNullOrEmpty(aumid);
 
-            // 黑名單比對：process 名單命中或 AUMID 內含任一 PFN 子字串即擋
+            // 黑名單比對：process 名或 AUMID 內含任一 PFN 子字串即擋
             bool blocked = false;
             if (!string.IsNullOrEmpty(proc))
-                blocked = IsBlacklistedProcess(proc);
+                blocked = ShouldBlockCustomizeProcess(proc, isBigPicture);
             if (!blocked && isUwp)
                 blocked = IsBlacklistedAumid(aumid);
 
@@ -403,6 +403,10 @@ namespace OmniConsole.PhantomLink
             CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !isElevated;
             CustomizeAppNoteText.Visibility =
                 (isElevated && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
+
+            // 前景為管理員身份 App 時停用工作檢視與 Steam 內嵌介面按鈕
+            TaskViewBtn.IsEnabled = !isElevated;
+            TriggerSteamInGameOverlayBtn.IsEnabled = !isElevated;
         }
 
         /// <summary>
@@ -440,8 +444,7 @@ namespace OmniConsole.PhantomLink
             bool mouseOn = !_builtInMapping && mode != PhantomKeyStore.MouseModeOff;
 
             ModeOffBtn.IsEnabled = !_builtInMapping;
-            ModeAutoBtn.IsEnabled = !_builtInMapping;
-            ModeForceOnBtn.IsEnabled = !_builtInMapping;
+            ModeOnBtn.IsEnabled = !_builtInMapping;
 
             LayoutNavBtn.IsEnabled = mouseOn;
             LayoutClassicBtn.IsEnabled = mouseOn;
@@ -531,15 +534,14 @@ namespace OmniConsole.PhantomLink
             if (_loading) return;
             if (!(sender is ToggleButton btn)) return;
 
-            string mode = btn.Tag as string ?? PhantomKeyStore.MouseModeAuto;
+            string mode = btn.Tag as string ?? PhantomKeyStore.MouseModeOn;
 
-            // 三顆 ToggleButton 互斥：選中一顆時取消其餘兩顆
+            // Off / On 兩顆 ToggleButton 互斥：選中一顆時取消另一顆
             _loading = true;
             try
             {
                 ModeOffBtn.IsChecked = mode == PhantomKeyStore.MouseModeOff;
-                ModeAutoBtn.IsChecked = mode == PhantomKeyStore.MouseModeAuto;
-                ModeForceOnBtn.IsChecked = mode == PhantomKeyStore.MouseModeForceOn;
+                ModeOnBtn.IsChecked = mode != PhantomKeyStore.MouseModeOff;
             }
             finally { _loading = false; }
 

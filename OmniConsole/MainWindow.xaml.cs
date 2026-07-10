@@ -79,6 +79,9 @@ namespace OmniConsole
                 rootElement.Loaded += (_, _) =>
                 {
                     _visualTreeReady.TrySetResult();
+                    // 深連結直開手把映射編輯器時，編輯器已自行於頁首卡片點亮白框，略過通用開場點亮。
+                    if (_settingsHostView?.IsGamepadMappingEditorVisible == true)
+                        return;
                     // FSE 開場點亮焦點白框
                     var scope = RootContentFrame.Content is OmniConsole.Pages.LaunchView
                         ? (DependencyObject)_launchView!
@@ -148,7 +151,7 @@ namespace OmniConsole
             // 僅在視窗取得前景焦點時啟動，且防止重入
             if (args.WindowActivationState == WindowActivationState.Deactivated) return;
 
-            // 注入 HWND（LaunchView 供 WS_EX_TOOLWINDOW 設定，SettingsHostView 供 ShowWindow 退出隱藏使用）。
+            // 把主視窗 HWND 注入給 LaunchView 與 SettingsHostView，供其前景與視窗操作使用。
             // 已建立的 Page 立即注入；尚未導覽過的 Page 由 NavigateRoot 在其首次導覽時補注入。
             _hwnd = WindowNative.GetWindowHandle(this);
             if (_launchView != null) _launchView.Hwnd = _hwnd;

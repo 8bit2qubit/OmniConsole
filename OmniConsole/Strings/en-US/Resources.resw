@@ -231,16 +231,16 @@
   <data name="AdvancedDescription.Text" xml:space="preserve">
     <value>Fine-tune system behavior and integration options.</value>
   </data>
-  <data name="AdvancedSection_GamepadInput.Text" xml:space="preserve">
-    <value>Gamepad Input</value>
+  <data name="AdvancedSection_Steam.Text" xml:space="preserve">
+    <value>Steam</value>
+  </data>
+  <data name="AdvancedSection_Nekomata.Text" xml:space="preserve">
+    <value>Nekomata</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>Gamepad Input Service</value>
+    <value>Press &#xEECA; to Open Steam’s Menus in Steam Big Picture Mode</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>Press &#xEECA; to open Steam’s menus in Steam Big Picture mode.</value>
-  </data>
-  <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>Short press &#xEECA; to open Steam Menu, long press &#xEECA; to open Quick Access Menu.</value>
   </data>
   <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
@@ -256,37 +256,28 @@
     <value>Long press &#xEDE3; to close the overlay and prevent modifier keys (e.g., Shift, Ctrl, or Alt) from getting stuck in-game.
 Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; In Game &gt; Overlay shortcut key(s).</value>
   </data>
-  <data name="MouseModeSetting_Title.Text" xml:space="preserve">
-    <value>Gamepad Mouse Mode</value>
+  <data name="GamepadMappingModeSetting_Title.Text" xml:space="preserve">
+    <value>Nekomata Mode</value>
   </data>
-  <data name="MouseModeSetting_Description.Text" xml:space="preserve">
-    <value>Off: disabled. Auto: apps listed below. Force On: all apps.</value>
+  <data name="GamepadMappingModeSetting_Description.Text" xml:space="preserve">
+    <value>Let Nekomata turn your gamepad into keyboard and mouse, and tailor per-app settings on the “Nekomata” page.</value>
   </data>
-  <data name="MouseModeItem_Off" xml:space="preserve">
-    <value>Off</value>
+  <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
+    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, Steam, and Discord.</value>
   </data>
-  <data name="MouseModeItem_Auto" xml:space="preserve">
-    <value>Auto</value>
-  </data>
-  <data name="MouseModeItem_ForceOn" xml:space="preserve">
-    <value>Force On</value>
-  </data>
-  <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>When set to Auto, supports Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, Steam, and Discord.</value>
-  </data>
-  <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
+  <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled — device has built-in gamepad mapping.</value>
   </data>
-  <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
-    <value>Controller Layout</value>
+  <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
+    <value>Controller Layout Preset</value>
   </data>
-  <data name="MouseModeLayoutSetting_Description.Text" xml:space="preserve">
-    <value>OmniNav: left stick moves the cursor. Classic: right stick moves the cursor.</value>
+  <data name="ControllerLayoutPresetSetting_Description.Text" xml:space="preserve">
+    <value>Set the default layout for built-in mapping and new profiles. OmniNav: left stick moves the cursor; Classic: right stick moves the cursor.</value>
   </data>
-  <data name="MouseModeLayoutSwitch.OffContent" xml:space="preserve">
+  <data name="ControllerLayoutPresetItem_OmniNav" xml:space="preserve">
     <value>OmniNav</value>
   </data>
-  <data name="MouseModeLayoutSwitch.OnContent" xml:space="preserve">
+  <data name="ControllerLayoutPresetItem_Classic" xml:space="preserve">
     <value>Classic</value>
   </data>
   <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
@@ -885,7 +876,22 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Block this app from receiving native XInput and DirectInput signals to prevent interference with the simulated keyboard and mouse.</value>
   </data>
   <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
-    <value>Restart the app to apply changes. Don't turn this on for games with anti-cheat protection (e.g., EAC, BattlEye, or VAC), or you may trigger a violation.</value>
+    <value>Restart the app to apply changes. Do not turn this on for games with anti-cheat protection (e.g., EAC, BattlEye, or VAC); otherwise you may trigger a violation.</value>
+  </data>
+  <data name="GamepadProfile_MappingServicePriority_Title.Text" xml:space="preserve">
+    <value>Nekomata Boost</value>
+  </data>
+  <data name="GamepadProfile_MappingServicePriority_Description.Text" xml:space="preserve">
+    <value>Raise the priority of the mapping service to reduce cursor stutter while running demanding games or apps.</value>
+  </data>
+  <data name="GamepadProcessPriority_Standard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="GamepadProcessPriority_Performance" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="GamepadRepeatToggle.Content" xml:space="preserve">
+    <value>Repeat</value>
   </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
     <value>Clear All</value>

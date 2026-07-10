@@ -231,16 +231,16 @@
   <data name="AdvancedDescription.Text" xml:space="preserve">
     <value>微調系統行為與整合選項。</value>
   </data>
-  <data name="AdvancedSection_GamepadInput.Text" xml:space="preserve">
-    <value>手把輸入</value>
+  <data name="AdvancedSection_Steam.Text" xml:space="preserve">
+    <value>Steam</value>
+  </data>
+  <data name="AdvancedSection_Nekomata.Text" xml:space="preserve">
+    <value>貓又</value>
   </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
-    <value>手把輸入服務</value>
+    <value>在 Steam Big Picture 模式中按 &#xEECA; 開啟 Steam 選單</value>
   </data>
   <data name="PhantomKeySetting_Description.Text" xml:space="preserve">
-    <value>在 Steam Big Picture 模式中按 &#xEECA; 開啟 Steam 選單。</value>
-  </data>
-  <data name="PhantomKeySetting_Note.Text" xml:space="preserve">
     <value>短按 &#xEECA; 開啟 Steam 選單，長按 &#xEECA; 開啟快速存取選單。</value>
   </data>
   <data name="SteamInGameOverlaySetting_Title.Text" xml:space="preserve">
@@ -256,37 +256,28 @@
     <value>長按 &#xEDE3; 關閉內嵌介面，避免修飾鍵（如 Shift、Ctrl、Alt）卡住遊戲。
 或至 Steam 設定 &gt; 遊戲中 &gt; 內嵌介面快捷鍵，改為非修飾鍵。</value>
   </data>
-  <data name="MouseModeSetting_Title.Text" xml:space="preserve">
-    <value>手把滑鼠模式</value>
+  <data name="GamepadMappingModeSetting_Title.Text" xml:space="preserve">
+    <value>貓又模式</value>
   </data>
-  <data name="MouseModeSetting_Description.Text" xml:space="preserve">
-    <value>關閉：停用。自動：見下方支援清單。強制開啟：所有應用程式。</value>
+  <data name="GamepadMappingModeSetting_Description.Text" xml:space="preserve">
+    <value>讓貓又將手把化作鍵鼠，並在「貓又」頁為各程式量身調校。</value>
   </data>
-  <data name="MouseModeItem_Off" xml:space="preserve">
-    <value>關閉</value>
+  <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
+    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、檔案總管、Steam 和 Discord。</value>
   </data>
-  <data name="MouseModeItem_Auto" xml:space="preserve">
-    <value>自動</value>
-  </data>
-  <data name="MouseModeItem_ForceOn" xml:space="preserve">
-    <value>強制開啟</value>
-  </data>
-  <data name="MouseModeSetting_Note.Text" xml:space="preserve">
-    <value>設為自動時，支援 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、檔案總管、Steam 和 Discord。</value>
-  </data>
-  <data name="MouseModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
+  <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已停用 — 裝置具備內建手把映射。</value>
   </data>
-  <data name="MouseModeLayoutSetting_Title.Text" xml:space="preserve">
-    <value>控制器版面配置</value>
+  <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
+    <value>控制器預設版面</value>
   </data>
-  <data name="MouseModeLayoutSetting_Description.Text" xml:space="preserve">
-    <value>OmniNav：左搖桿控制游標。經典：右搖桿控制游標。</value>
+  <data name="ControllerLayoutPresetSetting_Description.Text" xml:space="preserve">
+    <value>套用於內建映射及新增設定檔的預設版面。OmniNav：左搖桿控制游標；經典：右搖桿控制游標。</value>
   </data>
-  <data name="MouseModeLayoutSwitch.OffContent" xml:space="preserve">
+  <data name="ControllerLayoutPresetItem_OmniNav" xml:space="preserve">
     <value>OmniNav</value>
   </data>
-  <data name="MouseModeLayoutSwitch.OnContent" xml:space="preserve">
+  <data name="ControllerLayoutPresetItem_Classic" xml:space="preserve">
     <value>經典</value>
   </data>
   <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
@@ -886,6 +877,21 @@
   </data>
   <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
     <value>需重啟程式生效。請勿對含反作弊的遊戲（例如 EAC、BattlEye、VAC）啟用，否則可能觸發違規。</value>
+  </data>
+  <data name="GamepadProfile_MappingServicePriority_Title.Text" xml:space="preserve">
+    <value>貓又衝刺</value>
+  </data>
+  <data name="GamepadProfile_MappingServicePriority_Description.Text" xml:space="preserve">
+    <value>提高映射服務的優先順序，減少執行重度遊戲或程式時的游標卡頓。</value>
+  </data>
+  <data name="GamepadProcessPriority_Standard" xml:space="preserve">
+    <value>標準</value>
+  </data>
+  <data name="GamepadProcessPriority_Performance" xml:space="preserve">
+    <value>效能優先</value>
+  </data>
+  <data name="GamepadRepeatToggle.Content" xml:space="preserve">
+    <value>連發</value>
   </data>
   <data name="GamepadMappingClearAllButton.Content" xml:space="preserve">
     <value>清除全部</value>

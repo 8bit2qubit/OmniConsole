@@ -19,13 +19,12 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,24,0,24"
-                    XYFocusLeftNavigationStrategy="NavigationDirectionDistance">
+    <ScrollViewer x:Name="RootScrollViewer" Padding="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,24,0,24">
 
-            <!-- 頁首卡片：App 名稱 + appId 副文字 + 繫結路徑（僅 process 類顯示），可被手把焦點落 -->
-            <ContentControl x:Name="HeaderCard" Style="{StaticResource InfoCardStyle}" HorizontalAlignment="Stretch" MinWidth="700"
-                            XYFocusDown="{x:Bind BlockNativeGamepadInputSwitch}">
+            <!-- 頁首卡片：App 名稱 + appId 副文字 + 繫結路徑（僅 process 類顯示），可被手把焦點落。
+                 XYFocusDown 由 code-behind 設定：阻擋雙重輸入開關停用時避開它。 -->
+            <ContentControl x:Name="HeaderCard" Style="{StaticResource InfoCardStyle}" HorizontalAlignment="Stretch" MinWidth="700">
                 <StackPanel Padding="16" Spacing="4">
                     <TextBlock x:Name="AppNameText" FontSize="28" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
                     <TextBlock x:Name="AppIdText"   FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
@@ -67,8 +66,26 @@
                         <ToggleSwitch x:Name="BlockNativeGamepadInputSwitch"
                                       Toggled="BlockNativeGamepadInputSwitch_Toggled"
                                       FlowDirection="RightToLeft"
-                                      XYFocusDown="{x:Bind ResetClassicButton}"
                                       Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0"/>
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 行程優先權下拉 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xEC4A;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="GamepadProfile_MappingServicePriority_Title" services:Localized.Uid="GamepadProfile_MappingServicePriority_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap"/>
+                            <TextBlock x:Uid="GamepadProfile_MappingServicePriority_Description" services:Localized.Uid="GamepadProfile_MappingServicePriority_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <ComboBox x:Name="ProcessPriorityCombo" Grid.Column="2" VerticalAlignment="Center" MinWidth="160"
+                                  SelectionChanged="ProcessPriorityCombo_SelectionChanged"/>
                     </Grid>
 
                     <!-- 分隔線 -->
@@ -89,10 +106,10 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="CopyFromButton"     Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingCopyFromButton" services:Localized.Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="CopyFromButton_Click"     XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
-                            <Button x:Name="ClearAllButton"     Grid.Column="1" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingClearAllButton" services:Localized.Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="ClearAllButton_Click"     XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
-                            <Button x:Name="ResetButton"        Grid.Column="2" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetButton" services:Localized.Uid="GamepadMappingResetButton"        FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"        Click="ResetButton_Click"        XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}"/>
-                            <Button x:Name="ResetClassicButton" Grid.Column="3" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetClassicButton" services:Localized.Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}" Click="ResetClassicButton_Click" XYFocusUp="{x:Bind BlockNativeGamepadInputSwitch}" XYFocusLeft="{x:Bind ResetButton}"/>
+                            <Button x:Name="CopyFromButton"     Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingCopyFromButton" services:Localized.Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="CopyFromButton_Click"     XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
+                            <Button x:Name="ClearAllButton"     Grid.Column="1" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingClearAllButton" services:Localized.Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="ClearAllButton_Click"     XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
+                            <Button x:Name="ResetButton"        Grid.Column="2" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetButton" services:Localized.Uid="GamepadMappingResetButton"        FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"        Click="ResetButton_Click"        XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
+                            <Button x:Name="ResetClassicButton" Grid.Column="3" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetClassicButton" services:Localized.Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}" Click="ResetClassicButton_Click" XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
                         </Grid>
                     </Grid>
                 </StackPanel>
@@ -117,8 +134,11 @@
                             <FontIcon Glyph="&#xF093;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_A" services:Localized.Uid="GamepadInput_A" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboA" Grid.Column="1" HorizontalAlignment="Stretch" Tag="A" SelectionChanged="ActionCombo_SelectionChanged" XYFocusDown="{x:Bind ComboB}"/>
-                        <Button    x:Name="KeyBtnA" Grid.Column="2" Tag="A" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboA}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboA" Grid.Column="1" HorizontalAlignment="Stretch" Tag="A" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ClearAllButton}"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnA" Tag="A" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnA" Tag="A" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -130,8 +150,11 @@
                             <FontIcon Glyph="&#xF094;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_B" services:Localized.Uid="GamepadInput_B" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="B" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboA}" XYFocusDown="{x:Bind ComboX}"/>
-                        <Button    x:Name="KeyBtnB" Grid.Column="2" Tag="B" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboB}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="B" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnB" Tag="B" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnB" Tag="B" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -143,8 +166,11 @@
                             <FontIcon Glyph="&#xF096;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_X" services:Localized.Uid="GamepadInput_X" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboX" Grid.Column="1" HorizontalAlignment="Stretch" Tag="X" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboB}" XYFocusDown="{x:Bind ComboY}"/>
-                        <Button    x:Name="KeyBtnX" Grid.Column="2" Tag="X" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboX}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboX" Grid.Column="1" HorizontalAlignment="Stretch" Tag="X" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnX" Tag="X" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnX" Tag="X" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -156,8 +182,11 @@
                             <FontIcon Glyph="&#xF095;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_Y" services:Localized.Uid="GamepadInput_Y" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboY" Grid.Column="1" HorizontalAlignment="Stretch" Tag="Y" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboX}" XYFocusDown="{x:Bind ComboLB}"/>
-                        <Button    x:Name="KeyBtnY" Grid.Column="2" Tag="Y" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboY}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboY" Grid.Column="1" HorizontalAlignment="Stretch" Tag="Y" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnY" Tag="Y" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnY" Tag="Y" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -181,8 +210,11 @@
                             <FontIcon Glyph="&#xF10C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_LB" services:Localized.Uid="GamepadInput_LB" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboLB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LB" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboY}" XYFocusDown="{x:Bind ComboRB}"/>
-                        <Button    x:Name="KeyBtnLB" Grid.Column="2" Tag="LB" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboLB}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboLB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LB" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnLB" Tag="LB" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnLB" Tag="LB" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -194,8 +226,11 @@
                             <FontIcon Glyph="&#xF10D;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_RB" services:Localized.Uid="GamepadInput_RB" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboRB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RB" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboLB}" XYFocusDown="{x:Bind ComboLT}"/>
-                        <Button    x:Name="KeyBtnRB" Grid.Column="2" Tag="RB" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboRB}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboRB" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RB" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnRB" Tag="RB" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnRB" Tag="RB" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -207,8 +242,11 @@
                             <FontIcon Glyph="&#xF10A;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_LT" services:Localized.Uid="GamepadInput_LT" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboLT" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LT" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboRB}" XYFocusDown="{x:Bind ComboRT}"/>
-                        <Button    x:Name="KeyBtnLT" Grid.Column="2" Tag="LT" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboLT}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboLT" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LT" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnLT" Tag="LT" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnLT" Tag="LT" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -220,8 +258,11 @@
                             <FontIcon Glyph="&#xF10B;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_RT" services:Localized.Uid="GamepadInput_RT" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboRT" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RT" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboLT}" XYFocusDown="{x:Bind ComboLS}"/>
-                        <Button    x:Name="KeyBtnRT" Grid.Column="2" Tag="RT" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboRT}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboRT" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RT" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnRT" Tag="RT" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnRT" Tag="RT" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -245,8 +286,11 @@
                             <FontIcon Glyph="&#xF108;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_LS" services:Localized.Uid="GamepadInput_LS" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboLS" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LS" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboRT}" XYFocusDown="{x:Bind ComboRS}"/>
-                        <Button    x:Name="KeyBtnLS" Grid.Column="2" Tag="LS" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboLS}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboLS" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LS" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnLS" Tag="LS" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnLS" Tag="LS" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -258,8 +302,11 @@
                             <FontIcon Glyph="&#xF109;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_RS" services:Localized.Uid="GamepadInput_RS" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboRS" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RS" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboLS}" XYFocusDown="{x:Bind ComboLStick}"/>
-                        <Button    x:Name="KeyBtnRS" Grid.Column="2" Tag="RS" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboRS}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboRS" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RS" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button    x:Name="KeyBtnRS" Tag="RS" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                            <ToggleButton x:Name="RepeatBtnRS" Tag="RS" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -277,35 +324,41 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="160"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xF108;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_LStick" services:Localized.Uid="GamepadInput_LStick" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboLStick" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LStick" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboRS}" XYFocusDown="{x:Bind ComboRStick}"/>
+                        <ComboBox  x:Name="ComboLStick" Grid.Column="1" HorizontalAlignment="Stretch" Tag="LStick" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <ToggleButton x:Name="RepeatBtnLStick" Grid.Column="2" Tag="LStick" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="160"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xF109;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_RStick" services:Localized.Uid="GamepadInput_RStick" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboRStick" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RStick" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboLStick}" XYFocusDown="{x:Bind ComboDPad}"/>
+                        <ComboBox  x:Name="ComboRStick" Grid.Column="1" HorizontalAlignment="Stretch" Tag="RStick" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <ToggleButton x:Name="RepeatBtnRStick" Grid.Column="2" Tag="RStick" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
                     </Grid>
                     <!-- DPad 主行：選 Arrows / WASD / Numpad / Custom / None -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="160"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                             <FontIcon Glyph="&#xF10E;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_DPad" services:Localized.Uid="GamepadInput_DPad" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboDPad" Grid.Column="1" HorizontalAlignment="Stretch" SelectionChanged="ComboDPad_SelectionChanged" XYFocusUp="{x:Bind ComboRStick}"/>
+                        <ComboBox  x:Name="ComboDPad" Grid.Column="1" HorizontalAlignment="Stretch" SelectionChanged="ComboDPad_SelectionChanged"/>
+                        <ToggleButton x:Name="RepeatBtnDPad" Grid.Column="2" Tag="DPadUp" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>
                     </Grid>
 
                     <!-- DPad 自訂模式 4 子列（Visibility 由 code-behind 控制） -->
@@ -319,8 +372,8 @@
                             <FontIcon Glyph="&#xE0E4;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18"/>
                             <TextBlock x:Uid="GamepadInput_DPadUp" services:Localized.Uid="GamepadInput_DPadUp" VerticalAlignment="Center" FontSize="14"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboDPadUp" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadUp" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboDPad}" XYFocusDown="{x:Bind ComboDPadDown}"/>
-                        <Button    x:Name="KeyBtnDPadUp" Grid.Column="2" Tag="DPadUp" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboDPadUp}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboDPadUp" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadUp" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <Button    x:Name="KeyBtnDPadUp" Grid.Column="2" Tag="DPadUp" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
                     </Grid>
                     <Grid x:Name="DPadCustomRowDown" Visibility="Collapsed" Margin="24,0,0,0">
                         <Grid.ColumnDefinitions>
@@ -332,8 +385,8 @@
                             <FontIcon Glyph="&#xE0E5;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18"/>
                             <TextBlock x:Uid="GamepadInput_DPadDown" services:Localized.Uid="GamepadInput_DPadDown" VerticalAlignment="Center" FontSize="14"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboDPadDown" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadDown" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboDPadUp}" XYFocusDown="{x:Bind ComboDPadLeft}"/>
-                        <Button    x:Name="KeyBtnDPadDown" Grid.Column="2" Tag="DPadDown" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboDPadDown}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboDPadDown" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadDown" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <Button    x:Name="KeyBtnDPadDown" Grid.Column="2" Tag="DPadDown" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
                     </Grid>
                     <Grid x:Name="DPadCustomRowLeft" Visibility="Collapsed" Margin="24,0,0,0">
                         <Grid.ColumnDefinitions>
@@ -345,8 +398,8 @@
                             <FontIcon Glyph="&#xE0E2;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18"/>
                             <TextBlock x:Uid="GamepadInput_DPadLeft" services:Localized.Uid="GamepadInput_DPadLeft" VerticalAlignment="Center" FontSize="14"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboDPadLeft" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadLeft" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboDPadDown}" XYFocusDown="{x:Bind ComboDPadRight}"/>
-                        <Button    x:Name="KeyBtnDPadLeft" Grid.Column="2" Tag="DPadLeft" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboDPadLeft}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboDPadLeft" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadLeft" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <Button    x:Name="KeyBtnDPadLeft" Grid.Column="2" Tag="DPadLeft" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
                     </Grid>
                     <Grid x:Name="DPadCustomRowRight" Visibility="Collapsed" Margin="24,0,0,0">
                         <Grid.ColumnDefinitions>
@@ -358,8 +411,8 @@
                             <FontIcon Glyph="&#xE0E3;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18"/>
                             <TextBlock x:Uid="GamepadInput_DPadRight" services:Localized.Uid="GamepadInput_DPadRight" VerticalAlignment="Center" FontSize="14"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboDPadRight" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadRight" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ComboDPadLeft}"/>
-                        <Button    x:Name="KeyBtnDPadRight" Grid.Column="2" Tag="DPadRight" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed" XYFocusLeft="{x:Bind ComboDPadRight}" XYFocusUpNavigationStrategy="Projection" XYFocusDownNavigationStrategy="Projection"/>
+                        <ComboBox  x:Name="ComboDPadRight" Grid.Column="1" HorizontalAlignment="Stretch" Tag="DPadRight" SelectionChanged="ActionCombo_SelectionChanged"/>
+                        <Button    x:Name="KeyBtnDPadRight" Grid.Column="2" Tag="DPadRight" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
                     </Grid>
                 </StackPanel>
             </Border>

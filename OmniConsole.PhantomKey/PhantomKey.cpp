@@ -1,8 +1,10 @@
-﻿#include <shlobj.h>
-#include <stdio.h>
+#include <shlobj.h>
+#include "..\OmniConsole.PhantomBridge\Common.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
 {
+    ::SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+
     wchar_t localAppData[MAX_PATH];
     if (FAILED(::SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, localAppData))) {
         return 1;
@@ -15,7 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
         localAppData);
     if (written < 0) return 1;
 
-    HMODULE dll = ::LoadLibraryW(dllPath);
+    HMODULE dll = Common::Load(dllPath);
     if (dll == nullptr) return 2;
 
     using RunFn = int(WINAPI*)();

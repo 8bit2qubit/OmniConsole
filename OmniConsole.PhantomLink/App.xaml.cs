@@ -5,18 +5,19 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using WinRT;
 
 namespace OmniConsole.PhantomLink
 {
     sealed partial class App : Application
     {
-        private XboxGameBarWidget _phantomLinkWidget;
+        private XboxGameBarWidget? _phantomLinkWidget;
 
         /// <summary>
         /// 目前 Widget 實例（供 PhantomLinkWidget 做主題同步；
         /// Page 預設不跟隨 XboxGameBarWidget.RequestedTheme，須手動橋接）。
         /// </summary>
-        public static XboxGameBarWidget CurrentWidget { get; private set; }
+        public static XboxGameBarWidget? CurrentWidget { get; private set; }
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
 
@@ -42,13 +43,14 @@ namespace OmniConsole.PhantomLink
         /// </summary>
         protected override void OnActivated(IActivatedEventArgs args)
         {
-            XboxGameBarWidgetActivatedEventArgs widgetArgs = null;
+            XboxGameBarWidgetActivatedEventArgs? widgetArgs = null;
             if (args.Kind == ActivationKind.Protocol)
             {
                 var protocolArgs = args as IProtocolActivatedEventArgs;
                 if (protocolArgs != null && protocolArgs.Uri.Scheme.Equals("ms-gamebarwidget"))
                 {
-                    widgetArgs = args as XboxGameBarWidgetActivatedEventArgs;
+                    // 以 CsWinRT .As<T>() 取得強型別的 widget activation 參數。
+                    widgetArgs = args.As<XboxGameBarWidgetActivatedEventArgs>();
                 }
             }
 

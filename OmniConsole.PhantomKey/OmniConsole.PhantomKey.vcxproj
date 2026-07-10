@@ -67,6 +67,9 @@
     <ClCompile Include="PhantomKey.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\OmniConsole.PhantomBridge\Common.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <Target Name="GenerateVersionHeader" BeforeTargets="ResourceCompile;ClCompile">

@@ -149,25 +149,22 @@
   <data name="Widget_SteamInGameOverlay_PlatformNote.Text" xml:space="preserve">
     <value>仅在默认平台设为 Steam Big Picture 时生效。</value>
   </data>
-  <data name="Widget_MouseMode_Title.Text" xml:space="preserve">
-    <value>手柄鼠标模式</value>
+  <data name="Widget_GamepadMappingMode_Title.Text" xml:space="preserve">
+    <value>猫又模式</value>
   </data>
   <data name="Widget_Mode_Off.Content" xml:space="preserve">
     <value>关闭</value>
   </data>
-  <data name="Widget_Mode_Auto.Content" xml:space="preserve">
-    <value>自动</value>
+  <data name="Widget_Mode_On.Content" xml:space="preserve">
+    <value>开启</value>
   </data>
-  <data name="Widget_Mode_ForceOn.Content" xml:space="preserve">
-    <value>强制开启</value>
+  <data name="Widget_ControllerLayoutPreset_Title.Text" xml:space="preserve">
+    <value>控制器预置布局</value>
   </data>
-  <data name="Widget_Layout_Title.Text" xml:space="preserve">
-    <value>控制器布局</value>
-  </data>
-  <data name="Widget_Layout_OmniNav.Content" xml:space="preserve">
+  <data name="Widget_ControllerLayoutPreset_OmniNav.Content" xml:space="preserve">
     <value>OmniNav</value>
   </data>
-  <data name="Widget_Layout_Classic.Content" xml:space="preserve">
+  <data name="Widget_ControllerLayoutPreset_Classic.Content" xml:space="preserve">
     <value>经典</value>
   </data>
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">

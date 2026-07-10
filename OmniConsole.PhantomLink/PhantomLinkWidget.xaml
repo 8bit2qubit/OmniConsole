@@ -116,7 +116,7 @@
                                 XYFocusUp="{x:Bind XboxLibraryBtn}"
                                 XYFocusLeft="{x:Bind SteamInGameOverlayOffBtn}"
                                 XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
-                                XYFocusDown="{x:Bind ModeAutoBtn}">
+                                XYFocusDown="{x:Bind ModeOnBtn}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xEA5B;" FontSize="16"/>
                                 <TextBlock x:Uid="Widget_TriggerSteamInGameOverlay" services:Localized.Uid="Widget_TriggerSteamInGameOverlay"/>
@@ -128,7 +128,7 @@
                                       XYFocusUp="{x:Bind XboxLibraryBtn}"
                                       XYFocusLeft="{x:Bind TriggerSteamInGameOverlayBtn}"
                                       XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
-                                      XYFocusDown="{x:Bind ModeForceOnBtn}"/>
+                                      XYFocusDown="{x:Bind ModeOnBtn}"/>
                     </StackPanel>
                     <!-- 平台適用性說明：此功能仰賴 Steam 長按 ☰ 觸發 Shift+Tab，需預設平台為 Steam Big Picture -->
                     <TextBlock x:Uid="Widget_SteamInGameOverlay_PlatformNote" services:Localized.Uid="Widget_SteamInGameOverlay_PlatformNote"
@@ -136,49 +136,42 @@
                                FontSize="12" TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <!-- Mouse Mode: 3 ToggleButton 水平組 -->
+                <!-- Mouse Mode: Off / On 2 ToggleButton 水平組 -->
                 <StackPanel x:Name="ModeSection" Spacing="6">
-                    <TextBlock x:Uid="Widget_MouseMode_Title" services:Localized.Uid="Widget_MouseMode_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock x:Uid="Widget_GamepadMappingMode_Title" services:Localized.Uid="Widget_GamepadMappingMode_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off" services:Localized.Uid="Widget_Mode_Off"
                                       Click="ModeBtn_Click" Tag="Off"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind SteamInGameOverlayOffBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
-                                      XYFocusRight="{x:Bind ModeAutoBtn}"
+                                      XYFocusRight="{x:Bind ModeOnBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
-                        <ToggleButton x:Name="ModeAutoBtn" x:Uid="Widget_Mode_Auto" services:Localized.Uid="Widget_Mode_Auto"
-                                      Click="ModeBtn_Click" Tag="Auto"
+                        <ToggleButton x:Name="ModeOnBtn" x:Uid="Widget_Mode_On" services:Localized.Uid="Widget_Mode_On"
+                                      Click="ModeBtn_Click" Tag="On"
                                       UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
                                       XYFocusLeft="{x:Bind ModeOffBtn}"
-                                      XYFocusRight="{x:Bind ModeForceOnBtn}"
-                                      XYFocusDown="{x:Bind LayoutNavBtn}"/>
-                        <ToggleButton x:Name="ModeForceOnBtn" x:Uid="Widget_Mode_ForceOn" services:Localized.Uid="Widget_Mode_ForceOn"
-                                      Click="ModeBtn_Click" Tag="ForceOn"
-                                      UseSystemFocusVisuals="True" MinWidth="88"
-                                      XYFocusUp="{x:Bind SteamInGameOverlayOnBtn}"
-                                      XYFocusLeft="{x:Bind ModeAutoBtn}"
-                                      XYFocusRight="{x:Bind ModeForceOnBtn}"
+                                      XYFocusRight="{x:Bind ModeOnBtn}"
                                       XYFocusDown="{x:Bind LayoutNavBtn}"/>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Layout: 2 ToggleButton 水平組 -->
                 <StackPanel Spacing="6">
-                    <TextBlock x:Uid="Widget_Layout_Title" services:Localized.Uid="Widget_Layout_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock x:Uid="Widget_ControllerLayoutPreset_Title" services:Localized.Uid="Widget_ControllerLayoutPreset_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_Layout_OmniNav" services:Localized.Uid="Widget_Layout_OmniNav"
+                        <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_ControllerLayoutPreset_OmniNav" services:Localized.Uid="Widget_ControllerLayoutPreset_OmniNav"
                                       Click="LayoutBtn_Click" Tag="OmniNav"
                                       UseSystemFocusVisuals="True" MinWidth="96"
                                       XYFocusUp="{x:Bind ModeOffBtn}"
                                       XYFocusLeft="{x:Bind LayoutNavBtn}"
                                       XYFocusRight="{x:Bind LayoutClassicBtn}"
                                       XYFocusDown="{x:Bind CursorSpeedSlider}"/>
-                        <ToggleButton x:Name="LayoutClassicBtn" x:Uid="Widget_Layout_Classic" services:Localized.Uid="Widget_Layout_Classic"
+                        <ToggleButton x:Name="LayoutClassicBtn" x:Uid="Widget_ControllerLayoutPreset_Classic" services:Localized.Uid="Widget_ControllerLayoutPreset_Classic"
                                       Click="LayoutBtn_Click" Tag="Classic"
                                       UseSystemFocusVisuals="True" MinWidth="96"
-                                      XYFocusUp="{x:Bind ModeForceOnBtn}"
+                                      XYFocusUp="{x:Bind ModeOnBtn}"
                                       XYFocusLeft="{x:Bind LayoutNavBtn}"
                                       XYFocusRight="{x:Bind LayoutClassicBtn}"
                                       XYFocusDown="{x:Bind CursorSpeedSlider}"/>

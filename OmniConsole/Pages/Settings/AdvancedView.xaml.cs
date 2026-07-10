@@ -37,7 +37,7 @@ namespace OmniConsole.Pages.Settings
         /// <summary>背景材質變更：請殼層轉知 MainWindow 即時套用新材質並切換分層 brush。攜帶材質字串。</summary>
         internal event EventHandler<string>? BackgroundMaterialChanged;
 
-        /// <summary>填入背景材質下拉並還原選取期間，抑制 SelectionChanged 觸發重套材質。</summary>
+        /// <summary>填入背景材質下拉選單並還原選取期間，抑制 SelectionChanged 觸發重套材質。</summary>
         private bool _suppressBackgroundMaterialChange;
 
         /// <summary>建立進階分頁。</summary>
@@ -55,22 +55,16 @@ namespace OmniConsole.Pages.Settings
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = true;
 
-            // 填充 Mouse Mode 下拉（code-behind 填、Content 走 .Loc 在地化；ComboBox i18n 慣例，同游標速度 / 貓又編輯器）。
-            MouseModeCombo.Items.Clear();
-            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_Off"), Tag = SettingsService.MouseModeOff });
-            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_Auto"), Tag = SettingsService.MouseModeAuto });
-            MouseModeCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("MouseModeItem_ForceOn"), Tag = SettingsService.MouseModeForceOn });
+            // 填充版面配置下拉選單（index 0=OmniNav、1=Classic）
+            MouseModeLayoutCombo.Items.Clear();
+            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_OmniNav"), Tag = SettingsService.LayoutOmniNav });
+            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_Classic"), Tag = SettingsService.LayoutClassic });
 
-            // 還原 Mouse Mode（Off/Auto/ForceOn）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
+            // 還原 Mouse Mode（Off/On）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
             bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
             string currentMode = builtInMapping ? SettingsService.MouseModeOff : SettingsService.GetMouseMode();
-            MouseModeCombo.SelectedIndex = currentMode switch
-            {
-                SettingsService.MouseModeOff => 0,
-                SettingsService.MouseModeForceOn => 2,
-                _ => 1,
-            };
-            MouseModeLayoutSwitch.IsOn = SettingsService.GetMouseModeLayout() == SettingsService.LayoutClassic;
+            MouseModeSwitch.IsOn = currentMode != SettingsService.MouseModeOff;
+            MouseModeLayoutCombo.SelectedIndex = SettingsService.GetMouseModeLayout() == SettingsService.LayoutClassic ? 1 : 0;
 
             // 填充游標速度下拉選單並還原選取
             CursorSpeedCombo.Items.Clear();
@@ -79,7 +73,7 @@ namespace OmniConsole.Pages.Settings
             int pct = SettingsService.GetCursorSpeedPercent();
             CursorSpeedCombo.SelectedIndex = Array.IndexOf(SettingsService.ValidCursorSpeedPercents, pct);
 
-            // 填充背景材質下拉並還原選取（還原期間抑制觸發，避免無謂重套材質）。
+            // 填充背景材質下拉選單並還原選取（還原期間抑制觸發，避免無謂重套材質）。
             _suppressBackgroundMaterialChange = true;
             BackgroundMaterialCombo.Items.Clear();
             BackgroundMaterialCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("BackgroundMaterialItem_PhantomClassic"), Tag = SettingsService.BackgroundMaterialPhantomClassic });
@@ -152,16 +146,15 @@ namespace OmniConsole.Pages.Settings
             SettingsService.SetUsePhantomKeySteamInGameOverlay(UsePhantomKeySteamInGameOverlaySwitch.IsOn);
         }
 
-        /// <summary>Mouse Mode 下拉選單（Off/Auto/ForceOn）變更時立即儲存，並更新子控制項反灰狀態。</summary>
-        private void MouseModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>Mouse Mode 開關切換時立即儲存，並更新子控制項反灰狀態。On=啟用、Off=停用。</summary>
+        private void MouseModeSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (MouseModeCombo.SelectedItem is not ComboBoxItem item) return;
-            string mode = item.Tag as string ?? SettingsService.MouseModeAuto;
-            SettingsService.SetMouseMode(mode);
+            SettingsService.SetMouseMode(
+                MouseModeSwitch.IsOn ? SettingsService.MouseModeOn : SettingsService.MouseModeOff);
             ApplyMouseModeEnabledState();
         }
 
-        /// <summary>背景材質下拉變更時立即儲存並請殼層即時套用（無需重啟）；還原選取期間由旗標抑制。</summary>
+        /// <summary>背景材質下拉選單變更時立即儲存並請殼層即時套用（無需重啟）；還原選取期間由旗標抑制。</summary>
         private void BackgroundMaterialCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_suppressBackgroundMaterialChange) return;
@@ -211,7 +204,7 @@ namespace OmniConsole.Pages.Settings
                 foreach (var bcp47 in community)
                 {
                     // 譯者名取自下載時寫入的本機資料，多人以分隔符串接顯示為「(社群 - 譯者A…)」；
-                    // 無譯者（手動側載、無 metadata）退回「(社群)」。多人完整串接，超長時由固定 Width 的下拉框自動截斷（…）。
+                    // 無譯者（手動側載、無 metadata）退回「(社群)」。多人完整串接，超長時由固定 Width 的下拉選單自動截斷（…）。
                     var translators = TranslationProfileStore.GetInstalledTranslators(bcp47);
                     string tag = translators.Count > 0
                         ? SafeFormat(communityWithTranslator, string.Join(translatorSeparator, translators))
@@ -350,11 +343,11 @@ namespace OmniConsole.Pages.Settings
                 await PromptRestartForLanguageAsync();
         }
 
-        /// <summary>Mouse Mode 版面配置 ToggleSwitch 切換時立即儲存。Off=OmniNav、On=Classic。</summary>
-        private void MouseModeLayoutSwitch_Toggled(object sender, RoutedEventArgs e)
+        /// <summary>Mouse Mode 版面配置下拉選單切換時立即儲存。index 0=OmniNav、1=Classic。</summary>
+        private void MouseModeLayoutCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SettingsService.SetMouseModeLayout(
-                MouseModeLayoutSwitch.IsOn ? SettingsService.LayoutClassic : SettingsService.LayoutOmniNav);
+                MouseModeLayoutCombo.SelectedIndex == 1 ? SettingsService.LayoutClassic : SettingsService.LayoutOmniNav);
         }
 
         /// <summary>導覽音效 ToggleSwitch 切換時立即儲存，並即時切換 ElementSoundPlayer 全域狀態。</summary>
@@ -403,13 +396,13 @@ namespace OmniConsole.Pages.Settings
             // PhantomKey 改為 FSE 常駐，不再依開關；保留變數以利未來復原。
             bool phantomOn = true;
             bool mouseModeAvailable = phantomOn && !builtIn;
-            string mode = (MouseModeCombo.SelectedItem as ComboBoxItem)?.Tag as string ?? SettingsService.MouseModeAuto;
-            bool mouseModeOn = mouseModeAvailable && mode != SettingsService.MouseModeOff;
+            bool mouseModeOn = mouseModeAvailable && MouseModeSwitch.IsOn;
 
-            MouseModeCombo.IsEnabled = mouseModeAvailable;
+            MouseModeSwitch.IsEnabled = mouseModeAvailable;
             MouseModeBuiltInMappingNoteText.Visibility = builtIn ? Visibility.Visible : Visibility.Collapsed;
 
-            MouseModeLayoutSwitch.IsEnabled = mouseModeOn;
+            // 版面配置與游標速度只在總開關 On 時有意義（Off 時內建與 JSON 皆不介入），與小工具一致
+            MouseModeLayoutCombo.IsEnabled = mouseModeOn;
             CursorSpeedCombo.IsEnabled = mouseModeOn;
         }
 
@@ -534,7 +527,7 @@ namespace OmniConsole.Pages.Settings
                 DownloadInstallButton.Focus(FocusStateHelper.Preferred));
         }
 
-        /// <summary>背景材質變更使本頁重建後，把焦點還原至新頁的背景材質下拉（由殼層在重建後呼叫）。</summary>
+        /// <summary>背景材質變更使本頁重建後，把焦點還原至新頁的背景材質下拉選單（由殼層在重建後呼叫）。</summary>
         internal void RestoreBackgroundMaterialFocus() =>
             FocusNavHelper.RestoreFocusAfterRebuild(this, BackgroundMaterialCombo);
 

@@ -74,8 +74,7 @@ namespace OmniConsole.Pages.Settings
             if (_isRefreshingAbout) return;
             _isRefreshingAbout = true;
 
-            // 進度環用 Opacity 而非 Visibility 切換：保持佔位（20×20），避免顯隱時推動按鈕 row 寬度。
-            RefreshAboutProgressRing.Opacity = 1;
+            RefreshAboutProgressRing.Visibility = Visibility.Visible;
             RefreshAboutProgressRing.IsActive = true;
 
             var delayTask = enforceMinDelay ? Task.Delay(500) : null;
@@ -84,7 +83,7 @@ namespace OmniConsole.Pages.Settings
 
             ApplyAboutSnapshot(snapshot);
             RefreshAboutProgressRing.IsActive = false;
-            RefreshAboutProgressRing.Opacity = 0;
+            RefreshAboutProgressRing.Visibility = Visibility.Collapsed;
             _isRefreshingAbout = false;
         }
 

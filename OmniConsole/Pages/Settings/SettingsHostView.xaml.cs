@@ -104,7 +104,7 @@ namespace OmniConsole.Pages.Settings
         private void MappingHost_StateChanged(object? sender, EventArgs e) => UpdateGamepadHints();
 
         /// <summary>目前是否在手把映射編輯器頁。</summary>
-        private bool IsGamepadMappingEditorVisible =>
+        internal bool IsGamepadMappingEditorVisible =>
             _currentNavTag == "GamepadMapping" && CurrentMappingHost?.IsEditorVisible == true;
 
         /// <summary>目前是否在手把映射清單頁。</summary>

@@ -7,7 +7,8 @@
 	xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
 	xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
 	xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
-	IgnorableNamespaces="uap rescap">
+	xmlns:virtualization="http://schemas.microsoft.com/appx/manifest/virtualization/windows10"
+	IgnorableNamespaces="uap rescap virtualization">
 
 	<Identity
 		Name="b5fbce6b-2d7d-4da0-b419-4beb30e2b808"
@@ -20,6 +21,12 @@
 		<DisplayName>OmniConsole</DisplayName>
 		<PublisherDisplayName>8bit2qubit</PublisherDisplayName>
 		<Logo>Assets\StoreLogo.png</Logo>
+		<!-- 將指定機碼排除於登錄檔虛擬化之外 -->
+		<virtualization:RegistryWriteVirtualization>
+			<virtualization:ExcludedKeys>
+				<virtualization:ExcludedKey>HKCU\Software\Valve\Steam</virtualization:ExcludedKey>
+			</virtualization:ExcludedKeys>
+		</virtualization:RegistryWriteVirtualization>
 	</Properties>
 
 	<Dependencies>
@@ -86,6 +93,8 @@
 	<Capabilities>
 		<!-- 需要 runFullTrust 以便未來啟動 Steam 或其他 Win32 應用程式 -->
 		<rescap:Capability Name="runFullTrust" />
+		<!-- RegistryWriteVirtualization 排除機碼所需 -->
+		<rescap:Capability Name="unvirtualizedResources" />
 		<!-- 宣告 gamingHome 自訂功能 -->
 		<uap4:CustomCapability Name="Microsoft.appCategory.gamingHome_8wekyb3d8bbwe" />
 	</Capabilities>

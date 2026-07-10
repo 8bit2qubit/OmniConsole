@@ -1,145 +1,94 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <!-- 各 PropertyGroup 共用的 NoWarn 抑制原因（設定保留在各組態內以維持原建置行為）：
-       APPX0006 (runFullTrust) 與 APPX1707 (ExeServer 自動註冊不支援) 皆為本專案以 csproj
-       直接產出 .msix、手動於 Package.appxmanifest 宣告 com:ExeServer 的合理組態，警告誤判可忽略。 -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Game Bar widget（UWP）以 net10 + Native AOT 建置。
+       PhantomBridge.winmd 的 COM 註冊由 Package.appxmanifest 手動宣告 com:ExeServer，
+       不提供 Implementation metadata，故忽略 APPX1707。 -->
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{7EF8DAF9-69DF-403D-9716-4B10898086B4}</ProjectGuid>
-    <OutputType>AppContainerExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.26100.0</TargetPlatformMinVersion>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseUwp>true</UseUwp>
+    <EnableMsixTooling>true</EnableMsixTooling>
     <RootNamespace>OmniConsole.PhantomLink</RootNamespace>
     <AssemblyName>OmniConsole.PhantomLinkWidget</AssemblyName>
+    <!-- OmniConsole.sln 以此 GUID 繫結本專案，須與 sln 一致。 -->
+    <ProjectGuid>{7EF8DAF9-69DF-403D-9716-4B10898086B4}</ProjectGuid>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.26100.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.26100.0</TargetPlatformMinVersion>
-    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AppxBundle>Never</AppxBundle>
+    <NoWarn>$(NoWarn);APPX1707</NoWarn>
+
+    <!-- 版本資訊固定欄位（比照主程式 OmniConsole.csproj）；版號由下方 SyncVersionFromMainManifest target 覆寫。 -->
+    <Company>8bit2qubit</Company>
+    <Product>OmniConsole</Product>
+    <Authors>8bit2qubit</Authors>
+    <Copyright>Copyright (C) 2026 8bit2qubit</Copyright>
+    <AssemblyTitle>OmniConsole OmniCharm</AssemblyTitle>
+    <Description>OmniConsole OmniCharm Game Bar Widget</Description>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
+
+  <!-- Native AOT：非 Debug 開 PublishAot（比照主程式 OmniConsole.csproj）。 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+  <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\ARM\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>ARM</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
-    <OutputPath>bin\ARM\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>ARM</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\ARM64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>ARM64</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
-    <OutputPath>bin\ARM64\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>ARM64</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>;2008;APPX0006;APPX1707</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
-  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Gaming.XboxGameBar" Version="7.3.2607010" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+  </ItemGroup>
+
+  <!-- XboxGameBar 的 winmd 與 native dll 顯式封裝進套件：winmd 供 proxyStub manifest 宣告，
+       native dll 供 XboxGameBarWidget 的 WinRT activation。 -->
+  <ItemGroup>
+    <Content Include="$(NuGetPackageRoot)microsoft.gaming.xboxgamebar\7.3.2607010\lib\uap10.0\Microsoft.Gaming.XboxGameBar.winmd">
+      <Link>Microsoft.Gaming.XboxGameBar.winmd</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(NuGetPackageRoot)microsoft.gaming.xboxgamebar\7.3.2607010\runtimes\win10-x64\native\Microsoft.Gaming.XboxGameBar.dll">
+      <Link>Microsoft.Gaming.XboxGameBar.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- 單一專案 MSIX 封裝能力。 -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!-- 以 CsWinRT 投影 XboxGameBar 的 WinRT 型別。 -->
   <PropertyGroup>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <CsWinRTIncludes>Microsoft.Gaming.XboxGameBar</CsWinRTIncludes>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PhantomLinkWidget.xaml.cs">
-      <DependentUpon>PhantomLinkWidget.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Services\FluentIconTextHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <CsWinRTInputs Include="$(NuGetPackageRoot)microsoft.gaming.xboxgamebar\7.3.2607010\lib\uap10.0\Microsoft.Gaming.XboxGameBar.winmd" />
   </ItemGroup>
+
+  <!-- helper DLL（含 PhantomBridgeFactory COM 包裝）；PhantomBridge.winmd 僅以 Content 封裝供 runtime。 -->
+  <ItemGroup>
+    <Reference Include="OmniConsole.PhantomLink.Core">
+      <HintPath>..\OmniConsole\Phantom\OmniConsole.PhantomLink.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 套件資訊清單（含 com:ExeServer、Game Bar widget AppExtension、proxyStub 宣告）。 -->
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
+
+  <!-- 在地化資源 .resw 由 SDK 預設 glob 自動收，不顯式宣告。 -->
+
+  <!-- widget 圖示與啟動畫面（封裝進 msix）。 -->
   <ItemGroup>
-    <Content Include="Properties\Default.rd.xml" />
-    <PRIResource Include="Strings\en-US\Resources.resw" />
-    <PRIResource Include="Strings\zh-TW\Resources.resw" />
-    <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -147,6 +96,10 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <!-- PhantomBridge full trust COM server 三檔隨 widget 封裝。 -->
+  <ItemGroup>
     <Content Include="..\OmniConsole.PhantomBridge\x64\$(Configuration)\OmniConsole.PhantomBridge.exe">
       <Link>OmniConsole.PhantomBridge.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -160,52 +113,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="PhantomBridge">
-      <HintPath>..\OmniConsole\Phantom\PhantomBridge.winmd</HintPath>
-      <IsWinMDFile>true</IsWinMDFile>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="OmniConsole.PhantomLink.Core">
-      <HintPath>..\OmniConsole\Phantom\OmniConsole.PhantomLink.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Page Include="PhantomLinkWidget.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Gaming.XboxGameBar">
-      <Version>7.3.2511061</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.14</Version>
-    </PackageReference>
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
-    <VisualStudioVersion>14.0</VisualStudioVersion>
-  </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
-  <!-- 版本資訊跟隨主程式 Package.appxmanifest 的 Identity.Version。 -->
-  <Target Name="SyncVersionFromMainManifest" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NoProfile -Command &quot;[xml]$m = Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest'; $v = $m.Package.Identity.Version; [xml]$t = Get-Content '$(ProjectDir)Package.appxmanifest'; if ($t.Package.Identity.Version -ne $v) { $t.Package.Identity.Version = $v; $t.Save('$(ProjectDir)Package.appxmanifest') }&quot;" />
-    <Exec Command="powershell -NoProfile -Command &quot;$v = ([xml](Get-Content '$(ProjectDir)..\OmniConsole\Package.appxmanifest')).Package.Identity.Version; $p = '$(ProjectDir)Properties\AssemblyInfo.cs'; $c = Get-Content $p -Raw; $n = $c -replace 'AssemblyVersion\(\&quot;[\d.]+\&quot;\)', ('AssemblyVersion(\&quot;' + $v + '\&quot;)') -replace 'AssemblyFileVersion\(\&quot;[\d.]+\&quot;\)', ('AssemblyFileVersion(\&quot;' + $v + '\&quot;)'); if ($n -ne $c) { Set-Content -Path $p -Value $n -NoNewline -Encoding UTF8 }&quot;" />
+
+  <!-- 版本資訊跟隨主程式 Package.appxmanifest 的 Identity.Version（比照主程式 XmlPeek 寫法）。 -->
+  <Target Name="SyncVersionFromMainManifest" BeforeTargets="GetAssemblyVersion;CoreCompile"
+          Condition="Exists('$(ProjectDir)..\OmniConsole\Package.appxmanifest')">
+    <XmlPeek XmlInputPath="$(ProjectDir)..\OmniConsole\Package.appxmanifest"
+             Query="/*[local-name()='Package']/*[local-name()='Identity']/@Version">
+      <Output TaskParameter="Result" PropertyName="_OmniVersion" />
+    </XmlPeek>
+    <PropertyGroup Condition="'$(_OmniVersion)' != ''">
+      <Version>$(_OmniVersion)</Version>
+      <FileVersion>$(_OmniVersion)</FileVersion>
+      <AssemblyVersion>$(_OmniVersion)</AssemblyVersion>
+    </PropertyGroup>
+    <!-- widget 自身 Package.appxmanifest 的 Identity.Version 也同步。 -->
+    <XmlPoke Condition="'$(_OmniVersion)' != ''"
+             XmlInputPath="$(ProjectDir)Package.appxmanifest"
+             Query="/*[local-name()='Package']/*[local-name()='Identity']/@Version"
+             Value="$(_OmniVersion)" />
   </Target>
+
+  <!-- 建置前先建 PhantomBridge COM server（vcxproj 固定 x64）。 -->
   <Target Name="BuildPhantomBridgeLoader" BeforeTargets="BeforeBuild">
     <MSBuild Projects="..\OmniConsole.PhantomBridge\OmniConsole.PhantomBridge.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
