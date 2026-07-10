@@ -19,7 +19,7 @@
 
 ## 💡 什麼是 OmniConsole？
 
-OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 Xbox 模式 (FSE) 首頁殼層，並提供 OmniCharm Game Bar 小工具、滑鼠模式、Steam 快捷鍵與貓又的各程式手把映射，讓一切操作都不離手把。
+OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 Xbox 模式 (FSE) 首頁殼層，並提供 OmniCharm Game Bar 小工具、Steam 快捷鍵，以及能將手把化作鍵鼠、為各程式量身調校的貓又模式，讓一切操作都不離手把。
 
 只要觸發 Xbox 模式 (FSE)，OmniConsole 就會自動啟動你設定的遊戲平台。任何平台都能當你的 Xbox 模式 (FSE) 首頁 — Steam、Xbox、Epic、Armoury Crate SE、Playnite，或你自行新增的平台。
 
@@ -43,9 +43,8 @@ OmniConsole 在 PC 與掌機（ROG Xbox Ally X 等）上作為你的 Windows 11 
 - **疑難排解頁面** – Xbox 模式 (FSE) 救援專屬頁面：重啟 Game Bar 以修復「重新啟動以提升效能」對話方塊未出現等問題，接著進入 Xbox 模式 (FSE)。
 - **環境快照** – 「關於」頁面擷取系統、硬體與 OmniConsole 健康狀態，並支援一鍵複製為 Markdown 格式，方便回報問題。
 - **手把支援** – 以**十字鍵**或**左搖桿**導覽；**A 鍵**確認、**B 鍵**退出、**LB/RB** 切換分類索引標籤、**Y 鍵**新增自訂平台、**X 鍵**編輯，**Menu（☰）鍵**將聚焦平台設為預設並立即啟動（僅在 OmniConsole 於 Xbox 模式 (FSE) 中執行時可用）。
-- **手把滑鼠模式** – 將手把當作滑鼠與鍵盤使用。三種模式：**關閉**、**自動**（瀏覽器、檔案總管、Steam、Epic Games Store、Discord）與**強制開啟**（所有應用程式，排除清單除外）。游標速度可調，並提供兩種控制器版面配置：**OmniNav** 與 **Classic**。
-- **OmniCharm 小工具** – 遊戲中快速存取的 Game Bar 小工具：一鍵開啟**工作檢視**、**Xbox 媒體櫃**或 **Steam 遊戲內嵌介面**；切換**手把滑鼠模式**、控制器版面、游標速度與 **Steam 遊戲內嵌介面**（長按 ☰）。
-- **貓又 — 自訂各程式手把映射** – 貓又為每個程式編一道咒，將所有 XInput 輸入位（A/B/X/Y、LB/RB、LT/RT、LS/RS、十字鍵、雙搖桿）重新映射為鍵盤按鍵、修飾鍵組合、滑鼠按鍵、滾輪、游標移動、捲動、方向鍵或 WASD。每個程式的咒語還可**避免雙重輸入**：阻擋該程式自身的原生 XInput 與 DirectInput 訊號，避免與映射後的鍵鼠相互干擾。從 OmniCharm 小工具的「自訂此程式的手把映射…」按鈕進入編輯器。
+- **OmniCharm 小工具** – 遊戲中快速存取的 Game Bar 小工具：一鍵開啟**工作檢視**、**Xbox 媒體櫃**或 **Steam 遊戲內嵌介面**；切換**貓又模式**、控制器預設版面、游標速度與 **Steam 遊戲內嵌介面**（長按 ☰）。
+- **貓又模式 — 手把化身鍵鼠、自訂各程式映射** – 開啟時，你自訂的設定檔會接手，而瀏覽器、檔案總管、Steam、Epic Games Store、Discord 等常見程式則套用 OmniConsole 預先備妥的映射，這些映射同樣能自訂。貓又為每個程式編一道咒，將所有 XInput 輸入位（A/B/X/Y、LB/RB、LT/RT、LS/RS、十字鍵、雙搖桿）重新映射為鍵盤按鍵、修飾鍵組合、滑鼠按鍵、滾輪、游標移動、捲動、方向鍵或 WASD，並提供兩種控制器版面配置：**OmniNav** 與 **經典**。每個程式的咒語還能以**貓又衝刺**提高映射服務優先順序、應付吃資源的遊戲，為任何按鍵開啟**長按連發**，並**避免雙重輸入**：阻擋該程式自身的原生 XInput 與 DirectInput 訊號，避免與映射後的鍵鼠相互干擾。從 OmniCharm 小工具的「自訂此程式的手把映射…」按鈕進入編輯器。
 - **手把 Steam 快捷鍵** – 手把 **⧉** 按鍵對應 Steam Big Picture 模式快捷：短按開啟 **Steam 選單**，長按喚出**快速存取選單**。在遊戲中長按 **☰** 可開啟 **Steam 遊戲內嵌介面**。
 - **專屬設定入口** – 「所有應用程式」中獨立的「**OmniConsole 設定**」項目，隨時可更改預設平台。
 - **原生 Xbox 模式 (FSE) 整合** – 透過 Windows 11 Xbox 模式 (FSE) 官方 API 註冊為主畫面應用程式。
