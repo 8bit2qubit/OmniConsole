@@ -81,6 +81,14 @@ namespace OmniConsole.Pages
 
             try
             {
+                // 開機時可能在使用者登入前就被啟動：等互動 session 就緒（使用者已登入且解鎖）
+                // 再啟動平台，避免 Windows 在登入畫面後面就把平台跑起來。全平台一體適用；
+                // 鎖定期間掛在解鎖事件上駐留等待，解鎖後秒醒接續啟動
+                await WindowForegroundService.WaitForInteractiveSessionAsync(Hwnd);
+
+                // 已有較新的啟動流程接手：本輪退場、不再動 UI
+                if (generation != s_launchGeneration) return;
+
                 // 重設為初始狀態，確保上次失敗殘留的按鈕等元素被收合
                 VisualStateManager.GoToState(this, "Idle", false);
 
