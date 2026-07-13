@@ -918,13 +918,13 @@
     <value>重設</value>
   </data>
   <data name="GamepadMappingResetClassicButton.Content" xml:space="preserve">
-    <value>Classic 預設</value>
+    <value>經典預設</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmTitle" xml:space="preserve">
-    <value>重設為 Classic 預設？</value>
+    <value>重設為經典預設？</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmBody" xml:space="preserve">
-    <value>目前所有輸入位將被覆寫為 Classic 預設。</value>
+    <value>目前所有輸入位將被覆寫為經典預設。</value>
   </data>
   <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
     <value>重設</value>
