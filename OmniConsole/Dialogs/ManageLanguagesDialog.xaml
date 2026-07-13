@@ -45,18 +45,35 @@
                 <TextBlock x:Name="MessageText" TextAlignment="Center" TextWrapping="Wrap" FontSize="14"/>
             </StackPanel>
 
-            <!-- 雙欄內容（左語言清單 + 右詳情/動作）-->
+            <!-- 內容態：頂部離線提示條（僅離線時顯）+ 雙欄（左語言清單 + 右詳情/動作）-->
             <Grid x:Name="ContentBorder" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="220"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- 離線提示條：橫跨雙欄；離線時清單只剩已安裝語言、僅能移除。 -->
+                <Border x:Name="OfflineBar" Grid.Row="0" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE783;" FontSize="14" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                        <TextBlock x:Name="OfflineBarText" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- 宣告順序「左欄語言清單在前」：ContentDialog 框架預設焦點落樹中第一個可聚焦元素，
                      本對話方塊初始焦點需求在左欄第一個語言（焦點守衛另在 code-behind 處理右欄按鈕情況）。 -->
 
                 <!-- 左欄：語言清單 -->
-                <ListView x:Name="LanguageList" Grid.Column="0"
+                <ListView x:Name="LanguageList" Grid.Row="1" Grid.Column="0"
                           SelectionMode="Single"
                           SingleSelectionFollowsFocus="False"
                           IsItemClickEnabled="True"
@@ -70,7 +87,7 @@
                 </ListView>
 
                 <!-- 右欄：選中語言詳情 + 動作 -->
-                <Grid Grid.Column="1" Padding="20">
+                <Grid Grid.Row="1" Grid.Column="1" Padding="20">
                     <!-- 未選任何語言時的提示 -->
                     <TextBlock x:Name="DetailEmptyHint"
                                HorizontalAlignment="Center" VerticalAlignment="Center"

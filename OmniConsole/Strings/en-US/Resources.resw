@@ -900,7 +900,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Clear all bindings?</value>
   </data>
   <data name="GamepadMappingClearAllConfirmBody" xml:space="preserve">
-    <value>All inputs will be set to None.</value>
+    <value>All bindings will be set to None.</value>
   </data>
   <data name="GamepadMappingClearAllConfirmYes" xml:space="preserve">
     <value>Clear All</value>
@@ -1143,13 +1143,13 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Save with no bindings?</value>
   </data>
   <data name="GamepadMappingEmptyConfirmBody" xml:space="preserve">
-    <value>All inputs are set to None. The built-in layout will take over for this app.</value>
+    <value>All bindings are set to None. The built-in layout will take over for this app.</value>
   </data>
   <data name="GamepadMappingEmptyRemoveTitle" xml:space="preserve">
     <value>Remove custom mapping for this app?</value>
   </data>
   <data name="GamepadMappingEmptyRemoveBody" xml:space="preserve">
-    <value>All inputs are set to None, which is the same as having no custom mapping. The built-in layout will take over for this app.</value>
+    <value>All bindings are set to None, which is the same as having no custom mapping. The built-in layout will take over for this app.</value>
   </data>
   <data name="GamepadMappingEmptyRemoveYes" xml:space="preserve">
     <value>Remove</value>
@@ -1378,6 +1378,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="ManageLanguages_Empty" xml:space="preserve">
     <value>No community languages are available for this version yet.</value>
+  </data>
+  <data name="ManageLanguages_OfflineNotice" xml:space="preserve">
+    <value>Offline. You can remove installed languages, but downloads and updates are unavailable.</value>
   </data>
   <data name="ManageLanguages_SelectHint" xml:space="preserve">
     <value>Select a language to see details.</value>

@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls.Primitives;   // SelectorItem（net10 Release �
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,11 +12,11 @@ using LangStatus = OmniConsole.Services.TranslationRepoService.LanguageStatus;
 
 namespace OmniConsole.Dialogs
 {
-    /// <summary>左欄一個語言列（顯示名 + 完整 repo 條目）。放 namespace 層級供 x:Bind 的 x:DataType 引用。</summary>
+    /// <summary>左欄一個語言列（顯示名 + 完整管理條目）。放 namespace 層級供 x:Bind 的 x:DataType 引用。</summary>
     internal sealed class LanguageRow
     {
         public string DisplayName { get; init; } = "";
-        public TranslationRepoService.LanguageEntry Entry { get; init; } = null!;
+        public TranslationRepoService.ManageEntry Entry { get; init; } = null!;
     }
 
     /// <summary>
@@ -40,6 +39,9 @@ namespace OmniConsole.Dialogs
         /// <summary>下載/移除進行中：鎖住對話方塊關閉（CloseButton/X/Esc/手把 B），避免操作中途被中斷。</summary>
         private bool _busy;
 
+        /// <summary>離線態（抓不到 repo index）：只能移除已安裝語言，動作結果訊息也改用離線版本。</summary>
+        private bool _isOffline;
+
         /// <summary>建立社群語言管理對話方塊；設定標題/按鈕文字、掛事件（清單在 Opened 後才載入）。</summary>
         public ManageLanguagesDialog(XamlRoot xamlRoot)
         {
@@ -51,6 +53,7 @@ namespace OmniConsole.Dialogs
 
             LoadingText.Text = _resourceLoader.Loc("ManageLanguages_Loading");
             DetailEmptyHint.Text = _resourceLoader.Loc("ManageLanguages_SelectHint");
+            OfflineBarText.Text = _resourceLoader.Loc("ManageLanguages_OfflineNotice");
 
             LanguageList.SelectionChanged += LanguageList_SelectionChanged;
 
@@ -134,14 +137,17 @@ namespace OmniConsole.Dialogs
             _ = LoadAsync();
         }
 
-        /// <summary>抓 index、填左欄；無語言/失敗顯訊息態。</summary>
+        /// <summary>
+        /// 抓管理清單（repo 可裝語言 + 本機已裝語言合併）、填左欄。
+        /// 離線時清單只剩已裝語言（仍可移除）並顯示離線提示；清單空才退訊息態（離線/該版無語言各自訊息）。
+        /// </summary>
         private async Task LoadAsync()
         {
             ShowPanel(loading: true, message: false, content: false);
-            IReadOnlyList<TranslationRepoService.LanguageEntry> entries;
+            TranslationRepoService.ManageList list;
             try
             {
-                entries = await TranslationRepoService.GetAvailableForCurrentVersionAsync();
+                list = await TranslationRepoService.GetManageListAsync();
             }
             catch (Exception ex)
             {
@@ -150,17 +156,23 @@ namespace OmniConsole.Dialogs
                 return;
             }
 
-            if (entries.Count == 0)
+            _isOffline = list.IsOffline;
+
+            if (list.Entries.Count == 0)
             {
-                ShowMessage(_resourceLoader.Loc("ManageLanguages_Empty"));
+                ShowMessage(_resourceLoader.Loc(
+                    list.IsOffline ? "ManageLanguages_Error" : "ManageLanguages_Empty"));
                 return;
             }
 
-            var rows = entries
+            var rows = list.Entries
                 .Select(e => new LanguageRow { DisplayName = DescribeLanguage(e.Code), Entry = e })
                 .OrderBy(r => r.DisplayName, StringComparer.CurrentCulture)
                 .ToList();
             LanguageList.ItemsSource = rows;
+
+            // 離線提示條：頂部橫跨雙欄，說明只能移除已安裝語言。
+            OfflineBar.Visibility = list.IsOffline ? Visibility.Visible : Visibility.Collapsed;
 
             ShowPanel(loading: false, message: false, content: true);
 
@@ -208,14 +220,15 @@ namespace OmniConsole.Dialogs
             DetailPanel.Visibility = Visibility.Visible;
             ActionMessage.Visibility = Visibility.Collapsed;   // 切換語言時清上次結果訊息（ActionButton_Click finally 之後會再重設）
 
+            var entry = row.Entry;
             DetailLangName.Text = row.DisplayName;
 
             // 譯者：完整名單（右欄詳情不截斷；逗號相接）。無譯者則隱藏該行。
-            if (row.Entry.Translators.Count > 0)
+            if (entry.Translators.Count > 0)
             {
                 DetailTranslators.Text = string.Format(
                     _resourceLoader.Loc("ManageLanguages_Translators"),
-                    string.Join(_resourceLoader.Loc("ManageLanguages_TranslatorSeparator"), row.Entry.Translators));
+                    string.Join(_resourceLoader.Loc("ManageLanguages_TranslatorSeparator"), entry.Translators));
                 DetailTranslators.Visibility = Visibility.Visible;
             }
             else
@@ -223,7 +236,8 @@ namespace OmniConsole.Dialogs
                 DetailTranslators.Visibility = Visibility.Collapsed;
             }
 
-            var status = TranslationRepoService.GetStatus(row.Entry);
+            // 狀態現算（非快照）：下載/移除後重繪本面板即反映新狀態。
+            var status = TranslationRepoService.GetManageStatus(entry);
             DetailStatus.Text = status switch
             {
                 LangStatus.Installed => _resourceLoader.Loc("ManageLanguages_Status_Installed"),
@@ -231,18 +245,20 @@ namespace OmniConsole.Dialogs
                 _ => _resourceLoader.Loc("ManageLanguages_Status_NotInstalled"),
             };
 
-            // 版本號：依狀態顯示 repo revision，已裝則帶本機已裝 revision 對比。
-            int repoRev = row.Entry.Revision;
-            int installedRev = TranslationProfileStore.GetInstalledRevision(row.Entry.Code);
-            DetailRevision.Text = status switch
-            {
-                // 有更新：repo X（已安裝 Y），一眼看出差距
-                LangStatus.UpdateAvailable => string.Format(_resourceLoader.Loc("ManageLanguages_Revision_UpdateAvailable"), repoRev, installedRev),
-                // 已安裝且最新：repo X（已安裝）
-                LangStatus.Installed => string.Format(_resourceLoader.Loc("ManageLanguages_Revision_Installed"), repoRev),
-                // 未安裝：只顯 repo X
-                _ => string.Format(_resourceLoader.Loc("ManageLanguages_Revision"), repoRev),
-            };
+            // 版本號：可下載/更新時顯 repo revision，已裝則帶本機已裝 revision 對比；
+            // 取不到 repo 條目（離線 / 目前版 index 無此語言）時只有本機值可顯，句型沿用「已安裝」版。
+            int installedRev = TranslationProfileStore.GetInstalledRevision(entry.Code);
+            DetailRevision.Text = entry.CanInstallOrUpdate
+                ? status switch
+                {
+                    // 有更新：repo X（已安裝 Y），一眼看出差距
+                    LangStatus.UpdateAvailable => string.Format(_resourceLoader.Loc("ManageLanguages_Revision_UpdateAvailable"), entry.RepoRevision, installedRev),
+                    // 已安裝且最新：repo X（已安裝）
+                    LangStatus.Installed => string.Format(_resourceLoader.Loc("ManageLanguages_Revision_Installed"), entry.RepoRevision),
+                    // 未安裝：只顯 repo X
+                    _ => string.Format(_resourceLoader.Loc("ManageLanguages_Revision"), entry.RepoRevision),
+                }
+                : string.Format(_resourceLoader.Loc("ManageLanguages_Revision_Installed"), installedRev);
 
             ActionButton.Content = status switch
             {
@@ -251,7 +267,10 @@ namespace OmniConsole.Dialogs
                 _ => _resourceLoader.Loc("ManageLanguages_Action_Install"),
             };
             ActionButton.Tag = row;
-            ActionButton.Visibility = Visibility.Visible;
+            // 無 repo 條目者未安裝＝無事可做（離線移除後的暫留狀態）：藏按鈕，避免給出按不動的「下載並安裝」。
+            ActionButton.Visibility = !entry.CanInstallOrUpdate && status == LangStatus.NotInstalled
+                ? Visibility.Collapsed
+                : Visibility.Visible;
         }
 
         /// <summary>下載 / 更新 / 移除（依目前狀態）。</summary>
@@ -259,16 +278,17 @@ namespace OmniConsole.Dialogs
         {
             if (ActionButton.Tag is not LanguageRow row) return;
             var entry = row.Entry;
-            var status = TranslationRepoService.GetStatus(entry);
+            var status = TranslationRepoService.GetManageStatus(entry);
+
+            bool wasRemove = status == LangStatus.Installed;
+            bool wasUpdate = status == LangStatus.UpdateAvailable;
 
             SetActionBusy(true);
             bool ok = false;
-            bool wasRemove = status == LangStatus.Installed;
             try
             {
                 if (wasRemove)
                 {
-                    // 已安裝 → 移除
                     if (TranslationRepoService.RemoveLanguage(entry.Code))
                     {
                         ok = true;
@@ -282,12 +302,12 @@ namespace OmniConsole.Dialogs
                     // 未安裝 / 有新版 → 下載（覆蓋）
                     LoadingText.Text = _resourceLoader.Loc("ManageLanguages_Downloading");
                     ok = await TranslationRepoService.DownloadLanguageAsync(
-                        entry.Code, entry.Revision, entry.Translators);
+                        entry.Code, entry.RepoRevision, entry.Translators);
                     if (ok)
                     {
                         Changed = true;
                         // 更新的是目前使用中語言時需重啟才生效；據此設旗標，呼叫端關閉對話方塊後彈重啟提示。
-                        if (TranslationRepoService.NeedsRestartAfterUpdate(entry.Code, status == LangStatus.UpdateAvailable))
+                        if (TranslationRepoService.NeedsRestartAfterUpdate(entry.Code, wasUpdate))
                             NeedsRestartForCurrentLanguage = true;
                     }
                 }

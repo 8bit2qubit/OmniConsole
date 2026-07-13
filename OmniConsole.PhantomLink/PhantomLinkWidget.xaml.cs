@@ -341,7 +341,7 @@ namespace OmniConsole.PhantomLink
             bool isBigPicture = false;
             try
             {
-                var bridge = PhantomBridgeHelper.CreateFactory();
+                using var bridge = PhantomBridgeHelper.CreateFactory();
                 bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture);
             }
             catch (Exception ex)
@@ -404,34 +404,23 @@ namespace OmniConsole.PhantomLink
             CustomizeAppNoteText.Visibility =
                 (isElevated && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
 
-            // 前景為管理員身份 App 時停用工作檢視與 Steam 內嵌介面按鈕
-            TaskViewBtn.IsEnabled = !isElevated;
+            // 前景為管理員身分 App 時停用 Steam 內嵌介面按鈕。
             TriggerSteamInGameOverlayBtn.IsEnabled = !isElevated;
         }
 
         /// <summary>
-        /// 「自訂此 App 的手把映射」按鈕：透過 PhantomBridge.OpenProfileEditor 喚起主程式
+        /// 「自訂此 App 的手把映射」按鈕：收合 Game Bar 並喚起主程式手把映射編輯器
         /// （omniconsole://edit-gamepad-profile?appId=...&displayName=...&fullPath=...）。
         /// </summary>
-        private void CustomizeAppBtn_Click(object sender, RoutedEventArgs e)
+        private async void CustomizeAppBtn_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_foregroundAppId)) return;
             var appId = _foregroundAppId;
             var name = _foregroundAppName ?? string.Empty;
             var fullPath = _foregroundFullPath ?? string.Empty;
-            DebugLogger.Log("[Widget] CustomizeAppBtn_Click → PhantomBridge.OpenProfileEditor");
-            DebugLogger.Log($"[Widget]   appId(len={appId.Length})=[{appId}]");
-            DebugLogger.Log($"[Widget]   name(len={name.Length})=[{name}]");
-            DebugLogger.Log($"[Widget]   fullPath(len={fullPath.Length})=[{fullPath}]");
-            try
-            {
-                var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.OpenProfileEditor(appId, name, fullPath);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.Log($"[Widget] OpenProfileEditor failed: HResult=0x{ex.HResult:X8} type={ex.GetType().Name} msg={ex.Message}");
-            }
+
+            DebugLogger.Log($"[Widget] CustomizeAppBtn_Click → edit-gamepad-profile appId=[{appId}]");
+            await LaunchViaGameBarAsync("CustomizeApp", GameBarUris.EditGamepadProfile(appId, name, fullPath));
         }
 
         /// <summary>
@@ -454,51 +443,72 @@ namespace OmniConsole.PhantomLink
         }
 
         // ── Quick Actions：一次性動作按鈕 ────────────────────────────────────
-        //
-        // 委派給 PhantomBridge Full Trust COM Server 執行；Widget 受 UWP AppContainer 限制，
-        // SendInput 會被靜默封鎖，LaunchUriAsync 跨套件 protocol 不可靠。
-        // Bridge 為獨立的 full trust 桌面行程，Windows 於 CoCreateInstance 時按需啟動。
 
-        /// <summary>透過 PhantomBridge 送 Win+Tab 開啟 Windows 工作檢視。</summary>
-        private void TaskViewBtn_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 收合 Game Bar 後喚起目標 App。
+        /// </summary>
+        private async System.Threading.Tasks.Task LaunchViaGameBarAsync(string tag, string uri)
         {
-            DebugLogger.Log("[Widget] TaskViewBtn_Click → PhantomBridge.SendTaskView");
-            try { PhantomBridgeHelper.CreateFactory().SendTaskView(); }
-            catch (Exception ex) { DebugLogger.Log("[Widget] TaskView FAIL: " + ex); }
+            var widget = App.CurrentWidget;
+            await GameBarLauncher.DismissGameBarAsync(widget, tag);
+            await GameBarLauncher.LaunchAsync(widget, uri, tag);
         }
 
         /// <summary>
-        /// 透過 PhantomBridge 觸發 Steam In-Game Overlay。快捷鍵字串從 Shared.ini 讀取
+        /// 收合 Game Bar 後委派 PhantomBridge 執行動作。
+        /// 順序不可對調：Bridge 端各方法開頭皆等待收合完成才動作，需要下層視窗已取回前景。
+        /// 委派維持同步呼叫：Bridge COM server 於 client 消失時一併退出，委派不可在 widget 生命週期外執行。
+        /// </summary>
+        private async System.Threading.Tasks.Task RunBridgeActionAsync(string tag, Action<PhantomBridgeFactory> action)
+        {
+            try
+            {
+                await GameBarLauncher.DismissGameBarAsync(App.CurrentWidget, tag);
+                PhantomBridgeHelper.InvokeWithRetry(action);
+                DebugLogger.Log($"[Widget] {tag}: bridge returned");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[Widget] {tag} FAIL: HResult=0x{ex.HResult:X8} type={ex.GetType().Name} msg={ex.Message}");
+            }
+        }
+
+        /// <summary>收合 Game Bar 並透過 PhantomBridge 開啟 Windows 工作檢視。</summary>
+        private async void TaskViewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogger.Log("[Widget] TaskViewBtn_Click → PhantomBridge.SendTaskView");
+            await RunBridgeActionAsync("TaskView", bridge => bridge.SendTaskView());
+        }
+
+        /// <summary>
+        /// 收合 Game Bar 並透過 PhantomBridge 觸發 Steam In-Game Overlay。快捷鍵字串從 Shared.ini 讀取
         /// （PhantomKey 從 Steam VDF 解析後寫入），確保符合使用者在 Steam 自訂的快捷鍵。
         /// 僅在 DefaultPlatform=SteamBigPicture 時可見，避免對非 Steam 遊戲送 Shift+Tab 造成意外。
         /// </summary>
-        private void TriggerSteamInGameOverlayBtn_Click(object sender, RoutedEventArgs e)
+        private async void TriggerSteamInGameOverlayBtn_Click(object sender, RoutedEventArgs e)
         {
             string shortcut = PhantomKeyStore.GetSteamInGameOverlayShortcut();
             DebugLogger.Log($"[Widget] TriggerSteamInGameOverlayBtn_Click → PhantomBridge.TriggerSteamInGameOverlay(\"{shortcut}\")");
-            try { PhantomBridgeHelper.CreateFactory().TriggerSteamInGameOverlay(shortcut); }
-            catch (Exception ex) { DebugLogger.Log("[Widget] TriggerSteamInGameOverlay FAIL: " + ex); }
+            await RunBridgeActionAsync("SteamOverlay", bridge => bridge.TriggerSteamInGameOverlay(shortcut));
         }
 
         /// <summary>
-        /// 透過 PhantomBridge 啟動 xbox://library（Xbox 媒體櫃）。
-        /// 全域可見：補回 Game Bar Library 原本啟動 xbox://library 的功能（被 OmniConsole 接管後遺漏）。
+        /// 收合 Game Bar 並啟動 Xbox 媒體櫃。
+        /// 全域可見：補回 Game Bar Library 原本啟動 Xbox 媒體櫃的功能（被 OmniConsole 接管後遺漏）。
         /// </summary>
-        private void XboxLibraryBtn_Click(object sender, RoutedEventArgs e)
+        private async void XboxLibraryBtn_Click(object sender, RoutedEventArgs e)
         {
-            DebugLogger.Log("[Widget] XboxLibraryBtn_Click → PhantomBridge.OpenXboxLibrary");
-            try { PhantomBridgeHelper.CreateFactory().OpenXboxLibrary(); }
-            catch (Exception ex) { DebugLogger.Log("[Widget] OpenXboxLibrary FAIL: " + ex); }
+            DebugLogger.Log("[Widget] XboxLibraryBtn_Click → Xbox Library");
+            await LaunchViaGameBarAsync("XboxLibrary", GameBarUris.XboxLibrary);
         }
 
         /*
         // SettingsBtn 暫時註解保留：使用者可從 Game Bar Library 入口替代。日後研究後再啟用。
-        /// <summary>透過 PhantomBridge 喚起 OmniConsole 主程式設定頁。</summary>
-        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        /// <summary>收合 Game Bar 並喚起 OmniConsole 主程式設定頁。</summary>
+        private async void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            DebugLogger.Log("[Widget] SettingsBtn_Click → PhantomBridge.OpenSettings");
-            try { PhantomBridgeHelper.CreateFactory().OpenSettings(); }
-            catch (Exception ex) { DebugLogger.Log("[Widget] Settings FAIL: " + ex); }
+            DebugLogger.Log("[Widget] SettingsBtn_Click → omniconsole://show-settings");
+            await LaunchViaGameBarAsync("Settings", GameBarUris.ShowSettings);
         }
         */
 

@@ -26,13 +26,20 @@ namespace OmniConsole.Pages.Settings
         // 防止檢查更新重複觸發
         private bool _isCheckingUpdate;
 
+        // 防止安裝更新重複觸發：殼層的 MainWindow.IsInstallFlowInProgress 要等本方法內的
+        // 更新檢查 await 之後才生效，該空窗期間的連點會各自打一次更新檢查 API。
+        private bool _isRequestingInstall;
+
         // ── 殼層事件契約 ──────────────────────────────────────────────────────
 
         /// <summary>請殼層依快取的 UpdateKind 重新整理頂部 SettingsUpdateInfoBar（跨頁固定區塊留殼層）。</summary>
         internal event EventHandler? UpdateInfoBarRefreshRequested;
 
-        /// <summary>請殼層執行安裝流程（殼層持有與 MainWindow 安裝續做機制的契約 RunInstallBundleWithDialogAsync）。</summary>
-        internal event EventHandler<InstallRequestEventArgs>? InstallRequested;
+        /// <summary>
+        /// 請殼層執行安裝流程（殼層持有與 MainWindow 安裝續做機制的契約 RunInstallBundleWithDialogAsync）。
+        /// 回傳 Task 供本頁 await，使連點防呆旗標在整個安裝流程結束後才還原。
+        /// </summary>
+        internal Func<Task>? InstallRequested;
 
         /// <summary>背景材質變更：請殼層轉知 MainWindow 即時套用新材質並切換分層 brush。攜帶材質字串。</summary>
         internal event EventHandler<string>? BackgroundMaterialChanged;
@@ -464,38 +471,28 @@ namespace OmniConsole.Pages.Settings
             }
         }
 
-        /// <summary>下載並安裝更新按鈕：解析快取連結後，透過事件請殼層執行安裝流程（殼層持有 MainWindow 安裝續做契約）。</summary>
+        /// <summary>
+        /// 下載並安裝更新按鈕：確認開發人員模式後，透過事件請殼層執行安裝流程
+        /// （殼層依序跑前置檢查、更新檢查與安裝，並持有 MainWindow 安裝續做契約）。
+        /// </summary>
         private async void DownloadInstallButton_Click(object sender, RoutedEventArgs e)
         {
-            // 安裝流程由殼層執行，重複觸發由殼層的 MainWindow.IsInstallFlowInProgress 防護。
-
-            // 點選時再次確認開發人員模式，防止使用者中途關閉
-            CheckDeveloperMode();
-            if (!UpdateCheckService.IsDeveloperModeEnabled()) return;
-
-            // 重新檢查最新版本，確保下載的是最新的而非過期快取
-            DebugLogger.Log($"[UpdCheck] entry=Install tick={Environment.TickCount64}");
-            var (kind, _) = await UpdateCheckService.CheckForUpdateAsync();
-            DebugLogger.Log($"[UpdCheck] entry=Install result kind={kind} tick={Environment.TickCount64}");
-
-            var mainUrl = SettingsService.GetCachedDownloadUrl();
-            var phantomLinkUrl = SettingsService.GetCachedPhantomLinkUrl();
-            var targetVersion = SettingsService.GetCachedNewVersion();
-
-            if (string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(phantomLinkUrl))
+            if (_isRequestingInstall) return;
+            _isRequestingInstall = true;
+            try
             {
-                // 無快取下載連結時回退開瀏覽器
-                await Windows.System.Launcher.LaunchUriAsync(
-                    new Uri(UpdateCheckService.ReleaseNotesUrl));
-                return;
+                // 點選時再次確認開發人員模式，防止使用者中途關閉
+                CheckDeveloperMode();
+                if (!UpdateCheckService.IsDeveloperModeEnabled()) return;
+
+                await (InstallRequested?.Invoke() ?? Task.CompletedTask);
             }
-
-            bool mainSkippable = kind == UpdateCheckService.UpdateKind.MissingPhantomLink
-                && targetVersion == SettingsService.GetAppVersion();
-
-            // 安裝流程由殼層執行（與 MainWindow 的安裝續做機制共用 RunInstallBundleWithDialogAsync）。
-            InstallRequested?.Invoke(this, new InstallRequestEventArgs(
-                phantomLinkUrl, mainUrl, targetVersion, mainSkippable));
+            finally
+            {
+                // 安裝成功會由 ForceApplicationShutdown 結束本行程、不會執行到此；
+                // 安裝失敗或使用者於前置對話方塊取消時還原旗標，允許重新觸發。
+                _isRequestingInstall = false;
+            }
         }
 
         /// <summary>自動檢查更新（跨日邏輯）：有更新時重新整理 InfoBar 與版本下方狀態。</summary>
@@ -574,27 +571,5 @@ namespace OmniConsole.Pages.Settings
         {
             await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:developers"));
         }
-    }
-
-    /// <summary>AdvancedView 請殼層執行安裝流程的事件參數。</summary>
-    internal sealed class InstallRequestEventArgs : EventArgs
-    {
-        /// <summary>建立安裝請求參數。</summary>
-        public InstallRequestEventArgs(string phantomLinkUrl, string mainUrl, string targetVersion, bool mainSkippable)
-        {
-            PhantomLinkUrl = phantomLinkUrl;
-            MainUrl = mainUrl;
-            TargetVersion = targetVersion;
-            MainSkippable = mainSkippable;
-        }
-
-        /// <summary>PhantomLink msix 下載連結。</summary>
-        public string PhantomLinkUrl { get; }
-        /// <summary>主程式 msix 下載連結。</summary>
-        public string MainUrl { get; }
-        /// <summary>目標版本號。</summary>
-        public string TargetVersion { get; }
-        /// <summary>是否可略過主程式安裝（僅缺 PhantomLink 且版本相同時）。</summary>
-        public bool MainSkippable { get; }
     }
 }

@@ -1379,6 +1379,9 @@
   <data name="ManageLanguages_Empty" xml:space="preserve">
     <value>此版本目前尚無可用的社群語言。</value>
   </data>
+  <data name="ManageLanguages_OfflineNotice" xml:space="preserve">
+    <value>目前為離線狀態，可移除已安裝的語言，但無法下載或更新。</value>
+  </data>
   <data name="ManageLanguages_SelectHint" xml:space="preserve">
     <value>選擇語言以查看詳細資訊。</value>
   </data>

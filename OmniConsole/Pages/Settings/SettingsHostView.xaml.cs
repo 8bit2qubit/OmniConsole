@@ -7,7 +7,6 @@ using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Dialogs;
 using OmniConsole.Services;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OmniConsole.Pages.Settings
@@ -41,9 +40,6 @@ namespace OmniConsole.Pages.Settings
 
         // 目前顯示的設定導覽頁面（General / Advanced / Troubleshoot）
         private string _currentNavTag = "General";
-
-        // 下載更新的取消 token
-        private CancellationTokenSource? _downloadCts;
 
         // 手把映射編輯器待辦：從 Protocol 進來時暫存 appId / displayName，ShowSettings 取出
         private OmniConsole.Models.AppId? _pendingEditAppId;
@@ -334,8 +330,7 @@ namespace OmniConsole.Pages.Settings
                     {
                         a.UpdateInfoBarRefreshRequested -= AdvancedView_UpdateInfoBarRefreshRequested;
                         a.UpdateInfoBarRefreshRequested += AdvancedView_UpdateInfoBarRefreshRequested;
-                        a.InstallRequested -= AdvancedView_InstallRequested;
-                        a.InstallRequested += AdvancedView_InstallRequested;
+                        a.InstallRequested = RunInstallFlowAsync;
                         a.BackgroundMaterialChanged -= AdvancedView_BackgroundMaterialChanged;
                         a.BackgroundMaterialChanged += AdvancedView_BackgroundMaterialChanged;
                         a.Initialize();
@@ -379,11 +374,52 @@ namespace OmniConsole.Pages.Settings
             if (SettingsContentFrame.Content is AdvancedView rebuilt) rebuilt.RestoreBackgroundMaterialFocus();
         }
 
-        /// <summary>進階分頁請求執行安裝流程（殼層持有與 MainWindow 安裝續做機制的契約）。</summary>
-        private async void AdvancedView_InstallRequested(object? sender, InstallRequestEventArgs args)
+        /// <summary>
+        /// 進階分頁按下下載並安裝後的完整流程：依序跑 PhantomPaw 前置擋、更新檢查、安裝。
+        /// 更新檢查排在前置擋之後，使用者於前置對話方塊取消時即不會多打一次更新檢查 API。
+        /// 無可用下載連結時回退開啟發行頁。整段以 MainWindow.IsInstallFlowInProgress 上鎖。
+        /// </summary>
+        private async Task RunInstallFlowAsync()
         {
-            await RunInstallBundleWithDialogAsync(args.PhantomLinkUrl, args.MainUrl, args.TargetVersion,
-                args.MainSkippable, resumeFromPhase2: false);
+            if (MainWindow.IsInstallFlowInProgress) return;
+            MainWindow.IsInstallFlowInProgress = true;
+            try
+            {
+                // 前置擋：PhantomPaw dll 被鎖住時彈對話方塊列鎖住者，使用者取消則放棄整個安裝流程。
+                if (!await CheckAndPromptLockedAppsAsync())
+                {
+                    // 取消鎖定對話方塊後，把焦點還原至觸發安裝的下載並安裝按鈕（該按鈕在進階分頁內）。
+                    (SettingsContentFrame.Content as AdvancedView)?.RestoreInstallButtonFocus();
+                    return;
+                }
+
+                // 重新檢查最新版本，確保下載的是最新的而非過期快取
+                DebugLogger.Log($"[UpdCheck] entry=Install tick={Environment.TickCount64}");
+                var (kind, _) = await UpdateCheckService.CheckForUpdateAsync();
+                DebugLogger.Log($"[UpdCheck] entry=Install result kind={kind} tick={Environment.TickCount64}");
+
+                var mainUrl = SettingsService.GetCachedDownloadUrl();
+                var phantomLinkUrl = SettingsService.GetCachedPhantomLinkUrl();
+                var targetVersion = SettingsService.GetCachedNewVersion();
+
+                if (string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(phantomLinkUrl))
+                {
+                    // 無快取下載連結時回退開瀏覽器
+                    await Windows.System.Launcher.LaunchUriAsync(
+                        new Uri(UpdateCheckService.ReleaseNotesUrl));
+                    return;
+                }
+
+                bool mainSkippable = kind == UpdateCheckService.UpdateKind.MissingPhantomLink
+                    && targetVersion == SettingsService.GetAppVersion();
+
+                await RunInstallBundleWithDialogInternalAsync(
+                    phantomLinkUrl, mainUrl, targetVersion, mainSkippable, resumeFromPhase2: false);
+            }
+            finally
+            {
+                MainWindow.IsInstallFlowInProgress = false;
+            }
         }
 
         /// <summary>
@@ -593,7 +629,7 @@ namespace OmniConsole.Pages.Settings
 
         /// <summary>
         /// 安裝前置擋：查 PhantomPaw dll 是否被任何行程鎖住、有的話彈 AppsUsingPhantomPawDialog 顯示清單。
-        /// 玩家按「重試」清空所有鎖才回 true 進入安裝；按「取消」/B 鍵回 false 放棄。
+        /// 使用者按「重試」清空所有鎖才回 true 進入安裝；按「取消」/B 鍵回 false 放棄。
         /// 無鎖直接 true。
         /// </summary>
         private async Task<bool> CheckAndPromptLockedAppsAsync()
@@ -608,21 +644,28 @@ namespace OmniConsole.Pages.Settings
         }
 
         /// <summary>
-        /// 將 InstallBundleAsync 包進 UpdateProgressDialog，由對話方塊以模態方式擋住手把 B 鍵與 Esc，
-        /// 並在 MainWindow 端攔截視窗關閉。失敗後解除鎖定並顯示失敗訊息於原 InfoBar。
+        /// MainWindow 安裝續做入口：套上 MainWindow.IsInstallFlowInProgress 鎖，跑前置擋後執行安裝。
+        /// 續做的下載連結來自待續狀態，不需重跑更新檢查（進階分頁的入口走 RunInstallFlowAsync）。
         /// </summary>
         internal async Task RunInstallBundleWithDialogAsync(
             string phantomLinkUrl, string mainUrl, string targetVersion,
             bool mainSkippable, bool resumeFromPhase2)
         {
-            // 連點/雙觸發防呆 + 外部入口防護：整個安裝流程（含前置對話方塊等待玩家階段）期間擋第二次進入。
-            // _downloadCts 只在實際下載階段 non-null、無法涵蓋前置對話方塊等待時間。
+            // 連點/雙觸發防呆 + 外部入口防護：整個安裝流程（含前置對話方塊等待使用者階段）期間擋第二次進入。
             // 用 MainWindow.IsInstallFlowInProgress static 同時讓 App.ShowSettingsFromRedirect /
             // ReactivateFromRedirect / PassthroughFromRedirect 三條外部入口讀取後提前 return。
             if (MainWindow.IsInstallFlowInProgress) return;
             MainWindow.IsInstallFlowInProgress = true;
             try
             {
+                // 前置擋：若 PhantomPaw dll 仍被任何行程鎖住（注入中的遊戲 / App），
+                // 彈對話方塊列鎖住者並等使用者關閉重試；使用者取消則整個安裝流程放棄。
+                if (!await CheckAndPromptLockedAppsAsync())
+                {
+                    (SettingsContentFrame.Content as AdvancedView)?.RestoreInstallButtonFocus();
+                    return;
+                }
+
                 await RunInstallBundleWithDialogInternalAsync(
                     phantomLinkUrl, mainUrl, targetVersion, mainSkippable, resumeFromPhase2);
             }
@@ -632,19 +675,15 @@ namespace OmniConsole.Pages.Settings
             }
         }
 
-        /// <summary>實際安裝流程；由 RunInstallBundleWithDialogAsync 套上 MainWindow.IsInstallFlowInProgress 鎖後呼叫。</summary>
+        /// <summary>
+        /// 將 InstallBundleAsync 包進 UpdateProgressDialog，由對話方塊以模態方式擋住手把 B 鍵與 Esc，
+        /// 並在 MainWindow 端攔截視窗關閉。失敗後解除鎖定並顯示失敗訊息於原 InfoBar。
+        /// 呼叫端負責 MainWindow.IsInstallFlowInProgress 鎖與前置擋。
+        /// </summary>
         private async Task RunInstallBundleWithDialogInternalAsync(
             string phantomLinkUrl, string mainUrl, string targetVersion,
             bool mainSkippable, bool resumeFromPhase2)
         {
-            // 前置擋：若 PhantomPaw dll 仍被任何行程鎖住（注入中的遊戲 / App），
-            // 彈對話方塊列鎖住者並等玩家關閉重試；玩家取消則整個安裝流程放棄。
-            if (!await CheckAndPromptLockedAppsAsync())
-            {
-                // 取消鎖定對話方塊後，把焦點還原至觸發安裝的下載並安裝按鈕（該按鈕在進階分頁內）。
-                (SettingsContentFrame.Content as AdvancedView)?.RestoreInstallButtonFocus();
-                return;
-            }
 
             var dialog = new UpdateProgressDialog(this.XamlRoot);
             // 在 try 外宣告，使失敗 catch 能 await 對話方塊關閉完成（背景設定頁 IsEnabled 還原後再聚焦）。
@@ -652,7 +691,6 @@ namespace OmniConsole.Pages.Settings
 
             try
             {
-                _downloadCts = new CancellationTokenSource();
                 var progress = new Progress<double>(pct => dialog.ReportProgress(pct));
                 var status = new Progress<string>(key =>
                 {
@@ -689,11 +727,11 @@ namespace OmniConsole.Pages.Settings
                 await UpdateCheckService.InstallBundleAsync(
                     phantomLinkUrl, mainUrl, targetVersion,
                     mainSkippable, resumeFromPhase2,
-                    progress, status, _downloadCts.Token);
+                    progress, status);
 
                 // ForceApplicationShutdown / RequestRestartAsync 路徑會結束本行程，此後程式碼為回退路徑
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex)
             {
                 DebugLogger.Log($"[SettingsHostView] Download/install failed: {ex.Message}");
                 dialog.RequestClose();
@@ -712,11 +750,6 @@ namespace OmniConsole.Pages.Settings
                     advanced.ShowInstallFailed();
                     advanced.RestoreInstallButtonFocus();
                 }
-            }
-            finally
-            {
-                _downloadCts?.Dispose();
-                _downloadCts = null;
             }
         }
 
