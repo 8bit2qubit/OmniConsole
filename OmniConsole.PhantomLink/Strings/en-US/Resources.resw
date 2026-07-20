@@ -171,7 +171,7 @@
     <value>Cursor Speed</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Disabled — device has built-in gamepad mapping.</value>
+    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping.</value>
   </data>
   <data name="Widget_ForegroundApp_LineFormat" xml:space="preserve">
     <value>Current: {0} ({1})</value>

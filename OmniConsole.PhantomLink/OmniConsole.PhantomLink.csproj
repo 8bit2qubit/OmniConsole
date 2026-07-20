@@ -19,7 +19,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <AppxBundle>Never</AppxBundle>
-    <NoWarn>$(NoWarn);APPX1707</NoWarn>
+    <NoWarn>$(NoWarn);APPX1707;NETSDK1023</NoWarn>
 
     <!-- 版本資訊固定欄位（比照主程式 OmniConsole.csproj）；版號由下方 SyncVersionFromMainManifest target 覆寫。 -->
     <Company>8bit2qubit</Company>
@@ -42,6 +42,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Gaming.XboxGameBar" Version="7.3.2607010" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.8249" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.260610101">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <!-- XboxGameBar 的 winmd 與 native dll 顯式封裝進套件：winmd 供 proxyStub manifest 宣告，

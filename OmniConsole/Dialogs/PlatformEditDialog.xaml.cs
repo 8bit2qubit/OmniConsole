@@ -348,7 +348,10 @@ namespace OmniConsole.Dialogs
                 }
                 else
                 {
-                    string? targetErr = isExe ? ValidatePath(TargetBox.Text.Trim()) : ValidateUri(TargetBox.Text.Trim());
+                    // Executable 路徑支援 %LocalAppData% 等變數形式：驗證展開後的絕對路徑（儲存端 BuildResultEntry 同步展開）
+                    string? targetErr = isExe
+                        ? ValidatePath(EnvironmentPathHelper.Expand(TargetBox.Text.Trim()))
+                        : ValidateUri(TargetBox.Text.Trim());
                     if (targetErr != null)
                     {
                         TargetError.Text = targetErr; TargetError.Visibility = Visibility.Visible; hasError = true;
@@ -420,9 +423,12 @@ namespace OmniConsole.Dialogs
             }
             else
             {
-                entry.LaunchType = LaunchTypeCombo.SelectedIndex == 1 ? "Executable" : "ProtocolUri";
-                entry.LaunchTarget = TargetBox.Text.Trim();
-                entry.Arguments = LaunchTypeCombo.SelectedIndex == 1 ? ArgsBox.Text.Trim() : "";
+                bool isExe = LaunchTypeCombo.SelectedIndex == 1;
+                entry.LaunchType = isExe ? "Executable" : "ProtocolUri";
+                // Executable 路徑支援 %LocalAppData% 等變數形式：儲存展開後的絕對路徑
+                string target = TargetBox.Text.Trim();
+                entry.LaunchTarget = isExe ? EnvironmentPathHelper.Expand(target) : target;
+                entry.Arguments = isExe ? ArgsBox.Text.Trim() : "";
                 entry.PackageFamilyName = "";
             }
 

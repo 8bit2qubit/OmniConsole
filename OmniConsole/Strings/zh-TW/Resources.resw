@@ -263,10 +263,10 @@
     <value>讓貓又將手把化作鍵鼠，並在「貓又」頁為各程式量身調校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、檔案總管、Steam 和 Discord。</value>
+    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、Playnite 桌面版、檔案總管、Windows 檔案選擇器、Windows Installer、Steam 和 Discord。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>已停用 — 裝置具備內建手把映射。</value>
+    <value>已停用：此主機具備廠商內建的手把映射。</value>
   </data>
   <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
     <value>控制器預設版面</value>
@@ -806,9 +806,6 @@
   <data name="Label_FseState.Text" xml:space="preserve">
     <value>Xbox 模式 (FSE) 狀態</value>
   </data>
-  <data name="Label_DeviceForm.Text" xml:space="preserve">
-    <value>DeviceForm</value>
-  </data>
   <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
     <value>觸控點上限</value>
   </data>
@@ -934,9 +931,6 @@
   </data>
   <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
     <value>改鍵…</value>
-  </data>
-  <data name="AppIdUwp" xml:space="preserve">
-    <value>封裝程式</value>
   </data>
   <data name="AppIdProcessPrefix" xml:space="preserve">
     <value>行程: </value>
@@ -1486,5 +1480,65 @@
   </data>
   <data name="OpenRepoOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>在 GitHub 開啟儲存庫</value>
+  </data>
+  <data name="CommunityPlatformsButton.Content" xml:space="preserve">
+    <value>社群</value>
+  </data>
+  <data name="CommunityPlatforms_Title" xml:space="preserve">
+    <value>社群平台</value>
+  </data>
+  <data name="CommunityPlatforms_Loading" xml:space="preserve">
+    <value>正在載入社群平台…</value>
+  </data>
+  <data name="CommunityPlatforms_Error" xml:space="preserve">
+    <value>無法連線至社群平台儲存庫，請檢查網路連線後再試。</value>
+  </data>
+  <data name="CommunityPlatforms_Empty" xml:space="preserve">
+    <value>目前還沒有社群平台。</value>
+  </data>
+  <data name="CommunityPlatforms_SchemaTooNew" xml:space="preserve">
+    <value>社群平台目錄需要較新的應用程式版本，請先更新。</value>
+  </data>
+  <data name="CommunityPlatforms_SearchPlaceholder" xml:space="preserve">
+    <value>搜尋平台或提交者…</value>
+  </data>
+  <data name="CommunityPlatforms_SortNewest" xml:space="preserve">
+    <value>提交順序：新→舊</value>
+  </data>
+  <data name="CommunityPlatforms_SortOldest" xml:space="preserve">
+    <value>提交順序：舊→新</value>
+  </data>
+  <data name="CommunityPlatforms_SelectHint" xml:space="preserve">
+    <value>選擇平台以查看詳細資訊。</value>
+  </data>
+  <data name="CommunityPlatforms_NoResults" xml:space="preserve">
+    <value>找不到符合的平台。</value>
+  </data>
+  <data name="CommunityPlatforms_Submitter" xml:space="preserve">
+    <value>由 {0} 提供</value>
+  </data>
+  <data name="CommunityPlatforms_SubmitterDate" xml:space="preserve">
+    <value>由 {0} 提供・{1}</value>
+  </data>
+  <data name="CommunityPlatforms_NotDetected" xml:space="preserve">
+    <value>此主機上找不到執行檔，新增時須指定其位置。</value>
+  </data>
+  <data name="CommunityPlatforms_Action_Add" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="CommunityPlatforms_Result_Added" xml:space="preserve">
+    <value>已將「{0}」新增至自訂平台。</value>
+  </data>
+  <data name="Import_Error_PackageNotInstalled" xml:space="preserve">
+    <value>此主機未安裝該應用程式套件。</value>
+  </data>
+  <data name="CommunityPlatforms_CheckingUpdates" xml:space="preserve">
+    <value>正在檢查平台目錄更新…</value>
+  </data>
+  <data name="CommunityPlatforms_OfflineNotice" xml:space="preserve">
+    <value>目前為離線狀態，顯示本機快取的社群平台，仍可新增，但清單可能不是最新。</value>
+  </data>
+  <data name="Import_Error_ExecutableNotFound" xml:space="preserve">
+    <value>此主機上找不到該執行檔。</value>
   </data>
 </root>

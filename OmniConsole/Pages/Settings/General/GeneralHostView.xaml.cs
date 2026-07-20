@@ -224,16 +224,29 @@ namespace OmniConsole.Pages.Settings.General
             return false;
         }
 
-        /// <summary>匯入按鈕點選：轉發目前 User 子頁開啟匯入（貼 JSON）對話。</summary>
-        private void ImportPlatformButton_Click(object sender, RoutedEventArgs e) =>
-            _ = (InnerFrame.Content as UserPlatformsView)?.ImportInternal();
+        /// <summary>匯入按鈕點選：轉發目前 User 子頁開啟匯入（貼 JSON）對話方塊；子頁未把焦點移到卡片時把白框還原回本按鈕。</summary>
+        private async void ImportPlatformButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InnerFrame.Content is not UserPlatformsView user) return;
+            bool focusMoved = await user.ImportInternal();
+            if (!focusMoved) ImportPlatformButton.Focus(FocusStateHelper.Preferred);
+        }
 
-        /// <summary>匯入按鈕顯隱：僅 User 子頁且已同意自訂平台免責聲明時顯示。</summary>
+        /// <summary>社群平台按鈕點選：轉發目前 User 子頁開啟社群平台瀏覽對話方塊；子頁未把焦點移到卡片時把白框還原回本按鈕。</summary>
+        private async void CommunityPlatformsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InnerFrame.Content is not UserPlatformsView user) return;
+            bool focusMoved = await user.CommunityInternal();
+            if (!focusMoved) CommunityPlatformsButton.Focus(FocusStateHelper.Preferred);
+        }
+
+        /// <summary>社群平台鈕與匯入鈕顯隱：僅 User 子頁且已同意自訂平台免責聲明時顯示（社群資料本質是別人給的自訂平台，同一張同意書管轄）。</summary>
         private void UpdateImportButtonVisibility()
         {
             bool show = InnerFrame.Content is UserPlatformsView
                 && SettingsService.GetCustomPlatformConsentAccepted();
             ImportPlatformButton.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            CommunityPlatformsButton.Visibility = ImportPlatformButton.Visibility;
         }
     }
 }

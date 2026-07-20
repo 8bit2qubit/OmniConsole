@@ -263,10 +263,10 @@
     <value>让猫又将手柄化作键鼠，并在“猫又”页为各应用量身调校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、文件资源管理器、Steam 和 Discord。</value>
+    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、Playnite 桌面版、文件资源管理器、Windows 文件选择器、Windows Installer、Steam 和 Discord。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>已禁用 — 设备具备内置手柄映射。</value>
+    <value>已禁用：此主机具备厂商内置的手柄映射。</value>
   </data>
   <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
     <value>控制器预置布局</value>
@@ -806,9 +806,6 @@
   <data name="Label_FseState.Text" xml:space="preserve">
     <value>Xbox 模式 (FSE) 状态</value>
   </data>
-  <data name="Label_DeviceForm.Text" xml:space="preserve">
-    <value>DeviceForm</value>
-  </data>
   <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
     <value>触摸点上限</value>
   </data>
@@ -934,9 +931,6 @@
   </data>
   <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
     <value>改键…</value>
-  </data>
-  <data name="AppIdUwp" xml:space="preserve">
-    <value>打包应用</value>
   </data>
   <data name="AppIdProcessPrefix" xml:space="preserve">
     <value>进程: </value>
@@ -1486,5 +1480,65 @@
   </data>
   <data name="OpenRepoOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>在 GitHub 打开仓库</value>
+  </data>
+  <data name="CommunityPlatformsButton.Content" xml:space="preserve">
+    <value>社区</value>
+  </data>
+  <data name="CommunityPlatforms_Title" xml:space="preserve">
+    <value>社区平台</value>
+  </data>
+  <data name="CommunityPlatforms_Loading" xml:space="preserve">
+    <value>正在加载社区平台…</value>
+  </data>
+  <data name="CommunityPlatforms_Error" xml:space="preserve">
+    <value>无法连接到社区平台仓库，请检查网络连接后再试。</value>
+  </data>
+  <data name="CommunityPlatforms_Empty" xml:space="preserve">
+    <value>目前还没有社区平台。</value>
+  </data>
+  <data name="CommunityPlatforms_SchemaTooNew" xml:space="preserve">
+    <value>社区平台目录需要较新的应用程序版本，请先更新。</value>
+  </data>
+  <data name="CommunityPlatforms_SearchPlaceholder" xml:space="preserve">
+    <value>搜索平台或提交者…</value>
+  </data>
+  <data name="CommunityPlatforms_SortNewest" xml:space="preserve">
+    <value>提交顺序：新→旧</value>
+  </data>
+  <data name="CommunityPlatforms_SortOldest" xml:space="preserve">
+    <value>提交顺序：旧→新</value>
+  </data>
+  <data name="CommunityPlatforms_SelectHint" xml:space="preserve">
+    <value>选择平台以查看详细信息。</value>
+  </data>
+  <data name="CommunityPlatforms_NoResults" xml:space="preserve">
+    <value>未找到匹配的平台。</value>
+  </data>
+  <data name="CommunityPlatforms_Submitter" xml:space="preserve">
+    <value>由 {0} 提供</value>
+  </data>
+  <data name="CommunityPlatforms_SubmitterDate" xml:space="preserve">
+    <value>由 {0} 提供・{1}</value>
+  </data>
+  <data name="CommunityPlatforms_NotDetected" xml:space="preserve">
+    <value>此主机上找不到可执行文件，添加时须指定其位置。</value>
+  </data>
+  <data name="CommunityPlatforms_Action_Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="CommunityPlatforms_Result_Added" xml:space="preserve">
+    <value>已将“{0}”添加至自定义平台。</value>
+  </data>
+  <data name="Import_Error_PackageNotInstalled" xml:space="preserve">
+    <value>此主机未安装该应用程序包。</value>
+  </data>
+  <data name="CommunityPlatforms_CheckingUpdates" xml:space="preserve">
+    <value>正在检查平台目录更新…</value>
+  </data>
+  <data name="CommunityPlatforms_OfflineNotice" xml:space="preserve">
+    <value>当前处于离线状态，显示本地缓存的社区平台，仍可添加，但列表可能不是最新的。</value>
+  </data>
+  <data name="Import_Error_ExecutableNotFound" xml:space="preserve">
+    <value>此主机上找不到该可执行文件。</value>
   </data>
 </root>

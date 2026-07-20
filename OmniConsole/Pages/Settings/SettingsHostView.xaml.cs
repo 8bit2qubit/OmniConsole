@@ -385,7 +385,7 @@ namespace OmniConsole.Pages.Settings
             MainWindow.IsInstallFlowInProgress = true;
             try
             {
-                // 前置擋：PhantomPaw dll 被鎖住時彈對話方塊列鎖住者，使用者取消則放棄整個安裝流程。
+                // 前置擋：PhantomPaw dll 被鎖住時彈對話方塊鎖住著，使用者取消則放棄整個安裝流程。
                 if (!await CheckAndPromptLockedAppsAsync())
                 {
                     // 取消鎖定對話方塊後，把焦點還原至觸發安裝的下載並安裝按鈕（該按鈕在進階分頁內）。
@@ -659,7 +659,7 @@ namespace OmniConsole.Pages.Settings
             try
             {
                 // 前置擋：若 PhantomPaw dll 仍被任何行程鎖住（注入中的遊戲 / App），
-                // 彈對話方塊列鎖住者並等使用者關閉重試；使用者取消則整個安裝流程放棄。
+                // 彈對話方塊鎖住著並等使用者關閉重試；使用者取消則整個安裝流程放棄。
                 if (!await CheckAndPromptLockedAppsAsync())
                 {
                     (SettingsContentFrame.Content as AdvancedView)?.RestoreInstallButtonFocus();

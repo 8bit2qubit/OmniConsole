@@ -48,17 +48,27 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <!-- 匯入鈕位置在 tabs 橫列（屬宿主 NavigationView），但邏輯轉發給目前 User 子頁；
-                 顯隱由宿主依目前 tab 與 consent 控。 -->
+            <!-- 社群平台鈕與匯入按鈕位置在 tabs 橫列（屬宿主 NavigationView），但邏輯轉發給目前 User 子頁；
+                 顯隱由宿主依目前 tab 與 consent 一併控（兩按鈕同條件）。 -->
             <NavigationView.PaneFooter>
-                <Button x:Name="ImportPlatformButton"
-                        x:Uid="ImportPlatformButton" services:Localized.Uid="ImportPlatformButton"
-                        Visibility="Collapsed"
-                        Click="ImportPlatformButton_Click"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button x:Name="CommunityPlatformsButton"
+                            x:Uid="CommunityPlatformsButton" services:Localized.Uid="CommunityPlatformsButton"
+                            Visibility="Collapsed"
+                            Click="CommunityPlatformsButton_Click"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                    <Button x:Name="ImportPlatformButton"
+                            x:Uid="ImportPlatformButton" services:Localized.Uid="ImportPlatformButton"
+                            Visibility="Collapsed"
+                            Click="ImportPlatformButton_Click"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                </StackPanel>
             </NavigationView.PaneFooter>
 
             <!-- 內層 Frame：System/User 子頁切換目標 -->

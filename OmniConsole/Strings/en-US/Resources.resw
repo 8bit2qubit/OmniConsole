@@ -263,10 +263,10 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Let Nekomata turn your gamepad into keyboard and mouse, and tailor per-app settings on the “Nekomata” page.</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, File Explorer, Steam, and Discord.</value>
+    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, Playnite Desktop, File Explorer, Windows File Picker, Windows Installer, Steam, and Discord.</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Disabled — device has built-in gamepad mapping.</value>
+    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping.</value>
   </data>
   <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
     <value>Controller Layout Preset</value>
@@ -806,9 +806,6 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="Label_FseState.Text" xml:space="preserve">
     <value>Xbox Mode (FSE) State</value>
   </data>
-  <data name="Label_DeviceForm.Text" xml:space="preserve">
-    <value>DeviceForm</value>
-  </data>
   <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
     <value>Max Touch Points</value>
   </data>
@@ -934,9 +931,6 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
     <value>Change key…</value>
-  </data>
-  <data name="AppIdUwp" xml:space="preserve">
-    <value>Packaged app</value>
   </data>
   <data name="AppIdProcessPrefix" xml:space="preserve">
     <value>Process: </value>
@@ -1486,5 +1480,65 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="OpenRepoOnGitHubAccessibleName.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open repository on GitHub</value>
+  </data>
+  <data name="CommunityPlatformsButton.Content" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="CommunityPlatforms_Title" xml:space="preserve">
+    <value>Community Platforms</value>
+  </data>
+  <data name="CommunityPlatforms_Loading" xml:space="preserve">
+    <value>Loading community platforms…</value>
+  </data>
+  <data name="CommunityPlatforms_Error" xml:space="preserve">
+    <value>Could not connect to the community platform repository. Please check your internet connection and try again.</value>
+  </data>
+  <data name="CommunityPlatforms_Empty" xml:space="preserve">
+    <value>No community platforms are available yet.</value>
+  </data>
+  <data name="CommunityPlatforms_SchemaTooNew" xml:space="preserve">
+    <value>The community platform catalog requires a newer app version. Please update the app first.</value>
+  </data>
+  <data name="CommunityPlatforms_SearchPlaceholder" xml:space="preserve">
+    <value>Search platforms or submitters…</value>
+  </data>
+  <data name="CommunityPlatforms_SortNewest" xml:space="preserve">
+    <value>Newest first</value>
+  </data>
+  <data name="CommunityPlatforms_SortOldest" xml:space="preserve">
+    <value>Oldest first</value>
+  </data>
+  <data name="CommunityPlatforms_SelectHint" xml:space="preserve">
+    <value>Select a platform to see details.</value>
+  </data>
+  <data name="CommunityPlatforms_NoResults" xml:space="preserve">
+    <value>No matching platforms found.</value>
+  </data>
+  <data name="CommunityPlatforms_Submitter" xml:space="preserve">
+    <value>Provided by {0}</value>
+  </data>
+  <data name="CommunityPlatforms_SubmitterDate" xml:space="preserve">
+    <value>Provided by {0} · {1}</value>
+  </data>
+  <data name="CommunityPlatforms_NotDetected" xml:space="preserve">
+    <value>The executable was not found on this console and must be located when adding.</value>
+  </data>
+  <data name="CommunityPlatforms_Action_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="CommunityPlatforms_Result_Added" xml:space="preserve">
+    <value>“{0}” was added to your custom platforms.</value>
+  </data>
+  <data name="Import_Error_PackageNotInstalled" xml:space="preserve">
+    <value>This app package is not installed on this console.</value>
+  </data>
+  <data name="CommunityPlatforms_CheckingUpdates" xml:space="preserve">
+    <value>Checking for catalog updates…</value>
+  </data>
+  <data name="CommunityPlatforms_OfflineNotice" xml:space="preserve">
+    <value>Offline. Showing cached community platforms. You can still add them, but the list may be out of date.</value>
+  </data>
+  <data name="Import_Error_ExecutableNotFound" xml:space="preserve">
+    <value>The executable was not found on this console.</value>
   </data>
 </root>

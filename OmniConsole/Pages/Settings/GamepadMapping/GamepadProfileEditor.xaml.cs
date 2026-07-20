@@ -240,8 +240,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
             if (_rows.Count == 0) BuildRows();
 
-            // 檔案總管：十字鍵一律不帶值（含既有 profile 殘留值），清成 None
-            ClearExplorerDpadIfNeeded();
+            // 十字鍵有原生反應的 app：十字鍵一律不帶值（含既有 profile 殘留值），清成 None
+            ClearNativeDpadIfNeeded();
 
             // 載入既存 profile：依 model 偵測主行 DPad 模式，Custom 則自動展開
             _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
@@ -261,21 +261,21 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             ApplyBuiltInAppControlLocks(appId);
         }
 
-        /// <summary>目前編輯對象是不是檔案總管。</summary>
-        private bool IsEditingExplorer(AppId? appId)
+        /// <summary>目前編輯對象是不是十字鍵有原生反應的 app（檔案總管 / 檔案選擇器）。</summary>
+        private bool IsEditingNativeDpadApp(AppId? appId)
         {
-            return appId != null && GamepadBuiltInLayouts.IsFileExplorer(appId);
+            return appId != null && GamepadBuiltInLayouts.HandlesDpadNatively(appId);
         }
 
-        /// <summary>依編輯對象停用不適用的控制項（保留當下值）：阻擋雙重輸入對啟動器/導覽介面無效、十字鍵在檔案總管上行為異常。</summary>
+        /// <summary>依編輯對象停用不適用的控制項（保留當下值）：阻擋雙重輸入對啟動器/導覽介面無效、十字鍵在有原生反應的 app 上會雙跳。</summary>
         private void ApplyBuiltInAppControlLocks(AppId appId)
         {
-            // 阻擋雙重輸入：對啟動器/導覽介面（檔案總管、桌面 Steam、Epic、桌面 Playnite 等）無效，一律停用
+            // 阻擋雙重輸入：對啟動器/導覽介面（檔案總管、檔案選擇器、桌面 Steam、Epic、桌面 Playnite 等）無效，一律停用
             bool blockInputEnabled = !GamepadBuiltInLayouts.IsBlockNativeInputIneffective(appId);
             BlockNativeGamepadInputSwitch.IsEnabled = blockInputEnabled;
 
-            // 十字鍵：僅檔案總管行為異常需停用（桌面 Steam 保留導覽版含連發）
-            bool dpadEnabled = !IsEditingExplorer(appId);
+            // 十字鍵：僅原生已有反應的 app（檔案總管 / 檔案選擇器）需停用（桌面 Steam 保留導覽版含連發）
+            bool dpadEnabled = !IsEditingNativeDpadApp(appId);
             ComboDPad.IsEnabled = dpadEnabled;
             RepeatBtnDPad.IsEnabled = dpadEnabled;
 
@@ -414,10 +414,10 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                 _editing.Bindings[DpadKeys[i]] = new GamepadAction { Kind = GamepadActionKind.KeyTap, Vk = vks[i] };
         }
 
-        /// <summary>檔案總管：套用預設或重設後把十字鍵強制清為 None。</summary>
-        private void ClearExplorerDpadIfNeeded()
+        /// <summary>十字鍵有原生反應的 app：套用預設或重設後把十字鍵強制清為 None。</summary>
+        private void ClearNativeDpadIfNeeded()
         {
-            if (_editing == null || !IsEditingExplorer(_editing.AppId)) return;
+            if (_editing == null || !IsEditingNativeDpadApp(_editing.AppId)) return;
             ApplyDPadAllNone();
             _dpadEditingCustom = false;
         }
@@ -567,7 +567,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             if (dlg.Result)
             {
                 _editing.Bindings = BuiltInLayoutForCurrentApp("OmniNav");
-                ClearExplorerDpadIfNeeded();
+                ClearNativeDpadIfNeeded();
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
@@ -588,7 +588,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             if (dlg.Result)
             {
                 _editing.Bindings = BuiltInLayoutForCurrentApp("Classic");
-                ClearExplorerDpadIfNeeded();
+                ClearNativeDpadIfNeeded();
                 _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
                 RefreshAllRows();
             }
@@ -649,8 +649,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                     var newBindings = new Dictionary<GamepadInputId, GamepadAction>();
                     foreach (var kv in src.Bindings)
                         newBindings[kv.Key] = kv.Value?.Clone() ?? new GamepadAction();
-                    // 檔案總管的十字鍵被鎖定：讀入時保留當下值，不讓來源覆蓋
-                    if (IsEditingExplorer(_editing.AppId))
+                    // 十字鍵有原生反應的 app 十字鍵被鎖定：讀入時保留當下值，不讓來源覆蓋
+                    if (IsEditingNativeDpadApp(_editing.AppId))
                         foreach (var k in DpadKeys)
                             newBindings[k] = _editing.Get(k).Clone();
                     _editing.Bindings = newBindings;

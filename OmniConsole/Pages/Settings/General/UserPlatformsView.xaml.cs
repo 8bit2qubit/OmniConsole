@@ -102,8 +102,11 @@ namespace OmniConsole.Pages.Settings.General
         /// <summary>Y 鍵：新增平台（開 PlatformEditDialog 新增模式）。</summary>
         internal Task AddPlatformInternal() => ShowPlatformEditDialogAsync(null);
 
-        /// <summary>匯入鈕：開 ImportPlatformDialog（貼 JSON 匯入），驗證通過後寫入並局部更新單張卡。</summary>
-        internal async Task ImportInternal()
+        /// <summary>
+        /// 匯入按鈕：開 ImportPlatformDialog（貼 JSON 匯入），驗證通過後寫入並局部更新單張卡。
+        /// 回傳是否已把焦點（白框）移到卡片；未移（取消或未匯入）時由宿主把焦點還原回匯入按鈕。
+        /// </summary>
+        internal async Task<bool> ImportInternal()
         {
             // 若提示仍開著，先強制關閉再顯示 Dialog，避免 TeachingTip 與 ContentDialog.ShowAsync() 同時存在導致崩潰。
             _exportTipTimer.Stop();
@@ -111,13 +114,74 @@ namespace OmniConsole.Pages.Settings.General
 
             var dialog = new ImportPlatformDialog(this.XamlRoot);
             var result = await dialog.ShowAsync();
-            if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return;
+            if (result != ContentDialogResult.Primary || dialog.ResultEntry is null) return false;
 
             UserPlatformStore.Add(dialog.ResultEntry);   // entry.Id 若空會在此被填上
-            await UpdateOrInsertCard(dialog.ResultEntry.Id);
+            bool inserted = await UpdateOrInsertCard(dialog.ResultEntry.Id);
+
+            // 焦點（白框）落到剛匯入那張卡片：新卡在尾端走平滑捲動、既有卡原地聚焦。
+            int index = IndexOfCard(dialog.ResultEntry.Id);
+            if (index < 0) return false;
+            if (inserted) SmoothScrollToNewCardAndFocus(index);
+            else FocusPlatformCard(index);
+            return true;
         }
 
-        /// <summary>提示列 X 鈕（滑鼠）：編輯目前選取的使用者平台。</summary>
+        /// <summary>
+        /// 社群平台按鈕：開啟 CommunityPlatformsDialog 瀏覽/新增社群平台，關閉後把本次新增的平台逐一插卡並聚焦最後一張。
+        /// 回傳是否已把焦點（白框）移到卡片；未移（未新增任何平台）時由宿主把焦點還原回社群平台按鈕。
+        /// </summary>
+        internal async Task<bool> CommunityInternal()
+        {
+            _exportTipTimer.Stop();
+            ExportSuccessTeachingTip.IsOpen = false;
+
+            var dialog = new CommunityPlatformsDialog(this.XamlRoot);
+
+            // Hide/重開迴圈：對話方塊的「指定位置」分支會 Hide() 自己，
+            // 由此處協調顯示 FilePickerDialog 後重新開啟（同 ShowPlatformEditDialogAsync 的協調模式）。
+            while (true)
+            {
+                await dialog.ShowAsync();
+
+                if (!dialog.RequestFilePicker) break;
+
+                var pickerDialog = new FilePickerDialog(
+                    this.XamlRoot, dialog.FilePickerRequest!);
+                var pickerResult = await pickerDialog.ShowAsync();
+
+                string? selectedPath = null;
+                if (pickerResult == ContentDialogResult.Primary)
+                {
+                    selectedPath = pickerDialog.SelectedFilePath;
+                }
+                else if (pickerDialog.RequestLegacyPicker)
+                {
+                    // 使用者要求系統 FileOpenPicker
+                    selectedPath = await ShowLegacyFilePickerAsync(dialog.FilePickerRequest!);
+                }
+                dialog.ApplyFilePickerResult(selectedPath);
+                // 迴圈回去重新開啟 CommunityPlatformsDialog（Opened 續跑新增）
+            }
+
+            if (!dialog.Changed) return false;
+
+            // 本次新增的平台逐一插卡（局部更新、不整批重新載入）；焦點（白框）落最後新增那張、平滑捲動。
+            foreach (var id in dialog.AddedEntryIds)
+                await UpdateOrInsertCard(id);
+            if (dialog.AddedEntryIds.Count > 0)
+            {
+                int last = IndexOfCard(dialog.AddedEntryIds[dialog.AddedEntryIds.Count - 1]);
+                if (last >= 0)
+                {
+                    SmoothScrollToNewCardAndFocus(last);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>提示列 X 按鈕（滑鼠）：編輯目前選取的使用者平台。</summary>
         internal Task EditSelectedPlatformInternal()
         {
             if (PlatformGridView.SelectedItem is PlatformCardItem card)
@@ -229,7 +293,7 @@ namespace OmniConsole.Pages.Settings.General
 
             ContentDialogResult result;
 
-            // Hide/reopen 迴圈：PlatformEditDialog 的瀏覽按鈕會 Hide() 自己，
+            // Hide/重開迴圈：PlatformEditDialog 的瀏覽按鈕會 Hide() 自己，
             // 由此處協調顯示 FilePickerDialog 後重新開啟 PlatformEditDialog。
             while (true)
             {
@@ -373,7 +437,7 @@ namespace OmniConsole.Pages.Settings.General
 
         // ── 免責聲明同意 ──────────────────────────────────────────────────────
 
-        /// <summary>同意自訂平台免責聲明後：儲存同意、切顯卡片、載入、通知宿主重新整理匯入鈕/提示列。</summary>
+        /// <summary>同意自訂平台免責聲明後：儲存同意、切顯卡片、載入、通知宿主重新整理匯入按鈕/提示列。</summary>
         private void CustomConsentAcceptButton_Click(object sender, RoutedEventArgs e)
         {
             SettingsService.SetCustomPlatformConsentAccepted(true);

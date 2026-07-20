@@ -1,0 +1,248 @@
+﻿<dialogs:GamepadDialogBase
+    x:Class="OmniConsole.Dialogs.CommunityPlatformsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dialogs="using:OmniConsole.Dialogs"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    DefaultButton="Close"
+    RequestedTheme="Dark">
+
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 解除 ContentDialog 內建 MaxWidth（預設約 548）：本對話方塊左欄清單 + 右欄封面預覽需寬版，
+                 內容寬 840、覆寫上限 920（比照 FilePickerDialog、1024×768 最小螢幕守得住）。 -->
+            <x:Double x:Key="ContentDialogMaxWidth">920</x:Double>
+        </ResourceDictionary>
+    </dialogs:GamepadDialogBase.Resources>
+
+    <!-- 比照 ManageLanguagesDialog：固定尺寸 Border 為主結構，載入/訊息/內容 三態疊在內部切換。 -->
+    <Border Width="840" Height="480"
+            CornerRadius="4"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1">
+
+        <Grid>
+
+            <!-- 載入中 -->
+            <StackPanel x:Name="LoadingPanel"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <ProgressRing IsActive="True" Width="40" Height="40"/>
+                <TextBlock x:Name="LoadingText" TextAlignment="Center" FontSize="14"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- 錯誤 / 無平台 / 需更新 App -->
+            <StackPanel x:Name="MessagePanel" Visibility="Collapsed"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="480">
+                <FontIcon Glyph="&#xE783;" FontSize="32" HorizontalAlignment="Center"
+                          Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                <TextBlock x:Name="MessageText" TextAlignment="Center" TextWrapping="Wrap" FontSize="14"/>
+            </StackPanel>
+
+            <!-- 內容態：頂部工具列 + 離線提示條 + 動作結果提示條 + 雙欄（左平台清單 + 右詳情/動作） -->
+            <Grid x:Name="ContentRoot" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 工具列：橫跨雙欄；搜尋方塊（Y 圖示內嵌框內左側）+ 排序（項目 code-behind 填、.Loc 在地化） -->
+                <Grid Grid.Row="0" Grid.ColumnSpan="2" Padding="12,10" ColumnSpacing="8"
+                      BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                      BorderThickness="0,0,0,1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Y 手把鍵圖示內嵌搜尋方塊左側：FontIcon 疊在 TextBox 上、輸入文字以左內距 (Padding) 避開圖示。 -->
+                    <Grid Grid.Column="0">
+                        <TextBox x:Name="SearchBox"
+                                 Padding="34,5,10,6"
+                                 TextChanged="SearchBox_TextChanged"
+                                 KeyDown="SearchBox_KeyDown"/>
+                        <FontIcon Glyph="&#xF095;" FontSize="16"
+                                  HorizontalAlignment="Left" VerticalAlignment="Center"
+                                  Margin="11,0,0,0" IsHitTestVisible="False"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </Grid>
+                    <ComboBox x:Name="SortCombo" Grid.Column="1"
+                              MinWidth="180"
+                              SelectionChanged="SortCombo_SelectionChanged"/>
+                </Grid>
+
+                <!-- 離線提示條（Row 1，橫跨雙欄、常駐獨立列）：背景保鮮回報 Failed（離線）時顯示、保留快取清單，
+                     仍可新增；重新連上（Updated/UpToDate）即收合。與下方檢查/結果條分列，離線時新增成功可並存不搶格。
+                     caution 家族配色（比照 ManageLanguages 離線條）；內層 Grid（Auto+*）避免橫向 StackPanel 吃掉長文換行。 -->
+                <Border x:Name="OfflineBar" Grid.Row="1" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE783;" FontSize="14" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                        <TextBlock x:Name="OfflineBarText" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- 動作結果提示條（成功/警告/失敗三態、同位置三選一）：寫法與配色一比一比照 ManageLanguages 離線條。
+                     code-behind 只切顯隱與設文字（ShowActionResult）。 -->
+                <!-- 背景保鮮進行中提示：開對話走快取時顯示、保鮮結束即隱藏（有更新則清單隨後套用）。 -->
+                <Border x:Name="RefreshBar" Grid.Row="2" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ProgressRing x:Name="RefreshBarRing" Grid.Column="0" IsActive="False" Width="14" Height="14" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="RefreshBarText" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <Border x:Name="ResultBarSuccess" Grid.Row="2" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE73E;" FontSize="14" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+                        <TextBlock x:Name="ResultTextSuccess" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <Border x:Name="ResultBarWarning" Grid.Row="2" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE783;" FontSize="14" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                        <TextBlock x:Name="ResultTextWarning" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <Border x:Name="ResultBarError" Grid.Row="2" Grid.ColumnSpan="2" Visibility="Collapsed"
+                        Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xEA39;" FontSize="14" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                        <TextBlock x:Name="ResultTextError" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- 宣告順序「左欄清單在前」：ContentDialog 框架預設焦點落樹中第一個可聚焦元素，
+                     初始焦點需求在左欄第一個平台（守衛另在 code-behind）。 -->
+
+                <!-- 左欄：平台清單（虛擬化；縮圖 + 名稱 + 提交者） -->
+                <Grid Grid.Row="3" Grid.Column="0">
+                    <ListView x:Name="PlatformList"
+                              SelectionMode="Single"
+                              SingleSelectionFollowsFocus="False"
+                              IsItemClickEnabled="True"
+                              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                              BorderThickness="0,0,1,0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="dialogs:CommunityPlatformRow">
+                                <Grid ColumnSpacing="10" Padding="0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- 圓角縮圖用 Border 內含 Image（圓角裁切慣例） -->
+                                    <Border Grid.Column="0" Width="80" Height="56" CornerRadius="4">
+                                        <Image Source="{x:Bind Thumb}" Stretch="UniformToFill"
+                                               ImageFailed="CoverImage_ImageFailed"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="{x:Bind DisplayName}" FontSize="14" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{x:Bind SubmitterText}" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <!-- 搜尋無結果提示（疊在清單上，僅過濾後為空時顯示） -->
+                    <TextBlock x:Name="NoResultsHint" Visibility="Collapsed"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               TextAlignment="Center" TextWrapping="Wrap" FontSize="14"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </Grid>
+
+                <!-- 右欄：選中平台詳情 + 新增動作。整欄可捲（長檔名/長資訊/多語言長警告皆不遮新增按鈕）。 -->
+                <ScrollViewer Grid.Row="3" Grid.Column="1"
+                              VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto"
+                              HorizontalScrollMode="Disabled">
+                    <Grid Padding="20">
+                        <TextBlock x:Name="DetailEmptyHint"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   TextAlignment="Center" TextWrapping="Wrap" FontSize="14"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+                        <StackPanel x:Name="DetailPanel" Visibility="Collapsed" Spacing="10" VerticalAlignment="Top">
+                            <Border Width="280" Height="196" CornerRadius="4" HorizontalAlignment="Left">
+                                <Image x:Name="DetailCover" Stretch="UniformToFill"
+                                       ImageFailed="CoverImage_ImageFailed"/>
+                            </Border>
+                            <!-- 新增按鈕移到封面下方：長資訊往下推時按鈕仍優先可見（右欄可捲動） -->
+                            <Button x:Name="AddButton" Click="AddButton_Click"
+                                    FontSize="14" Padding="24,8" HorizontalAlignment="Left"/>
+                            <ProgressRing x:Name="ActionProgress" IsActive="False" Visibility="Collapsed"
+                                          Width="24" Height="24" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="DetailName" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <StackPanel Spacing="4">
+                                <!-- 啟動目標全文（使用者新增前有權看清楚要跑什麼） -->
+                                <TextBlock x:Name="DetailTarget" FontSize="13" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock x:Name="DetailSubmitter" FontSize="13" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                            <!-- 本機偵測預檢提示（黃字；長訊息在此換行不遮按鈕，按鈕已在上方） -->
+                            <Grid x:Name="DetailWarning" ColumnSpacing="6" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Grid.Column="0" Glyph="&#xE783;" FontSize="14" VerticalAlignment="Top"
+                                          Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                                <TextBlock x:Name="DetailWarningText" Grid.Column="1" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</dialogs:GamepadDialogBase>

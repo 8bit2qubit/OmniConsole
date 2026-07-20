@@ -78,6 +78,9 @@ namespace OmniConsole.Dialogs
         /// <summary>B 鍵預設：關閉對話方塊並回 true。特殊對話方塊可覆寫（如回 true 但不關，或改做 NavigateUp）。</summary>
         public virtual bool OnB() { Hide(); return true; }
 
+        /// <summary>Y 鍵預設：不動作（吃掉、不轉送給背景頁）。需要 Y 鍵語意的對話方塊覆寫（如搜尋方塊/清單切換焦點）。</summary>
+        public virtual void OnY() { }
+
         /// <summary>是否在開啟時啟用螢幕鍵盤閃避（含 TextBox 的對話方塊覆寫為 true）。</summary>
         protected virtual bool EnableKeyboardAvoidanceOnOpen => false;
     }
