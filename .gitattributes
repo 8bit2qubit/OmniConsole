@@ -14,7 +14,7 @@
 *.targets      eol=crlf
 *.csproj       eol=crlf
 
-# 專案／資源描述檔（VS 生態同走 CRLF）
+# 專案/資源描述檔（VS 生態同走 CRLF）
 *.resw         eol=crlf
 *.appxmanifest eol=crlf
 *.manifest     eol=crlf

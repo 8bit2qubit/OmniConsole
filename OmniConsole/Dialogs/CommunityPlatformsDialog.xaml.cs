@@ -111,23 +111,9 @@ namespace OmniConsole.Dialogs
             PlatformList.SelectionChanged += PlatformList_SelectionChanged;
 
             Opened += OnOpened;
-            Closing += OnClosing;
         }
 
         // ── 手把（A/B/Y 語意） ─────────────────────────────────────────────────
-
-        /// <summary>進行中時攔截所有關閉路徑（CloseButton/X/Esc）。手把 B 另由 OnB 覆寫攔截。</summary>
-        private void OnClosing(ContentDialog sender, ContentDialogClosingEventArgs args)
-        {
-            if (_busy) args.Cancel = true;
-        }
-
-        /// <summary>手把 B 鍵：進行中時擋掉（不關閉）；否則走基底預設關閉（含焦點在搜尋方塊時，B 直接退出對話方塊）。</summary>
-        public override bool OnB()
-        {
-            if (_busy) return true;   // 吞掉、不關閉
-            return base.OnB();
-        }
 
         /// <summary>
         /// 手把 A 鍵：焦點在左欄平台項目時 → 先選中該項（換右欄）、再跳右欄 AddButton（方便選完直接按新增）；
@@ -470,7 +456,7 @@ namespace OmniConsole.Dialogs
                 : string.Format(_resourceLoader.Loc("CommunityPlatforms_SubmitterDate"), entry.Submitter, entry.AddedDate);
 
             // 本機偵測提示（不阻擋）：Executable 路徑不存在（新增時走指定位置分支）；
-            // PackagedApp 未安裝／ProtocolUri 無已登錄 handler（新增時被驗證閘門擋下、與提示同訊息）。
+            // PackagedApp 未安裝或 ProtocolUri 無已登錄的 handler（新增時被驗證閘門擋下、與提示同訊息）。
             switch (entry.LaunchType)
             {
                 case "Executable" when !File.Exists(EnvironmentPathHelper.Expand(entry.LaunchTarget)):
@@ -636,7 +622,9 @@ namespace OmniConsole.Dialogs
         /// <summary>切換動作進行中狀態：顯示進度圈、隱藏按鈕、停用清單與工具列，並鎖住對話方塊關閉。</summary>
         private void SetActionBusy(bool busy)
         {
-            _busy = busy;   // 鎖/解鎖對話方塊關閉（Closing 攔截 + OnB 攔 B 鍵）
+            _busy = busy;
+            // 進行中鎖住所有關閉路徑（關閉按鈕/X/Esc/手把 B 都由基底依此攔下）
+            DismissPolicy = busy ? DialogDismissPolicy.Block : DialogDismissPolicy.Allow;
             AddButton.Visibility = busy ? Visibility.Collapsed : Visibility.Visible;
             ActionProgress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
             ActionProgress.IsActive = busy;

@@ -54,7 +54,7 @@ namespace OmniConsole.Pages.Settings.General
             var newCards = await LoadCardItemsAsync();
 
             // ── 第一階段：先綁卡 + 聚焦（在可用性檢查 await 之前）──
-            // 目的：導覽切 tab 當下焦點會被打到漢堡鈕，若等到可用性檢查算完才聚焦，這段空窗焦點停在漢堡鈕＝閃動。
+            // 目的：導覽切 tab 當下焦點會被打到漢堡按鈕，若等到可用性檢查算完才聚焦，這段空窗焦點停在漢堡按鈕＝閃動。
             // 故綁卡聚焦提前到可用性 await 前、零空窗。此時 newCards.IsAvailable 尚未算（皆預設值），
             // ReplaceCards 傳 compareAvailability:false，內容比對略過 IsAvailable。
             string selectedId = Host?.SelectedPlatformId ?? "";
@@ -69,7 +69,7 @@ namespace OmniConsole.Pages.Settings.General
             FocusPrimaryContent();
 
             // ── 第二階段：算可用性（較慢的可用性檢查）→ 原地更新既有卡片實例 IsAvailable（INPC 刷 Opacity、不換實例、不影響焦點）──
-            // 註：可用性提到聚焦後算，是為消除「導覽切 tab 焦點先飄漢堡鈕、等檢查期間停在那」的閃動（焦點全程落內容區）。
+            // 註：可用性提到聚焦後算，是為消除「導覽切 tab 焦點先飄漢堡按鈕、等檢查期間停在那」的閃動（焦點全程落內容區）。
             bool[] available = await Task.WhenAll(
                 newCards.Select(c => ProcessLauncherService.CheckPlatformAvailableAsync(c.Platform)));
             for (int i = 0; i < newCards.Count; i++)

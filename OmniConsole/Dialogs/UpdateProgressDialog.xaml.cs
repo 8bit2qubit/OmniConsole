@@ -1,5 +1,4 @@
 ﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OmniConsole.Services;
 
@@ -13,13 +12,9 @@ namespace OmniConsole.Dialogs
     public sealed partial class UpdateProgressDialog : GamepadDialogBase
     {
         private readonly ResourceLoader _resourceLoader = new();
-        private bool _allowClose;
 
         /// <summary>進度對話方塊：A 鍵不轉送（吃掉）。</summary>
         public override void OnA() { }
-
-        /// <summary>進度對話方塊：B 鍵不關閉（回 false = 不處理），配合 Closing 攔截擋下所有關閉。</summary>
-        public override bool OnB() => false;
 
         /// <summary>建立進度對話方塊。XamlRoot 由呼叫端注入。</summary>
         public UpdateProgressDialog(XamlRoot xamlRoot)
@@ -32,14 +27,9 @@ namespace OmniConsole.Dialogs
             StatusText.Text = _resourceLoader.Loc("UpdateDownload_InProgress");
             ProgressText.Text = "0%";
 
-            Closing += UpdateProgressDialog_Closing;
-            // 手把導航由 GamepadDialogBase 基底類別提供；本對話方塊 A/B 皆不轉送（見上方 override）。
-        }
-
-        /// <summary>除呼叫端顯式 RequestClose() 之外，所有關閉請求一律拒絕。</summary>
-        private void UpdateProgressDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
-        {
-            if (!_allowClose) args.Cancel = true;
+            // 除呼叫端顯式 RequestClose() 之外一律拒絕關閉；關閉按鈕/X/Esc 與手把 B 都由基底攔下。
+            DismissPolicy = DialogDismissPolicy.Block;
+            // 手把導航由 GamepadDialogBase 基底類別提供；本對話方塊 A 鍵不轉送（見上方 override）。
         }
 
         /// <summary>更新進度條（0~100，負值表示 indeterminate）。</summary>
@@ -79,7 +69,7 @@ namespace OmniConsole.Dialogs
         /// <summary>由呼叫端顯式關閉對話方塊（更新成功或失敗後）。</summary>
         public void RequestClose()
         {
-            _allowClose = true;
+            DismissPolicy = DialogDismissPolicy.Allow;
             Hide();
         }
     }

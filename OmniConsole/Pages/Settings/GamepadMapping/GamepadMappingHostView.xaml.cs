@@ -16,8 +16,14 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         // 編輯器返回清單時用以還原焦點的目標 AppId（清單/編輯器各自重建，狀態不能存在子 Page 內）
         private AppId? _lastEditedAppId;
 
+        // 這次進頁是為了編自訂版面（由進階頁的「編輯…」帶進來）；決定編輯器關閉後回哪裡
+        private bool _openedForCustomLayout;
+
         /// <summary>清單內容變動或清單/編輯器切換後觸發，外層據此重評底部手把提示列。</summary>
         internal event EventHandler? StateChanged;
+
+        /// <summary>自訂版面編輯器關閉後觸發，外層據此把導覽切回進階頁。</summary>
+        internal event EventHandler? CustomLayoutEditorClosed;
 
         /// <summary>建立手把映射內層宿主。</summary>
         public GamepadMappingHostView()
@@ -28,10 +34,17 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         // ── 入頁初始化 ────────────────────────────────────────────────────────
 
         /// <summary>
-        /// 外層導覽進來後呼叫：有 Protocol 帶入的待編輯 AppId（且非黑名單）則直開編輯器、否則顯示清單。
+        /// 外層導覽進來後呼叫：要編自訂版面則直開該模式的編輯器；
+        /// 有 Protocol 帶入的待編輯 AppId（且非黑名單）則直開編輯器；否則顯示清單。
         /// </summary>
-        internal void Initialize(AppId? pendingEditAppId, string pendingEditDisplayName)
+        internal void Initialize(AppId? pendingEditAppId, string pendingEditDisplayName, bool editCustomLayout = false)
         {
+            _openedForCustomLayout = editCustomLayout;
+            if (editCustomLayout)
+            {
+                NavigateToCustomLayoutEditor();
+                return;
+            }
             if (pendingEditAppId != null && !GamepadProfileStore.IsBlacklisted(pendingEditAppId))
             {
                 NavigateToEditor(pendingEditAppId, pendingEditDisplayName);
@@ -76,14 +89,38 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>導覽到自訂版面模式的編輯器；該模式不綁任何程式，故不動 _lastEditedAppId。</summary>
+        private void NavigateToCustomLayoutEditor()
+        {
+            FocusNavHelper.NavigatePage(InnerFrame, typeof(GamepadProfileEditor),
+                new GamepadProfileEditorParam(new AppId(), string.Empty, IsCustomLayout: true));
+            PageLifecycleHelper.CollectDiscardedPage();
+            if (InnerFrame.Content is GamepadProfileEditor editor)
+            {
+                editor.NavigationCacheMode = NavigationCacheMode.Disabled;
+                editor.Closed += Editor_ClosedOrDeleted;
+                editor.Deleted += Editor_ClosedOrDeleted;
+            }
+            StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         /// <summary>清單發出編輯請求（A 鍵或滑鼠點列項）：記下目標並切到編輯器。</summary>
         private void List_EditRequested(object? sender, AppId appId) => NavigateToEditor(appId, string.Empty);
 
         /// <summary>清單內容變動：往外層轉發以重評提示列。</summary>
         private void List_ItemsChanged(object? sender, EventArgs e) => StateChanged?.Invoke(this, EventArgs.Empty);
 
-        /// <summary>編輯器存檔/刪除後返回清單頁。</summary>
-        private void Editor_ClosedOrDeleted(object? sender, EventArgs e) => NavigateToList();
+        /// <summary>編輯器存檔/刪除後返回：從進階頁進來編自訂版面的就交還進階頁，其餘回清單頁。</summary>
+        private void Editor_ClosedOrDeleted(object? sender, EventArgs e)
+        {
+            if (_openedForCustomLayout)
+            {
+                _openedForCustomLayout = false;
+                CustomLayoutEditorClosed?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+            NavigateToList();
+        }
 
         // ── 對外狀態（外層 UpdateGamepadHints 讀取）────────────────────────────
 

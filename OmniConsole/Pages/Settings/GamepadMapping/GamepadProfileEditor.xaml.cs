@@ -14,8 +14,11 @@ using static OmniConsole.Services.GamepadProfileMappingHelper;
 
 namespace OmniConsole.Pages.Settings.GamepadMapping
 {
-    /// <summary>Frame.Navigate 帶入編輯器的目標：要編輯的 AppId 與顯示名稱。</summary>
-    internal sealed record GamepadProfileEditorParam(AppId AppId, string DisplayName);
+    /// <summary>
+    /// Frame.Navigate 帶入編輯器的目標：要編輯的 AppId 與顯示名稱。
+    /// <paramref name="IsCustomLayout"/> 為 true 時改編輯全域的自訂版面，此時 AppId 傳空值即可。
+    /// </summary>
+    internal sealed record GamepadProfileEditorParam(AppId AppId, string DisplayName, bool IsCustomLayout = false);
 
     /// <summary>
     /// 玩家各 App 的手把 profile 編輯器（16 個 XInput 輸入位 → 動作）。DPad 4 子列依主行選擇條件展開。
@@ -32,6 +35,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         private Dictionary<GamepadInputId, ToggleButton> _repeatBtns = new();
         private GamepadProfile? _editing;
         private bool _isNew;
+        // 編輯全域自訂版面而非某個程式的 profile；分流只讀這個欄位，各 handler 一律不看
+        private bool _isCustomLayout;
 
         /// <summary>編輯器存檔/取消後通知宿主關閉（CloseEditor）。</summary>
         public event EventHandler? Closed;
@@ -45,7 +50,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         {
             InitializeComponent();
             BuildRows();
-            // 向左撞牆時把焦點送回左側導覽漢堡鈕
+            // 向左撞牆時把焦點送回左側導覽漢堡按鈕
             FocusNavHelper.WireBackToPaneOnLeftWall(RootScrollViewer);
         }
 
@@ -135,6 +140,11 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                     Add(combo, ActionOption.WheelDown, "GamepadAction_WheelDown");
                     Add(combo, ActionOption.WheelLeft, "GamepadAction_WheelLeft");
                     Add(combo, ActionOption.WheelRight, "GamepadAction_WheelRight");
+                    if (LicenseService.HasEntitlement(LicenseService.Entitlement.Pro))
+                    {
+                        Add(combo, ActionOption.GamepadKeyboard, "GamepadAction_GamepadKeyboard");
+                        Add(combo, ActionOption.OnScreenKeyboard, "GamepadAction_OnScreenKeyboard");
+                    }
                     Add(combo, ActionOption.None, "GamepadAction_None");
                     break;
             }
@@ -163,8 +173,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
 
         // ── 對外狀態 ────────────────────────────────────────────────────────
 
-        /// <summary>是否可刪除（既有 profile = true；新建中 = false）。</summary>
-        public bool CanDelete => _editing != null && !_isNew;
+        /// <summary>是否可刪除（既有 profile = true；新建中與自訂版面 = false）。</summary>
+        public bool CanDelete => !_isCustomLayout && _editing != null && !_isNew;
 
         // ── 載入 / 重新整理 ───────────────────────────────────────────────
 
@@ -173,7 +183,11 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         {
             base.OnNavigatedTo(e);
             if (e.Parameter is GamepadProfileEditorParam p)
-                Load(p.AppId, p.DisplayName);
+            {
+                _isCustomLayout = p.IsCustomLayout;
+                if (_isCustomLayout) LoadCustomLayout();
+                else Load(p.AppId, p.DisplayName);
+            }
             FocusHeaderCard();
         }
 
@@ -200,15 +214,11 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         {
             var existing = GamepadProfileStore.Find(appId);
             _isNew = existing == null;
-            string layout = SettingsService.GetMouseModeLayout();
-            bool isBuiltInNavApp = GamepadBuiltInLayouts.IsBuiltInNavApp(appId);
             _editing = existing?.Clone() ?? new GamepadProfile
             {
                 AppId = new AppId { Kind = appId.Kind, Value = appId.Value, FullPath = appId.FullPath, VersionAgnosticPath = appId.VersionAgnosticPath },
                 DisplayName = displayName,
-                Bindings = isBuiltInNavApp
-                    ? GamepadBuiltInLayouts.NavForLayout(layout)
-                    : GamepadBuiltInLayouts.ForLayout(layout)
+                Bindings = BuiltInLayoutFor(appId, SettingsService.GetMouseModeLayout())
             };
             if (!_isNew && !string.IsNullOrEmpty(displayName))
                 _editing.DisplayName = displayName;
@@ -261,7 +271,45 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             ApplyBuiltInAppControlLocks(appId);
         }
 
-        /// <summary>目前編輯對象是不是十字鍵有原生反應的 app（檔案總管 / 檔案選擇器）。</summary>
+        /// <summary>
+        /// 載入全域自訂版面：檔案裡已有就取用，第一次建立則複製目前選的版面當底。
+        /// _editing 掛一個空的 AppId，「內建導覽 app」「十字鍵有原生反應」「阻擋雙重輸入無效」
+        /// 三個判斷因此自動全回 false，語意正好是「一般程式、無任何特殊規則」。
+        /// </summary>
+        private void LoadCustomLayout()
+        {
+            var existing = GamepadProfileStore.LoadCustomLayout();
+            _isNew = existing == null;
+            _editing = new GamepadProfile
+            {
+                AppId = new AppId(),
+                DisplayName = string.Empty,
+                Bindings = existing ?? BuiltInLayoutFor(null, SettingsService.GetMouseModeLayout())
+            };
+
+            AppNameText.Text = _resourceLoader.Loc("GamepadMappingCustomLayoutTitle");
+            AppIdText.Text = _resourceLoader.Loc("GamepadMappingCustomLayoutSubtitle");
+            RefreshPathDisplay();
+
+            // 從某個程式的設定檔抄一份當自訂版面的起點是合理需求，故保留這個入口
+            try
+            {
+                CopyFromButton.IsEnabled = GamepadProfileStore.Load().Count > 0;
+            }
+            catch
+            {
+                CopyFromButton.IsEnabled = false;
+            }
+
+            if (_rows.Count == 0) BuildRows();
+
+            _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
+            RefreshAllRows();
+
+            ApplyCustomLayoutControlLocks();
+        }
+
+        /// <summary>目前編輯對象是不是十字鍵有原生反應的 app（檔案總管 / 檔案選擇器 / 工作管理員）。</summary>
         private bool IsEditingNativeDpadApp(AppId? appId)
         {
             return appId != null && GamepadBuiltInLayouts.HandlesDpadNatively(appId);
@@ -274,7 +322,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             bool blockInputEnabled = !GamepadBuiltInLayouts.IsBlockNativeInputIneffective(appId);
             BlockNativeGamepadInputSwitch.IsEnabled = blockInputEnabled;
 
-            // 十字鍵：僅原生已有反應的 app（檔案總管 / 檔案選擇器）需停用（桌面 Steam 保留導覽版含連發）
+            // 十字鍵：僅原生已有反應的 app（檔案總管 / 檔案選擇器 / 工作管理員）需停用（桌面 Steam 保留導覽版含連發）
             bool dpadEnabled = !IsEditingNativeDpadApp(appId);
             ComboDPad.IsEnabled = dpadEnabled;
             RepeatBtnDPad.IsEnabled = dpadEnabled;
@@ -287,9 +335,84 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                     if (pair.keyBtn != null) pair.keyBtn.IsEnabled = dpadEnabled;
                 }
 
-            // 設定頁首 → 阻擋雙重輸入開關 → 行程優先權的上下焦點鏈，開關停用時上下避開它
-            FocusNavHelper.ApplyDisablableMiddleChainFocusNav(HeaderCard, BlockNativeGamepadInputSwitch, ProcessPriorityCombo, blockInputEnabled);
-            ProcessPriorityCombo.XYFocusDown = ResetClassicButton;
+            PerAppOptionsPanel.Visibility = Visibility.Visible;
+            // 副標此時是識別字（AUMID 可能很長），截斷比換行好看
+            AppIdText.TextWrapping = TextWrapping.NoWrap;
+            AppIdText.TextTrimming = TextTrimming.CharacterEllipsis;
+            // 「重設為自訂版面」只在使用者已經建立過自訂版面時出現
+            SetResetCustomButtonVisible(GamepadProfileStore.HasCustomLayout());
+
+            WireVerticalFocusChain(showPerAppOptions: true, blockInputEnabled: blockInputEnabled);
+        }
+
+        /// <summary>自訂版面模式的控制項狀態：收起只對單一程式有意義的兩個選項，十字鍵全開。</summary>
+        private void ApplyCustomLayoutControlLocks()
+        {
+            // 隱藏而非停用：這兩個選項對全域版面沒有意義，留兩排灰字會讓人以為是還沒解鎖
+            PerAppOptionsPanel.Visibility = Visibility.Collapsed;
+            // 副標此時是一整句說明，換行完整顯示；截斷會讓比英文長的語言（西語、土耳其語等）看不到後半
+            AppIdText.TextTrimming = TextTrimming.None;
+            AppIdText.TextWrapping = TextWrapping.Wrap;
+            // 把自訂版面重設成自己沒有意義
+            SetResetCustomButtonVisible(false);
+
+            ComboDPad.IsEnabled = true;
+            RepeatBtnDPad.IsEnabled = true;
+            foreach (var k in DpadKeys)
+                if (_rows.TryGetValue(k, out var pair))
+                {
+                    pair.combo.IsEnabled = true;
+                    if (pair.keyBtn != null) pair.keyBtn.IsEnabled = true;
+                }
+
+            WireVerticalFocusChain(showPerAppOptions: false, blockInputEnabled: false);
+        }
+
+        /// <summary>
+        /// 設定「重設為自訂版面」的顯隱。
+        /// 收起時要連它那一欄的寬度一起歸零：五欄是等寬平分，只收按鈕的話右邊會留下一整格空白。
+        /// </summary>
+        private void SetResetCustomButtonVisible(bool visible)
+        {
+            ResetCustomButton.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            ResetCustomColumn.Width = visible ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            // 收起後由「經典預設」變成最右邊那顆，右邊界不再需要留間距
+            ResetClassicButton.Margin = visible ? new Thickness(4, 0, 4, 0) : new Thickness(4, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// 接好「頁首 → 單一程式選項 → 工具列 → 第一列」的上下焦點鏈，以及工具列的左右牆。
+        /// 工具列五顆之中只有「重設為自訂版面」會被收起，其餘恆在。
+        /// </summary>
+        private void WireVerticalFocusChain(bool showPerAppOptions, bool blockInputEnabled)
+        {
+            Control lastToolButton = ResetCustomButton.Visibility == Visibility.Visible
+                ? ResetCustomButton : ResetClassicButton;
+
+            UIElement above = showPerAppOptions ? ProcessPriorityCombo : HeaderCard;
+            CopyFromButton.XYFocusUp = above;
+            ClearAllButton.XYFocusUp = above;
+            ResetButton.XYFocusUp = above;
+            ResetClassicButton.XYFocusUp = above;
+            ResetCustomButton.XYFocusUp = above;
+
+            if (showPerAppOptions)
+            {
+                // 頁首 → 阻擋雙重輸入開關 → 行程優先權，開關停用時上下避開它
+                FocusNavHelper.ApplyDisablableMiddleChainFocusNav(HeaderCard, BlockNativeGamepadInputSwitch, ProcessPriorityCombo, blockInputEnabled);
+                // 行程優先權下拉靠右對齊，往下落在這排最右邊那顆
+                ProcessPriorityCombo.XYFocusDown = lastToolButton;
+            }
+            else
+            {
+                HeaderCard.XYFocusDown = CopyFromButton;
+            }
+
+            // 兩端各自指向自己當左右牆，焦點才不會飛出這一排
+            CopyFromButton.XYFocusLeft = CopyFromButton;
+            lastToolButton.XYFocusRight = lastToolButton;
+
+            ComboA.XYFocusUp = ClearAllButton;
         }
 
         private bool _suppressBlockNativeGamepadInputToggled = false;
@@ -438,7 +561,14 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             var opt = ToOption(a, id);
 
             int idx = FindOptionIndex(combo, opt);
-            if (idx < 0) idx = 0;
+            if (idx < 0)
+            {
+                // 這一位存的是 Pro 專屬動作，未持有授權，選項不在下拉選單裡。
+                // 視覺回退為「無」，玩家重新取得授權即自動復原；只有使用者真的動了下拉選單才會覆蓋它。
+                opt = ActionOption.None;
+                idx = FindOptionIndex(combo, opt);
+                if (idx < 0) idx = 0;
+            }
 
             combo.SelectionChanged -= ActionCombo_SelectionChanged;
             combo.SelectedIndex = idx;
@@ -596,14 +726,58 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         }
 
         /// <summary>
-        /// 取指定版面的內建 bindings：目前編輯的是內建導覽 app（瀏覽器 / 檔案總管 / Discord 等）時套導覽版
+        /// 取指定 app 適用的內建 bindings：內建導覽 app（瀏覽器 / 檔案總管 / Discord 等）套導覽版
         /// （DPad 連發），忠實反映內建行為；一般 app 套純版面（DPad 不連發）。
+        /// 自訂版面模式一律套導覽版：它唯一會生效的場景就是內建導覽清單命中。
         /// </summary>
-        private Dictionary<GamepadInputId, GamepadAction> BuiltInLayoutForCurrentApp(string layout)
+        private Dictionary<GamepadInputId, GamepadAction> BuiltInLayoutFor(AppId? appId, string layout)
         {
-            return _editing != null && GamepadBuiltInLayouts.IsBuiltInNavApp(_editing.AppId)
+            // 目前選的是自訂版面時，新建 profile 的底就是使用者那一套，這正是「從源頭客製化」的意義。
+            // 自訂版面的內容住在 store 而不是 GamepadBuiltInLayouts，故要另外取。
+            // 尚未建立或未持有 Pro 時 LoadCustomLayout 回 null，落回下方的內建版面，與 PhantomKey 的回退一致。
+            if (!_isCustomLayout && layout == SettingsService.LayoutCustom)
+            {
+                var custom = GamepadProfileStore.LoadCustomLayout();
+                if (custom != null) return custom;
+            }
+
+            return _isCustomLayout || (appId != null && GamepadBuiltInLayouts.IsBuiltInNavApp(appId))
                 ? GamepadBuiltInLayouts.NavForLayout(layout)
                 : GamepadBuiltInLayouts.ForLayout(layout);
+        }
+
+        /// <summary>取目前編輯對象適用的內建 bindings。</summary>
+        private Dictionary<GamepadInputId, GamepadAction> BuiltInLayoutForCurrentApp(string layout)
+            => BuiltInLayoutFor(_editing?.AppId, layout);
+
+        /// <summary>
+        /// 「重設為自訂版面」：彈確認後把 16 列覆寫成使用者的自訂版面。
+        /// 與另外兩顆重設鈕不同，這裡不套導覽版的十字鍵連發覆寫：自訂版面已經是使用者的明確表態，替他改連發旗標是多事。
+        /// </summary>
+        private async void ResetCustomButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button? originBtn = sender as Button;
+            if (_editing == null) return;
+            var custom = GamepadProfileStore.LoadCustomLayout();
+            if (custom == null) { originBtn?.Focus(FocusStateHelper.Preferred); return; }
+
+            var dlg = new GamepadMessageDialog(XamlRoot,
+                _resourceLoader.Loc("GamepadMappingResetCustomConfirmTitle"),
+                _resourceLoader.Loc("GamepadMappingResetCustomConfirmBody"),
+                _resourceLoader.Loc("GamepadMappingResetCustomConfirmYes"),
+                _resourceLoader.Loc("GamepadKeyPickerCancel"));
+            await ShowDialogAsync(dlg);
+            if (dlg.Result)
+            {
+                var newBindings = new Dictionary<GamepadInputId, GamepadAction>();
+                foreach (var kv in custom)
+                    newBindings[kv.Key] = kv.Value?.Clone() ?? new GamepadAction();
+                _editing.Bindings = newBindings;
+                ClearNativeDpadIfNeeded();
+                _dpadEditingCustom = (DetectDPadModeFromModel() == ActionOption.DpadCustom);
+                RefreshAllRows();
+            }
+            originBtn?.Focus(FocusStateHelper.Preferred);
         }
 
         /// <summary>「清除全部」：彈確認後把 16 個輸入位全設為 None。</summary>
@@ -693,6 +867,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         public async void Save()
         {
             if (_editing == null) { Closed?.Invoke(this, EventArgs.Empty); return; }
+            if (_isCustomLayout) { await SaveCustomLayoutAsync(); return; }
 
             if (GamepadProfileStore.IsBlacklisted(_editing.AppId))
             {
@@ -732,7 +907,30 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
-        // ── helper ──────────────────────────────────────────────────────────
+        /// <summary>
+        /// 儲存自訂版面。全 None 是合法設定（使用者就是要讓手把在內建導覽程式裡完全不介入），
+        /// 但很容易被當成故障，故先確認一次；確認後照存不刪檔，去留交給使用者。
+        /// </summary>
+        private async Task SaveCustomLayoutAsync()
+        {
+            if (_editing == null) { Closed?.Invoke(this, EventArgs.Empty); return; }
+
+            if (_editing.IsEffectivelyEmpty())
+            {
+                var dlg = new GamepadMessageDialog(XamlRoot,
+                    _resourceLoader.Loc("GamepadMappingCustomLayoutEmptyTitle"),
+                    _resourceLoader.Loc("GamepadMappingCustomLayoutEmptyBody"),
+                    _resourceLoader.Loc("GamepadMappingCustomLayoutEmptyYes"),
+                    _resourceLoader.Loc("GamepadKeyPickerCancel"));
+                await ShowDialogAsync(dlg);
+                if (!dlg.Result) return;
+            }
+
+            GamepadProfileStore.SaveCustomLayout(_editing.Bindings);
+            Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        // ── 輔助方法 ──────────────────────────────────────────────────────────
 
         /// <summary>顯示子對話方塊。直接 ShowAsync（與其他對話方塊一致；DialogActiveChanged 舊機制已淘汰、無訂閱端）。</summary>
         private async Task<ContentDialogResult> ShowDialogAsync(ContentDialog dlg)

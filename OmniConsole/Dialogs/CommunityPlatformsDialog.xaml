@@ -200,7 +200,7 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </Grid>
 
-                <!-- 右欄：選中平台詳情 + 新增動作。整欄可捲（長檔名/長資訊/多語言長警告皆不遮新增按鈕）。 -->
+                <!-- 右欄：選中平台詳情 + 新增動作。整欄可捲動（長檔名/長資訊/多語言長警告皆不遮新增按鈕）。 -->
                 <ScrollViewer Grid.Row="3" Grid.Column="1"
                               VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto"
                               HorizontalScrollMode="Disabled">

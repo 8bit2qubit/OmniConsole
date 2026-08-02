@@ -62,16 +62,11 @@ namespace OmniConsole.Pages.Settings
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = true;
 
-            // 填充版面配置下拉選單（index 0=OmniNav、1=Classic）
-            MouseModeLayoutCombo.Items.Clear();
-            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_OmniNav"), Tag = SettingsService.LayoutOmniNav });
-            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_Classic"), Tag = SettingsService.LayoutClassic });
-
             // 還原 Mouse Mode（Off/On）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
             bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
             string currentMode = builtInMapping ? SettingsService.MouseModeOff : SettingsService.GetMouseMode();
             MouseModeSwitch.IsOn = currentMode != SettingsService.MouseModeOff;
-            MouseModeLayoutCombo.SelectedIndex = SettingsService.GetMouseModeLayout() == SettingsService.LayoutClassic ? 1 : 0;
+            FillLayoutCombo();
 
             // 填充游標速度下拉選單並還原選取
             CursorSpeedCombo.Items.Clear();
@@ -96,6 +91,9 @@ namespace OmniConsole.Pages.Settings
 
             ApplyMouseModeEnabledState(builtInMapping);
 
+            // 提權程式支援（Pro 專屬）：依授權與安裝狀態切顯示與按鈕文字
+            RefreshElevatedAppSupport();
+
             // 填充顯示語言下拉選單（官方 + 社群動態補）並還原選取
             PopulateLanguageCombo();
 
@@ -118,6 +116,80 @@ namespace OmniConsole.Pages.Settings
             UpdateInfoBarRefreshRequested?.Invoke(this, EventArgs.Empty);
             ShowCachedUpdateStatus();
             CheckDeveloperMode(); // 未啟用開發人員模式時顯示警告並停用下載按鈕
+        }
+
+        /// <summary>
+        /// 依 Pro 授權與提權工作安裝狀態，切換貓又區「提權程式支援」列的顯示與按鈕文字。
+        /// 未持 Pro 整列 Collapsed。
+        /// </summary>
+        private void RefreshElevatedAppSupport()
+        {
+            bool isPro = LicenseService.HasEntitlement(LicenseService.Entitlement.Pro);
+            ElevatedAppSupportSection.Visibility = isPro ? Visibility.Visible : Visibility.Collapsed;
+            if (!isPro) return;
+
+            bool installed = PhantomSigilService.IsInstalled();
+            ElevatedAppSupportButton.Content = _resourceLoader.Loc(
+                installed ? "ElevatedAppSupport_Remove" : "ElevatedAppSupport_Install");
+            ElevatedAppSupportButton.Tag = installed;   // 記住目前狀態供 click 分派
+        }
+
+        /// <summary>
+        /// 安裝/移除提權工作。兩者都需一次 UAC（runas）；移除前以手把對話方塊確認。
+        /// runas 放背景執行緒避免阻塞 UI（UAC 期間走 secure desktop）。
+        /// </summary>
+        private async void ElevatedAppSupportButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool installed = ElevatedAppSupportButton.Tag is true;
+
+            if (installed)
+            {
+                var confirm = new GamepadMessageDialog(
+                    XamlRoot,
+                    _resourceLoader.Loc("ElevatedAppSupportRemoveDialog_Title"),
+                    _resourceLoader.Loc("ElevatedAppSupportRemoveDialog_Body"),
+                    _resourceLoader.Loc("ElevatedAppSupportRemoveDialog_Confirm"),
+                    _resourceLoader.Loc("ElevatedAppSupportRemoveDialog_Cancel"));
+                await confirm.ShowAsync();
+                if (!confirm.Result)
+                {
+                    DispatcherQueue.TryEnqueue(() => ElevatedAppSupportButton.Focus(FocusStateHelper.Preferred));
+                    return;
+                }
+                bool ok = await Task.Run(() => PhantomSigilService.Uninstall());
+                DebugLogger.Log($"[AdvancedView] Elevated service uninstall: {ok}");
+                // master 收到 Off 後自盡需短暫時間，輪詢等它停（event 消失）再更新 UI。
+                for (int i = 0; i < 20 && PhantomSigilService.IsInstalled(); i++) await Task.Delay(100);
+            }
+            else
+            {
+                if (!PhantomSigilService.CanUserElevate())
+                {
+                    DebugLogger.Log("[AdvancedView] Account cannot elevate; install blocked before UAC.");
+                    // closeText 傳 null＝純資訊單按鈕，primaryText 當關閉按鈕字樣
+                    var notice = new GamepadMessageDialog(
+                        XamlRoot,
+                        _resourceLoader.Loc("ElevatedAppSupportUnavailableDialog_Title"),
+                        _resourceLoader.Loc("ElevatedAppSupportUnavailableDialog_Body"),
+                        _resourceLoader.Loc("ElevatedAppSupportUnavailableDialog_Close"),
+                        null);
+                    await notice.ShowAsync();
+                    DispatcherQueue.TryEnqueue(() => ElevatedAppSupportButton.Focus(FocusStateHelper.Preferred));
+                    return;
+                }
+
+                bool ok = await Task.Run(() => PhantomSigilService.Install());
+                DebugLogger.Log($"[AdvancedView] Elevated service install: {ok}");
+                // master 啟動工作、建 event 需短暫時間，輪詢等它就緒再更新 UI。
+                for (int i = 0; i < 20 && !PhantomSigilService.IsInstalled(); i++) await Task.Delay(100);
+            }
+
+            RefreshElevatedAppSupport();
+            DispatcherQueue.TryEnqueue(() => ElevatedAppSupportButton.Focus(FocusStateHelper.Preferred));
+
+            // 服務狀態變了就讓 PhantomKey 重新就位：安裝後升到 High IL、移除後回一般權限
+            // （master 自盡時會順手收掉它，不重啟手把映射就沒了）。
+            await PhantomKeyService.ReconcileElevationAsync();
         }
 
         /// <summary>若應自動檢查更新（跨日 + 開關啟用）則非同步檢查；由殼層在進頁時呼叫。</summary>
@@ -350,12 +422,87 @@ namespace OmniConsole.Pages.Settings
                 await PromptRestartForLanguageAsync();
         }
 
-        /// <summary>Mouse Mode 版面配置下拉選單切換時立即儲存。index 0=OmniNav、1=Classic。</summary>
+        private bool _suppressLayoutSelection = false;
+
+        /// <summary>使用者按下「編輯…」時通知宿主切到手把映射頁並開啟自訂版面編輯器。</summary>
+        internal event EventHandler? EditCustomLayoutRequested;
+
+        /// <summary>
+        /// 填入版面配置下拉選單並還原選取。「自訂」只在持有 Pro 時列入，未持有時整項不存在。
+        /// 還原期間抑制 SelectionChanged：未持有 Pro 而設定值是「自訂」時會落回索引 0，
+        /// 那是「顯示實際生效的版面」而不是使用者的選擇，寫回去就會把他存的設定覆蓋掉。
+        /// </summary>
+        private void FillLayoutCombo()
+        {
+            _suppressLayoutSelection = true;
+
+            MouseModeLayoutCombo.Items.Clear();
+            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_OmniNav"), Tag = SettingsService.LayoutOmniNav });
+            MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_Classic"), Tag = SettingsService.LayoutClassic });
+
+            if (LicenseService.HasEntitlement(LicenseService.Entitlement.Pro))
+                MouseModeLayoutCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("ControllerLayoutPresetItem_Custom"), Tag = SettingsService.LayoutCustom });
+
+            string current = SettingsService.GetMouseModeLayout();
+            int index = 0;
+            for (int i = 0; i < MouseModeLayoutCombo.Items.Count; i++)
+                if (MouseModeLayoutCombo.Items[i] is ComboBoxItem item && (item.Tag as string) == current) { index = i; break; }
+            MouseModeLayoutCombo.SelectedIndex = index;
+
+            _suppressLayoutSelection = false;
+            UpdateEditCustomLayoutButtonVisibility();
+        }
+
+        /// <summary>
+        /// 「編輯…」只在目前選的是自訂版面時出現：選 OmniNav 或經典時它沒有可編輯的對象。
+        /// 未持有 Pro 時清單裡沒有那一項，故也不會出現。
+        /// </summary>
+        private void UpdateEditCustomLayoutButtonVisibility()
+        {
+            bool isCustom = MouseModeLayoutCombo.SelectedItem is ComboBoxItem item
+                            && (item.Tag as string) == SettingsService.LayoutCustom;
+            EditCustomLayoutButton.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>版面配置下拉選單切換時立即儲存，值取自選項的 Tag。</summary>
         private void MouseModeLayoutCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SettingsService.SetMouseModeLayout(
-                MouseModeLayoutCombo.SelectedIndex == 1 ? SettingsService.LayoutClassic : SettingsService.LayoutOmniNav);
+            if (_suppressLayoutSelection) return;
+            SaveSelectedLayout();
         }
+
+        /// <summary>
+        /// 下拉選單關閉時補寫一次：選項索引沒變時 SelectionChanged 不會觸發，但使用者確實選了。
+        /// 這條專為「未持有 Pro 而存的值是自訂版面」那個狀態存在：清單裡沒有「自訂」，
+        /// 畫面落在 OmniNav，此時再點一次 OmniNav 索引不變，什麼都不會發生，
+        /// 使用者會以為自己設好了。小工具那側是按鈕、點什麼寫什麼，兩邊得一致。
+        /// </summary>
+        private void MouseModeLayoutCombo_DropDownClosed(object sender, object e)
+        {
+            if (_suppressLayoutSelection) return;
+            SaveSelectedLayout();
+        }
+
+        /// <summary>把目前選取的版面寫回設定；與已存的值相同時不寫，免得無謂改動觸發 PhantomKey 重新載入。</summary>
+        private void SaveSelectedLayout()
+        {
+            if (MouseModeLayoutCombo.SelectedItem is not ComboBoxItem item) return;
+            string picked = item.Tag as string ?? SettingsService.LayoutOmniNav;
+            if (picked == SettingsService.GetMouseModeLayout()) return;
+            SettingsService.SetMouseModeLayout(picked);
+            UpdateEditCustomLayoutButtonVisibility();
+        }
+
+        /// <summary>把白框焦點落回「編輯…」按鈕，供自訂版面編輯器返回時還原（本頁是用完即丟、返回時整頁重建）。</summary>
+        internal void FocusEditCustomLayoutButton()
+        {
+            if (EditCustomLayoutButton.Visibility != Visibility.Visible) return;
+            FocusNavHelper.RestoreFocusAfterRebuild(this, EditCustomLayoutButton);
+        }
+
+        /// <summary>「編輯…」按鈕：編輯器住手把映射頁的內層 Frame，故把請求交給宿主處理。</summary>
+        private void EditCustomLayoutButton_Click(object sender, RoutedEventArgs e)
+            => EditCustomLayoutRequested?.Invoke(this, EventArgs.Empty);
 
         /// <summary>導覽音效 ToggleSwitch 切換時立即儲存，並即時切換 ElementSoundPlayer 全域狀態。</summary>
         private void NavigationSoundsSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -410,6 +557,7 @@ namespace OmniConsole.Pages.Settings
 
             // 版面配置與游標速度只在總開關 On 時有意義（Off 時內建與 JSON 皆不介入），與小工具一致
             MouseModeLayoutCombo.IsEnabled = mouseModeOn;
+            EditCustomLayoutButton.IsEnabled = mouseModeOn;
             CursorSpeedCombo.IsEnabled = mouseModeOn;
         }
 

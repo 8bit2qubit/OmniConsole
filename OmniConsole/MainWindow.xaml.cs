@@ -33,6 +33,9 @@ namespace OmniConsole
         // Content.Loaded 觸發時 SetResult，標記 XamlRoot 此後可用於 ContentDialog
         private readonly TaskCompletionSource _visualTreeReady = new();
 
+        // 提權工作版本檢查每次啟動只做一次；Activated 會在視窗每次取得焦點時重複觸發。
+        private bool _elevatedServiceChecked;
+
         /// <summary>
         /// 更新安裝期間設為 true，AppWindow.Closing 與 ESC/B 鍵退出路徑均拒絕關閉。
         /// 由 SettingsHostView.RunInstallBundleWithDialogAsync 在開始/結束時切換。
@@ -90,7 +93,7 @@ namespace OmniConsole
                 };
             }
 
-            // AppWindow 層級的關閉請求（X 鈕、Task View 關閉、Alt+F4 等）。
+            // AppWindow 層級的關閉請求（X 按鈕、Task View 關閉、Alt+F4 等）。
             // 更新安裝期間一律拒絕；否則在視窗關閉前釋放手把導覽服務的系統級資源，
             // 涵蓋不經過 App.ExitApp 的關閉路徑。
             this.AppWindow.Closing += (s, e) =>
@@ -156,6 +159,10 @@ namespace OmniConsole
             _hwnd = WindowNative.GetWindowHandle(this);
             if (_launchView != null) _launchView.Hwnd = _hwnd;
             if (_settingsHostView != null) _settingsHostView.Hwnd = _hwnd;
+
+            // 提權工作版本與套件不符時先擋下來更新。放在設定模式判斷之前：啟動平台與進設定頁
+            // 兩條分支都會經過這裡，不論停在哪一頁都問得到。
+            await TryUpdateElevatedServiceAsync();
 
             // 設定模式不自動啟動平台
             if (_isSettingsMode) return;
@@ -328,6 +335,88 @@ namespace OmniConsole
                 {
                     DebugLogger.Log($"[MainWindow] Resume dialog failed: {ex.Message}");
                     tcs.SetException(ex);
+                }
+            });
+            await tcs.Task;
+        }
+
+        /// <summary>
+        /// 提權工作的版本與套件不符時引導使用者更新（重跑 install，一次 UAC）。
+        /// 沒裝提權工作的人不付任何額外成本。
+        /// </summary>
+        public async Task TryUpdateElevatedServiceAsync()
+        {
+            if (_elevatedServiceChecked) return;
+            _elevatedServiceChecked = true;
+
+            if (!PhantomSigilService.NeedsUpdate()) return;
+
+            // 等 Content.Loaded 取得有效 XamlRoot，再排到 UI 執行緒顯示對話方塊
+            await _visualTreeReady.Task;
+
+            var tcs = new TaskCompletionSource<bool>();
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+
+                    // 版本對上之前一直問，關掉對話方塊或在系統的權限要求按取消都會再來一輪。
+                    // 元件版本必須一致才能運作正常，故不提供略過的出路；使用者要離開仍可直接關閉視窗。
+                    for (int attempt = 1; ; attempt++)
+                    {
+                        if (!PhantomSigilService.NeedsUpdate()) break;
+
+                        // 同一時間只能顯示一個 ContentDialog，且前一個的關閉需要時間。
+                        if (attempt > 1) await Task.Delay(500);
+
+                        // ContentDialog 不能重複顯示，每一輪都重建。
+                        // 不設 CloseButtonText：更新是繼續使用的前提，不列出與它並排的略過選項。
+                        // BlockDismiss 一併擋掉 Esc 與手把 B，只有按下「更新」才關得掉。
+                        var dialog = new GamepadDialogBase
+                        {
+                            XamlRoot = this.Content.XamlRoot,
+                            Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                            RequestedTheme = ElementTheme.Dark,
+                            Title = resourceLoader.Loc("ElevatedServiceUpdateDialog_Title"),
+                            Content = resourceLoader.Loc("ElevatedServiceUpdateDialog_Content"),
+                            PrimaryButtonText = resourceLoader.Loc("ElevatedServiceUpdateDialog_Update"),
+                            DefaultButton = ContentDialogButton.Primary,
+                            DismissPolicy = DialogDismissPolicy.RequireChoice
+                        };
+
+                        ContentDialogResult result;
+                        try
+                        {
+                            result = await dialog.ShowAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            // 顯示失敗只放棄這一輪，不能讓整個強制更新流程失效
+                            DebugLogger.Log($"[MainWindow] Elevated service update attempt {attempt}: ShowAsync failed: {ex.Message}");
+                            continue;
+                        }
+
+                        if (result == ContentDialogResult.Primary)
+                        {
+                            bool started = await Task.Run(() => PhantomSigilService.Install());
+
+                            if (started)
+                                for (int i = 0; i < 20 && PhantomSigilService.NeedsUpdate(); i++) await Task.Delay(100);
+                            DebugLogger.Log($"[MainWindow] Elevated service update attempt {attempt}: started={started}, stillNeedsUpdate={PhantomSigilService.NeedsUpdate()}");
+                        }
+                        else
+                        {
+                            DebugLogger.Log($"[MainWindow] Elevated service update attempt {attempt}: dismissed, asking again.");
+                        }
+                    }
+
+                    tcs.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"[MainWindow] Elevated service update failed: {ex.Message}");
+                    tcs.SetResult(false);
                 }
             });
             await tcs.Task;

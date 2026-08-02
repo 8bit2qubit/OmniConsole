@@ -5,11 +5,31 @@ using System;
 
 namespace OmniConsole.Dialogs
 {
+    /// <summary>對話方塊此刻允許哪些關閉路徑。</summary>
+    public enum DialogDismissPolicy
+    {
+        /// <summary>全部放行（預設）。</summary>
+        Allow,
+
+        /// <summary>
+        /// 擋掉「不做選擇就走」的路徑：關閉按鈕、標題列 X、Esc 與手把 B；
+        /// 按主要或次要按鈕仍照常關閉。用於必須做出選擇才能繼續的情境。
+        /// </summary>
+        RequireChoice,
+
+        /// <summary>
+        /// 擋掉全部關閉路徑，含按鈕。用於作業進行中不容中斷的情境；
+        /// 呼叫端要主動關閉時先把 <see cref="GamepadDialogBase.DismissPolicy"/> 設回 Allow 再 Hide()。
+        /// </summary>
+        Block,
+    }
+
     /// <summary>
     /// 手把感知的 ContentDialog 基底類別。繼承它的對話方塊自動取得手把導航：
     /// A=觸發焦點元素、B=關閉、D-pad=對話方塊內 XY 焦點移動。
     /// 開啟時自我註冊進全域 <see cref="GamepadNavigationService"/>（Pull 模型）。
-    /// 需要 B 鍵特殊行為（擋掉 / 上層目錄等）的對話方塊覆寫 <see cref="OnB"/>；
+    /// 需要 B 鍵特殊行為（上層目錄等）的對話方塊覆寫 <see cref="OnB"/>；
+    /// 需要擋下關閉的設 <see cref="DismissPolicy"/>，不必自行掛 Closing 或覆寫 OnB；
     /// 需要螢幕鍵盤閃避的覆寫 <see cref="EnableKeyboardAvoidanceOnOpen"/> 為 true。
     /// </summary>
     public partial class GamepadDialogBase : ContentDialog, IGamepadInputScope
@@ -20,11 +40,31 @@ namespace OmniConsole.Dialogs
         /// <summary>App 啟動早期注入全域服務，供所有對話方塊自我註冊。須在任何對話方塊開啟前呼叫。</summary>
         public static void AttachService(GamepadNavigationService service) => s_service = service;
 
-        /// <summary>掛上 Opened/Closed 事件，開啟時自我註冊進全域服務、關閉時反註冊並清理。</summary>
+        /// <summary>
+        /// 此刻允許哪些關閉路徑。所有攔截集中在基底處理：<see cref="ContentDialog.Closing"/> 擋
+        /// 關閉按鈕/標題列 X/Esc，<see cref="OnB"/> 擋手把 B，兩條路各自要攔一次。
+        /// 狀態會變的對話方塊（如進行中不給關）在狀態切換處改這個值即可。
+        /// </summary>
+        public DialogDismissPolicy DismissPolicy { get; set; } = DialogDismissPolicy.Allow;
+
+        /// <summary>掛上 Opened/Closed/Closing 事件，開啟時自我註冊進全域服務、關閉時反註冊並清理。</summary>
         public GamepadDialogBase()
         {
             Opened += OnGamepadDialogOpened;
             Closed += OnGamepadDialogClosed;
+            Closing += OnGamepadDialogClosing;
+        }
+
+        /// <summary>
+        /// 依 <see cref="DismissPolicy"/> 攔截關閉按鈕/標題列 X/Esc。
+        /// RequireChoice 只擋 Result 為 None 的路徑（按主要或次要按鈕仍照常關閉），Block 則連按鈕一起擋。
+        /// 手把 B 走的是 <see cref="OnB"/>，另外擋一次。
+        /// </summary>
+        private void OnGamepadDialogClosing(ContentDialog sender, ContentDialogClosingEventArgs args)
+        {
+            bool blocked = DismissPolicy == DialogDismissPolicy.Block
+                || (DismissPolicy == DialogDismissPolicy.RequireChoice && args.Result == ContentDialogResult.None);
+            if (blocked) args.Cancel = true;
         }
 
         /// <summary>開啟時：向全域 <see cref="GamepadNavigationService"/> 註冊自己（Pull 模型），並依旗標啟用螢幕鍵盤閃避。初始焦點不在此設，留給各子類。</summary>
@@ -75,8 +115,17 @@ namespace OmniConsole.Dialogs
         /// <summary>A 鍵預設：觸發目前焦點元素。</summary>
         public virtual void OnA() => GamepadNavigationService.ActivateFocusedElement(XamlRoot);
 
-        /// <summary>B 鍵預設：關閉對話方塊並回 true。特殊對話方塊可覆寫（如回 true 但不關，或改做 NavigateUp）。</summary>
-        public virtual bool OnB() { Hide(); return true; }
+        /// <summary>
+        /// B 鍵預設：關閉對話方塊並回 true。特殊對話方塊可覆寫（如改做 NavigateUp）。
+        /// <see cref="DismissPolicy"/> 不是 Allow 時擋下，並回 false 讓 service 不補播返回音效
+        /// （回 true 會發出「已返回」的聲音卻什麼都沒發生，與畫面不符）。
+        /// </summary>
+        public virtual bool OnB()
+        {
+            if (DismissPolicy != DialogDismissPolicy.Allow) return false;
+            Hide();
+            return true;
+        }
 
         /// <summary>Y 鍵預設：不動作（吃掉、不轉送給背景頁）。需要 Y 鍵語意的對話方塊覆寫（如搜尋方塊/清單切換焦點）。</summary>
         public virtual void OnY() { }

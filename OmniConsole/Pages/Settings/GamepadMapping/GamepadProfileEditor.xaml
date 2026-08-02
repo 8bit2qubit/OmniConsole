@@ -27,6 +27,7 @@
             <ContentControl x:Name="HeaderCard" Style="{StaticResource InfoCardStyle}" HorizontalAlignment="Stretch" MinWidth="700">
                 <StackPanel Padding="16" Spacing="4">
                     <TextBlock x:Name="AppNameText" FontSize="28" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                    <!-- 截斷或換行由 code-behind 依模式決定：識別字截斷，整句說明換行。 -->
                     <TextBlock x:Name="AppIdText"   FontSize="12" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
                     <StackPanel x:Name="PathDisplayPanel" Orientation="Vertical" Spacing="2" Margin="0,4,0,0" Visibility="Collapsed">
                         <TextBlock x:Uid="GamepadProfile_PathBoundLabel" services:Localized.Uid="GamepadProfile_PathBoundLabel"
@@ -50,6 +51,8 @@
                     HorizontalAlignment="Stretch"
                     MinWidth="700">
                 <StackPanel>
+                    <!-- 繫結單一程式才有意義的兩個選項，編輯自訂版面時整塊收起（見 code-behind 的 ApplyCustomLayoutControlLocks）。 -->
+                    <StackPanel x:Name="PerAppOptionsPanel">
                     <!-- BlockNativeGamepadInput 開關 -->
                     <Grid Padding="16">
                         <Grid.ColumnDefinitions>
@@ -90,8 +93,9 @@
 
                     <!-- 分隔線 -->
                     <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+                    </StackPanel>
 
-                    <!-- 工具列：4 顆按鈕「平分」可用寬度（4 等寬 * 欄），加總恆等於容器寬→永不溢出；
+                    <!-- 工具列：按鈕「平分」可用寬度（等寬 * 欄），加總恆等於容器寬→永不溢出；
                          過長字串（西語）由 WrapButtonContent 在格子內換行顯示（見上方樣板註解），按鈕自動長高、完整可見。 -->
                     <Grid Padding="16">
                         <Grid.ColumnDefinitions>
@@ -105,11 +109,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
+                                <!-- 「重設為自訂版面」那一欄；該鈕收起時寬度一併歸零，否則右邊會空一格。 -->
+                                <ColumnDefinition x:Name="ResetCustomColumn" Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="CopyFromButton"     Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingCopyFromButton" services:Localized.Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="CopyFromButton_Click"     XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
-                            <Button x:Name="ClearAllButton"     Grid.Column="1" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingClearAllButton" services:Localized.Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="ClearAllButton_Click"     XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
-                            <Button x:Name="ResetButton"        Grid.Column="2" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetButton" services:Localized.Uid="GamepadMappingResetButton"        FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"        Click="ResetButton_Click"        XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
-                            <Button x:Name="ResetClassicButton" Grid.Column="3" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetClassicButton" services:Localized.Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}" Click="ResetClassicButton_Click" XYFocusUp="{x:Bind ProcessPriorityCombo}"/>
+                            <Button x:Name="CopyFromButton"     Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingCopyFromButton" services:Localized.Uid="GamepadMappingCopyFromButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="CopyFromButton_Click"/>
+                            <Button x:Name="ClearAllButton"     Grid.Column="1" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingClearAllButton" services:Localized.Uid="GamepadMappingClearAllButton"     FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"     Click="ClearAllButton_Click"/>
+                            <Button x:Name="ResetButton"        Grid.Column="2" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetButton" services:Localized.Uid="GamepadMappingResetButton"        FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"        Click="ResetButton_Click"/>
+                            <Button x:Name="ResetClassicButton" Grid.Column="3" Margin="4,0"   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetClassicButton" services:Localized.Uid="GamepadMappingResetClassicButton" FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}" Click="ResetClassicButton_Click"/>
+                            <Button x:Name="ResetCustomButton"  Grid.Column="4" Margin="4,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Uid="GamepadMappingResetCustomButton" services:Localized.Uid="GamepadMappingResetCustomButton"  FontSize="14" Padding="8" ContentTemplate="{StaticResource WrapButtonContent}"  Click="ResetCustomButton_Click" Visibility="Collapsed"/>
                         </Grid>
                     </Grid>
                 </StackPanel>
@@ -134,7 +141,7 @@
                             <FontIcon Glyph="&#xF093;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="22"/>
                             <TextBlock x:Uid="GamepadInput_A" services:Localized.Uid="GamepadInput_A" VerticalAlignment="Center" FontSize="15"/>
                         </StackPanel>
-                        <ComboBox  x:Name="ComboA" Grid.Column="1" HorizontalAlignment="Stretch" Tag="A" SelectionChanged="ActionCombo_SelectionChanged" XYFocusUp="{x:Bind ClearAllButton}"/>
+                        <ComboBox  x:Name="ComboA" Grid.Column="1" HorizontalAlignment="Stretch" Tag="A" SelectionChanged="ActionCombo_SelectionChanged"/>
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
                             <Button    x:Name="KeyBtnA" Tag="A" Click="ChangeKey_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
                             <ToggleButton x:Name="RepeatBtnA" Tag="A" Click="RepeatToggle_Click" Margin="8,0,0,0" Visibility="Collapsed" x:Uid="GamepadRepeatToggle" services:Localized.Uid="GamepadRepeatToggle"/>

@@ -263,7 +263,7 @@
     <value>讓貓又將手把化作鍵鼠，並在「貓又」頁為各程式量身調校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、Playnite 桌面版、檔案總管、Windows 檔案選擇器、Windows Installer、Steam 和 Discord。</value>
+    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、檔案總管、Windows 檔案選擇器、開啟方式對話方塊、Windows Installer、Steam 和 Discord。工作管理員與螢幕小鍵盤另需系統管理員程式支援（專業版）。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已停用：此主機具備廠商內建的手把映射。</value>
@@ -279,6 +279,12 @@
   </data>
   <data name="ControllerLayoutPresetItem_Classic" xml:space="preserve">
     <value>經典</value>
+  </data>
+  <data name="ControllerLayoutPresetItem_Custom" xml:space="preserve">
+    <value>自訂</value>
+  </data>
+  <data name="ControllerLayoutPresetEditButton.Content" xml:space="preserve">
+    <value>編輯…</value>
   </data>
   <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
     <value>游標速度</value>
@@ -752,6 +758,15 @@
   <data name="PhantomKeyHealth_NotRunning" xml:space="preserve">
     <value>未執行</value>
   </data>
+  <data name="Label_ElevatedAppSupportService.Text" xml:space="preserve">
+    <value>系統管理員程式支援 (PhantomSigil)</value>
+  </data>
+  <data name="ElevatedServiceHealth_Running" xml:space="preserve">
+    <value>執行中</value>
+  </data>
+  <data name="ElevatedServiceHealth_NotRunning" xml:space="preserve">
+    <value>未執行</value>
+  </data>
   <data name="PhantomKeyResp_Responsive" xml:space="preserve">
     <value>正常回應（{0} ms）</value>
   </data>
@@ -796,6 +811,9 @@
   </data>
   <data name="Label_PhantomPaw.Text" xml:space="preserve">
     <value>PhantomPaw</value>
+  </data>
+  <data name="Label_PhantomSigil.Text" xml:space="preserve">
+    <value>PhantomSigil</value>
   </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
@@ -926,8 +944,35 @@
   <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
     <value>重設</value>
   </data>
+  <data name="GamepadMappingResetCustomButton.Content" xml:space="preserve">
+    <value>自訂預設</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmTitle" xml:space="preserve">
+    <value>重設為自訂預設？</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmBody" xml:space="preserve">
+    <value>目前所有輸入位將被覆寫為自訂預設。</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmYes" xml:space="preserve">
+    <value>重設</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutTitle" xml:space="preserve">
+    <value>自訂版面</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutSubtitle" xml:space="preserve">
+    <value>內建映射涵蓋的程式會套用此版面，新增程式設定檔時也以它為起點</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyTitle" xml:space="preserve">
+    <value>將所有輸入位設為「無」？</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyBody" xml:space="preserve">
+    <value>內建映射涵蓋的程式將不再收到模擬的鍵鼠輸入。新增程式設定檔時也會以全部為「無」作為起點。</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyYes" xml:space="preserve">
+    <value>儲存</value>
+  </data>
   <data name="GamepadMappingCopyFromButton.Content" xml:space="preserve">
-    <value>從其他程式讀入…</value>
+    <value>從程式讀入…</value>
   </data>
   <data name="GamepadMappingChangeKeyButton" xml:space="preserve">
     <value>改鍵…</value>
@@ -970,6 +1015,12 @@
   </data>
   <data name="GamepadAction_WheelRight" xml:space="preserve">
     <value>滾輪向右</value>
+  </data>
+  <data name="GamepadAction_GamepadKeyboard" xml:space="preserve">
+    <value>遊戲控制器鍵盤</value>
+  </data>
+  <data name="GamepadAction_OnScreenKeyboard" xml:space="preserve">
+    <value>螢幕小鍵盤</value>
   </data>
   <data name="GamepadAction_StickCursor" xml:space="preserve">
     <value>游標移動</value>
@@ -1092,7 +1143,7 @@
     <value>從其他程式讀入</value>
   </data>
   <data name="GamepadMappingCopyFromHint" xml:space="preserve">
-    <value>選一個現有設定檔，將其按鍵設定複製過來。</value>
+    <value>選一個現有設定檔，將它的輸入位複製過來。</value>
   </data>
   <data name="GamepadMappingCopyFromPlaceholder" xml:space="preserve">
     <value>輸入以篩選程式...</value>
@@ -1101,7 +1152,7 @@
     <value>刪除此設定檔？</value>
   </data>
   <data name="GamepadMappingDeleteConfirmBody" xml:space="preserve">
-    <value>此「{0}」的自訂按鍵設定檔將被移除，改由內建版面配置接手。</value>
+    <value>此「{0}」的自訂輸入位將被移除，改由內建版面配置接手。</value>
   </data>
   <data name="GamepadMappingDeleteConfirmYes" xml:space="preserve">
     <value>刪除</value>
@@ -1540,5 +1591,206 @@
   </data>
   <data name="Import_Error_ExecutableNotFound" xml:space="preserve">
     <value>此主機上找不到該執行檔。</value>
+  </data>
+  <data name="Nav_Pro.Content" xml:space="preserve">
+    <value>專業版</value>
+  </data>
+  <data name="ProTitle" xml:space="preserve">
+    <value>{OmniConsole} 專業版</value>
+  </data>
+  <data name="ProDescription.Text" xml:space="preserve">
+    <value>解鎖進階功能，並管理這台主機上的授權。</value>
+  </data>
+  <data name="ProSection_Unlock.Text" xml:space="preserve">
+    <value>解鎖</value>
+  </data>
+  <data name="ProSection_Status.Text" xml:space="preserve">
+    <value>授權</value>
+  </data>
+  <data name="ProSection_Manage.Text" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="ProSection_Features.Text" xml:space="preserve">
+    <value>功能</value>
+  </data>
+  <data name="ProUnlockCard_Title.Text" xml:space="preserve">
+    <value>啟用專業版</value>
+  </data>
+  <data name="ProUnlockCard_Description.Text" xml:space="preserve">
+    <value>贊助支持以取得授權，再輸入金鑰或匯入授權檔。</value>
+  </data>
+  <data name="ProUnlockCard_Note.Text" xml:space="preserve">
+    <value>在主機上不便打字時，請先把授權檔放到「下載」資料夾或隨身碟，再選擇「匯入授權檔」。</value>
+  </data>
+  <data name="ProSponsorButton.Content" xml:space="preserve">
+    <value>贊助支持</value>
+  </data>
+  <data name="ProEnterKeyButton.Content" xml:space="preserve">
+    <value>輸入授權</value>
+  </data>
+  <data name="ProStatusCard_Title.Text" xml:space="preserve">
+    <value>專業版已啟用</value>
+  </data>
+  <data name="ProStatusLabel_LicensedTo.Text" xml:space="preserve">
+    <value>授權給：</value>
+  </data>
+  <data name="ProStatusLabel_Serial.Text" xml:space="preserve">
+    <value>授權編號：</value>
+  </data>
+  <data name="ProStatusLabel_Issued.Text" xml:space="preserve">
+    <value>簽發時間：</value>
+  </data>
+  <data name="ProManageCard_Title.Text" xml:space="preserve">
+    <value>管理授權</value>
+  </data>
+  <data name="ProManageCard_Description.Text" xml:space="preserve">
+    <value>新增其他授權，或移除這台主機上的授權。</value>
+  </data>
+  <data name="ProRemoveButton.Content" xml:space="preserve">
+    <value>全部移除</value>
+  </data>
+  <data name="ProFeaturesCard_Title.Text" xml:space="preserve">
+    <value>包含的功能</value>
+  </data>
+  <data name="ProLicenseDialog_Title" xml:space="preserve">
+    <value>輸入授權</value>
+  </data>
+  <data name="ProLicenseDialog_Hint" xml:space="preserve">
+    <value>請在下方貼上授權金鑰，或選擇「匯入授權檔」。</value>
+  </data>
+  <data name="ProLicenseDialog_Placeholder" xml:space="preserve">
+    <value>OMNI1-…</value>
+  </data>
+  <data name="ProLicenseDialog_ImportFile" xml:space="preserve">
+    <value>匯入授權檔</value>
+  </data>
+  <data name="ProLicenseDialog_Primary" xml:space="preserve">
+    <value>啟用</value>
+  </data>
+  <data name="ProLicenseDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ProLicense_FileFilter" xml:space="preserve">
+    <value>授權檔 (*.lic)</value>
+  </data>
+  <data name="ProRemoveDialog_Title" xml:space="preserve">
+    <value>要移除授權嗎？</value>
+  </data>
+  <data name="ProRemoveDialog_Body" xml:space="preserve">
+    <value>將移除這台主機上的全部授權。</value>
+  </data>
+  <data name="ProRemoveDialog_Confirm" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ProRemoveDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ProLicense_Success" xml:space="preserve">
+    <value>專業版已啟用。</value>
+  </data>
+  <data name="ProLicense_Error_Empty" xml:space="preserve">
+    <value>請輸入授權金鑰。</value>
+  </data>
+  <data name="ProLicense_Error_Malformed" xml:space="preserve">
+    <value>這看起來不是授權金鑰，請確認已完整複製。</value>
+  </data>
+  <data name="ProLicense_Error_UnknownFormat" xml:space="preserve">
+    <value>此授權需要較新版本的 {OmniConsole}，請先更新再試一次。</value>
+  </data>
+  <data name="ProLicense_Error_UnknownKeyId" xml:space="preserve">
+    <value>此授權由較新的簽章金鑰簽發，請先更新 {OmniConsole} 再試一次。</value>
+  </data>
+  <data name="ProLicense_Error_UnknownProduct" xml:space="preserve">
+    <value>此授權不適用於 {OmniConsole} 專業版。</value>
+  </data>
+  <data name="ProLicense_Error_BadSignature" xml:space="preserve">
+    <value>授權金鑰無效。請確認已完整複製，或改用「匯入授權檔」。</value>
+  </data>
+  <data name="ProLicense_Error_Revoked" xml:space="preserve">
+    <value>此授權已停用。若你認為有誤，歡迎與我聯絡。</value>
+  </data>
+  <data name="ProLicense_Error_VersionExceeded" xml:space="preserve">
+    <value>此授權未涵蓋這個版本的 {OmniConsole}。</value>
+  </data>
+  <data name="ProLicense_Error_FileUnreadable" xml:space="preserve">
+    <value>無法讀取這個檔案。</value>
+  </data>
+  <data name="ProLicense_Error_FileNotLicense" xml:space="preserve">
+    <value>這不是 {OmniConsole} 的授權檔。</value>
+  </data>
+  <data name="ProLicense_Error_AlreadyImported" xml:space="preserve">
+    <value>這份授權已經在這台主機上啟用了。</value>
+  </data>
+  <data name="ProLicense_Error_UnknownEntitlement" xml:space="preserve">
+    <value>此授權解鎖的項目是這個版本還不認得的，請先更新 {OmniConsole} 再試一次。</value>
+  </data>
+  <data name="ProAddLicenseButton.Content" xml:space="preserve">
+    <value>新增授權</value>
+  </data>
+  <data name="ProEntitlement_Pro" xml:space="preserve">
+    <value>{OmniConsole} 專業版</value>
+  </data>
+  <data name="ProEntitlement_Owned" xml:space="preserve">
+    <value>已啟用</value>
+  </data>
+  <data name="ProEntitlement_NotOwned" xml:space="preserve">
+    <value>未擁有</value>
+  </data>
+  <data name="ProEntitlementRemove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ProRemoveDialog_BodyOne" xml:space="preserve">
+    <value>將移除「{0}」在這台主機上的授權。</value>
+  </data>
+  <data name="ProRemoveDialog_BodyPro" xml:space="preserve">
+    <value>移除「{0}」會連帶關閉所有附加功能，因為附加功能以它為前提。</value>
+  </data>
+  <data name="ProLicense_Error_RequiresPro" xml:space="preserve">
+    <value>請先啟用 {OmniConsole} 專業版，再匯入這個附加功能。</value>
+  </data>
+  <data name="ProManageCard_Note.Text" xml:space="preserve">
+    <value>移除不影響你已取得的授權，隨時可以重新匯入。</value>
+  </data>
+  <data name="ElevatedAppSupportSetting_Title.Text" xml:space="preserve">
+    <value>系統管理員程式支援</value>
+  </data>
+  <data name="ElevatedAppSupportSetting_Description.Text" xml:space="preserve">
+    <value>讓手把映射能作用於以系統管理員身分執行的程式。需要系統管理員授權的設定。</value>
+  </data>
+  <data name="ElevatedAppSupport_Install" xml:space="preserve">
+    <value>安裝</value>
+  </data>
+  <data name="ElevatedAppSupport_Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Title" xml:space="preserve">
+    <value>移除系統管理員程式支援？</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Body" xml:space="preserve">
+    <value>手把映射將無法再作用於以系統管理員身分執行的程式。</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Confirm" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Title" xml:space="preserve">
+    <value>更新系統管理員程式支援</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Content" xml:space="preserve">
+    <value>OmniConsole 已更新，系統管理員程式支援需要一併更新才能繼續運作。接下來會要求系統管理員授權。</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Title" xml:space="preserve">
+    <value>這個帳號無法使用此功能</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Body" xml:space="preserve">
+    <value>手把映射需要系統管理員權限，才能送進以系統管理員身分執行的程式。目前登入的 Windows 帳號沒有這個權限。</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Close" xml:space="preserve">
+    <value>知道了</value>
   </data>
 </root>

@@ -1,0 +1,207 @@
+<Page
+    x:Class="OmniConsole.Pages.Settings.ProView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:OmniConsole.Services"
+    xmlns:local="using:OmniConsole.Pages.Settings">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 跨頁共用：CardBackgroundFillColorDefaultBrush（#25282C）。 -->
+                <ResourceDictionary Source="PhantomViewStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 功能列的配色以 Style 供給。 -->
+            <Style x:Key="EntitlementOwnedIconStyle" TargetType="FontIcon">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Margin" Value="0,0,12,0"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}"/>
+            </Style>
+            <Style x:Key="EntitlementLockedIconStyle" TargetType="FontIcon">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Margin" Value="0,0,12,0"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Style>
+            <Style x:Key="EntitlementNameStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+            <Style x:Key="EntitlementStatusStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="12,0,0,0"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <!-- 捲動內收：頁面內建 ScrollViewer，內容超出可視範圍時可捲動。 -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0">
+        <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <!-- 標題/副標滿版置中，不受卡片 700 寬度限制；左右 Margin 24 避開右側捲軸。
+                 標題含品牌名，由 code-behind 賦值。 -->
+            <TextBlock x:Name="ProTitleText" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+            <TextBlock x:Uid="ProDescription" services:Localized.Uid="ProDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" Margin="24,0"/>
+
+            <!-- 卡片內容群組：維持 700 窄欄 -->
+            <StackPanel Spacing="16" HorizontalAlignment="Center" MaxWidth="700" Margin="0,8,0,0">
+
+                <!-- 未解鎖 -->
+                <StackPanel x:Name="LockedGroup" Spacing="16" Visibility="Collapsed">
+
+                    <TextBlock x:Uid="ProSection_Unlock" services:Localized.Uid="ProSection_Unlock" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Margin="2,0,0,0"/>
+
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            HorizontalAlignment="Stretch"
+                            MinWidth="700">
+                        <Grid Padding="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Glyph="&#xF4A5;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock x:Uid="ProUnlockCard_Title" services:Localized.Uid="ProUnlockCard_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                <TextBlock x:Uid="ProUnlockCard_Description" services:Localized.Uid="ProUnlockCard_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                <TextBlock x:Uid="ProUnlockCard_Note" services:Localized.Uid="ProUnlockCard_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <!-- 磁碟上有授權檔卻沒生效時的說明，文字與可見度都由 RefreshState 決定。 -->
+                                <TextBlock x:Name="ProRejectedNoteText" Foreground="{ThemeResource SystemFillColorCriticalBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Vertical" Spacing="8" VerticalAlignment="Center">
+                                <Button x:Name="ProSponsorButton" x:Uid="ProSponsorButton" services:Localized.Uid="ProSponsorButton"
+                                        Click="ProSponsorButton_Click"
+                                        HorizontalAlignment="Stretch"
+                                        FontSize="14" Padding="24,8"/>
+                                <Button x:Name="ProEnterKeyButton" x:Uid="ProEnterKeyButton" services:Localized.Uid="ProEnterKeyButton"
+                                        Click="EnterLicense_Click"
+                                        HorizontalAlignment="Stretch"
+                                        FontSize="14" Padding="24,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- 已解鎖 -->
+                <StackPanel x:Name="UnlockedGroup" Spacing="16" Visibility="Collapsed">
+
+                    <TextBlock x:Uid="ProSection_Status" services:Localized.Uid="ProSection_Status" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Margin="2,0,0,0"/>
+
+                    <!-- 無互動控制項的資訊卡：用 InfoCardStyle 讓 D-pad 焦點能落上去。 -->
+                    <ContentControl x:Name="StatusCard" Style="{StaticResource InfoCardStyle}" HorizontalAlignment="Stretch" MinWidth="700">
+                        <Grid Padding="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Glyph="&#xE930;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Top" Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock x:Uid="ProStatusCard_Title" services:Localized.Uid="ProStatusCard_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                <Grid ColumnSpacing="12" RowSpacing="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" x:Uid="ProStatusLabel_LicensedTo" services:Localized.Uid="ProStatusLabel_LicensedTo" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="StatusEmailText" FontSize="14" TextWrapping="Wrap"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" x:Uid="ProStatusLabel_Serial" services:Localized.Uid="ProStatusLabel_Serial" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="StatusSerialText" FontSize="14"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" x:Uid="ProStatusLabel_Issued" services:Localized.Uid="ProStatusLabel_Issued" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="StatusIssuedText" FontSize="14"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </ContentControl>
+
+                    <TextBlock x:Uid="ProSection_Manage" services:Localized.Uid="ProSection_Manage" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Margin="2,0,0,0"/>
+
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            HorizontalAlignment="Stretch"
+                            MinWidth="700">
+                        <Grid Padding="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Glyph="&#xE912;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock x:Uid="ProManageCard_Title" services:Localized.Uid="ProManageCard_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                                <TextBlock x:Uid="ProManageCard_Description" services:Localized.Uid="ProManageCard_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                                <!-- 「移除不影響已取得的授權」只在此處說一次，其餘卡片與對話方塊不再重複。 -->
+                                <TextBlock x:Uid="ProManageCard_Note" services:Localized.Uid="ProManageCard_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <!-- 已解鎖後仍須有匯入入口：附加功能與換發的金鑰都由此進來。 -->
+                            <StackPanel Grid.Column="2" Orientation="Vertical" Spacing="8" VerticalAlignment="Center">
+                                <Button x:Name="ProAddLicenseButton" x:Uid="ProAddLicenseButton" services:Localized.Uid="ProAddLicenseButton"
+                                        Click="EnterLicense_Click"
+                                        HorizontalAlignment="Stretch"
+                                        FontSize="14" Padding="24,8"/>
+                                <Button x:Name="ProRemoveButton" x:Uid="ProRemoveButton" services:Localized.Uid="ProRemoveButton"
+                                        Click="ProRemoveButton_Click"
+                                        HorizontalAlignment="Stretch"
+                                        FontSize="14" Padding="24,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- 兩狀態共用：功能清單 -->
+                <TextBlock x:Uid="ProSection_Features" services:Localized.Uid="ProSection_Features" FontSize="14" FontWeight="SemiBold"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Margin="2,0,0,0"/>
+
+                <!-- 功能列含移除按鈕，屬互動內容，故用自刻卡片而非可聚焦資訊卡。 -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="700">
+                    <StackPanel Padding="16" Spacing="4">
+                        <TextBlock x:Uid="ProFeaturesCard_Title" services:Localized.Uid="ProFeaturesCard_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                        <!-- 逐項功能列由 code-behind 依 LicenseService.AllEntitlements 產生（避開 DataTemplate 繫結）。 -->
+                        <StackPanel x:Name="EntitlementRows" Spacing="4"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

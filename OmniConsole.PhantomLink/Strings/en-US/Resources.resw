@@ -167,6 +167,9 @@
   <data name="Widget_ControllerLayoutPreset_Classic.Content" xml:space="preserve">
     <value>Classic</value>
   </data>
+  <data name="Widget_ControllerLayoutPreset_Custom.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>Cursor Speed</value>
   </data>
@@ -186,6 +189,6 @@
     <value>Customize gamepad mapping for this app…</value>
   </data>
   <data name="Widget_CustomizeApp_ElevatedNote.Text" xml:space="preserve">
-    <value>This app runs as administrator. Gamepad mappings cannot reach it.</value>
+    <value>This app runs as administrator. Gamepad mappings need Administrator App Support to reach it.</value>
   </data>
 </root>

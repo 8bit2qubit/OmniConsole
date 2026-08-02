@@ -97,9 +97,14 @@ namespace OmniConsole.Pages.Settings
             AboutPhantomKeyVersion.Text = FormatPhantomKeyVersionForUI(s.Versions);
             AboutPhantomPawVersion.Text = FormatPhantomPawVersionForUI(s.Versions);
             AboutPhantomLinkVersion.Text = LocalizeForUI(s.Versions.PhantomLink);
+            AboutPhantomSigilVersion.Text = FormatPackagedVsDeployed(s.Versions.PhantomSigil, s.Versions.PhantomSigilInstalled);
 
             // PhantomKey 健康狀況
             ApplyPhantomKeyHealth(s.PhantomKey);
+
+            // PhantomSigil（提權工作層）健康狀況
+            AboutElevatedServiceText.Text = _resourceLoader.Loc(
+                s.PhantomSigil.ServiceRunning ? "ElevatedServiceHealth_Running" : "ElevatedServiceHealth_NotRunning");
 
             AboutXfsetToolStatus.Text = FormatXfsetToolForUI(s.Xfset);
             AboutXfsetPhysPanelStatus.Text = FormatPhysPanelForUI(s.Xfset);

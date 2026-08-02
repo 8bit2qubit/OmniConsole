@@ -158,6 +158,11 @@
                         <FontIcon Glyph="&#xE90F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="Nav_Pro" services:Localized.Uid="Nav_Pro" Tag="Pro" FontSize="24">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xF4A5;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <NavigationView.Content>

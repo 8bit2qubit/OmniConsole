@@ -61,6 +61,10 @@ namespace OmniConsole.PhantomLink
                 {
                     try { w.RequestedThemeChanged += OnGameBarThemeChanged; }
                     catch (Exception ex) { DebugLogger.Log("[Widget] Hook ThemeChanged FAIL: " + ex); }
+
+                    // Widget 重新顯示時重讀狀態。安裝/移除提權工作 與 匯入/移除授權 都發生在主程式
+                    try { w.VisibleChanged += OnGameBarVisibleChanged; }
+                    catch (Exception ex) { DebugLogger.Log("[Widget] Hook VisibleChanged FAIL: " + ex); }
                 }
             };
 
@@ -68,7 +72,11 @@ namespace OmniConsole.PhantomLink
             {
                 try { Application.Current.LeavingBackground -= OnLeavingBackground; } catch { }
                 var w = App.CurrentWidget;
-                if (w != null) { try { w.RequestedThemeChanged -= OnGameBarThemeChanged; } catch { } }
+                if (w != null)
+                {
+                    try { w.RequestedThemeChanged -= OnGameBarThemeChanged; } catch { }
+                    try { w.VisibleChanged -= OnGameBarVisibleChanged; } catch { }
+                }
             };
         }
 
@@ -91,6 +99,26 @@ namespace OmniConsole.PhantomLink
         private async void OnGameBarThemeChanged(Microsoft.Gaming.XboxGameBar.XboxGameBarWidget sender, object args)
         {
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, SyncThemeFromGameBar);
+        }
+
+        /// <summary>
+        /// Widget 重新顯示時重讀設定與前景狀態，隱藏時不做事。
+        /// 涵蓋「主程式改了狀態、使用者再回到 Game Bar」這條路：安裝或移除提權工作會改變
+        /// 提權輸入是否可用，匯入或移除授權會改變 Pro 狀態，兩者都影響按鈕的啟用與否。
+        /// </summary>
+        private async void OnGameBarVisibleChanged(Microsoft.Gaming.XboxGameBar.XboxGameBarWidget sender, object args)
+        {
+            bool visible;
+            try { visible = sender.Visible; }
+            catch (Exception ex) { DebugLogger.Log("[Widget] VisibleChanged read FAIL: " + ex); return; }
+            if (!visible) return;
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                DebugLogger.Log("[Widget] VisibleChanged → reload");
+                try { ReloadFromStore(); }
+                catch (Exception ex) { DebugLogger.Log("[Widget] VisibleChanged reload FAIL: " + ex); }
+            });
         }
 
         // ── 設定重新載入 ─────────────────────────────────────────────────────
@@ -302,9 +330,7 @@ namespace OmniConsole.PhantomLink
                 ModeOnBtn.IsChecked = mode != PhantomKeyStore.MouseModeOff;
 
                 // Layout
-                string layout = PhantomKeyStore.GetMouseModeLayout();
-                LayoutNavBtn.IsChecked = layout == PhantomKeyStore.LayoutOmniNav;
-                LayoutClassicBtn.IsChecked = layout == PhantomKeyStore.LayoutClassic;
+                SyncLayoutButtons(PhantomKeyStore.GetMouseModeLayout());
 
                 // Cursor Speed
                 int pct = PhantomKeyStore.GetCursorSpeedPercent();
@@ -339,10 +365,13 @@ namespace OmniConsole.PhantomLink
             string displayName = string.Empty;
             bool isElevated = false;
             bool isBigPicture = false;
+            bool canSendElevatedInput = false;
+            bool canCustomizeElevated = false;
+            bool hasPro = false;
             try
             {
                 using var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture);
+                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture, out canSendElevatedInput, out canCustomizeElevated, out hasPro);
             }
             catch (Exception ex)
             {
@@ -353,8 +382,12 @@ namespace OmniConsole.PhantomLink
                 _foregroundFullPath = string.Empty;
                 CustomizeAppBtn.IsEnabled = false;
                 CustomizeAppNoteText.Visibility = Visibility.Collapsed;
+                // 取不到就當作沒有 Pro：Pro 專屬選項寧可不出現，也不要出現了卻按不動
+                ApplyLayoutProVisibility(false);
                 return;
             }
+
+            ApplyLayoutProVisibility(hasPro);
 
             // 一行式顯示「目前: <displayName> (<proc>)」；displayName 為空回退 proc，與 proc 相等或 proc 為空時改走 NoDesc 格式
             string identifier = !string.IsNullOrEmpty(displayName) ? displayName : (!string.IsNullOrEmpty(proc) ? proc : "—");
@@ -400,12 +433,17 @@ namespace OmniConsole.PhantomLink
             // packaged 行程或 blocked 時 fullPath 不適用（packaged 走 aumid 主鍵；blocked 不會建 profile）
             _foregroundFullPath = (!blocked && !isUwp) ? (fullPath ?? string.Empty) : string.Empty;
 
-            CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !isElevated;
-            CustomizeAppNoteText.Visibility =
-                (isElevated && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
+            // 管理員身分的前景要不要擋，兩顆按鈕的條件並不相同，各自對應一個由 Bridge 算好的能力旗標：
+            //   自訂此 App     = 建立設定檔，桌面和 FSE 可用，故只要求 Pro 加上提權工作已安裝。
+            //   Steam 內嵌介面 = 當下就要送鍵，故要求提權且持 Pro 的 PhantomKey 正在執行。
+            bool customizeBlocked = isElevated && !canCustomizeElevated;
+            bool liveInputBlocked = isElevated && !canSendElevatedInput;
 
-            // 前景為管理員身分 App 時停用 Steam 內嵌介面按鈕。
-            TriggerSteamInGameOverlayBtn.IsEnabled = !isElevated;
+            CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !customizeBlocked;
+            CustomizeAppNoteText.Visibility =
+                (customizeBlocked && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
+
+            TriggerSteamInGameOverlayBtn.IsEnabled = !liveInputBlocked;
         }
 
         /// <summary>
@@ -437,6 +475,7 @@ namespace OmniConsole.PhantomLink
 
             LayoutNavBtn.IsEnabled = mouseOn;
             LayoutClassicBtn.IsEnabled = mouseOn;
+            LayoutCustomBtn.IsEnabled = mouseOn;
             CursorSpeedSlider.IsEnabled = mouseOn;
 
             BuiltInMappingNote.Visibility = _builtInMapping ? Visibility.Visible : Visibility.Collapsed;
@@ -560,7 +599,7 @@ namespace OmniConsole.PhantomLink
         }
 
         /// <summary>
-        /// Layout 兩顆 ToggleButton 共用 Click：依 Tag 決定配置、互斥勾選狀態、寫入 Store。
+        /// Layout 三顆 ToggleButton 共用 Click：依 Tag 決定配置、互斥勾選狀態、寫入 Store。
         /// </summary>
         private void LayoutBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -568,17 +607,39 @@ namespace OmniConsole.PhantomLink
             if (!(sender is ToggleButton btn)) return;
 
             string layout = btn.Tag as string ?? PhantomKeyStore.LayoutOmniNav;
+            SyncLayoutButtons(layout);
+            PhantomKeyStore.SetMouseModeLayout(layout);
+        }
 
-            // 兩顆 ToggleButton 互斥
+        /// <summary>
+        /// 依目前配置設定三顆 Layout 按鈕的互斥勾選狀態。
+        /// _loading 期間 Click handler 直接 return，故此處的程式化賦值不會觸發寫回。
+        /// </summary>
+        private void SyncLayoutButtons(string layout)
+        {
             _loading = true;
             try
             {
                 LayoutNavBtn.IsChecked = layout == PhantomKeyStore.LayoutOmniNav;
                 LayoutClassicBtn.IsChecked = layout == PhantomKeyStore.LayoutClassic;
+                LayoutCustomBtn.IsChecked = layout == PhantomKeyStore.LayoutCustom;
             }
             finally { _loading = false; }
+        }
 
-            PhantomKeyStore.SetMouseModeLayout(layout);
+        /// <summary>
+        /// 依是否持有 Pro 決定「自訂」按鈕的顯隱，並把撞到它的焦點連結回來。
+        /// 未持有 Pro 但設定值是「自訂」時，改顯示實際生效的 OmniNav 為勾選，
+        /// 但不寫回 Store：那是使用者的資料，重新匯入授權後能原樣復活。
+        /// </summary>
+        private void ApplyLayoutProVisibility(bool hasPro)
+        {
+            LayoutCustomBtn.Visibility = hasPro ? Visibility.Visible : Visibility.Collapsed;
+            // 隱藏中的元素不可被指向，故「自訂」收起時「經典」的右鍵改成撞自己這面牆
+            LayoutClassicBtn.XYFocusRight = hasPro ? (DependencyObject)LayoutCustomBtn : LayoutClassicBtn;
+
+            if (!hasPro && PhantomKeyStore.GetMouseModeLayout() == PhantomKeyStore.LayoutCustom)
+                SyncLayoutButtons(PhantomKeyStore.LayoutOmniNav);
         }
 
         /// <summary>

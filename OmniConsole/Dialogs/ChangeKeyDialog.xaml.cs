@@ -147,7 +147,7 @@ namespace OmniConsole.Dialogs
                 InvokePrimaryButton();
         }
 
-        /// <summary>以自動化 Invoke 觸發對話方塊的確定鈕（比照檔案選擇器：二次點選即確認關閉）。</summary>
+        /// <summary>以自動化 Invoke 觸發對話方塊的確定按鈕（比照檔案選擇器：二次點選即確認關閉）。</summary>
         private void InvokePrimaryButton()
         {
             if (GetTemplateChild("PrimaryButton") is Button btn)
@@ -159,7 +159,7 @@ namespace OmniConsole.Dialogs
             }
         }
 
-        /// <summary>確定鈕：依 isCombo 收集修飾鍵 + 選到的 VK → 寫到 Result；未選到主鍵則取消提交。</summary>
+        /// <summary>確定按鈕：依 isCombo 收集修飾鍵 + 選到的 VK → 寫到 Result；未選到主鍵則取消提交。</summary>
         private void OnPrimary(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             if (_selectedRow?.Vk is not int vk)

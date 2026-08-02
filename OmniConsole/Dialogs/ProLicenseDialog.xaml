@@ -1,0 +1,48 @@
+<dialogs:GamepadDialogBase
+    x:Class="OmniConsole.Dialogs.ProLicenseDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dialogs="using:OmniConsole.Dialogs"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    DefaultButton="Primary"
+    RequestedTheme="Dark">
+
+    <dialogs:GamepadDialogBase.Resources>
+        <ResourceDictionary Source="PhantomDialogStyles.xaml"/>
+    </dialogs:GamepadDialogBase.Resources>
+
+    <StackPanel Width="460">
+
+        <TextBlock x:Name="HintText"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                   Margin="0,0,0,12"/>
+
+        <!-- 等寬字體：金鑰是連續的英數字串，等寬才容易逐字核對。 -->
+        <TextBox x:Name="KeyInputBox"
+                 AcceptsReturn="True"
+                 MaxLength="400"
+                 Height="120"
+                 FontFamily="Consolas"
+                 TextWrapping="Wrap"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 Margin="0,0,0,8"/>
+
+        <!-- 檔案匯入不是第二條提交路徑，只是把授權檔內容填進上方輸入方塊，驗證仍走同一條。 -->
+        <Button x:Name="ImportFileButton"
+                HorizontalAlignment="Stretch"
+                FontSize="14"
+                Padding="24,8"
+                Margin="0,0,0,8"
+                Click="ImportFileButton_Click"/>
+
+        <TextBlock x:Name="ErrorText"
+                   FontSize="12"
+                   Foreground="Red"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed"/>
+
+    </StackPanel>
+
+</dialogs:GamepadDialogBase>

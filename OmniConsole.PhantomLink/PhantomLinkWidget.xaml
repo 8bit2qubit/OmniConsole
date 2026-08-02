@@ -157,23 +157,31 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Layout: 2 ToggleButton 水平組 -->
+                <!-- Layout: 3 ToggleButton 水平組（「自訂」是 Pro 專屬，未持有時整顆收起）。
+                     MinWidth 對齊上方 Mode 那組的 72，三顆才擺得下。
+                     LayoutClassicBtn 的 XYFocusRight 由 code-behind 依「自訂」的顯隱動態改 -->
                 <StackPanel Spacing="6">
                     <TextBlock x:Uid="Widget_ControllerLayoutPreset_Title" services:Localized.Uid="Widget_ControllerLayoutPreset_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_ControllerLayoutPreset_OmniNav" services:Localized.Uid="Widget_ControllerLayoutPreset_OmniNav"
                                       Click="LayoutBtn_Click" Tag="OmniNav"
-                                      UseSystemFocusVisuals="True" MinWidth="96"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind ModeOffBtn}"
                                       XYFocusLeft="{x:Bind LayoutNavBtn}"
                                       XYFocusRight="{x:Bind LayoutClassicBtn}"
                                       XYFocusDown="{x:Bind CursorSpeedSlider}"/>
                         <ToggleButton x:Name="LayoutClassicBtn" x:Uid="Widget_ControllerLayoutPreset_Classic" services:Localized.Uid="Widget_ControllerLayoutPreset_Classic"
                                       Click="LayoutBtn_Click" Tag="Classic"
-                                      UseSystemFocusVisuals="True" MinWidth="96"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
                                       XYFocusUp="{x:Bind ModeOnBtn}"
                                       XYFocusLeft="{x:Bind LayoutNavBtn}"
-                                      XYFocusRight="{x:Bind LayoutClassicBtn}"
+                                      XYFocusDown="{x:Bind CursorSpeedSlider}"/>
+                        <ToggleButton x:Name="LayoutCustomBtn" x:Uid="Widget_ControllerLayoutPreset_Custom" services:Localized.Uid="Widget_ControllerLayoutPreset_Custom"
+                                      Click="LayoutBtn_Click" Tag="Custom"
+                                      UseSystemFocusVisuals="True" MinWidth="72" Visibility="Collapsed"
+                                      XYFocusUp="{x:Bind ModeOnBtn}"
+                                      XYFocusLeft="{x:Bind LayoutClassicBtn}"
+                                      XYFocusRight="{x:Bind LayoutCustomBtn}"
                                       XYFocusDown="{x:Bind CursorSpeedSlider}"/>
                     </StackPanel>
                 </StackPanel>

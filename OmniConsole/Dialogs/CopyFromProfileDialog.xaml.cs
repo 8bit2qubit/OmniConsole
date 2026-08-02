@@ -92,7 +92,7 @@ namespace OmniConsole.Dialogs
         }
 
         /// <summary>
-        /// 確定鈕：只以「目前文字精確比對 label」放行（清空/部分輸入/沒精確選到一律不套用）。
+        /// 確定按鈕：只以「目前文字精確比對 label」放行（清空/部分輸入/沒精確選到一律不套用）。
         /// 刻意不留任何「上次選過」的 fallback——否則清空輸入框看似沒選、按確定卻套用殘留值，會誤套到非預期的程式。
         /// </summary>
         private void OnPrimary(ContentDialog sender, ContentDialogButtonClickEventArgs args)

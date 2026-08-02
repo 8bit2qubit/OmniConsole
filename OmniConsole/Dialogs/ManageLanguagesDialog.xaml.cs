@@ -58,7 +58,6 @@ namespace OmniConsole.Dialogs
             LanguageList.SelectionChanged += LanguageList_SelectionChanged;
 
             Opened += OnOpened;
-            Closing += OnClosing;
         }
 
         /// <summary>
@@ -69,19 +68,6 @@ namespace OmniConsole.Dialogs
         {
             GuardInitialFocus(() => IsFocusWithin(target), () => target.Focus(FocusStateHelper.Preferred));
             target.Focus(FocusStateHelper.Preferred);
-        }
-
-        /// <summary>進行中時攔截所有關閉路徑（CloseButton/X/Esc）。手把 B 另由 OnB 覆寫攔截。</summary>
-        private void OnClosing(ContentDialog sender, ContentDialogClosingEventArgs args)
-        {
-            if (_busy) args.Cancel = true;
-        }
-
-        /// <summary>手把 B 鍵：進行中時擋掉（不關閉），否則走基底預設關閉。</summary>
-        public override bool OnB()
-        {
-            if (_busy) return true;   // 吞掉、不關閉
-            return base.OnB();
         }
 
         /// <summary>
@@ -331,7 +317,9 @@ namespace OmniConsole.Dialogs
         /// <summary>切換動作進行中狀態：顯示進度圈、隱藏按鈕、停用左欄清單，並鎖住對話方塊關閉。</summary>
         private void SetActionBusy(bool busy)
         {
-            _busy = busy;   // 鎖/解鎖對話方塊關閉（Closing 攔截 + OnB 攔 B 鍵）
+            _busy = busy;
+            // 進行中鎖住所有關閉路徑（關閉鈕/X/Esc/手把 B 都由基底依此攔下）
+            DismissPolicy = busy ? DialogDismissPolicy.Block : DialogDismissPolicy.Allow;
             ActionButton.Visibility = busy ? Visibility.Collapsed : Visibility.Visible;
             ActionProgress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
             ActionProgress.IsActive = busy;

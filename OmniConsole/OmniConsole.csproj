@@ -138,6 +138,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<Link>OmniConsole.PhantomPaw32.dll</Link>
 		</Content>
+		<Content Include="Phantom\OmniConsole.PhantomSigil.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>OmniConsole.PhantomSigil.exe</Link>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

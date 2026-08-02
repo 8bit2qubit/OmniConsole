@@ -128,7 +128,7 @@ namespace OmniConsole.Pages.Settings.General
         /// <paramref name="toRight"/>=true 表示切往右側分類、false 表示切往左側。
         /// 子頁設 NavigationCacheMode.Disabled（切走即銷毀）、把宿主自身當參數傳入供子頁讀寫共用狀態、切頁後排一次非阻塞回收。
         /// <paramref name="notify"/>=false（僅入頁初始導覽）時不發 StateChanged：初始手把提示列由殼層進設定頁時統一主動驅動，
-        /// 避免與殼層明確刷新重複（切索引等執行中導覽仍發，殼層據此重評提示列）。
+        /// 避免與殼層明確更新重複（切索引等執行中導覽仍發，殼層據此重評提示列）。
         /// </summary>
         private void NavigateChild(Type pageType, bool toRight, bool notify)
         {
@@ -193,7 +193,7 @@ namespace OmniConsole.Pages.Settings.General
         internal Task AddPlatformInternal() =>
             (InnerFrame.Content as UserPlatformsView)?.AddPlatformInternal() ?? Task.CompletedTask;
 
-        /// <summary>提示列 X 鈕（滑鼠路徑）：編輯選取的使用者平台，轉發目前 User 子頁。</summary>
+        /// <summary>提示列 X 按鈕（滑鼠路徑）：編輯選取的使用者平台，轉發目前 User 子頁。</summary>
         internal Task EditSelectedPlatformInternal() =>
             (InnerFrame.Content as UserPlatformsView)?.EditSelectedPlatformInternal() ?? Task.CompletedTask;
 
@@ -240,7 +240,7 @@ namespace OmniConsole.Pages.Settings.General
             if (!focusMoved) CommunityPlatformsButton.Focus(FocusStateHelper.Preferred);
         }
 
-        /// <summary>社群平台鈕與匯入鈕顯隱：僅 User 子頁且已同意自訂平台免責聲明時顯示（社群資料本質是別人給的自訂平台，同一張同意書管轄）。</summary>
+        /// <summary>社群平台按鈕與匯入按鈕顯隱：僅 User 子頁且已同意自訂平台免責聲明時顯示（社群資料本質是別人給的自訂平台，同一張同意書管轄）。</summary>
         private void UpdateImportButtonVisibility()
         {
             bool show = InnerFrame.Content is UserPlatformsView

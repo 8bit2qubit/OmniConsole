@@ -187,6 +187,11 @@
                                         <TextBlock x:Uid="Label_PhantomPaw" services:Localized.Uid="Label_PhantomPaw" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomPawVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock x:Uid="Label_PhantomSigil" services:Localized.Uid="Label_PhantomSigil" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Name="AboutPhantomSigilVersion" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
                                 </StackPanel>
                             </ContentControl>
                         </StackPanel>
@@ -218,6 +223,11 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <TextBlock x:Uid="Label_PhantomKeyResponsiveness" services:Localized.Uid="Label_PhantomKeyResponsiveness" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
                                         <TextBlock x:Name="AboutPhantomKeyResponsivenessText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock x:Uid="Label_ElevatedAppSupportService" services:Localized.Uid="Label_ElevatedAppSupportService" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,16,0"/>
+                                        <TextBlock x:Name="AboutElevatedServiceText" Grid.Column="1" FontSize="14" FontFamily="Consolas" TextAlignment="Right" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
                                 </StackPanel>
                             </ContentControl>

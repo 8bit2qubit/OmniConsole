@@ -88,12 +88,49 @@ namespace OmniConsole.Pages.Settings
 
             host.StateChanged -= MappingHost_StateChanged;
             host.StateChanged += MappingHost_StateChanged;
+            host.CustomLayoutEditorClosed -= MappingHost_CustomLayoutEditorClosed;
+            host.CustomLayoutEditorClosed += MappingHost_CustomLayoutEditorClosed;
 
             var id = _pendingEditAppId;
             var name = _pendingEditDisplayName;
+            bool custom = _pendingCustomLayoutEdit;
             _pendingEditAppId = null;
             _pendingEditDisplayName = string.Empty;
-            host.Initialize(id, name);
+            _pendingCustomLayoutEdit = false;
+            host.Initialize(id, name, custom);
+        }
+
+        // 進階頁按下「編輯…」後待處理：切到手把映射分頁時據此直開自訂版面編輯器
+        private bool _pendingCustomLayoutEdit;
+
+        /// <summary>進階頁要求編輯自訂版面：編輯器住手把映射分頁，故先立旗標再把導覽切過去。</summary>
+        private void AdvancedView_EditCustomLayoutRequested(object? sender, EventArgs e)
+        {
+            _pendingCustomLayoutEdit = true;
+            SelectNavTab("GamepadMapping");
+        }
+
+        // 自訂版面編輯器返回進階頁後，把焦點還給使用者按下的那顆「編輯…」
+        private bool _focusEditCustomLayoutOnAdvanced;
+
+        /// <summary>自訂版面編輯器關閉：把導覽切回進階頁，使用者才回得到他按「編輯…」的地方。</summary>
+        private void MappingHost_CustomLayoutEditorClosed(object? sender, EventArgs e)
+        {
+            _focusEditCustomLayoutOnAdvanced = true;
+            SelectNavTab("Advanced");
+        }
+
+        /// <summary>把左側導覽切到指定 Tag 的分頁；找不到時不動作。</summary>
+        private void SelectNavTab(string tag)
+        {
+            foreach (var item in SettingsNav.MenuItems)
+            {
+                if (item is NavigationViewItem nav && nav.Tag?.ToString() == tag)
+                {
+                    SettingsNav.SelectedItem = nav;
+                    return;
+                }
+            }
         }
 
         /// <summary>內層宿主清單/編輯器切換或清單變動後重評底部手把提示列。</summary>
@@ -333,7 +370,14 @@ namespace OmniConsole.Pages.Settings
                         a.InstallRequested = RunInstallFlowAsync;
                         a.BackgroundMaterialChanged -= AdvancedView_BackgroundMaterialChanged;
                         a.BackgroundMaterialChanged += AdvancedView_BackgroundMaterialChanged;
+                        a.EditCustomLayoutRequested -= AdvancedView_EditCustomLayoutRequested;
+                        a.EditCustomLayoutRequested += AdvancedView_EditCustomLayoutRequested;
                         a.Initialize();
+                        if (_focusEditCustomLayoutOnAdvanced)
+                        {
+                            _focusEditCustomLayoutOnAdvanced = false;
+                            a.FocusEditCustomLayoutButton();
+                        }
                         _ = a.MaybeAutoCheckForUpdatesAsync();
                     }
                     break;
@@ -341,6 +385,15 @@ namespace OmniConsole.Pages.Settings
                 case "Troubleshoot":
                     var t = NavigateFrame(SettingsContentFrame, typeof(TroubleshootView)) as TroubleshootView;
                     t?.SetHwnd(Hwnd);
+                    break;
+
+                case "Pro":
+                    var p = NavigateFrame(SettingsContentFrame, typeof(ProView)) as ProView;
+                    if (p != null)
+                    {
+                        p.SetHwnd(Hwnd);
+                        p.Initialize();
+                    }
                     break;
 
                 case "About":
@@ -446,7 +499,7 @@ namespace OmniConsole.Pages.Settings
 
         /// <summary>
         /// 處理手把 'A' 鍵被按下的回呼函式（設定介面）。
-        /// 有額外副作用的焦點元素明列處理（平台卡片設選取狀態、導覽項收側邊欄、漢堡鈕開合、返回鈕攔截）；
+        /// 有額外副作用的焦點元素明列處理（平台卡片設選取狀態、導覽項收側邊欄、漢堡按鈕開合、返回按鈕攔截）；
         /// 其餘按鈕 / 開關 / 下拉 / 連結交給 ActivateFocusedElement 通用觸發（AutomationPeer Invoke / Toggle / Expand）。
         /// </summary>
         private void OnGamepadAButtonPressed()
@@ -454,7 +507,7 @@ namespace OmniConsole.Pages.Settings
             var focused = FocusManager.GetFocusedElement(this.XamlRoot);
 
             // 手把映射分頁有自己的 A 鍵語意：焦點在內容區時才走專屬邏輯，
-            // 焦點在左側 NavigationView / 漢堡 / 返回鈕 時讓 switch 走預設處理(切 NavigationView / 開合 pane)
+            // 焦點在左側 NavigationView / 漢堡 / 返回按鈕 時讓 switch 走預設處理(切 NavigationView / 開合 pane)
             if (_currentNavTag == "GamepadMapping" &&
                 focused is DependencyObject focusedDep && GamepadNavigationService.IsDescendantOf(SettingsContentFrame, focusedDep))
             {
@@ -709,6 +762,9 @@ namespace OmniConsole.Pages.Settings
                 // 在此期間被誤啟動又抓 dll、Kill 後 handle 通常已釋放、Delete 此時最易成功；
                 // 失敗也不擋流程、後續 PhantomKeyService.Start() 仍會試 File.Copy(overwrite)。
                 PhantomKeyService.DeleteDeployedFiles();
+
+                // PhantomSigil 中繼副本一併清掉，與 Install.bat 的清理清單一致。
+                PhantomSigilService.DeleteDeployedFile();
 
                 // MSIX 更新前取消 FSE 狀態通知
                 FseService.StopListening();

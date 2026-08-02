@@ -263,7 +263,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Let Nekomata turn your gamepad into keyboard and mouse, and tailor per-app settings on the “Nekomata” page.</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, Playnite Desktop, File Explorer, Windows File Picker, Windows Installer, Steam, and Discord.</value>
+    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, EA Desktop, Playnite Desktop, File Explorer, Windows File Picker, the Open with dialog, Windows Installer, Steam, and Discord. Task Manager and the On-screen keyboard also require Administrator App Support (Pro).</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled: this console has the manufacturer’s built-in gamepad mapping.</value>
@@ -279,6 +279,12 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   </data>
   <data name="ControllerLayoutPresetItem_Classic" xml:space="preserve">
     <value>Classic</value>
+  </data>
+  <data name="ControllerLayoutPresetItem_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="ControllerLayoutPresetEditButton.Content" xml:space="preserve">
+    <value>Edit…</value>
   </data>
   <data name="CursorSpeedSetting_Title.Text" xml:space="preserve">
     <value>Cursor Speed</value>
@@ -752,6 +758,15 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="PhantomKeyHealth_NotRunning" xml:space="preserve">
     <value>not running</value>
   </data>
+  <data name="Label_ElevatedAppSupportService.Text" xml:space="preserve">
+    <value>Administrator App Support (PhantomSigil)</value>
+  </data>
+  <data name="ElevatedServiceHealth_Running" xml:space="preserve">
+    <value>running</value>
+  </data>
+  <data name="ElevatedServiceHealth_NotRunning" xml:space="preserve">
+    <value>not running</value>
+  </data>
   <data name="PhantomKeyResp_Responsive" xml:space="preserve">
     <value>responsive ({0} ms)</value>
   </data>
@@ -796,6 +811,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="Label_PhantomPaw.Text" xml:space="preserve">
     <value>PhantomPaw</value>
+  </data>
+  <data name="Label_PhantomSigil.Text" xml:space="preserve">
+    <value>PhantomSigil</value>
   </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
@@ -926,6 +944,33 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   <data name="GamepadMappingResetClassicConfirmYes" xml:space="preserve">
     <value>Reset</value>
   </data>
+  <data name="GamepadMappingResetCustomButton.Content" xml:space="preserve">
+    <value>Custom Defaults</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmTitle" xml:space="preserve">
+    <value>Reset to Custom defaults?</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmBody" xml:space="preserve">
+    <value>All current bindings will be overwritten with the Custom defaults.</value>
+  </data>
+  <data name="GamepadMappingResetCustomConfirmYes" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutTitle" xml:space="preserve">
+    <value>Custom Layout</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutSubtitle" xml:space="preserve">
+    <value>The default layout for apps covered by built-in mapping, and the starting point for new app profiles</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyTitle" xml:space="preserve">
+    <value>Set all bindings to None?</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyBody" xml:space="preserve">
+    <value>Apps covered by built-in mapping will not receive simulated keyboard or mouse input. New app profiles will also start with all bindings set to None.</value>
+  </data>
+  <data name="GamepadMappingCustomLayoutEmptyYes" xml:space="preserve">
+    <value>Save</value>
+  </data>
   <data name="GamepadMappingCopyFromButton.Content" xml:space="preserve">
     <value>Copy from App…</value>
   </data>
@@ -970,6 +1015,12 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="GamepadAction_WheelRight" xml:space="preserve">
     <value>Scroll right</value>
+  </data>
+  <data name="GamepadAction_GamepadKeyboard" xml:space="preserve">
+    <value>Gamepad keyboard</value>
+  </data>
+  <data name="GamepadAction_OnScreenKeyboard" xml:space="preserve">
+    <value>On-screen keyboard</value>
   </data>
   <data name="GamepadAction_StickCursor" xml:space="preserve">
     <value>Cursor move</value>
@@ -1540,5 +1591,206 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="Import_Error_ExecutableNotFound" xml:space="preserve">
     <value>The executable was not found on this console.</value>
+  </data>
+  <data name="Nav_Pro.Content" xml:space="preserve">
+    <value>Pro</value>
+  </data>
+  <data name="ProTitle" xml:space="preserve">
+    <value>{OmniConsole} Pro</value>
+  </data>
+  <data name="ProDescription.Text" xml:space="preserve">
+    <value>Unlock advanced features and manage the licenses on this console.</value>
+  </data>
+  <data name="ProSection_Unlock.Text" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="ProSection_Status.Text" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="ProSection_Manage.Text" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="ProSection_Features.Text" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="ProUnlockCard_Title.Text" xml:space="preserve">
+    <value>Activate Pro</value>
+  </data>
+  <data name="ProUnlockCard_Description.Text" xml:space="preserve">
+    <value>Support the project to get your license, then enter the key or import the license file.</value>
+  </data>
+  <data name="ProUnlockCard_Note.Text" xml:space="preserve">
+    <value>When typing on a console is inconvenient, save the license file to your Downloads folder or a USB drive, then choose Import License File.</value>
+  </data>
+  <data name="ProSponsorButton.Content" xml:space="preserve">
+    <value>Support the Project</value>
+  </data>
+  <data name="ProEnterKeyButton.Content" xml:space="preserve">
+    <value>Enter License</value>
+  </data>
+  <data name="ProStatusCard_Title.Text" xml:space="preserve">
+    <value>Pro Activated</value>
+  </data>
+  <data name="ProStatusLabel_LicensedTo.Text" xml:space="preserve">
+    <value>Licensed to:</value>
+  </data>
+  <data name="ProStatusLabel_Serial.Text" xml:space="preserve">
+    <value>License number:</value>
+  </data>
+  <data name="ProStatusLabel_Issued.Text" xml:space="preserve">
+    <value>Issued:</value>
+  </data>
+  <data name="ProManageCard_Title.Text" xml:space="preserve">
+    <value>Manage Licenses</value>
+  </data>
+  <data name="ProManageCard_Description.Text" xml:space="preserve">
+    <value>Add another license, or remove the licenses on this console.</value>
+  </data>
+  <data name="ProRemoveButton.Content" xml:space="preserve">
+    <value>Remove All</value>
+  </data>
+  <data name="ProFeaturesCard_Title.Text" xml:space="preserve">
+    <value>Included Features</value>
+  </data>
+  <data name="ProLicenseDialog_Title" xml:space="preserve">
+    <value>Enter License</value>
+  </data>
+  <data name="ProLicenseDialog_Hint" xml:space="preserve">
+    <value>Paste your license key below, or choose Import License File.</value>
+  </data>
+  <data name="ProLicenseDialog_Placeholder" xml:space="preserve">
+    <value>OMNI1-…</value>
+  </data>
+  <data name="ProLicenseDialog_ImportFile" xml:space="preserve">
+    <value>Import License File</value>
+  </data>
+  <data name="ProLicenseDialog_Primary" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="ProLicenseDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ProLicense_FileFilter" xml:space="preserve">
+    <value>License files (*.lic)</value>
+  </data>
+  <data name="ProRemoveDialog_Title" xml:space="preserve">
+    <value>Remove License?</value>
+  </data>
+  <data name="ProRemoveDialog_Body" xml:space="preserve">
+    <value>All licenses will be removed from this console.</value>
+  </data>
+  <data name="ProRemoveDialog_Confirm" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ProRemoveDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ProLicense_Success" xml:space="preserve">
+    <value>Pro is now active.</value>
+  </data>
+  <data name="ProLicense_Error_Empty" xml:space="preserve">
+    <value>Enter a license key.</value>
+  </data>
+  <data name="ProLicense_Error_Malformed" xml:space="preserve">
+    <value>This does not look like a license key. Check that you copied all of it.</value>
+  </data>
+  <data name="ProLicense_Error_UnknownFormat" xml:space="preserve">
+    <value>This license requires a newer version of {OmniConsole}. Update the app and try again.</value>
+  </data>
+  <data name="ProLicense_Error_UnknownKeyId" xml:space="preserve">
+    <value>This license was issued with a newer signing key. Update {OmniConsole} and try again.</value>
+  </data>
+  <data name="ProLicense_Error_UnknownProduct" xml:space="preserve">
+    <value>This license is not for {OmniConsole} Pro.</value>
+  </data>
+  <data name="ProLicense_Error_BadSignature" xml:space="preserve">
+    <value>This license key is not valid. Check that you copied all of it, or use Import License File instead.</value>
+  </data>
+  <data name="ProLicense_Error_Revoked" xml:space="preserve">
+    <value>This license has been deactivated. Get in touch if you believe this is a mistake.</value>
+  </data>
+  <data name="ProLicense_Error_VersionExceeded" xml:space="preserve">
+    <value>This license does not cover this version of {OmniConsole}.</value>
+  </data>
+  <data name="ProLicense_Error_FileUnreadable" xml:space="preserve">
+    <value>The file could not be read.</value>
+  </data>
+  <data name="ProLicense_Error_FileNotLicense" xml:space="preserve">
+    <value>This is not a {OmniConsole} license file.</value>
+  </data>
+  <data name="ProLicense_Error_AlreadyImported" xml:space="preserve">
+    <value>This license is already active on this console.</value>
+  </data>
+  <data name="ProLicense_Error_UnknownEntitlement" xml:space="preserve">
+    <value>This license unlocks something this version does not know about. Update {OmniConsole} and try again.</value>
+  </data>
+  <data name="ProAddLicenseButton.Content" xml:space="preserve">
+    <value>Add License</value>
+  </data>
+  <data name="ProEntitlement_Pro" xml:space="preserve">
+    <value>{OmniConsole} Pro</value>
+  </data>
+  <data name="ProEntitlement_Owned" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ProEntitlement_NotOwned" xml:space="preserve">
+    <value>Not owned</value>
+  </data>
+  <data name="ProEntitlementRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ProRemoveDialog_BodyOne" xml:space="preserve">
+    <value>The license for “{0}” will be removed from this console.</value>
+  </data>
+  <data name="ProRemoveDialog_BodyPro" xml:space="preserve">
+    <value>Removing “{0}” also turns off every add-on, because add-ons require it.</value>
+  </data>
+  <data name="ProLicense_Error_RequiresPro" xml:space="preserve">
+    <value>Activate {OmniConsole} Pro first, then import this add-on.</value>
+  </data>
+  <data name="ProManageCard_Note.Text" xml:space="preserve">
+    <value>Removing does not affect your licenses. You can import them again at any time.</value>
+  </data>
+  <data name="ElevatedAppSupportSetting_Title.Text" xml:space="preserve">
+    <value>Administrator App Support</value>
+  </data>
+  <data name="ElevatedAppSupportSetting_Description.Text" xml:space="preserve">
+    <value>Let gamepad mappings reach apps that run as administrator. Requires setup with administrator approval.</value>
+  </data>
+  <data name="ElevatedAppSupport_Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="ElevatedAppSupport_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Title" xml:space="preserve">
+    <value>Remove administrator app support?</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Body" xml:space="preserve">
+    <value>Gamepad mappings will no longer reach apps that run as administrator.</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Confirm" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ElevatedAppSupportRemoveDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Title" xml:space="preserve">
+    <value>Update administrator app support</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Content" xml:space="preserve">
+    <value>OmniConsole has been updated. Administrator app support needs to be updated as well to keep working. You will be asked for administrator approval next.</value>
+  </data>
+  <data name="ElevatedServiceUpdateDialog_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Title" xml:space="preserve">
+    <value>This account cannot use this feature</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Body" xml:space="preserve">
+    <value>Gamepad mappings need administrator rights to reach apps that run as administrator. The Windows account you are signed in with does not have those rights.</value>
+  </data>
+  <data name="ElevatedAppSupportUnavailableDialog_Close" xml:space="preserve">
+    <value>Got it</value>
   </data>
 </root>

@@ -87,12 +87,12 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             _searchDebounceTimer?.Stop();
         }
 
-        // 左側導覽漢堡鈕（NavigationView 內建樣板的 TogglePaneButton）快取，供 row 設 XYFocusLeft。
+        // 左側導覽漢堡按鈕（NavigationView 內建樣板的 TogglePaneButton）快取，供 row 設 XYFocusLeft。
         // ListView 的 item 互為軸向相近候選，XYFocusLeftNavigationStrategy 會在 row 間斜跳而非跳出 ListView，
-        // 故清單頁不走策略、改以明確 XYFocusLeft 指向漢堡鈕（不會被鄰近 item 搶走）。
+        // 故清單頁不走策略、改以明確 XYFocusLeft 指向漢堡按鈕（不會被鄰近 item 搶走）。
         private DependencyObject? _paneToggleButton;
 
-        /// <summary>取左側導覽漢堡鈕參照（首次查詢後快取）；從 XamlRoot 視覺樹找內建樣板的 TogglePaneButton。</summary>
+        /// <summary>取左側導覽漢堡按鈕參照（首次查詢後快取）；從 XamlRoot 視覺樹找內建樣板的 TogglePaneButton。</summary>
         private DependencyObject? PaneToggleButton
         {
             get
@@ -103,7 +103,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             }
         }
 
-        /// <summary>每次容器產生或重用時，index 0 的 XYFocusUp 指向搜尋方塊（其餘讓 ListView 自己往上跳前一項），並一律設 XYFocusLeft 指向漢堡鈕讓低位 row 向左能回左側導覽。</summary>
+        /// <summary>每次容器產生或重用時，index 0 的 XYFocusUp 指向搜尋方塊（其餘讓 ListView 自己往上跳前一項），並一律設 XYFocusLeft 指向漢堡按鈕讓低位 row 向左能回左側導覽。</summary>
         private void ProfileList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.ItemContainer is SelectorItem item)
@@ -361,7 +361,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             _lastEditedAppId = e.Parameter as AppId;
             Refresh();
             // 導覽當下清單尚未 Loaded（Frame.Navigate 全新實例、未上視覺樹）→ UpdateLayout 逼不出容器、聚焦落空、
-            // 焦點停在漢堡鈕造成閃動。故將還原焦點延到清單 Loaded 後（此時 UpdateLayout 有效、走立即路徑零空窗）。
+            // 焦點停在漢堡按鈕造成閃動。故將還原焦點延到清單 Loaded 後（此時 UpdateLayout 有效、走立即路徑零空窗）。
             FocusAfterListLoaded(() =>
             {
                 if (_lastEditedAppId != null && FocusListItem(_lastEditedAppId)) return;
@@ -369,7 +369,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             });
         }
 
-        /// <summary>清單已 Loaded 則立即執行聚焦動作；否則掛一次性 Loaded handler 延後（消除頁面未上樹時聚焦落空的漢堡鈕閃動）。</summary>
+        /// <summary>清單已 Loaded 則立即執行聚焦動作；否則掛一次性 Loaded handler 延後（消除頁面未上樹時聚焦落空的漢堡按鈕閃動）。</summary>
         private void FocusAfterListLoaded(Action focusAction)
         {
             if (ProfileList.IsLoaded)
@@ -395,7 +395,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
                     ProfileList.SelectedIndex = i;
                     // 虛擬化清單剛重建（從編輯器返回為 Frame.Navigate 全新實例）時，目標 row 容器尚未實體化、
                     // 第一次 ScrollIntoView 算不準位置；FocusListItemImmediate 先 UpdateLayout 逼佈局使容器即刻就緒、
-                    // 焦點同一拍落定，消除返回時焦點先飄漢堡鈕再落定的閃動。
+                    // 焦點同一拍落定，消除返回時焦點先飄漢堡按鈕再落定的閃動。
                     FocusNavHelper.FocusListItemImmediate(ProfileList, i);
                     return true;
                 }

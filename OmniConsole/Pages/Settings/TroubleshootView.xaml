@@ -10,7 +10,7 @@
         <ResourceDictionary Source="PhantomViewStyles.xaml"/>
     </Page.Resources>
 
-    <!-- 捲動內收：頁面內建 ScrollViewer，內容超出可視範圍時可捲。 -->
+    <!-- 捲動內收：頁面內建 ScrollViewer，內容超出可視範圍時可捲動。 -->
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0">
         <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
             <!-- 標題/副標滿版置中，不受卡片 700 寬度限制；左右 Margin 24 避開右側捲軸（撐滿時不壓到 ScrollBar）。 -->

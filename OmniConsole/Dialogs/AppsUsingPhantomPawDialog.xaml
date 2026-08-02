@@ -57,7 +57,7 @@
                    TextWrapping="Wrap" Margin="0,0,0,12"/>
 
             <!-- ListView（非 ItemsControl）：比照貓又清單，用 ContainerContentChanging 只在「最後一項」設
-                 XYFocusDown 指向重試鈕（讓最後一張卡片 Down 到「重試」而非幾何最近的「取消」）。
+                 XYFocusDown 指向重試按鈕（讓最後一張卡片 Down 到「重試」而非幾何最近的「取消」）。
                  IsTabStop=False：容器本身不吃焦點。SelectionMode=None：純資訊清單、不需選取醒目。
                  用 ListView 自己的內建捲動（MaxHeight=280）、不外包 ScrollViewer。 -->
             <ListView x:Name="LockedAppsList"

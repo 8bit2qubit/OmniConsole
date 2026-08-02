@@ -167,6 +167,9 @@
   <data name="Widget_ControllerLayoutPreset_Classic.Content" xml:space="preserve">
     <value>經典</value>
   </data>
+  <data name="Widget_ControllerLayoutPreset_Custom.Content" xml:space="preserve">
+    <value>自訂</value>
+  </data>
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>游標速度</value>
   </data>
@@ -186,6 +189,6 @@
     <value>自訂此程式的手把映射…</value>
   </data>
   <data name="Widget_CustomizeApp_ElevatedNote.Text" xml:space="preserve">
-    <value>此程式以系統管理員身分執行，手把映射無法送達。</value>
+    <value>此程式以管理員身分執行，需要系統管理員程式支援才能送達手把映射。</value>
   </data>
 </root>

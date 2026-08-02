@@ -167,6 +167,9 @@
   <data name="Widget_ControllerLayoutPreset_Classic.Content" xml:space="preserve">
     <value>经典</value>
   </data>
+  <data name="Widget_ControllerLayoutPreset_Custom.Content" xml:space="preserve">
+    <value>自定义</value>
+  </data>
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>光标速度</value>
   </data>
@@ -186,6 +189,6 @@
     <value>自定义此应用的手柄映射…</value>
   </data>
   <data name="Widget_CustomizeApp_ElevatedNote.Text" xml:space="preserve">
-    <value>此应用以管理员身份运行，手柄映射无法送达。</value>
+    <value>此应用以管理员身份运行，需要管理员应用支持才能送达手柄映射。</value>
   </data>
 </root>

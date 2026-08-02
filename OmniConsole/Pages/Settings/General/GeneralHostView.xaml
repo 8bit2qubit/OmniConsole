@@ -48,7 +48,7 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <!-- 社群平台鈕與匯入按鈕位置在 tabs 橫列（屬宿主 NavigationView），但邏輯轉發給目前 User 子頁；
+            <!-- 社群平台按鈕與匯入按鈕位置在 tabs 橫列（屬宿主 NavigationView），但邏輯轉發給目前 User 子頁；
                  顯隱由宿主依目前 tab 與 consent 一併控（兩按鈕同條件）。 -->
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Horizontal" Spacing="4">
