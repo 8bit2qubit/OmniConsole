@@ -405,7 +405,8 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
             }
             else
             {
-                HeaderCard.XYFocusDown = CopyFromButton;
+                // 「從程式複製…」沒有設定檔可抄時會停用，而顯式指向停用的元素會讓向下導航靜默失效，故此時改指下一顆恆在的按鈕。
+                HeaderCard.XYFocusDown = CopyFromButton.IsEnabled ? CopyFromButton : ClearAllButton;
             }
 
             // 兩端各自指向自己當左右牆，焦點才不會飛出這一排

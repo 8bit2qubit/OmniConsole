@@ -174,7 +174,64 @@
     <value>Cursor Speed</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping.</value>
+    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping. Turning Nekomata Mode on for this console requires Pro.</value>
+  </data>
+  <data name="Widget_BuiltInMappingProNote.Text" xml:space="preserve">
+    <value>This console has the manufacturer’s built-in gamepad mapping. Set “Control Mode” to “Gamepad” in Command Center, and Nekomata works here the same as it does anywhere else.</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Title.Text" xml:space="preserve">
+    <value>Turn on Nekomata Mode for this console?</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Body.Text" xml:space="preserve">
+    <value>Press the Command Center button, then set “Control Mode” to “Gamepad”, and Nekomata works here the same as it does anywhere else.</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Confirm.Content" xml:space="preserve">
+    <value>Turn on</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Cancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Widget_Page_Main.Content" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Widget_Page_Overlay.Content" xml:space="preserve">
+    <value>Overlay</value>
+  </data>
+  <data name="Widget_Overlay_Title.Text" xml:space="preserve">
+    <value>Performance Overlay</value>
+  </data>
+  <data name="Widget_Overlay_ElevationNote.Text" xml:space="preserve">
+    <value>These controls need Administrator App Support. Open OmniConsole Settings, then go to ☰ → Advanced to install it.</value>
+  </data>
+  <data name="Widget_Overlay_RtssNote.Text" xml:space="preserve">
+    <value>These controls work with RivaTuner Statistics Server. Install it and they become available.</value>
+  </data>
+  <data name="Widget_Overlay_RtssStoppedNote.Text" xml:space="preserve">
+    <value>Requires RivaTuner Statistics Server to be running. Turning on Start with Windows in its General properties makes it available at every startup.</value>
+  </data>
+  <data name="Widget_Overlay_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Widget_Overlay_On.Content" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Widget_Overlay_Osd_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Support</value>
+  </data>
+  <data name="Widget_Overlay_Stat_Title.Text" xml:space="preserve">
+    <value>Show Own Statistics</value>
+  </data>
+  <data name="Widget_Overlay_Shadow_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Shadow</value>
+  </data>
+  <data name="Widget_Overlay_Zoom_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Zoom</value>
+  </data>
+  <data name="Widget_Overlay_FpsLimit_Title.Text" xml:space="preserve">
+    <value>Framerate Limit</value>
+  </data>
+  <data name="Widget_Overlay_FpsLimit_Unlimited" xml:space="preserve">
+    <value>Off</value>
   </data>
   <data name="Widget_ForegroundApp_LineFormat" xml:space="preserve">
     <value>Current: {0} ({1})</value>

@@ -21,20 +21,35 @@
 
     <Grid Padding="24,0,24,24">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel x:Name="RootPanel" Spacing="12" Margin="0,0,12,0">
+            <!-- 各 section 自帶下邊距，不用 StackPanel.Spacing -->
+            <StackPanel x:Name="RootPanel" Margin="0,0,12,0">
 
                 <!-- 隱形焦點哨兵：吸收 Game Bar 首次進入不顯框的現象（詳細焦點流程見 code-behind）。
-                     0 高度、透明、可聚焦；須是 RootPanel 直屬子才被 section 導航清單認到。 -->
+                     0 高度、透明、可聚焦；不標 Tag，切頁時永遠保留。 -->
                 <Button x:Name="FocusSentinel"
                         Height="0" MinHeight="0" Padding="0" Margin="0" Opacity="0"
                         BorderThickness="0" Background="Transparent"
                         HorizontalAlignment="Stretch"
                         UseSystemFocusVisuals="False"/>
 
+                <!-- 分頁列：可聚焦，D-pad 往上移到這裡再左右切分頁；不標 Tag，切頁時永遠保留 -->
+                <StackPanel x:Name="PageTabSection" Orientation="Horizontal" Spacing="6" Margin="0,0,0,12">
+                    <ToggleButton x:Name="MainPageTab" x:Uid="Widget_Page_Main" services:Localized.Uid="Widget_Page_Main"
+                                  Click="PageTab_Click" GotFocus="PageTab_GotFocus" Tag="Main"
+                                  UseSystemFocusVisuals="True" MinWidth="72"
+                                  XYFocusLeft="{x:Bind MainPageTab}"
+                                  XYFocusRight="{x:Bind OverlayPageTab}"/>
+                    <ToggleButton x:Name="OverlayPageTab" x:Uid="Widget_Page_Overlay" services:Localized.Uid="Widget_Page_Overlay"
+                                  Click="PageTab_Click" GotFocus="PageTab_GotFocus" Tag="Overlay"
+                                  UseSystemFocusVisuals="True" MinWidth="72"
+                                  XYFocusLeft="{x:Bind MainPageTab}"
+                                  XYFocusRight="{x:Bind OverlayPageTab}"/>
+                </StackPanel>
+
                 <!-- <TextBlock Text="OmniCharm" FontSize="20" FontWeight="SemiBold"/> -->
 
                 <!-- 前景程式區塊：一行顯示「目前：<App 名稱> (<行程名稱>)」，提供「自訂此 App」入口 -->
-                <StackPanel x:Name="ForegroundAppSection" Spacing="4">
+                <StackPanel x:Name="ForegroundAppSection" Tag="Main" Spacing="4" Margin="0,0,0,12">
                     <TextBlock x:Name="ForegroundAppLineText" FontSize="13"
                                TextTrimming="CharacterEllipsis"/>
                     <!-- CustomizeAppNoteText：前景為系統管理員程式時顯示說明 -->
@@ -55,7 +70,7 @@
                      XboxLibrary 補回 Game Bar Library 原本的 xbox://library 功能（該按鈕被 OmniConsole 接管後遺漏的入口）。
 
                      SettingsBtn 暫時註解保留：使用者可從 Game Bar Library 入口替代。日後研究後再啟用。 -->
-                <Grid x:Name="QuickActionsSection" ColumnSpacing="6">
+                <Grid x:Name="QuickActionsSection" Tag="Main" ColumnSpacing="6" Margin="0,0,0,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -99,7 +114,7 @@
                      兩側皆距離 Trigger 一格；不論目前狀態為何，「進入 + 一步」即可觸發。
                      Trigger 條件可見性（FSE + 預設平台為 SteamBigPicture）由 ReloadFromStore 處理；
                      不可見時 Off/On 的水平 XYFocus 由程式碼動態改指對方。 -->
-                <StackPanel x:Name="SteamInGameOverlaySection" Spacing="6">
+                <StackPanel x:Name="SteamInGameOverlaySection" Tag="Main" Spacing="6" Margin="0,0,0,12">
                     <TextBlock x:Uid="Widget_SteamInGameOverlay_Title" services:Localized.Uid="Widget_SteamInGameOverlay_Title" services:FluentIconTextHelper.AutoFormat="True" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel x:Name="SteamInGameOverlayButtonRow" Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="SteamInGameOverlayOffBtn" x:Uid="Widget_SteamInGameOverlay_Off" services:Localized.Uid="Widget_SteamInGameOverlay_Off"
@@ -137,7 +152,7 @@
                 </StackPanel>
 
                 <!-- Mouse Mode: Off / On 2 ToggleButton 水平組 -->
-                <StackPanel x:Name="ModeSection" Spacing="6">
+                <StackPanel x:Name="ModeSection" Tag="Main" Spacing="6" Margin="0,0,0,12">
                     <TextBlock x:Uid="Widget_GamepadMappingMode_Title" services:Localized.Uid="Widget_GamepadMappingMode_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="ModeOffBtn" x:Uid="Widget_Mode_Off" services:Localized.Uid="Widget_Mode_Off"
@@ -157,10 +172,32 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- 內建廠商映射機種的開啟確認：就地展開，不用對話方塊 -->
+                <StackPanel x:Name="BuiltInMappingConfirmSection" Tag="Main" Spacing="8" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Name="BuiltInMappingConfirmTitle" x:Uid="Widget_BuiltInMappingConfirm_Title" services:Localized.Uid="Widget_BuiltInMappingConfirm_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="BuiltInMappingConfirmBody" x:Uid="Widget_BuiltInMappingConfirm_Body" services:Localized.Uid="Widget_BuiltInMappingConfirm_Body" FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button x:Name="BuiltInMappingConfirmBtn" x:Uid="Widget_BuiltInMappingConfirm_Confirm" services:Localized.Uid="Widget_BuiltInMappingConfirm_Confirm"
+                                Click="BuiltInMappingConfirmBtn_Click"
+                                UseSystemFocusVisuals="True" MinWidth="72"
+                                XYFocusUp="{x:Bind BuiltInMappingConfirmBtn}"
+                                XYFocusLeft="{x:Bind BuiltInMappingConfirmBtn}"
+                                XYFocusRight="{x:Bind BuiltInMappingCancelBtn}"
+                                XYFocusDown="{x:Bind BuiltInMappingConfirmBtn}"/>
+                        <Button x:Name="BuiltInMappingCancelBtn" x:Uid="Widget_BuiltInMappingConfirm_Cancel" services:Localized.Uid="Widget_BuiltInMappingConfirm_Cancel"
+                                Click="BuiltInMappingCancelBtn_Click"
+                                UseSystemFocusVisuals="True" MinWidth="72"
+                                XYFocusUp="{x:Bind BuiltInMappingCancelBtn}"
+                                XYFocusLeft="{x:Bind BuiltInMappingConfirmBtn}"
+                                XYFocusRight="{x:Bind BuiltInMappingCancelBtn}"
+                                XYFocusDown="{x:Bind BuiltInMappingCancelBtn}"/>
+                    </StackPanel>
+                </StackPanel>
+
                 <!-- Layout: 3 ToggleButton 水平組（「自訂」是 Pro 專屬，未持有時整顆收起）。
                      MinWidth 對齊上方 Mode 那組的 72，三顆才擺得下。
                      LayoutClassicBtn 的 XYFocusRight 由 code-behind 依「自訂」的顯隱動態改 -->
-                <StackPanel Spacing="6">
+                <StackPanel Tag="Main" Spacing="6" Margin="0,0,0,12">
                     <TextBlock x:Uid="Widget_ControllerLayoutPreset_Title" services:Localized.Uid="Widget_ControllerLayoutPreset_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ToggleButton x:Name="LayoutNavBtn" x:Uid="Widget_ControllerLayoutPreset_OmniNav" services:Localized.Uid="Widget_ControllerLayoutPreset_OmniNav"
@@ -187,7 +224,7 @@
                 </StackPanel>
 
                 <!-- Cursor Speed: Slider -->
-                <StackPanel Spacing="6">
+                <StackPanel Tag="Main" Spacing="6" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -209,10 +246,141 @@
 
                 <!-- 內建手把映射說明（ROG Ally 家族時顯示） -->
                 <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote" services:Localized.Uid="Widget_BuiltInMappingNote"
+                           Tag="Main" Margin="0,0,0,12"
                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                            FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"/>
+                <TextBlock x:Name="BuiltInMappingProNote" x:Uid="Widget_BuiltInMappingProNote" services:Localized.Uid="Widget_BuiltInMappingProNote"
+                           Tag="Main" Margin="0,0,0,12"
+                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                           FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"/>
+
+                <!-- 疊加層分頁：三則不可用說明（同時只出現一則）＋五組控制項，不可用時反灰 -->
+                <StackPanel x:Name="OverlayNoteSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Uid="Widget_Overlay_Title" services:Localized.Uid="Widget_Overlay_Title"
+                               FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <!-- 未安裝系統管理員程式支援 -->
+                    <TextBlock x:Name="OverlayElevationNote" x:Uid="Widget_Overlay_ElevationNote" services:Localized.Uid="Widget_Overlay_ElevationNote"
+                               Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                               FontSize="12" TextWrapping="Wrap"
+                               Visibility="Collapsed"/>
+                    <!-- 沒有安裝 RTSS -->
+                    <TextBlock x:Name="OverlayRtssNote" x:Uid="Widget_Overlay_RtssNote" services:Localized.Uid="Widget_Overlay_RtssNote"
+                               Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                               FontSize="12" TextWrapping="Wrap"
+                               Visibility="Collapsed"/>
+                    <!-- 裝了但沒在執行 -->
+                    <TextBlock x:Name="OverlayRtssStoppedNote" x:Uid="Widget_Overlay_RtssStoppedNote" services:Localized.Uid="Widget_Overlay_RtssStoppedNote"
+                               Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                               FontSize="12" TextWrapping="Wrap"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <!-- On-Screen Display support：Off / On 兩顆水平組 -->
+                <StackPanel x:Name="OverlayOsdSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Uid="Widget_Overlay_Osd_Title" services:Localized.Uid="Widget_Overlay_Osd_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="OverlayOsdOffBtn" x:Uid="Widget_Overlay_Off" services:Localized.Uid="Widget_Overlay_Off"
+                                      Click="OverlayOsdBtn_Click" Tag="Off"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind OverlayOsdOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayOsdOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayStatOffBtn}"/>
+                        <ToggleButton x:Name="OverlayOsdOnBtn" x:Uid="Widget_Overlay_On" services:Localized.Uid="Widget_Overlay_On"
+                                      Click="OverlayOsdBtn_Click" Tag="On"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusLeft="{x:Bind OverlayOsdOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayOsdOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayStatOnBtn}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Show own statistics：Off / On 兩顆水平組 -->
+                <StackPanel x:Name="OverlayStatSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Uid="Widget_Overlay_Stat_Title" services:Localized.Uid="Widget_Overlay_Stat_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="OverlayStatOffBtn" x:Uid="Widget_Overlay_Off" services:Localized.Uid="Widget_Overlay_Off"
+                                      Click="OverlayStatBtn_Click" Tag="Off"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind OverlayOsdOffBtn}"
+                                      XYFocusLeft="{x:Bind OverlayStatOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayStatOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayShadowOffBtn}"/>
+                        <ToggleButton x:Name="OverlayStatOnBtn" x:Uid="Widget_Overlay_On" services:Localized.Uid="Widget_Overlay_On"
+                                      Click="OverlayStatBtn_Click" Tag="On"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind OverlayOsdOnBtn}"
+                                      XYFocusLeft="{x:Bind OverlayStatOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayStatOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayShadowOnBtn}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- On-Screen Display shadow：Off / On 兩顆水平組 -->
+                <StackPanel x:Name="OverlayShadowSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Uid="Widget_Overlay_Shadow_Title" services:Localized.Uid="Widget_Overlay_Shadow_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ToggleButton x:Name="OverlayShadowOffBtn" x:Uid="Widget_Overlay_Off" services:Localized.Uid="Widget_Overlay_Off"
+                                      Click="OverlayShadowBtn_Click" Tag="Off"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind OverlayStatOffBtn}"
+                                      XYFocusLeft="{x:Bind OverlayShadowOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayShadowOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayZoomSlider}"/>
+                        <ToggleButton x:Name="OverlayShadowOnBtn" x:Uid="Widget_Overlay_On" services:Localized.Uid="Widget_Overlay_On"
+                                      Click="OverlayShadowBtn_Click" Tag="On"
+                                      UseSystemFocusVisuals="True" MinWidth="72"
+                                      XYFocusUp="{x:Bind OverlayStatOnBtn}"
+                                      XYFocusLeft="{x:Bind OverlayShadowOffBtn}"
+                                      XYFocusRight="{x:Bind OverlayShadowOnBtn}"
+                                      XYFocusDown="{x:Bind OverlayZoomSlider}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- On-Screen Display zoom：Slider（值域 1..8），水平 XYFocus 指自己 -->
+                <StackPanel x:Name="OverlayZoomSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Uid="Widget_Overlay_Zoom_Title" services:Localized.Uid="Widget_Overlay_Zoom_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="OverlayZoomValueText" Grid.Column="1"
+                                   VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </Grid>
+                    <Slider x:Name="OverlayZoomSlider"
+                            Minimum="1" Maximum="8" StepFrequency="1"
+                            SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
+                            ValueChanged="OverlayZoomSlider_ValueChanged"
+                            UseSystemFocusVisuals="True"
+                            XYFocusUp="{x:Bind OverlayShadowOffBtn}"
+                            XYFocusLeft="{x:Bind OverlayZoomSlider}"
+                            XYFocusRight="{x:Bind OverlayZoomSlider}"
+                            XYFocusDown="{x:Bind OverlayFpsLimitSlider}"/>
+                </StackPanel>
+
+                <!-- Framerate limit：Slider 走離散檔位，0 為不限 -->
+                <StackPanel x:Name="OverlayFpsLimitSection" Tag="Overlay" Spacing="6" Margin="0,0,0,12" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Uid="Widget_Overlay_FpsLimit_Title" services:Localized.Uid="Widget_Overlay_FpsLimit_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="OverlayFpsLimitValueText" Grid.Column="1"
+                                   VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </Grid>
+                    <Slider x:Name="OverlayFpsLimitSlider"
+                            Minimum="0" Maximum="8" StepFrequency="1"
+                            SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
+                            ValueChanged="OverlayFpsLimitSlider_ValueChanged"
+                            UseSystemFocusVisuals="True"
+                            XYFocusUp="{x:Bind OverlayZoomSlider}"
+                            XYFocusLeft="{x:Bind OverlayFpsLimitSlider}"
+                            XYFocusRight="{x:Bind OverlayFpsLimitSlider}"/>
+                </StackPanel>
 
             </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>
+

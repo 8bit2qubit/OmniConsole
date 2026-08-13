@@ -237,6 +237,51 @@
   <data name="AdvancedSection_Nekomata.Text" xml:space="preserve">
     <value>貓又</value>
   </data>
+  <data name="AdvancedSection_Overlay.Text" xml:space="preserve">
+    <value>效能疊加層</value>
+  </data>
+  <data name="OverlaySetting_ElevationNote.Text" xml:space="preserve">
+    <value>這些設定需要系統管理員程式支援，可從上方安裝。</value>
+  </data>
+  <data name="OverlaySetting_RtssNote.Text" xml:space="preserve">
+    <value>這些設定搭配 RivaTuner Statistics Server 運作，安裝它之後即可使用。</value>
+  </data>
+  <data name="OverlaySetting_RtssStoppedNote.Text" xml:space="preserve">
+    <value>需要 RivaTuner Statistics Server 正在執行。在它的 General properties 開啟 Start with Windows，每次開機都會就緒。</value>
+  </data>
+  <data name="OverlayOsdSetting_Title.Text" xml:space="preserve">
+    <value>螢幕顯示 (On-Screen Display Support)</value>
+  </data>
+  <data name="OverlayOsdSetting_Description.Text" xml:space="preserve">
+    <value>讓 RivaTuner Statistics Server 在 DirectX 與 OpenGL 遊戲中繪製螢幕顯示。</value>
+  </data>
+  <data name="OverlayStatSetting_Title.Text" xml:space="preserve">
+    <value>統計資訊 (Show Own Statistics)</value>
+  </data>
+  <data name="OverlayStatSetting_Description.Text" xml:space="preserve">
+    <value>顯示 RivaTuner Statistics Server 採集的幀率統計。</value>
+  </data>
+  <data name="OverlayShadowSetting_Title.Text" xml:space="preserve">
+    <value>文字陰影 (On-Screen Display Shadow)</value>
+  </data>
+  <data name="OverlayShadowSetting_Description.Text" xml:space="preserve">
+    <value>在螢幕顯示的文字後方加上陰影。</value>
+  </data>
+  <data name="OverlayZoomSetting_Title.Text" xml:space="preserve">
+    <value>顯示大小 (On-Screen Display Zoom)</value>
+  </data>
+  <data name="OverlayZoomSetting_Description.Text" xml:space="preserve">
+    <value>文字太小看不清楚時，放大螢幕顯示。</value>
+  </data>
+  <data name="OverlayFpsLimitSetting_Title.Text" xml:space="preserve">
+    <value>幀率限制 (Framerate Limit)</value>
+  </data>
+  <data name="OverlayFpsLimitSetting_Description.Text" xml:space="preserve">
+    <value>設定遊戲的幀率上限。</value>
+  </data>
+  <data name="OverlayFpsLimit_Unlimited" xml:space="preserve">
+    <value>不限</value>
+  </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
     <value>在 Steam Big Picture 模式中按 &#xEECA; 開啟 Steam 選單</value>
   </data>
@@ -266,7 +311,22 @@
     <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、檔案總管、Windows 檔案選擇器、開啟方式對話方塊、Windows Installer、Steam 和 Discord。工作管理員與螢幕小鍵盤另需系統管理員程式支援（專業版）。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>已停用：此主機具備廠商內建的手把映射。</value>
+    <value>已停用：此主機具備廠商內建的手把映射。在此主機上開啟貓又模式需要專業版。</value>
+  </data>
+  <data name="GamepadMappingModeSetting_BuiltInMappingProNote.Text" xml:space="preserve">
+    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Title" xml:space="preserve">
+    <value>在此主機上開啟貓又模式？</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Body" xml:space="preserve">
+    <value>此主機具備廠商內建的手把映射。按下 Command Center（控制中心）鍵，把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Confirm" xml:space="preserve">
+    <value>開啟</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
   </data>
   <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
     <value>控制器預設版面</value>
@@ -814,6 +874,9 @@
   </data>
   <data name="Label_PhantomSigil.Text" xml:space="preserve">
     <value>PhantomSigil</value>
+  </data>
+  <data name="Label_PhantomIgnis.Text" xml:space="preserve">
+    <value>PhantomIgnis</value>
   </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
@@ -1792,5 +1855,23 @@
   </data>
   <data name="ElevatedAppSupportUnavailableDialog_Close" xml:space="preserve">
     <value>知道了</value>
+  </data>
+  <data name="GamingCapabilityDialog_Title" xml:space="preserve">
+    <value>完成 Xbox 模式 (FSE) 的設定</value>
+  </data>
+  <data name="GamingCapabilityDialog_Content" xml:space="preserve">
+    <value>{OmniConsole} 可以套用這台主機所需的設定，讓 Xbox 模式 (FSE) 以完整體驗運作。接下來會要求系統管理員授權。</value>
+  </data>
+  <data name="GamingCapabilityDialog_Apply" xml:space="preserve">
+    <value>套用</value>
+  </data>
+  <data name="GamingCapabilityRestart_Title" xml:space="preserve">
+    <value>請重新啟動主機</value>
+  </data>
+  <data name="GamingCapabilityRestart_Content" xml:space="preserve">
+    <value>設定已套用。重新啟動主機之後，Xbox 模式 (FSE) 就會以完整體驗啟動。</value>
+  </data>
+  <data name="GamingCapabilityRestart_Close" xml:space="preserve">
+    <value>關閉</value>
   </data>
 </root>

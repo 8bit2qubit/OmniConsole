@@ -174,7 +174,64 @@
     <value>游標速度</value>
   </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>已停用：此主機具備廠商內建的手把映射。</value>
+    <value>已停用：此主機具備廠商內建的手把映射。在此主機上開啟貓又模式需要專業版。</value>
+  </data>
+  <data name="Widget_BuiltInMappingProNote.Text" xml:space="preserve">
+    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Title.Text" xml:space="preserve">
+    <value>在此主機上開啟貓又模式？</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Body.Text" xml:space="preserve">
+    <value>按下 Command Center（控制中心）鍵，把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Confirm.Content" xml:space="preserve">
+    <value>開啟</value>
+  </data>
+  <data name="Widget_BuiltInMappingConfirm_Cancel.Content" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Widget_Page_Main.Content" xml:space="preserve">
+    <value>一般</value>
+  </data>
+  <data name="Widget_Page_Overlay.Content" xml:space="preserve">
+    <value>疊加層</value>
+  </data>
+  <data name="Widget_Overlay_Title.Text" xml:space="preserve">
+    <value>效能疊加層</value>
+  </data>
+  <data name="Widget_Overlay_ElevationNote.Text" xml:space="preserve">
+    <value>這些控制項需要系統管理員程式支援。開啟 OmniConsole 設定，前往 ☰ → 進階即可安裝。</value>
+  </data>
+  <data name="Widget_Overlay_RtssNote.Text" xml:space="preserve">
+    <value>這些控制項搭配 RivaTuner Statistics Server 運作，安裝它之後即可使用。</value>
+  </data>
+  <data name="Widget_Overlay_RtssStoppedNote.Text" xml:space="preserve">
+    <value>需要 RivaTuner Statistics Server 正在執行。在它的 General properties 開啟 Start with Windows，每次開機都會就緒。</value>
+  </data>
+  <data name="Widget_Overlay_Off.Content" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="Widget_Overlay_On.Content" xml:space="preserve">
+    <value>開啟</value>
+  </data>
+  <data name="Widget_Overlay_Osd_Title.Text" xml:space="preserve">
+    <value>螢幕顯示 (On-Screen Display Support)</value>
+  </data>
+  <data name="Widget_Overlay_Stat_Title.Text" xml:space="preserve">
+    <value>統計資訊 (Show Own Statistics)</value>
+  </data>
+  <data name="Widget_Overlay_Shadow_Title.Text" xml:space="preserve">
+    <value>文字陰影 (On-Screen Display Shadow)</value>
+  </data>
+  <data name="Widget_Overlay_Zoom_Title.Text" xml:space="preserve">
+    <value>顯示大小 (On-Screen Display Zoom)</value>
+  </data>
+  <data name="Widget_Overlay_FpsLimit_Title.Text" xml:space="preserve">
+    <value>幀率限制 (Framerate Limit)</value>
+  </data>
+  <data name="Widget_Overlay_FpsLimit_Unlimited" xml:space="preserve">
+    <value>不限</value>
   </data>
   <data name="Widget_ForegroundApp_LineFormat" xml:space="preserve">
     <value>目前：{0} ({1})</value>

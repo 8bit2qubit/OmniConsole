@@ -127,6 +127,9 @@ namespace OmniConsole.Pages.Settings
             {
                 if (item is NavigationViewItem nav && nav.Tag?.ToString() == tag)
                 {
+                    // 驅動這次切頁的按鈕本身已有回饋音，吞掉賦值引發的補音。
+                    // 放在確定會賦值處，找不到 tag 時才不會留下旗標誤吞下一次。
+                    GamepadNavigationService.ArmEchoSuppression(Microsoft.UI.Xaml.ElementSoundKind.Invoke);
                     SettingsNav.SelectedItem = nav;
                     return;
                 }

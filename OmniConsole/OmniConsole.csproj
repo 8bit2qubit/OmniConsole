@@ -142,6 +142,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<Link>OmniConsole.PhantomSigil.exe</Link>
 		</Content>
+		<Content Include="Phantom\OmniConsole.PhantomIgnis.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>OmniConsole.PhantomIgnis.exe</Link>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

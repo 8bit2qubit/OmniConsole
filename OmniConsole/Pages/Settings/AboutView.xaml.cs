@@ -98,6 +98,7 @@ namespace OmniConsole.Pages.Settings
             AboutPhantomPawVersion.Text = FormatPhantomPawVersionForUI(s.Versions);
             AboutPhantomLinkVersion.Text = LocalizeForUI(s.Versions.PhantomLink);
             AboutPhantomSigilVersion.Text = FormatPackagedVsDeployed(s.Versions.PhantomSigil, s.Versions.PhantomSigilInstalled);
+            AboutPhantomIgnisVersion.Text = FormatPackagedVsDeployed(s.Versions.PhantomIgnis, s.Versions.PhantomIgnisInstalled);
 
             // PhantomKey 健康狀況
             ApplyPhantomKeyHealth(s.PhantomKey);

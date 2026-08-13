@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 namespace OmniConsole.Pages.Settings
 {
     /// <summary>
-    /// 設定的進階分頁內容：更新檢查/下載安裝、Steam Overlay、手把滑鼠模式、背景材質、顯示語言、社群語言管理、導覽音效。
+    /// 設定的進階分頁內容：更新檢查/下載安裝、Steam Overlay、貓又模式（含提權程式支援、控制器版面配置、游標速度）、
+    /// 疊加層（Pro 專屬，RTSS 的螢幕顯示設定）、背景材質、顯示語言、社群語言管理、導覽音效。
     /// 由 SettingsHostView 透過 Frame.Navigate 載入（切走即銷毀）；本頁不實作手把 scope。
-    /// 跨頁互動透過事件回報殼層：重新整理頂部更新 InfoBar、請殼層執行安裝流程。
+    /// 跨頁互動透過事件回報殼層：重新整理頂部更新 InfoBar、請殼層執行安裝流程、即時套用背景材質、切到手把映射頁開啟自訂版面編輯器。
     /// 入頁重新整理（Initialize）由殼層在導覽後、事件訂妥才呼叫（OnNavigatedTo 早於殼層訂閱、不可在此 invoke 事件）。
     /// </summary>
     public sealed partial class AdvancedView : Page
@@ -47,6 +48,9 @@ namespace OmniConsole.Pages.Settings
         /// <summary>填入背景材質下拉選單並還原選取期間，抑制 SelectionChanged 觸發重套材質。</summary>
         private bool _suppressBackgroundMaterialChange;
 
+        /// <summary>還原貓又模式開關的位置期間，抑制 Toggled handler 反過來寫回設定。</summary>
+        private bool _suppressMouseModeToggled;
+
         /// <summary>建立進階分頁。</summary>
         public AdvancedView()
         {
@@ -62,10 +66,11 @@ namespace OmniConsole.Pages.Settings
             UsePhantomKeySteamInGameOverlaySwitch.IsOn = SettingsService.GetUsePhantomKeySteamInGameOverlay();
             UsePhantomKeySteamInGameOverlaySwitch.IsEnabled = true;
 
-            // 還原 Mouse Mode（Off/On）/ 版面配置 / 游標速度，並依內建廠商映射偵測強制停用
-            bool builtInMapping = SettingsService.HasBuiltInGamepadMapping();
-            string currentMode = builtInMapping ? SettingsService.MouseModeOff : SettingsService.GetMouseMode();
-            MouseModeSwitch.IsOn = currentMode != SettingsService.MouseModeOff;
+            // 還原 Mouse Mode（Off/On）/ 版面配置 / 游標速度。
+            // 開關一律顯示儲存的真實值，反灰時也是。
+            _suppressMouseModeToggled = true;
+            MouseModeSwitch.IsOn = SettingsService.GetMouseMode() != SettingsService.MouseModeOff;
+            _suppressMouseModeToggled = false;
             FillLayoutCombo();
 
             // 填充游標速度下拉選單並還原選取
@@ -89,10 +94,13 @@ namespace OmniConsole.Pages.Settings
             };
             _suppressBackgroundMaterialChange = false;
 
-            ApplyMouseModeEnabledState(builtInMapping);
+            ApplyMouseModeEnabledState();
 
             // 提權程式支援（Pro 專屬）：依授權與安裝狀態切顯示與按鈕文字
             RefreshElevatedAppSupport();
+
+            // 疊加層（Pro 專屬）：讀 RTSS 現值填控制項
+            RefreshOverlaySection();
 
             // 填充顯示語言下拉選單（官方 + 社群動態補）並還原選取
             PopulateLanguageCombo();
@@ -118,6 +126,13 @@ namespace OmniConsole.Pages.Settings
             CheckDeveloperMode(); // 未啟用開發人員模式時顯示警告並停用下載按鈕
         }
 
+        /// <summary>提權服務的狀態變了之後，把相依於它的區塊一起重新整理，不重新載入整頁。</summary>
+        private void RefreshElevationDependentSections()
+        {
+            RefreshElevatedAppSupport();
+            RefreshOverlaySection();
+        }
+
         /// <summary>
         /// 依 Pro 授權與提權工作安裝狀態，切換貓又區「提權程式支援」列的顯示與按鈕文字。
         /// 未持 Pro 整列 Collapsed。
@@ -132,6 +147,161 @@ namespace OmniConsole.Pages.Settings
             ElevatedAppSupportButton.Content = _resourceLoader.Loc(
                 installed ? "ElevatedAppSupport_Remove" : "ElevatedAppSupport_Install");
             ElevatedAppSupportButton.Tag = installed;   // 記住目前狀態供 click 分派
+        }
+
+        // ── 疊加層（Pro 專屬）──────────────────────────────────────────────
+
+        /// <summary>填控制項期間抑制 Toggled 與 SelectionChanged，避免還原值時反過來寫回去。</summary>
+        private bool _suppressOverlayChange;
+
+        /// <summary>提權服務是否已安裝；疊加層設定的寫入需要它。</summary>
+        private bool _overlayElevationReady;
+
+        /// <summary>RTSS 是否已安裝。沒安裝時整組控制項反灰並顯示提示。</summary>
+        private bool _overlayRtssInstalled;
+
+        /// <summary>RTSS 是否正在執行；與「沒安裝」分開判定，提示不同。</summary>
+        private bool _overlayRtssRunning;
+
+        /// <summary>幀率限制下拉選單的常用值；0 為不限。</summary>
+        private static readonly int[] _overlayFpsLimits = { 0, 30, 40, 60, 90, 120, 144, 165, 240 };
+
+        /// <summary>依 Pro 授權切整段顯隱，並讀 RTSS 現值填控制項。</summary>
+        private void RefreshOverlaySection()
+        {
+            bool isPro = LicenseService.HasEntitlement(LicenseService.Entitlement.Pro);
+            OverlaySection.Visibility = isPro ? Visibility.Visible : Visibility.Collapsed;
+            if (!isPro) return;
+
+            _overlayElevationReady = PhantomSigilService.IsInstalled();
+
+            var state = RtssService.ReadState();
+            _overlayRtssInstalled = state.Installed;
+            _overlayRtssRunning = state.Running;
+
+            _suppressOverlayChange = true;
+            try
+            {
+                OverlayOsdSwitch.IsOn = state.EnableOsd == 1;
+                OverlayStatSwitch.IsOn = state.EnableStat == 1;
+                OverlayShadowSwitch.IsOn = state.EnableShadow == 1;
+
+                FillOverlayZoomCombo(state.ZoomRatio);
+                FillOverlayFpsLimitCombo(state.FramerateLimit);
+            }
+            finally
+            {
+                _suppressOverlayChange = false;
+            }
+
+            ApplyOverlayEnabledState();
+        }
+
+        /// <summary>顯示大小下拉選單：值域 1..8，直接對應 RTSS 的屬性值。</summary>
+        private void FillOverlayZoomCombo(int? current)
+        {
+            OverlayZoomCombo.Items.Clear();
+            for (int i = 1; i <= 8; i++)
+                OverlayZoomCombo.Items.Add($"{i}x");
+
+            int zoom = current is >= 1 and <= 8 ? current.Value : 1;
+            OverlayZoomCombo.SelectedIndex = zoom - 1;
+        }
+
+        /// <summary>填幀率限制下拉選單；現值不在常用清單上時補一格顯示它。</summary>
+        private void FillOverlayFpsLimitCombo(int? current)
+        {
+            OverlayFpsLimitCombo.Items.Clear();
+            foreach (int limit in _overlayFpsLimits)
+                OverlayFpsLimitCombo.Items.Add(FormatFpsLimit(limit));
+
+            int value = current ?? 0;
+            int index = Array.IndexOf(_overlayFpsLimits, value);
+            if (index < 0)
+            {
+                OverlayFpsLimitCombo.Items.Add(FormatFpsLimit(value));
+                index = OverlayFpsLimitCombo.Items.Count - 1;
+            }
+            OverlayFpsLimitCombo.SelectedIndex = index;
+        }
+
+        /// <summary>0 顯示成「不限」，其餘顯示數字。</summary>
+        private string FormatFpsLimit(int value)
+            => value == 0 ? _resourceLoader.Loc("OverlayFpsLimit_Unlimited") : value.ToString();
+
+        /// <summary>依提權與 RTSS 狀態決定控制項可不可用，並顯示對應說明。</summary>
+        private void ApplyOverlayEnabledState()
+        {
+            bool usable = _overlayElevationReady && _overlayRtssInstalled && _overlayRtssRunning;
+
+            OverlayOsdSwitch.IsEnabled = usable;
+            OverlayStatSwitch.IsEnabled = usable;
+            OverlayShadowSwitch.IsEnabled = usable;
+            OverlayZoomCombo.IsEnabled = usable;
+            OverlayFpsLimitCombo.IsEnabled = usable;
+
+            // 三則說明依先決條件的順序擇一顯示：沒提權 → 沒裝 → 裝了但沒在跑。
+            OverlayElevationNoteText.Visibility =
+                _overlayElevationReady ? Visibility.Collapsed : Visibility.Visible;
+            OverlayRtssNoteText.Visibility =
+                (_overlayElevationReady && !_overlayRtssInstalled) ? Visibility.Visible : Visibility.Collapsed;
+            OverlayRtssStoppedNoteText.Visibility =
+                (_overlayElevationReady && _overlayRtssInstalled && !_overlayRtssRunning)
+                    ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>套用一項設定；失敗時把控制項退回 RTSS 的實際狀態。</summary>
+        private async Task ApplyOverlayAsync(Func<RtssService.ApplyResult> apply)
+        {
+            var result = await Task.Run(apply);
+            if (result == RtssService.ApplyResult.Success) return;
+
+            RefreshOverlaySection();
+        }
+
+        /// <summary>螢幕顯示總開關。</summary>
+        private async void OverlayOsdSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_suppressOverlayChange) return;
+            bool on = OverlayOsdSwitch.IsOn;
+            await ApplyOverlayAsync(() => RtssService.Apply(enableOsd: on ? 1 : 0));
+        }
+
+        /// <summary>統計資訊開關。</summary>
+        private async void OverlayStatSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_suppressOverlayChange) return;
+            bool on = OverlayStatSwitch.IsOn;
+            await ApplyOverlayAsync(() => RtssService.Apply(enableStat: on ? 1 : 0));
+        }
+
+        /// <summary>文字陰影開關。</summary>
+        private async void OverlayShadowSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_suppressOverlayChange) return;
+            bool on = OverlayShadowSwitch.IsOn;
+            await ApplyOverlayAsync(() => RtssService.Apply(enableShadow: on ? 1 : 0));
+        }
+
+        /// <summary>顯示大小；選項索引加一即為 RTSS 的屬性值。</summary>
+        private async void OverlayZoomCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressOverlayChange) return;
+            if (OverlayZoomCombo.SelectedIndex < 0) return;
+
+            int zoom = OverlayZoomCombo.SelectedIndex + 1;
+            await ApplyOverlayAsync(() => RtssService.Apply(zoomRatio: zoom));
+        }
+
+        /// <summary>幀率限制；索引超出常用值清單時代表那格是 RTSS 原本的值，不重送。</summary>
+        private async void OverlayFpsLimitCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressOverlayChange) return;
+            int index = OverlayFpsLimitCombo.SelectedIndex;
+            if (index < 0 || index >= _overlayFpsLimits.Length) return;
+
+            int limit = _overlayFpsLimits[index];
+            await ApplyOverlayAsync(() => RtssService.Apply(framerateLimit: limit));
         }
 
         /// <summary>
@@ -184,7 +354,7 @@ namespace OmniConsole.Pages.Settings
                 for (int i = 0; i < 20 && !PhantomSigilService.IsInstalled(); i++) await Task.Delay(100);
             }
 
-            RefreshElevatedAppSupport();
+            RefreshElevationDependentSections();
             DispatcherQueue.TryEnqueue(() => ElevatedAppSupportButton.Focus(FocusStateHelper.Preferred));
 
             // 服務狀態變了就讓 PhantomKey 重新就位：安裝後升到 High IL、移除後回一般權限
@@ -225,12 +395,48 @@ namespace OmniConsole.Pages.Settings
             SettingsService.SetUsePhantomKeySteamInGameOverlay(UsePhantomKeySteamInGameOverlaySwitch.IsOn);
         }
 
-        /// <summary>Mouse Mode 開關切換時立即儲存，並更新子控制項反灰狀態。On=啟用、Off=停用。</summary>
-        private void MouseModeSwitch_Toggled(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Mouse Mode 開關切換時立即儲存，並更新子控制項反灰狀態。On=啟用、Off=停用。
+        /// 內建廠商映射的機種要開啟時先徵詢確認。
+        /// </summary>
+        private async void MouseModeSwitch_Toggled(object sender, RoutedEventArgs e)
         {
+            if (_suppressMouseModeToggled) return;
+
+            bool needsConfirm = MouseModeSwitch.IsOn && SettingsService.HasBuiltInGamepadMapping();
+            if (needsConfirm && !await ConfirmEnableOnBuiltInMappingAsync())
+            {
+                // 取消：把開關撥回關閉。賦值會再觸發一次 Toggled，用旗標擋住避免遞迴寫入。
+                _suppressMouseModeToggled = true;
+                MouseModeSwitch.IsOn = false;
+                _suppressMouseModeToggled = false;
+                RestoreMouseModeSwitchFocus();
+                return;
+            }
+
             SettingsService.SetMouseMode(
                 MouseModeSwitch.IsOn ? SettingsService.MouseModeOn : SettingsService.MouseModeOff);
             ApplyMouseModeEnabledState();
+
+            // 對話方塊關掉後焦點留在它身上，確認與取消兩條路都要送回觸發的開關。
+            if (needsConfirm) RestoreMouseModeSwitchFocus();
+        }
+
+        /// <summary>把焦點送回貓又模式開關。</summary>
+        private void RestoreMouseModeSwitchFocus() =>
+            DispatcherQueue.TryEnqueue(() => MouseModeSwitch.Focus(FocusStateHelper.Preferred));
+
+        /// <summary>徵詢在內建廠商映射的機種上開啟貓又模式；回傳使用者是否確認。</summary>
+        private async Task<bool> ConfirmEnableOnBuiltInMappingAsync()
+        {
+            var dlg = new GamepadMessageDialog(
+                XamlRoot,
+                _resourceLoader.Loc("BuiltInMappingEnableDialog_Title"),
+                _resourceLoader.Loc("BuiltInMappingEnableDialog_Body"),
+                _resourceLoader.Loc("BuiltInMappingEnableDialog_Confirm"),
+                _resourceLoader.Loc("BuiltInMappingEnableDialog_Cancel"));
+            await dlg.ShowAsync();
+            return dlg.Result;
         }
 
         /// <summary>背景材質下拉選單變更時立即儲存並請殼層即時套用（無需重啟）；還原選取期間由旗標抑制。</summary>
@@ -543,17 +749,21 @@ namespace OmniConsole.Pages.Settings
         /// <summary>
         /// 套用 Mouse Mode 子控制項的反灰串聯：
         /// PhantomKey 主開關 + 內建廠商映射偵測 → Mouse Mode 主開關 → Layout / Cursor Speed。
+        /// 內建廠商映射的機種持有 Pro 時開關可用，兩則說明依授權擇一顯示。
         /// </summary>
-        private void ApplyMouseModeEnabledState(bool? builtInMappingOverride = null)
+        private void ApplyMouseModeEnabledState()
         {
-            bool builtIn = builtInMappingOverride ?? SettingsService.HasBuiltInGamepadMapping();
+            bool builtIn = SettingsService.HasBuiltInGamepadMapping();
+            bool isPro = LicenseService.HasEntitlement(LicenseService.Entitlement.Pro);
             // PhantomKey 改為 FSE 常駐，不再依開關；保留變數以利未來復原。
             bool phantomOn = true;
-            bool mouseModeAvailable = phantomOn && !builtIn;
+            bool mouseModeAvailable = phantomOn && (!builtIn || isPro);
             bool mouseModeOn = mouseModeAvailable && MouseModeSwitch.IsOn;
 
             MouseModeSwitch.IsEnabled = mouseModeAvailable;
-            MouseModeBuiltInMappingNoteText.Visibility = builtIn ? Visibility.Visible : Visibility.Collapsed;
+            // 未持 Pro 講停用與如何解鎖，持有 Pro 講怎麼與廠商映射並存；兩則互斥。
+            MouseModeBuiltInMappingNoteText.Visibility = (builtIn && !isPro) ? Visibility.Visible : Visibility.Collapsed;
+            MouseModeBuiltInMappingProNoteText.Visibility = (builtIn && isPro) ? Visibility.Visible : Visibility.Collapsed;
 
             // 版面配置與游標速度只在總開關 On 時有意義（Off 時內建與 JSON 皆不介入），與小工具一致
             MouseModeLayoutCombo.IsEnabled = mouseModeOn;

@@ -20,6 +20,15 @@ namespace OmniConsole.PhantomLink
         private bool _loading;
         private bool _builtInMapping;
 
+        // 內建廠商映射的機種靠它決定貓又控制項解不解禁；取不到時一律當作沒有。
+        private bool _hasPro;
+
+        // 內建廠商映射機種的開啟確認面板是否展開；展開期間分頁列與其他一般頁區塊都收起。
+        private bool _confirmingBuiltInMapping;
+
+        // 讀到 RTSS 現值之前，疊加層的控制項一律不得送出寫入命令。
+        private bool _overlayStateLoaded;
+
         // 前景程式狀態：顯示文字 + 「自訂此 App」按鈕傳給 PhantomBridge.OpenProfileEditor 的 appId / name
         private string? _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
         private string _foregroundAppName = string.Empty;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
@@ -46,7 +55,8 @@ namespace OmniConsole.PhantomLink
             this.Loaded += (s, e) =>
             {
                 DebugLogger.Log("[Widget] Loaded");
-                try { ReloadFromStore(); DebugLogger.Log("[Widget] Reload OK"); }
+                // ApplyPageVisibility 內含 ReloadFromStore；一併把分頁列的醒目設成初始狀態。
+                try { ApplyPageVisibility(); DebugLogger.Log("[Widget] Reload OK"); }
                 catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
 
                 SyncThemeFromGameBar();
@@ -181,6 +191,88 @@ namespace OmniConsole.PhantomLink
                 node = VisualTreeHelper.GetParent(node);
             }
             return false;
+        }
+
+        // ── 分頁 ────────────────────────────────────────────────────────────
+
+        /// <summary>目前所在分頁；值對應各 section 在 XAML 標的 Tag。</summary>
+        private string _currentPage = "Main";
+
+        /// <summary>目前分頁是不是指定的那一頁；供條件顯隱的控制項一併判斷。</summary>
+        private bool IsOnPage(string tag) => _currentPage == tag;
+
+        /// <summary>
+        /// 分頁按鈕取得焦點就切換過去，D-pad 左右移動即完成切頁，不必再按 A。
+        /// 焦點停在分頁列上時不移動焦點，只換內容。
+        /// </summary>
+        private void PageTab_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton { Tag: string tag }) SwitchToPage(tag, moveFocus: false);
+        }
+
+        /// <summary>分頁按鈕被點選（滑鼠路徑）。</summary>
+        private void PageTab_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton { Tag: string tag }) SwitchToPage(tag, moveFocus: false);
+        }
+
+        /// <summary>
+        /// 切換分頁：只改 section 的 Visibility。
+        /// FocusSection 對 Collapsed 的元素會回 false，隱藏頁的 section 因此自動被跳過。
+        /// </summary>
+        private void SwitchToPage(string tag, bool moveFocus)
+        {
+            if (_currentPage == tag)
+            {
+                // 同一頁也要重設選中態：ToggleButton 自己的切換會把 GotFocus 點亮的那顆翻掉。
+                SyncPageTabChecked();
+                return;
+            }
+
+            _currentPage = tag;
+            ApplyPageVisibility();
+
+            if (!moveFocus) return;
+
+            // 焦點移到新分頁的第一個可聚焦 section，否則會停在已隱藏的控制項上。
+            foreach (var section in RootPanel.Children.OfType<FrameworkElement>())
+            {
+                if (section.Visibility == Visibility.Visible
+                    && section.Tag is string sectionTag
+                    && sectionTag == tag
+                    && FocusSection(section))
+                {
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 把分頁列的選中態設成目前所在的分頁。
+        /// PickFocusTarget 也靠它把焦點落回目前這一頁的分頁鈕。
+        /// </summary>
+        private void SyncPageTabChecked()
+        {
+            MainPageTab.IsChecked = IsOnPage("Main");
+            OverlayPageTab.IsChecked = IsOnPage("Overlay");
+        }
+
+        /// <summary>
+        /// 依目前分頁顯隱各 section，並更新分頁列的醒目。
+        /// 沒有 Tag 的元素（焦點哨兵）不屬於任何分頁，一律保留。
+        /// 條件顯隱的控制項（BuiltInMappingNote）由 ReloadFromStore 最後覆寫。
+        /// </summary>
+        private void ApplyPageVisibility()
+        {
+            foreach (var section in RootPanel.Children.OfType<FrameworkElement>())
+            {
+                if (section.Tag is not string tag) continue;
+                section.Visibility = tag == _currentPage ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            SyncPageTabChecked();
+
+            ReloadFromStore();
         }
 
         // ── 跨 Section D-pad 導航 ───────────────────────────────────────────
@@ -348,6 +440,9 @@ namespace OmniConsole.PhantomLink
             {
                 _loading = false;
             }
+
+            // 只在疊加層分頁讀 RTSS 現值，不看是誰觸發的 reload；停在該頁時每次 reload 都重讀。
+            if (IsOnPage("Overlay")) LoadOverlayState();
         }
 
         /// <summary>
@@ -383,11 +478,18 @@ namespace OmniConsole.PhantomLink
                 CustomizeAppBtn.IsEnabled = false;
                 CustomizeAppNoteText.Visibility = Visibility.Collapsed;
                 // 取不到就當作沒有 Pro：Pro 專屬選項寧可不出現，也不要出現了卻按不動
+                _hasPro = false;
                 ApplyLayoutProVisibility(false);
+                ApplyOverlayPageAvailability(false);
+                ApplyEnabledState(PhantomKeyStore.GetMouseMode());
                 return;
             }
 
+            _hasPro = hasPro;
             ApplyLayoutProVisibility(hasPro);
+            ApplyOverlayPageAvailability(hasPro);
+            // 反灰規則吃 Pro 狀態，取得後重跑一次讓內建廠商映射機種的控制項跟上。
+            ApplyEnabledState(PhantomKeyStore.GetMouseMode());
 
             // 一行式顯示「目前: <displayName> (<proc>)」；displayName 為空回退 proc，與 proc 相等或 proc 為空時改走 NoDesc 格式
             string identifier = !string.IsNullOrEmpty(displayName) ? displayName : (!string.IsNullOrEmpty(proc) ? proc : "—");
@@ -439,7 +541,8 @@ namespace OmniConsole.PhantomLink
             bool customizeBlocked = isElevated && !canCustomizeElevated;
             bool liveInputBlocked = isElevated && !canSendElevatedInput;
 
-            CustomizeAppBtn.IsEnabled = _foregroundAppId != null && !_builtInMapping && !customizeBlocked;
+            // 內建廠商映射的機種要持有 Pro 才解禁；判斷式與 ApplyEnabledState 的 overrideAllowed 相同。
+            CustomizeAppBtn.IsEnabled = _foregroundAppId != null && (!_builtInMapping || _hasPro) && !customizeBlocked;
             CustomizeAppNoteText.Visibility =
                 (customizeBlocked && _foregroundAppId != null) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -463,22 +566,37 @@ namespace OmniConsole.PhantomLink
 
         /// <summary>
         /// 套用 IsEnabled 規則：
-        ///   - 內建廠商手把映射存在（ROG Ally 等）→ Mode 三顆全部停用、顯示說明
+        ///   - 內建廠商手把映射存在（ROG Ally 等）且未持 Pro → Mode 兩顆全部停用、顯示說明
+        ///   - 同機種持有 Pro 但貓又模式尚未開啟 → 只開放「開」那一顆，按下先展開確認面板
+        ///   - 同機種持有 Pro 且已開啟 → 與一般機種完全相同
         ///   - Mode=Off → Layout / CursorSpeed 停用
         /// </summary>
         private void ApplyEnabledState(string mode)
         {
-            bool mouseOn = !_builtInMapping && mode != PhantomKeyStore.MouseModeOff;
+            bool modeOn = mode != PhantomKeyStore.MouseModeOff;
+            // 內建廠商映射的機種要持有 Pro 才解禁，且開啟必須經過確認，所以未開啟時只放行「開」那顆。
+            bool overrideAllowed = !_builtInMapping || _hasPro;
+            bool mouseOn = overrideAllowed && modeOn;
 
-            ModeOffBtn.IsEnabled = !_builtInMapping;
-            ModeOnBtn.IsEnabled = !_builtInMapping;
+            ModeOffBtn.IsEnabled = overrideAllowed && (!_builtInMapping || modeOn);
+            ModeOnBtn.IsEnabled = overrideAllowed;
 
             LayoutNavBtn.IsEnabled = mouseOn;
             LayoutClassicBtn.IsEnabled = mouseOn;
             LayoutCustomBtn.IsEnabled = mouseOn;
             CursorSpeedSlider.IsEnabled = mouseOn;
 
-            BuiltInMappingNote.Visibility = _builtInMapping ? Visibility.Visible : Visibility.Collapsed;
+            // 一併看分頁：這兩則只屬於主分頁，切到其他分頁時不論機種都要收起。
+            // 未持 Pro 講停用與如何解鎖，持有 Pro 講怎麼與廠商映射並存；兩則互斥，與主程式進階頁一致。
+            bool noteOnThisPage = _builtInMapping && IsOnPage("Main") && !_confirmingBuiltInMapping;
+            BuiltInMappingNote.Visibility =
+                noteOnThisPage && !_hasPro ? Visibility.Visible : Visibility.Collapsed;
+            BuiltInMappingProNote.Visibility =
+                noteOnThisPage && _hasPro ? Visibility.Visible : Visibility.Collapsed;
+
+            // 確認面板的顯隱由這裡收單一持有：它掛 Tag="Main"，會被 ApplyPageVisibility 一併打開。
+            BuiltInMappingConfirmSection.Visibility =
+                _confirmingBuiltInMapping && IsOnPage("Main") ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ── Quick Actions：一次性動作按鈕 ────────────────────────────────────
@@ -585,6 +703,20 @@ namespace OmniConsole.PhantomLink
 
             string mode = btn.Tag as string ?? PhantomKeyStore.MouseModeOn;
 
+            // 內建廠商映射的機種要開啟時先徵詢確認，與主程式進階頁的開關是同一道關卡。
+            if (mode != PhantomKeyStore.MouseModeOff && _builtInMapping
+                && PhantomKeyStore.GetMouseMode() == PhantomKeyStore.MouseModeOff)
+            {
+                ShowBuiltInMappingConfirm();
+                return;
+            }
+
+            ApplyMouseMode(mode);
+        }
+
+        /// <summary>寫入 Mouse Mode 並同步兩顆按鈕的互斥勾選狀態與反灰規則。</summary>
+        private void ApplyMouseMode(string mode)
+        {
             // Off / On 兩顆 ToggleButton 互斥：選中一顆時取消另一顆
             _loading = true;
             try
@@ -596,6 +728,58 @@ namespace OmniConsole.PhantomLink
 
             PhantomKeyStore.SetMouseMode(mode);
             ApplyEnabledState(mode);
+        }
+
+        /// <summary>
+        /// 展開內建廠商映射機種的開啟確認面板：收起一般頁其他區塊與分頁列，焦點落在「取消」。
+        /// 分頁列不屬於任何分頁，切頁時永遠保留，這裡必須連它一起收起，否則往上移焦會切頁離開。
+        /// </summary>
+        private void ShowBuiltInMappingConfirm()
+        {
+            _confirmingBuiltInMapping = true;
+
+            foreach (var section in RootPanel.Children.OfType<FrameworkElement>())
+            {
+                if (section.Tag is not string tag || tag != "Main") continue;
+                section.Visibility = section == BuiltInMappingConfirmSection
+                    ? Visibility.Visible : Visibility.Collapsed;
+            }
+            PageTabSection.Visibility = Visibility.Collapsed;
+
+            BuiltInMappingCancelBtn.Focus(FocusState.Keyboard);
+        }
+
+        /// <summary>收起確認面板並還原一般頁的原有版面。</summary>
+        private void HideBuiltInMappingConfirm()
+        {
+            _confirmingBuiltInMapping = false;
+            PageTabSection.Visibility = Visibility.Visible;
+
+            // 還原各區塊顯隱與所有依狀態計算的規則（Steam 那顆的條件顯隱、確認面板自身的收起都在裡面）。
+            ApplyPageVisibility();
+        }
+
+        /// <summary>確認面板的「開啟」：寫入 Mouse Mode 後收起面板。</summary>
+        private void BuiltInMappingConfirmBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyMouseMode(PhantomKeyStore.MouseModeOn);
+            HideBuiltInMappingConfirm();
+            ModeOnBtn.Focus(FocusState.Keyboard);
+        }
+
+        /// <summary>確認面板的「取消」：不動設定，把勾選狀態還原成關閉後收起面板。</summary>
+        private void BuiltInMappingCancelBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _loading = true;
+            try
+            {
+                ModeOffBtn.IsChecked = true;
+                ModeOnBtn.IsChecked = false;
+            }
+            finally { _loading = false; }
+
+            HideBuiltInMappingConfirm();
+            ModeOnBtn.Focus(FocusState.Keyboard);
         }
 
         /// <summary>
@@ -625,6 +809,295 @@ namespace OmniConsole.PhantomLink
                 LayoutCustomBtn.IsChecked = layout == PhantomKeyStore.LayoutCustom;
             }
             finally { _loading = false; }
+        }
+
+        /// <summary>
+        /// 疊加層分頁的顯隱與可用性。
+        ///   - 沒有 Pro：整個分頁按鈕收起，使用者不會看到一個點不動的分頁。
+        ///   - 有 Pro 但缺提權或沒裝 RTSS：分頁在，控制項反灰並顯示對應說明。
+        /// </summary>
+        private void ApplyOverlayPageAvailability(bool hasPro)
+        {
+            OverlayPageTab.Visibility = hasPro ? Visibility.Visible : Visibility.Collapsed;
+            MainPageTab.XYFocusRight = hasPro ? (DependencyObject)OverlayPageTab : MainPageTab;
+
+            // 沒有 Pro 卻停在疊加層分頁（例如剛移除授權）→ 退回一般分頁，否則會卡在一個連分頁鈕都看不到的頁面。
+            // 不可改呼叫 ApplyPageVisibility：它末端會呼叫 ReloadFromStore，而本方法就在 ReloadFromStore 底下，會繞回自己。
+            if (!hasPro && IsOnPage("Overlay"))
+            {
+                _currentPage = "Main";
+                MainPageTab.IsChecked = true;
+                OverlayPageTab.IsChecked = false;
+
+                foreach (var section in RootPanel.Children.OfType<FrameworkElement>())
+                {
+                    if (section.Tag is not string tag) continue;
+                    section.Visibility = tag == "Main" ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+
+            ApplyOverlayEnabledState();
+        }
+
+        // ── 疊加層分頁 ──────────────────────────────────────────────────────
+
+        /// <summary>提權服務是否就緒；疊加層設定的寫入需要它。</summary>
+        private bool _overlayElevationReady;
+
+        /// <summary>RTSS 是否已安裝。沒安裝時整組控制項反灰並顯示提示。</summary>
+        private bool _overlayRtssInstalled;
+
+        /// <summary>RTSS 是否正在執行；與「沒安裝」分開判定，提示不同。</summary>
+        private bool _overlayRtssRunning;
+
+        /// <summary>幀率限制的離散檔位；0 為不限。</summary>
+        private static readonly int[] _overlayFpsLimits = { 0, 30, 40, 60, 90, 120, 144, 165, 240 };
+
+        /// <summary>連續調整的延後送出；滑鼠放開時另有立即送出的路徑。</summary>
+        private DispatcherTimer? _overlayApplyTimer;
+
+        /// <summary>等待送出的命令；同一項連續調整只會保留最後一次的值。</summary>
+        private string? _pendingOverlayCommand;
+
+        /// <summary>依提權與 RTSS 狀態決定控制項可不可用，並顯示對應說明。</summary>
+        private void ApplyOverlayEnabledState()
+        {
+            bool usable = _overlayElevationReady && _overlayRtssInstalled && _overlayRtssRunning;
+
+            OverlayOsdOffBtn.IsEnabled = usable;
+            OverlayOsdOnBtn.IsEnabled = usable;
+            OverlayStatOffBtn.IsEnabled = usable;
+            OverlayStatOnBtn.IsEnabled = usable;
+            OverlayShadowOffBtn.IsEnabled = usable;
+            OverlayShadowOnBtn.IsEnabled = usable;
+            OverlayZoomSlider.IsEnabled = usable;
+            OverlayFpsLimitSlider.IsEnabled = usable;
+
+            // 三則說明依先決條件的順序擇一顯示：沒提權 → 沒裝 → 裝了但沒在跑。
+            OverlayElevationNote.Visibility =
+                _overlayElevationReady ? Visibility.Collapsed : Visibility.Visible;
+            OverlayRtssNote.Visibility =
+                (_overlayElevationReady && !_overlayRtssInstalled) ? Visibility.Visible : Visibility.Collapsed;
+            OverlayRtssStoppedNote.Visibility =
+                (_overlayElevationReady && _overlayRtssInstalled && !_overlayRtssRunning)
+                    ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// 讀 RTSS 現值並同步控制項。
+        /// 只在切到疊加層分頁時呼叫，不進 ReloadFromStore。不快取，每次都讀 RTSS 現值。
+        /// </summary>
+        private void LoadOverlayState()
+        {
+            bool installed = false;
+            bool running = false;
+            bool elevationReady = false;
+            int osd = -1, stat = -1, shadow = -1, zoom = -1, fpsLimit = -1;
+
+            try
+            {
+                using var bridge = PhantomBridgeHelper.CreateFactory();
+                bridge.GetOverlayState(out installed, out running, out elevationReady, out osd, out stat, out shadow, out zoom, out fpsLimit);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log("[Widget] GetOverlayState failed: " + ex.Message);
+            }
+
+            _overlayRtssInstalled = installed;
+            _overlayRtssRunning = running;
+            _overlayElevationReady = elevationReady;
+            DebugLogger.Log($"[Widget] overlay state installed={installed} running={running} elevation={elevationReady} osd={osd} zoom={zoom} fps={fpsLimit}");
+
+            _loading = true;
+            try
+            {
+                // 控制項一律留在畫面上，不可用時反灰；只有「RTSS 裝著卻讀不到某一項」才收起那一項。
+                bool showAll = !installed;
+                OverlayOsdSection.Visibility = SectionVisibility(showAll || osd >= 0);
+                OverlayStatSection.Visibility = SectionVisibility(showAll || stat >= 0);
+                OverlayShadowSection.Visibility = SectionVisibility(showAll || shadow >= 0);
+                OverlayZoomSection.Visibility = SectionVisibility(showAll || zoom >= 0);
+                OverlayFpsLimitSection.Visibility = SectionVisibility(showAll || fpsLimit >= 0);
+
+                OverlayOsdOnBtn.IsChecked = osd == 1;
+                OverlayOsdOffBtn.IsChecked = osd == 0;
+                OverlayStatOnBtn.IsChecked = stat == 1;
+                OverlayStatOffBtn.IsChecked = stat == 0;
+                OverlayShadowOnBtn.IsChecked = shadow == 1;
+                OverlayShadowOffBtn.IsChecked = shadow == 0;
+
+                if (zoom >= 0)
+                {
+                    OverlayZoomSlider.Value = Math.Clamp(zoom, 1, 8);
+                    OverlayZoomValueText.Text = $"{(int)OverlayZoomSlider.Value}x";
+                }
+
+                if (fpsLimit >= 0)
+                {
+                    int idx = Array.IndexOf(_overlayFpsLimits, fpsLimit);
+                    // 現值不在檔位上時顯示最接近的一格，不回寫。
+                    if (idx < 0) idx = NearestFpsLimitIndex(fpsLimit);
+                    OverlayFpsLimitSlider.Value = idx;
+                    OverlayFpsLimitValueText.Text = FormatFpsLimit(_overlayFpsLimits[idx]);
+                }
+            }
+            finally
+            {
+                _loading = false;
+            }
+
+            // 控制項已與 RTSS 現值同步，從這一刻起使用者的操作才有東西可寫回去。
+            _overlayStateLoaded = true;
+
+            ApplyOverlayEnabledState();
+        }
+
+        /// <summary>目前在疊加層分頁，且該項目可用時才顯示。</summary>
+        private Visibility SectionVisibility(bool available)
+            => (available && IsOnPage("Overlay")) ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>找出最接近的檔位；RTSS 的現值不一定落在檔位上。</summary>
+        private static int NearestFpsLimitIndex(int value)
+        {
+            int best = 0;
+            for (int i = 1; i < _overlayFpsLimits.Length; i++)
+            {
+                if (Math.Abs(_overlayFpsLimits[i] - value) < Math.Abs(_overlayFpsLimits[best] - value))
+                    best = i;
+            }
+            return best;
+        }
+
+        /// <summary>0 顯示成「不限」，其餘顯示數字。</summary>
+        private string FormatFpsLimit(int value)
+        {
+            if (value != 0) return value.ToString();
+            var resw = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            return LocSafe(resw, "Widget_Overlay_FpsLimit_Unlimited", "Off");
+        }
+
+        /// <summary>
+        /// 排定送出；同一項的後一次呼叫會覆蓋前一次待送的命令。
+        /// </summary>
+        private void QueueOverlayApply(string command)
+        {
+            _pendingOverlayCommand = command;
+
+            _overlayApplyTimer ??= CreateOverlayApplyTimer();
+            _overlayApplyTimer.Stop();
+            _overlayApplyTimer.Start();
+        }
+
+        /// <summary>建立延後送出的計時器；停手後才真的送。</summary>
+        private DispatcherTimer CreateOverlayApplyTimer()
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                _ = FlushOverlayApplyAsync();
+            };
+            return timer;
+        }
+
+        /// <summary>
+        /// 真正把命令送給 Bridge，開關類直接呼叫這裡。走背景執行緒，不卡住畫面。
+        /// </summary>
+        private async System.Threading.Tasks.Task FlushOverlayApplyAsync()
+        {
+            string? command = _pendingOverlayCommand;
+            _pendingOverlayCommand = null;
+            if (string.IsNullOrEmpty(command)) return;
+
+            int result = -1;
+            try
+            {
+                await System.Threading.Tasks.Task.Run(() =>
+                    PhantomBridgeHelper.InvokeWithRetry(bridge => result = bridge.ApplyOverlaySettings(command)));
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[Widget] ApplyOverlaySettings FAIL: {ex.Message}");
+                return;
+            }
+
+            DebugLogger.Log($"[Widget] ApplyOverlaySettings result={result} command=[{command}]");
+
+            // 套用失敗時把控制項退回 RTSS 的實際狀態，不留一個與畫面不符的值。
+            if (result != 0) LoadOverlayState();
+        }
+
+        /// <summary>On-Screen Display support 的 Off / On 兩顆共用 Click。</summary>
+        private void OverlayOsdBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loading || !_overlayStateLoaded) return;
+            if (!(sender is ToggleButton btn)) return;
+
+            bool on = (btn.Tag as string) == "On";
+            SyncOverlayToggle(OverlayOsdOffBtn, OverlayOsdOnBtn, on);
+
+            _pendingOverlayCommand = $"rtss-apply --osd {(on ? 1 : 0)}";
+            _ = FlushOverlayApplyAsync();
+        }
+
+        /// <summary>Show own statistics 的 Off / On 兩顆共用 Click。</summary>
+        private void OverlayStatBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loading || !_overlayStateLoaded) return;
+            if (!(sender is ToggleButton btn)) return;
+
+            bool on = (btn.Tag as string) == "On";
+            SyncOverlayToggle(OverlayStatOffBtn, OverlayStatOnBtn, on);
+
+            _pendingOverlayCommand = $"rtss-apply --stat {(on ? 1 : 0)}";
+            _ = FlushOverlayApplyAsync();
+        }
+
+        /// <summary>On-Screen Display shadow 的 Off / On 兩顆共用 Click。</summary>
+        private void OverlayShadowBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loading || !_overlayStateLoaded) return;
+            if (!(sender is ToggleButton btn)) return;
+
+            bool on = (btn.Tag as string) == "On";
+            SyncOverlayToggle(OverlayShadowOffBtn, OverlayShadowOnBtn, on);
+
+            _pendingOverlayCommand = $"rtss-apply --shadow {(on ? 1 : 0)}";
+            _ = FlushOverlayApplyAsync();
+        }
+
+        /// <summary>Off / On 兩顆 ToggleButton 的互斥勾選狀態。</summary>
+        private void SyncOverlayToggle(ToggleButton offBtn, ToggleButton onBtn, bool on)
+        {
+            _loading = true;
+            try
+            {
+                onBtn.IsChecked = on;
+                offBtn.IsChecked = !on;
+            }
+            finally { _loading = false; }
+        }
+
+        /// <summary>On-Screen Display zoom：值域 1..8，直接對應 RTSS 的屬性值。</summary>
+        private void OverlayZoomSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_loading || !_overlayStateLoaded) return;
+
+            int zoom = Math.Clamp((int)Math.Round(e.NewValue), 1, 8);
+            OverlayZoomValueText.Text = $"{zoom}x";
+            QueueOverlayApply($"rtss-apply --zoom {zoom}");
+        }
+
+        /// <summary>Framerate limit：Slider 走檔位索引，送出的是檔位對應的實際幀率。</summary>
+        private void OverlayFpsLimitSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_loading || !_overlayStateLoaded) return;
+
+            int idx = Math.Clamp((int)Math.Round(e.NewValue), 0, _overlayFpsLimits.Length - 1);
+            int limit = _overlayFpsLimits[idx];
+            OverlayFpsLimitValueText.Text = FormatFpsLimit(limit);
+            QueueOverlayApply($"rtss-apply --fps-limit {limit}");
         }
 
         /// <summary>

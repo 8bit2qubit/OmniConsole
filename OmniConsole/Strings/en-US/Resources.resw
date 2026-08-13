@@ -237,6 +237,51 @@
   <data name="AdvancedSection_Nekomata.Text" xml:space="preserve">
     <value>Nekomata</value>
   </data>
+  <data name="AdvancedSection_Overlay.Text" xml:space="preserve">
+    <value>Performance Overlay</value>
+  </data>
+  <data name="OverlaySetting_ElevationNote.Text" xml:space="preserve">
+    <value>These settings need Administrator App Support, which you can install above.</value>
+  </data>
+  <data name="OverlaySetting_RtssNote.Text" xml:space="preserve">
+    <value>These settings work with RivaTuner Statistics Server. Install it and they become available.</value>
+  </data>
+  <data name="OverlaySetting_RtssStoppedNote.Text" xml:space="preserve">
+    <value>Requires RivaTuner Statistics Server to be running. Turning on Start with Windows in its General properties makes it available at every startup.</value>
+  </data>
+  <data name="OverlayOsdSetting_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Support</value>
+  </data>
+  <data name="OverlayOsdSetting_Description.Text" xml:space="preserve">
+    <value>Let RivaTuner Statistics Server draw its on-screen display in DirectX and OpenGL games.</value>
+  </data>
+  <data name="OverlayStatSetting_Title.Text" xml:space="preserve">
+    <value>Show Own Statistics</value>
+  </data>
+  <data name="OverlayStatSetting_Description.Text" xml:space="preserve">
+    <value>Show the framerate statistics collected by RivaTuner Statistics Server.</value>
+  </data>
+  <data name="OverlayShadowSetting_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Shadow</value>
+  </data>
+  <data name="OverlayShadowSetting_Description.Text" xml:space="preserve">
+    <value>Add a shadow behind the on-screen display text.</value>
+  </data>
+  <data name="OverlayZoomSetting_Title.Text" xml:space="preserve">
+    <value>On-Screen Display Zoom</value>
+  </data>
+  <data name="OverlayZoomSetting_Description.Text" xml:space="preserve">
+    <value>Scale the on-screen display up when the text is too small to read.</value>
+  </data>
+  <data name="OverlayFpsLimitSetting_Title.Text" xml:space="preserve">
+    <value>Framerate Limit</value>
+  </data>
+  <data name="OverlayFpsLimitSetting_Description.Text" xml:space="preserve">
+    <value>Set the maximum framerate for games.</value>
+  </data>
+  <data name="OverlayFpsLimit_Unlimited" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="PhantomKeySetting_Title.Text" xml:space="preserve">
     <value>Press &#xEECA; to Open Steam’s Menus in Steam Big Picture Mode</value>
   </data>
@@ -266,7 +311,22 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, EA Desktop, Playnite Desktop, File Explorer, Windows File Picker, the Open with dialog, Windows Installer, Steam, and Discord. Task Manager and the On-screen keyboard also require Administrator App Support (Pro).</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
-    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping.</value>
+    <value>Disabled: this console has the manufacturer’s built-in gamepad mapping. Turning Nekomata Mode on for this console requires Pro.</value>
+  </data>
+  <data name="GamepadMappingModeSetting_BuiltInMappingProNote.Text" xml:space="preserve">
+    <value>This console has the manufacturer’s built-in gamepad mapping. Set “Control Mode” to “Gamepad” in Command Center, and Nekomata works here the same as it does anywhere else.</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Title" xml:space="preserve">
+    <value>Turn on Nekomata Mode for this console?</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Body" xml:space="preserve">
+    <value>This console has the manufacturer’s built-in gamepad mapping. Press the Command Center button, then set “Control Mode” to “Gamepad”, and Nekomata works here the same as it does anywhere else.</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Confirm" xml:space="preserve">
+    <value>Turn on</value>
+  </data>
+  <data name="BuiltInMappingEnableDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
   </data>
   <data name="ControllerLayoutPresetSetting_Title.Text" xml:space="preserve">
     <value>Controller Layout Preset</value>
@@ -814,6 +874,9 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="Label_PhantomSigil.Text" xml:space="preserve">
     <value>PhantomSigil</value>
+  </data>
+  <data name="Label_PhantomIgnis.Text" xml:space="preserve">
+    <value>PhantomIgnis</value>
   </data>
   <data name="Label_PhantomLink.Text" xml:space="preserve">
     <value>PhantomLink (OmniCharm)</value>
@@ -1792,5 +1855,23 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
   </data>
   <data name="ElevatedAppSupportUnavailableDialog_Close" xml:space="preserve">
     <value>Got it</value>
+  </data>
+  <data name="GamingCapabilityDialog_Title" xml:space="preserve">
+    <value>Complete Xbox Mode (FSE) setup</value>
+  </data>
+  <data name="GamingCapabilityDialog_Content" xml:space="preserve">
+    <value>{OmniConsole} can apply the settings this console needs to run Xbox Mode (FSE) with the full experience. You will be asked for administrator approval next.</value>
+  </data>
+  <data name="GamingCapabilityDialog_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GamingCapabilityRestart_Title" xml:space="preserve">
+    <value>Restart your console</value>
+  </data>
+  <data name="GamingCapabilityRestart_Content" xml:space="preserve">
+    <value>The settings have been applied. After you restart your console, Xbox Mode (FSE) will start with the full experience.</value>
+  </data>
+  <data name="GamingCapabilityRestart_Close" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

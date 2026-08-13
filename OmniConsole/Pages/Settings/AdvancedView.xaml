@@ -198,7 +198,9 @@
                             <TextBlock x:Uid="GamepadMappingModeSetting_Title" services:Localized.Uid="GamepadMappingModeSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
                             <TextBlock x:Uid="GamepadMappingModeSetting_Description" services:Localized.Uid="GamepadMappingModeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                             <TextBlock x:Uid="GamepadMappingModeSetting_Note" services:Localized.Uid="GamepadMappingModeSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <!-- 內建廠商映射機種的兩則說明，依 Pro 授權擇一顯示 -->
                             <TextBlock x:Name="MouseModeBuiltInMappingNoteText" x:Uid="GamepadMappingModeSetting_BuiltInMappingNote" services:Localized.Uid="GamepadMappingModeSetting_BuiltInMappingNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            <TextBlock x:Name="MouseModeBuiltInMappingProNoteText" x:Uid="GamepadMappingModeSetting_BuiltInMappingProNote" services:Localized.Uid="GamepadMappingModeSetting_BuiltInMappingProNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
                         </StackPanel>
 
                         <ToggleSwitch x:Name="MouseModeSwitch"
@@ -287,6 +289,143 @@
                     </Grid>
                 </StackPanel>
             </Border>
+
+            <!-- 疊加層分類標題（Pro 專屬） -->
+            <StackPanel x:Name="OverlaySection" Spacing="16" Visibility="Collapsed">
+            <TextBlock x:Uid="AdvancedSection_Overlay" services:Localized.Uid="AdvancedSection_Overlay" FontSize="14" FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Margin="2,0,0,0"/>
+
+            <!-- 疊加層群組卡片：螢幕顯示 / 統計資訊 / 文字陰影 / 顯示大小 / 幀率限制 -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    HorizontalAlignment="Stretch"
+                    MinWidth="700">
+                <StackPanel>
+                    <!-- 螢幕顯示總開關 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE7F4;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="OverlayOsdSetting_Title" services:Localized.Uid="OverlayOsdSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="OverlayOsdSetting_Description" services:Localized.Uid="OverlayOsdSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                            <!-- 三則提示各自對應一種不可用的原因，同時只會出現一則 -->
+                            <TextBlock x:Name="OverlayElevationNoteText" x:Uid="OverlaySetting_ElevationNote" services:Localized.Uid="OverlaySetting_ElevationNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            <TextBlock x:Name="OverlayRtssNoteText" x:Uid="OverlaySetting_RtssNote" services:Localized.Uid="OverlaySetting_RtssNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            <TextBlock x:Name="OverlayRtssStoppedNoteText" x:Uid="OverlaySetting_RtssStoppedNote" services:Localized.Uid="OverlaySetting_RtssStoppedNote" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                        </StackPanel>
+
+                        <ToggleSwitch x:Name="OverlayOsdSwitch"
+                                      Toggled="OverlayOsdSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 統計資訊 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE9D9;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="OverlayStatSetting_Title" services:Localized.Uid="OverlayStatSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="OverlayStatSetting_Description" services:Localized.Uid="OverlayStatSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch x:Name="OverlayStatSwitch"
+                                      Toggled="OverlayStatSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 文字陰影 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE7E6;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="OverlayShadowSetting_Title" services:Localized.Uid="OverlayShadowSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="OverlayShadowSetting_Description" services:Localized.Uid="OverlayShadowSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch x:Name="OverlayShadowSwitch"
+                                      Toggled="OverlayShadowSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 顯示大小下拉選單 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE8A3;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="OverlayZoomSetting_Title" services:Localized.Uid="OverlayZoomSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="OverlayZoomSetting_Description" services:Localized.Uid="OverlayZoomSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- 項目由 code-behind 動態填入 -->
+                        <ComboBox x:Name="OverlayZoomCombo" Grid.Column="2"
+                                  SelectionChanged="OverlayZoomCombo_SelectionChanged"
+                                  MinWidth="120" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 幀率限制下拉選單 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE916;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="OverlayFpsLimitSetting_Title" services:Localized.Uid="OverlayFpsLimitSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="OverlayFpsLimitSetting_Description" services:Localized.Uid="OverlayFpsLimitSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ComboBox x:Name="OverlayFpsLimitCombo" Grid.Column="2"
+                                  SelectionChanged="OverlayFpsLimitCombo_SelectionChanged"
+                                  MinWidth="120" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            </StackPanel>
 
             <!-- 介面顯示分類標題 -->
             <TextBlock x:Uid="AdvancedSection_Display" services:Localized.Uid="AdvancedSection_Display" FontSize="14" FontWeight="SemiBold"

@@ -34,19 +34,15 @@ namespace OmniConsole.Pages.Settings
         /// <summary>由 SettingsHostView 在導覽後注入主視窗 HWND。</summary>
         internal void SetHwnd(IntPtr hwnd) => Hwnd = hwnd;
 
-        /// <summary>依目前授權狀態切換兩組版面並填入欄位，最後把焦點放到該狀態的第一顆可聚焦元素。</summary>
-        /// <param name="preferredFocus">
-        /// 希望聚焦的元素；該元素在本次狀態下不可見時退回預設目標。
-        /// 逐項移除後原按鈕已不存在，呼叫端據此指定一個仍然在場的替代目標。
-        /// </param>
-        internal void Initialize(Control? preferredFocus = null)
-        {
-            RefreshState();
-            Control target = preferredFocus != null && IsVisibleInTree(preferredFocus)
-                ? preferredFocus
-                : DefaultFocusTarget();
-            DispatcherQueue.TryEnqueue(() => target.Focus(FocusStateHelper.Preferred));
-        }
+        /// <summary>宿主導覽進本頁後的初始化入口。</summary>
+        internal void Initialize() => RefreshState();
+
+        /// <summary>
+        /// 授權狀態翻面。原本聚焦的元素已隨版面消失時，把焦點落到新版面的預設目標。
+        /// 進頁不呼叫此方法：焦點留在使用者按下的導覽項上，與其他分頁一致。
+        /// </summary>
+        private void FocusAfterStateFlip()
+            => DispatcherQueue.TryEnqueue(() => DefaultFocusTarget().Focus(FocusStateHelper.Preferred));
 
         /// <summary>依目前授權狀態切換兩組版面、填入欄位並重建功能列，不動焦點。</summary>
         private void RefreshState()
@@ -257,6 +253,7 @@ namespace OmniConsole.Pages.Settings
             if (result == ContentDialogResult.Primary && dialog.ResultInfo != null)
             {
                 Initialize();
+                FocusAfterStateFlip();
                 await PhantomKeyService.ReconcileElevationAsync();
                 return;
             }
@@ -304,6 +301,7 @@ namespace OmniConsole.Pages.Settings
             {
                 LicenseService.RemoveAll();
                 Initialize();
+                FocusAfterStateFlip();
                 await PhantomKeyService.ReconcileElevationAsync();
             }
             else

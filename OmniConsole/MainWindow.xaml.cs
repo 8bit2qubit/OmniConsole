@@ -35,6 +35,13 @@ namespace OmniConsole
 
         // 提權工作版本檢查每次啟動只做一次；Activated 會在視窗每次取得焦點時重複觸發。
         private bool _elevatedServiceChecked;
+        private bool _gamingCapabilityChecked;
+
+        // 啟動前的兩道詢問閘門是否正在進行中。
+        private bool _startupGateRunning;
+
+        // 啟動頁詢問的次數上限。到了上限就放行去啟動平台，設定頁不受此限。
+        private const int StartupGateMaxAttempts = 3;
 
         /// <summary>
         /// 更新安裝期間設為 true，AppWindow.Closing 與 ESC/B 鍵退出路徑均拒絕關閉。
@@ -160,9 +167,23 @@ namespace OmniConsole
             if (_launchView != null) _launchView.Hwnd = _hwnd;
             if (_settingsHostView != null) _settingsHostView.Hwnd = _hwnd;
 
-            // 提權工作版本與套件不符時先擋下來更新。放在設定模式判斷之前：啟動平台與進設定頁
-            // 兩條分支都會經過這裡，不論停在哪一頁都問得到。
-            await TryUpdateElevatedServiceAsync();
+            // 系統的權限要求會讓視窗先失焦，關閉後再取得焦點，於是這個處理常式被重新叫進來一次。
+            // 下面兩道閘門都是「檢查過就直接返回」，重入的那一次會穿過去把平台啟動起來，
+            // 而第一次那條路的對話方塊還開著。閘門進行中就整個不處理，等第一次走完再啟動平台。
+            if (_startupGateRunning) return;
+            _startupGateRunning = true;
+            try
+            {
+                // 提權工作版本與套件不符時先擋下來更新。放在設定模式判斷之前：啟動平台與進設定頁兩條分支都會經過這裡，不論停在哪一頁都問得到。
+                await TryUpdateElevatedServiceAsync();
+
+                // 缺完整體驗所需設定的機器在這裡補上。同樣放在設定模式判斷之前，兩條分支都問得到。
+                await TryEnsureGamingCapabilityAsync();
+            }
+            finally
+            {
+                _startupGateRunning = false;
+            }
 
             // 設定模式不自動啟動平台
             if (_isSettingsMode) return;
@@ -363,9 +384,18 @@ namespace OmniConsole
 
                     // 版本對上之前一直問，關掉對話方塊或在系統的權限要求按取消都會再來一輪。
                     // 元件版本必須一致才能運作正常，故不提供略過的出路；使用者要離開仍可直接關閉視窗。
+                    // 唯獨啟動頁有次數上限：問到上限就放行去啟動平台，讓使用者進得了平台，還能接鍵盤滑鼠排查，比被擋在門外進不去好。
+                    int maxAttempts = (_isSettingsMode || _isShowingSettings) ? int.MaxValue : StartupGateMaxAttempts;
+
                     for (int attempt = 1; ; attempt++)
                     {
                         if (!PhantomSigilService.NeedsUpdate()) break;
+
+                        if (attempt > maxAttempts)
+                        {
+                            DebugLogger.Log($"[MainWindow] Elevated service update: giving up after {maxAttempts} attempts, letting startup continue");
+                            break;
+                        }
 
                         // 同一時間只能顯示一個 ContentDialog，且前一個的關閉需要時間。
                         if (attempt > 1) await Task.Delay(500);
@@ -416,6 +446,113 @@ namespace OmniConsole
                 catch (Exception ex)
                 {
                     DebugLogger.Log($"[MainWindow] Elevated service update failed: {ex.Message}");
+                    tcs.SetResult(false);
+                }
+            });
+            await tcs.Task;
+        }
+
+        /// <summary>
+        /// 這台主機還缺讓 Xbox 模式 (FSE) 以完整體驗運作的設定時，引導使用者補上；已具備則直接返回。
+        /// </summary>
+        public async Task TryEnsureGamingCapabilityAsync()
+        {
+            if (_gamingCapabilityChecked) return;
+            _gamingCapabilityChecked = true;
+
+            // 上一輪套用到一半被中斷過的話，先把暫時借用的設定還回去。
+            GamingCapabilityService.RecoverInterruptedApply();
+
+            if (GamingCapabilityService.Evaluate() != GamingCapabilityState.NeedsSetup) return;
+
+            // 等 Content.Loaded 取得有效 XamlRoot，再排到 UI 執行緒顯示對話方塊
+            await _visualTreeReady.Task;
+
+            var tcs = new TaskCompletionSource<bool>();
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+
+                    // 套用成功之前一直問，關掉對話方塊或在系統的權限要求按取消都會再來一輪。
+                    // 這項設定是完整體驗的前提，故不提供略過的出路；使用者要離開仍可直接關閉視窗。
+                    // 唯獨啟動頁有次數上限：問到上限就放行去啟動平台。
+                    int maxAttempts = (_isSettingsMode || _isShowingSettings) ? int.MaxValue : StartupGateMaxAttempts;
+
+                    bool applied = false;
+                    for (int attempt = 1; ; attempt++)
+                    {
+                        if (GamingCapabilityService.Evaluate() != GamingCapabilityState.NeedsSetup) break;
+
+                        if (attempt > maxAttempts)
+                        {
+                            DebugLogger.Log($"[MainWindow] Gaming capability: giving up after {maxAttempts} attempts, letting startup continue");
+                            break;
+                        }
+
+                        // 同一時間只能顯示一個 ContentDialog，且前一個的關閉需要時間。
+                        if (attempt > 1) await Task.Delay(500);
+
+                        // ContentDialog 不能重複顯示，每一輪都重建。
+                        // 不設 CloseButtonText：套用是繼續使用的前提，不列出與它並排的略過選項。
+                        // BlockDismiss 一併擋掉 Esc 與手把 B，只有按下「套用」才關得掉。
+                        var dialog = new GamepadDialogBase
+                        {
+                            XamlRoot = this.Content.XamlRoot,
+                            Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                            RequestedTheme = ElementTheme.Dark,
+                            Title = resourceLoader.Loc("GamingCapabilityDialog_Title"),
+                            Content = resourceLoader.Loc("GamingCapabilityDialog_Content"),
+                            PrimaryButtonText = resourceLoader.Loc("GamingCapabilityDialog_Apply"),
+                            DefaultButton = ContentDialogButton.Primary,
+                            DismissPolicy = DialogDismissPolicy.RequireChoice
+                        };
+
+                        ContentDialogResult result;
+                        try
+                        {
+                            result = await dialog.ShowAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            // 顯示失敗只放棄這一輪，不能讓整個流程失效
+                            DebugLogger.Log($"[MainWindow] Gaming capability attempt {attempt}: ShowAsync failed: {ex.Message}");
+                            continue;
+                        }
+
+                        if (result == ContentDialogResult.Primary)
+                        {
+                            applied = await GamingCapabilityService.TryApplyAsync();
+                            DebugLogger.Log($"[MainWindow] Gaming capability attempt {attempt}: applied={applied}");
+                        }
+                        else
+                        {
+                            DebugLogger.Log($"[MainWindow] Gaming capability attempt {attempt}: dismissed, asking again.");
+                        }
+                    }
+
+                    // 只有真的套用成功才提示重新開機。
+                    if (applied)
+                    {
+                        await Task.Delay(500);
+                        var doneDialog = new GamepadDialogBase
+                        {
+                            XamlRoot = this.Content.XamlRoot,
+                            Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                            RequestedTheme = ElementTheme.Dark,
+                            Title = resourceLoader.Loc("GamingCapabilityRestart_Title"),
+                            Content = resourceLoader.Loc("GamingCapabilityRestart_Content"),
+                            CloseButtonText = resourceLoader.Loc("GamingCapabilityRestart_Close"),
+                        };
+                        await doneDialog.ShowAsync();
+                    }
+
+                    tcs.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"[MainWindow] Gaming capability flow failed: {ex.Message}");
                     tcs.SetResult(false);
                 }
             });

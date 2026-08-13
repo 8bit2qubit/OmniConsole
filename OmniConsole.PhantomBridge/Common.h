@@ -1,8 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <softpub.h>
 
 #pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "wintrust.lib")
 
 namespace Common
 {
@@ -79,10 +81,52 @@ namespace Common
         return ok;
     }
 
+    inline bool ContentIntact(const wchar_t* filePath) noexcept
+    {
+        WINTRUST_FILE_INFO fileInfo = {};
+        fileInfo.cbStruct = sizeof(fileInfo);
+        fileInfo.pcwszFilePath = filePath;
+
+        GUID action = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        WINTRUST_DATA data = {};
+        data.cbStruct = sizeof(data);
+        data.dwUIChoice = WTD_UI_NONE;
+        data.fdwRevocationChecks = WTD_REVOKE_NONE;
+        data.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL;
+        data.dwUnionChoice = WTD_CHOICE_FILE;
+        data.pFile = &fileInfo;
+        data.dwStateAction = WTD_STATEACTION_VERIFY;
+
+        LONG status = ::WinVerifyTrust(nullptr, &action, &data);
+
+        data.dwStateAction = WTD_STATEACTION_CLOSE;
+        ::WinVerifyTrust(nullptr, &action, &data);
+
+        switch (static_cast<DWORD>(status))
+        {
+            case ERROR_SUCCESS:
+            case static_cast<DWORD>(CERT_E_UNTRUSTEDROOT):
+            case static_cast<DWORD>(CERT_E_UNTRUSTEDTESTROOT):
+            case static_cast<DWORD>(CERT_E_EXPIRED):
+                return true;
+            default:
+                return false;
+        }
+    }
+
     inline HMODULE Load(const wchar_t* dllPath) noexcept
     {
         if (dllPath == nullptr) return nullptr;
-        if (!CheckPath(dllPath)) return nullptr;
-        return ::LoadLibraryExW(dllPath, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+
+        HANDLE lock = ::CreateFileW(dllPath, GENERIC_READ, FILE_SHARE_READ, nullptr,
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (lock == INVALID_HANDLE_VALUE) return nullptr;
+
+        HMODULE result = nullptr;
+        if (ContentIntact(dllPath) && CheckPath(dllPath))
+            result = ::LoadLibraryExW(dllPath, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+
+        ::CloseHandle(lock);
+        return result;
     }
 }

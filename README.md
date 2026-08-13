@@ -47,14 +47,16 @@ Whenever Xbox Mode (FSE) activates, OmniConsole launches your configured gaming 
 - **OmniCharm widget** – A Game Bar widget for in-game quick access. Open **Task View**, the **Xbox Library**, or the **Steam Overlay** in one tap; toggle **Nekomata Mode**, controller layout preset, cursor speed, and the **Steam In-Game Overlay** (long-press ☰).
 - **Nekomata Mode — gamepad as mouse and keyboard, custom per-app mapping** – When on, your customized profiles take over, while common apps such as browsers, File Explorer, the Windows file picker, Steam, Epic Games Store, EA Desktop, Playnite Desktop, and Discord run on OmniConsole's ready-made mapping, which you can customize too. Nekomata weaves a charm for each app, remapping XInput controls (A/B/X/Y, LB/RB, LT/RT, LS/RS, D-pad, both sticks) to a keyboard key, modifier combo, mouse button, scroll wheel, cursor movement, scrolling, arrow keys, or WASD, with three controller layouts to choose from: **OmniNav**, **Classic**, and a **Custom Layout** you define yourself (Pro). Each app's charm can also **raise the mapping service priority** with **Nekomata Boost** for demanding games, give any key a **hold-to-repeat** toggle, and **prevent double input** by blocking the app's own native XInput and DirectInput signals to keep them from interfering with the remapped keyboard and mouse. Open the editor from the OmniCharm widget's "Customize gamepad mapping for this app…" button.
 - **Custom controller layout (Pro)** – Define your own default layout alongside OmniNav and Classic. Choose **Custom** under **Settings → Advanced → Nekomata → Controller Layout Preset**, then click **Edit…** to arrange the controller's inputs. Apps covered by built-in mapping pick it up right away, and every new app profile starts from it. The OmniCharm widget can switch to it as well.
-- **Administrator app support (Pro)** – Gamepad mappings reach apps and games that run as an administrator. Install it from **Settings → Advanced → Nekomata** and approve the administrator prompt, and from then on your profiles, Nekomata Mode, and the Steam In-Game Overlay shortcut work in those apps just as they do everywhere else, with the OmniCharm widget opening the mapping editor for them too.
-- **Screen keyboards on your gamepad (Pro)** – Windows already brings up a screen keyboard from Game Bar, and that path stays available to everyone. Pro adds a direct route: map any button to bring a keyboard up without leaving what you are doing. Pick the **Gamepad keyboard**, which you type on with the controller itself, or the classic **On-screen keyboard**, which you point at with the cursor. The On-screen keyboard also requires Administrator App Support.
+- **Administrator app support (Pro)** – Gamepad mappings reach apps and games that run as an administrator. Install it from **Settings → Advanced → Nekomata** and approve the administrator prompt, and Nekomata Mode extends to those apps, with the OmniCharm widget opening the mapping editor for them too.
+- **Screen keyboards from any button (Pro)** – Windows brings up a screen keyboard from Game Bar. Pro adds a direct route: assign one to a controller button and it opens without interrupting what you are doing. Pick the **Gamepad keyboard**, which you type on with the controller itself, or the classic **On-screen keyboard**, which you point at with the cursor. The On-screen keyboard also requires Administrator App Support.
+- **Nekomata Mode on the ROG Ally family (Pro)** – These consoles ship with the manufacturer's own gamepad mapping, and Nekomata defers to it. Pro makes that a choice: turn it on under **Settings → Advanced**, then set **Control Mode** to **Gamepad** in Command Center. Everything Nekomata does on a PC she does here too. It starts out off, and asks for confirmation the first time.
+- **Performance overlay controls (Pro)** – Game Bar comes with Microsoft's own **Performance** widget for watching your framerate and system usage while you play. Pro adds a separate set of controls for adjusting RivaTuner Statistics Server's on-screen display from inside OmniConsole. Under **Settings → Advanced → Performance Overlay** you can turn the on-screen display on or off, show framerate statistics, add a shadow behind the text, scale it up, and set a framerate limit. The OmniCharm widget carries the same controls on its **Overlay** tab, so they are within reach while a game is running. Requires Administrator App Support and RivaTuner Statistics Server.
 - **Gamepad Steam shortcuts** – The gamepad **⧉** button controls Steam Big Picture shortcuts: short press opens the **Steam Menu**, long press opens the **Quick Access Menu**. Long press **☰** in-game to open the **Steam In-Game Overlay**.
 - **Dedicated Settings entry** – A separate "**OmniConsole Settings**" entry in All Apps lets you change your default platform anytime.
 - **Native Xbox Mode (FSE) integration** – Registered as a Windows 11 Xbox Mode (FSE) Home App through the official API.
 - **In-app updates** – Automatic checks for the latest GitHub releases, with download and install built into the Advanced settings page.
 - **Multilingual UI** – English, Traditional Chinese (繁體中文), and Simplified Chinese (简体中文) built in, along with community-contributed languages: on the Advanced settings page, click **Manage** next to **Community Languages** to browse, download, and update them for both the main app and the OmniCharm widget at once. They stay up to date automatically across versions.
-- **OmniConsole Pro** – A **Pro** page in Settings. OmniConsole is a personal interest project, written and maintained by a solo developer in their own free time, and your support keeps it going. Upgrading to Pro unlocks administrator app support and the custom controller layout. The page carries the link and is where you activate it, and it shows who the license is for, along with the licenses this console holds.
+- **OmniConsole Pro** – A **Pro** page in Settings. OmniConsole is a personal interest project, written and maintained by a solo developer in their own free time, and your support keeps it going. The page carries the link and is where you activate it, and it shows who the license is for, along with the licenses on this console.
 
 ---
 
@@ -159,18 +161,6 @@ The only official sources for OmniConsole are the [GitHub releases](https://gith
 - **Primary Stack**: C# & .NET 10, C++
 - **UI Framework**: WinUI 3
 - **Packaging**: MSIX
-
----
-
-## 🌟 Star History
-
-<a href="https://star-history.com/#8bit2qubit/OmniConsole&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=8bit2qubit/OmniConsole&type=Date" />
-  </picture>
-</a>
 
 ---
 

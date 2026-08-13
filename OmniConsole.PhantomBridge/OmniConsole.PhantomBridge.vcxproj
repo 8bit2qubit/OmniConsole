@@ -50,6 +50,8 @@
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <!-- 原始檔以 UTF-8 存放且不加 BOM；少了這個旗標，含中文註解的標頭在 CP950 環境會冒 C4819。 -->
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
       <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
       <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
