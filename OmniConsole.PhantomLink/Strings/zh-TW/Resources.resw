@@ -132,6 +132,9 @@
   <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
     <value>Xbox 媒體櫃</value>
   </data>
+  <data name="Widget_OpenFileExplorer" xml:space="preserve">
+    <value>檔案總管</value>
+  </data>
   <!-- Widget_OpenSettings.Text: SettingsBtn 暫時註解保留，往後啟用時恢復此資源
   <data name="Widget_OpenSettings.Text" xml:space="preserve">
     <value>設定</value>
@@ -177,13 +180,13 @@
     <value>已停用：此主機具備廠商內建的手把映射。在此主機上開啟貓又模式需要專業版。</value>
   </data>
   <data name="Widget_BuiltInMappingProNote.Text" xml:space="preserve">
-    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）將「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Title.Text" xml:space="preserve">
     <value>在此主機上開啟貓又模式？</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Body.Text" xml:space="preserve">
-    <value>按下 Command Center（控制中心）鍵，把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+    <value>按下 Command Center（控制中心）鍵，將「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Confirm.Content" xml:space="preserve">
     <value>開啟</value>

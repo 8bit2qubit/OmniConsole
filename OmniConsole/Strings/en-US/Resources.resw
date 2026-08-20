@@ -308,7 +308,7 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
     <value>Let Nekomata turn your gamepad into keyboard and mouse, and tailor per-app settings on the “Nekomata” page.</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, EA Desktop, Playnite Desktop, File Explorer, Windows File Picker, the Open with dialog, Windows Installer, Steam, and Discord. Task Manager and the On-screen keyboard also require Administrator App Support (Pro).</value>
+    <value>Built-in mapping covers Edge, Chrome, Firefox, Opera, Brave, Epic Games Store, EA Desktop, Playnite Desktop, File Explorer, Windows File Picker, the Open with dialog, Windows Installer, Steam, Discord, App Installer, and a wide range of built-in Windows tools and Control Panel dialogs. Those that run as Administrator, such as Task Manager, and the On-screen keyboard also require Administrator App Support (Pro).</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled: this console has the manufacturer’s built-in gamepad mapping. Turning Nekomata Mode on for this console requires Pro.</value>

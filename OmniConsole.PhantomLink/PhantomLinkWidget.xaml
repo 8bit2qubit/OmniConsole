@@ -65,15 +65,17 @@
                             XYFocusDown="{x:Bind TaskViewBtn}"/>
                 </StackPanel>
 
-                <!-- Quick Actions: TaskView / XboxLibrary 兩顆水平排列；委派給 PhantomBridge COM server。
+                <!-- Quick Actions: TaskView / XboxLibrary / FileExplorer 三顆水平排列；委派給 PhantomBridge COM server。
                      不設 XYFocusUp：讓 D-pad Up 從最頂端按鈕外移到 Game Bar，使用者能回到小工具切換列。
                      XboxLibrary 補回 Game Bar Library 原本的 xbox://library 功能（該按鈕被 OmniConsole 接管後遺漏的入口）。
+                     FileExplorer 為最右的純圖示方形按鈕，佔 Auto 欄，前兩顆平分其餘寬度，高度撐滿與另兩顆同高，名稱掛在提示文字與無障礙名稱上。
 
                      SettingsBtn 暫時註解保留：使用者可從 Game Bar Library 入口替代。日後研究後再啟用。 -->
                 <Grid x:Name="QuickActionsSection" Tag="Main" ColumnSpacing="6" Margin="0,0,0,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Button x:Name="TaskViewBtn" Grid.Column="0"
                             Click="TaskViewBtn_Click"
@@ -106,6 +108,14 @@
                             <FontIcon Glyph="&#xE990;" FontSize="16"/>
                             <TextBlock x:Uid="Widget_OpenXboxLibrary" services:Localized.Uid="Widget_OpenXboxLibrary"/>
                         </StackPanel>
+                    </Button>
+                    <Button x:Name="FileExplorerBtn" Grid.Column="2"
+                            Click="FileExplorerBtn_Click"
+                            MinWidth="0" Padding="10,0"
+                            VerticalAlignment="Stretch"
+                            UseSystemFocusVisuals="True"
+                            XYFocusDown="{x:Bind SteamInGameOverlayOnBtn}">
+                        <FontIcon Glyph="&#xEC50;" FontSize="16"/>
                     </Button>
                 </Grid>
 
@@ -140,7 +150,7 @@
                         <ToggleButton x:Name="SteamInGameOverlayOnBtn" x:Uid="Widget_SteamInGameOverlay_On" services:Localized.Uid="Widget_SteamInGameOverlay_On"
                                       Click="SteamInGameOverlayBtn_Click" Tag="On"
                                       UseSystemFocusVisuals="True" MinWidth="72"
-                                      XYFocusUp="{x:Bind XboxLibraryBtn}"
+                                      XYFocusUp="{x:Bind FileExplorerBtn}"
                                       XYFocusLeft="{x:Bind TriggerSteamInGameOverlayBtn}"
                                       XYFocusRight="{x:Bind SteamInGameOverlayOnBtn}"
                                       XYFocusDown="{x:Bind ModeOnBtn}"/>

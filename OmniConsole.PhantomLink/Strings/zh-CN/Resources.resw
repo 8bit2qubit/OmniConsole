@@ -132,6 +132,9 @@
   <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
     <value>Xbox 库</value>
   </data>
+  <data name="Widget_OpenFileExplorer" xml:space="preserve">
+    <value>文件资源管理器</value>
+  </data>
   <!-- Widget_OpenSettings.Text: SettingsBtn 暫時註解保留，往後啟用時恢復此資源
   <data name="Widget_OpenSettings.Text" xml:space="preserve">
     <value>设置</value>
@@ -177,13 +180,13 @@
     <value>已禁用：此主机具备厂商内置的手柄映射。在此主机上启用猫又模式需要专业版。</value>
   </data>
   <data name="Widget_BuiltInMappingProNote.Text" xml:space="preserve">
-    <value>此主机具备厂商内置的手柄映射。在 Command Center（控制中心）把“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>此主机具备厂商内置的手柄映射。在 Command Center（控制中心）将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Title.Text" xml:space="preserve">
     <value>在此主机上启用猫又模式？</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Body.Text" xml:space="preserve">
-    <value>按下 Command Center（控制中心）键，把“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>按下 Command Center（控制中心）键，将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="Widget_BuiltInMappingConfirm_Confirm.Content" xml:space="preserve">
     <value>启用</value>

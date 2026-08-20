@@ -433,7 +433,8 @@ namespace OmniConsole
 
                             if (started)
                                 for (int i = 0; i < 20 && PhantomSigilService.NeedsUpdate(); i++) await Task.Delay(100);
-                            DebugLogger.Log($"[MainWindow] Elevated service update attempt {attempt}: started={started}, stillNeedsUpdate={PhantomSigilService.NeedsUpdate()}");
+                            bool stillNeedsUpdate = PhantomSigilService.NeedsUpdate();
+                            DebugLogger.Log($"[MainWindow] Elevated service update attempt {attempt}: started={started}, stillNeedsUpdate={stillNeedsUpdate}");
                         }
                         else
                         {

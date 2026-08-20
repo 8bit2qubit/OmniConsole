@@ -119,7 +119,25 @@ namespace OmniConsole.Pages
                 StatusText.Text = string.Format(_resourceLoader.Loc("Launching"), platformName);
 
                 bool isTimeout = false;
-                bool success = await ProcessLauncherService.LaunchPlatformAsync(platform);
+
+                // 平台已在另一種模式下執行（如 Playnite 桌面版）就不啟動，改等它取得前景後讓開。
+                string? deferTarget = ProcessLauncherService.GetRunningDeferTarget(platform);
+                var waitTarget = platform;
+                bool success;
+
+                if (deferTarget != null)
+                {
+                    DebugLogger.Log($"[LaunchView] defer to running '{deferTarget}', skip launching {platform.Id}");
+                    waitTarget = platform with
+                    {
+                        ForegroundProcessNames = ProcessLauncherService.GetEffectiveDeferToProcessNames(platform),
+                    };
+                    success = true;
+                }
+                else
+                {
+                    success = await ProcessLauncherService.LaunchPlatformAsync(platform);
+                }
 
                 _hasLaunchedOnce = true;
 
@@ -143,7 +161,7 @@ namespace OmniConsole.Pages
                     // 慢啟動達提示時機時回呼，於此切 UI 狀態顯示「啟動較慢」提示。
                     bool platformToForeground = await WindowForegroundService.WaitForPlatformForegroundAsync(
                         Hwnd,
-                        platform,
+                        waitTarget,
                         () => VisualStateManager.GoToState(this, "LaunchingSlow", false));
 
                     // 已有較新的啟動流程接手：本輪退場、不再動 UI 也不退出應用程式
@@ -157,6 +175,9 @@ namespace OmniConsole.Pages
                             PhantomKeyService.Start();
 
                         WindowForegroundService.Hide(Hwnd);
+
+                        await PlatformWindowService.OnShellHiddenAsync();
+
                         App.ExitApp();
                         return;
                     }

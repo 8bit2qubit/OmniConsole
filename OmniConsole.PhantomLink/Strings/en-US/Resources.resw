@@ -132,6 +132,9 @@
   <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
     <value>Xbox Library</value>
   </data>
+  <data name="Widget_OpenFileExplorer" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
   <!-- Widget_OpenSettings.Text: SettingsBtn 暫時註解保留，往後啟用時恢復此資源
   <data name="Widget_OpenSettings.Text" xml:space="preserve">
     <value>Settings</value>

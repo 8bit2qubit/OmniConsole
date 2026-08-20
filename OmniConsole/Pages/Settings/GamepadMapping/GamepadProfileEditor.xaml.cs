@@ -318,7 +318,7 @@ namespace OmniConsole.Pages.Settings.GamepadMapping
         /// <summary>依編輯對象停用不適用的控制項（保留當下值）：阻擋雙重輸入對啟動器/導覽介面無效、十字鍵在有原生反應的 app 上會雙跳。</summary>
         private void ApplyBuiltInAppControlLocks(AppId appId)
         {
-            // 阻擋雙重輸入：對啟動器/導覽介面（檔案總管、檔案選擇器、桌面 Steam、Epic、桌面 Playnite 等）無效，一律停用
+            // 阻擋雙重輸入：對 packaged app 與啟動器/導覽介面（檔案總管、檔案選擇器、桌面 Steam、Epic、桌面 Playnite 等）無效，一律停用
             bool blockInputEnabled = !GamepadBuiltInLayouts.IsBlockNativeInputIneffective(appId);
             BlockNativeGamepadInputSwitch.IsEnabled = blockInputEnabled;
 

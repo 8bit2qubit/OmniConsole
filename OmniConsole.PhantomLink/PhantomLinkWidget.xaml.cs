@@ -18,7 +18,12 @@ namespace OmniConsole.PhantomLink
     public sealed partial class PhantomLinkWidget : Page
     {
         private bool _loading;
+
+        // 內建廠商映射的機種（ROG Ally 家族）；ReloadFromStore 先給值，PhantomBridge 回報後覆寫。
         private bool _builtInMapping;
+
+        // 上一次寫進日誌的 builtInMapping；值有變動才再寫一行。
+        private bool? _loggedBuiltInMapping;
 
         // 內建廠商映射的機種靠它決定貓又控制項解不解禁；取不到時一律當作沒有。
         private bool _hasPro;
@@ -58,6 +63,8 @@ namespace OmniConsole.PhantomLink
                 // ApplyPageVisibility 內含 ReloadFromStore；一併把分頁列的醒目設成初始狀態。
                 try { ApplyPageVisibility(); DebugLogger.Log("[Widget] Reload OK"); }
                 catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
+
+                ApplyFileExplorerButtonLabel();
 
                 SyncThemeFromGameBar();
 
@@ -463,10 +470,11 @@ namespace OmniConsole.PhantomLink
             bool canSendElevatedInput = false;
             bool canCustomizeElevated = false;
             bool hasPro = false;
+            bool hasBuiltInGamepadMapping = false;
             try
             {
                 using var bridge = PhantomBridgeHelper.CreateFactory();
-                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture, out canSendElevatedInput, out canCustomizeElevated, out hasPro);
+                bridge.GetForegroundAppInfo(out title, out proc, out fullPath, out aumid, out displayName, out isElevated, out isBigPicture, out canSendElevatedInput, out canCustomizeElevated, out hasPro, out hasBuiltInGamepadMapping);
             }
             catch (Exception ex)
             {
@@ -479,6 +487,7 @@ namespace OmniConsole.PhantomLink
                 CustomizeAppNoteText.Visibility = Visibility.Collapsed;
                 // 取不到就當作沒有 Pro：Pro 專屬選項寧可不出現，也不要出現了卻按不動
                 _hasPro = false;
+                // _builtInMapping 保留 ReloadFromStore 取得的值，不在此處清掉
                 ApplyLayoutProVisibility(false);
                 ApplyOverlayPageAvailability(false);
                 ApplyEnabledState(PhantomKeyStore.GetMouseMode());
@@ -486,9 +495,15 @@ namespace OmniConsole.PhantomLink
             }
 
             _hasPro = hasPro;
+            if (_loggedBuiltInMapping != hasBuiltInGamepadMapping)
+            {
+                _loggedBuiltInMapping = hasBuiltInGamepadMapping;
+                DebugLogger.Log($"[Widget] Bridge reported builtInMapping={hasBuiltInGamepadMapping}");
+            }
+            _builtInMapping = hasBuiltInGamepadMapping;
             ApplyLayoutProVisibility(hasPro);
             ApplyOverlayPageAvailability(hasPro);
-            // 反灰規則吃 Pro 狀態，取得後重跑一次讓內建廠商映射機種的控制項跟上。
+            // 反灰規則吃 Pro 狀態與機型判定，取得後重跑一次讓內建廠商映射機種的控制項跟上。
             ApplyEnabledState(PhantomKeyStore.GetMouseMode());
 
             // 一行式顯示「目前: <displayName> (<proc>)」；displayName 為空回退 proc，與 proc 相等或 proc 為空時改走 NoDesc 格式
@@ -657,6 +672,22 @@ namespace OmniConsole.PhantomLink
         {
             DebugLogger.Log("[Widget] XboxLibraryBtn_Click → Xbox Library");
             await LaunchViaGameBarAsync("XboxLibrary", GameBarUris.XboxLibrary);
+        }
+
+        /// <summary>收合 Game Bar 並透過 PhantomBridge 開啟檔案總管。</summary>
+        private async void FileExplorerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogger.Log("[Widget] FileExplorerBtn_Click → PhantomBridge.OpenFileExplorer");
+            await RunBridgeActionAsync("FileExplorer", bridge => bridge.OpenFileExplorer());
+        }
+
+        /// <summary>把檔案總管按鈕的名稱設到提示文字與無障礙名稱上。</summary>
+        private void ApplyFileExplorerButtonLabel()
+        {
+            var resw = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            string label = LocSafe(resw, "Widget_OpenFileExplorer", "File Explorer");
+            ToolTipService.SetToolTip(FileExplorerBtn, label);
+            Windows.UI.Xaml.Automation.AutomationProperties.SetName(FileExplorerBtn, label);
         }
 
         /*

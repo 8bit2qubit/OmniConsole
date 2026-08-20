@@ -308,19 +308,19 @@
     <value>讓貓又將手把化作鍵鼠，並在「貓又」頁為各程式量身調校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、檔案總管、Windows 檔案選擇器、開啟方式對話方塊、Windows Installer、Steam 和 Discord。工作管理員與螢幕小鍵盤另需系統管理員程式支援（專業版）。</value>
+    <value>內建映射涵蓋 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、檔案總管、Windows 檔案選擇器、開啟方式對話方塊、Windows Installer、Steam、Discord、應用程式安裝程式，以及一系列 Windows 內建工具與控制台對話方塊。其中以系統管理員身分執行的程式（例如工作管理員）與螢幕小鍵盤另需系統管理員程式支援（專業版）。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已停用：此主機具備廠商內建的手把映射。在此主機上開啟貓又模式需要專業版。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingProNote.Text" xml:space="preserve">
-    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+    <value>此主機具備廠商內建的手把映射。在 Command Center（控制中心）將「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Title" xml:space="preserve">
     <value>在此主機上開啟貓又模式？</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Body" xml:space="preserve">
-    <value>此主機具備廠商內建的手把映射。按下 Command Center（控制中心）鍵，把「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
+    <value>此主機具備廠商內建的手把映射。按下 Command Center（控制中心）鍵，將「控制模式」設為「遊戲控制器」，貓又就能在這台主機上如常運作。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Confirm" xml:space="preserve">
     <value>開啟</value>
@@ -1683,7 +1683,7 @@
     <value>贊助支持以取得授權，再輸入金鑰或匯入授權檔。</value>
   </data>
   <data name="ProUnlockCard_Note.Text" xml:space="preserve">
-    <value>在主機上不便打字時，請先把授權檔放到「下載」資料夾或隨身碟，再選擇「匯入授權檔」。</value>
+    <value>在主機上不便打字時，請先將授權檔放到「下載」資料夾或隨身碟，再選擇「匯入授權檔」。</value>
   </data>
   <data name="ProSponsorButton.Content" xml:space="preserve">
     <value>贊助支持</value>

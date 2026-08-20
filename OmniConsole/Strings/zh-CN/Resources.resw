@@ -308,19 +308,19 @@
     <value>让猫又将手柄化作键鼠，并在“猫又”页为各应用量身调校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、文件资源管理器、Windows 文件选择器、打开方式对话框、Windows Installer、Steam 和 Discord。任务管理器与屏幕键盘还需要管理员应用支持（专业版）。</value>
+    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、文件资源管理器、Windows 文件选择器、打开方式对话框、Windows Installer、Steam、Discord、应用安装程序，以及一系列 Windows 内置工具与控制面板对话框。其中以管理员身份运行的程序（例如任务管理器）与屏幕键盘还需要管理员应用支持（专业版）。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已禁用：此主机具备厂商内置的手柄映射。在此主机上启用猫又模式需要专业版。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingProNote.Text" xml:space="preserve">
-    <value>此主机具备厂商内置的手柄映射。在 Command Center（控制中心）把“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>此主机具备厂商内置的手柄映射。在 Command Center（控制中心）将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Title" xml:space="preserve">
     <value>在此主机上启用猫又模式？</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Body" xml:space="preserve">
-    <value>此主机具备厂商内置的手柄映射。按下 Command Center（控制中心）键，把“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>此主机具备厂商内置的手柄映射。按下 Command Center（控制中心）键，将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Confirm" xml:space="preserve">
     <value>启用</value>
@@ -1683,7 +1683,7 @@
     <value>赞助支持以获取授权，再输入密钥或导入授权文件。</value>
   </data>
   <data name="ProUnlockCard_Note.Text" xml:space="preserve">
-    <value>在主机上不便打字时，请先把授权文件放到“下载”文件夹或 U 盘，再选择“导入授权文件”。</value>
+    <value>在主机上不便打字时，请先将授权文件放到“下载”文件夹或 U 盘，再选择“导入授权文件”。</value>
   </data>
   <data name="ProSponsorButton.Content" xml:space="preserve">
     <value>赞助支持</value>
