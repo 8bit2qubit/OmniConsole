@@ -9,6 +9,8 @@
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
+		<!-- Windows App Runtime 一併封裝進 MSIX，安裝與更新皆不需外部框架套件。 -->
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<!-- 預設語言（在地化回退語言） -->
 		<DefaultLanguage>en-US</DefaultLanguage>
 		<EnableMsixTooling>true</EnableMsixTooling>
@@ -179,6 +181,10 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
 		<PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.2.12" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.4.4" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.Search" Version="2.4.4" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.Widgets" Version="2.0.5" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" ExcludeAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
