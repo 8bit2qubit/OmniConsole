@@ -158,8 +158,14 @@ namespace OmniConsole
         /// </summary>
         private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            // 僅在視窗取得前景焦點時啟動，且防止重入
-            if (args.WindowActivationState == WindowActivationState.Deactivated) return;
+            // 僅在視窗取得前景焦點時啟動，且防止重入。
+            // 手把輪詢跟著前景走：失去前景時停掉，取回前景時重新啟動。
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                _gamepad?.Stop();
+                return;
+            }
+            _gamepad?.Start();
 
             // 把主視窗 HWND 注入給 LaunchView 與 SettingsHostView，供其前景與視窗操作使用。
             // 已建立的 Page 立即注入；尚未導覽過的 Page 由 NavigateRoot 在其首次導覽時補注入。

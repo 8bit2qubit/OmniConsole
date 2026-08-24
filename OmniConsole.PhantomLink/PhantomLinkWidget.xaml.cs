@@ -43,7 +43,7 @@ namespace OmniConsole.PhantomLink
         private bool _advancePending;
 
         // D-pad Down 進入時：自動前進已跳一格，緊接著那個 Down 本身會再導航一格 → 吞掉避免雙跳。
-        // A 鍵展開無 Down 故不受影響。AdvanceFromSentinel 真的前進時才 arm。
+        // A 鍵展開無 Down 故不受影響。哨兵真的前進一格時才 arm。
         private DateTime _swallowNextDownUntil;
 
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
@@ -156,19 +156,15 @@ namespace OmniConsole.PhantomLink
         // ── 焦點進入偵測：重導至選中態按鈕 + 吞掉進入時的 D-pad Down ─────────
 
         /// <summary>
-        /// 焦點從 Widget 外部進入（A 鍵展開 或 D-pad Down 移入，事件無法區分）→ 先重導到隱形哨兵（吸收
-        /// Game Bar「首次進入不顯框」的 quirk），再 AdvanceFromSentinel 自動前進到第一個真 section 點亮焦點框。
+        /// 焦點從 Widget 外部進入（A 鍵展開 或 D-pad Down 移入，事件無法區分）→ 先重導到隱形哨兵，再排 dispatcher 前進到第一個真 section 點亮焦點框。
         /// D-pad Down 進入時 arm swallow 吞掉緊接的那個 Down 避免雙跳；A 鍵展開無 Down，swallow 窗自然過期。
         /// </summary>
         private void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
             var oldFE = args.OldFocusedElement as DependencyObject;
-            if (!IsDescendant(oldFE))
+            if (!WidgetFocusFlow.IsDescendant(this, oldFE))
             {
-                // 焦點從外部進入 Widget（D-pad Down 移入 或 A 鍵展開，兩者事件無法區分：皆 inputDevice=
-                // Keyboard / direction=None / new=哨兵）。先重導到 0 高度透明哨兵（吸收 Game Bar「首次進入不
-                // 顯框」的 quirk），再排 dispatcher 自動前進到第一個真 section，走 FocusSection
-                // 的 Focus(FocusState.Keyboard) 真轉移點亮焦點框。統一兩條路徑：都落哨兵→自動前進→真按鈕有框。
+                // 兩條進入路徑（D-pad Down 移入、A 鍵展開）事件無法區分，一律先重導到哨兵。
                 if (!ReferenceEquals(FocusSentinel, args.NewFocusedElement))
                 {
                     try { args.TrySetNewFocusedElement(FocusSentinel); }
@@ -187,17 +183,6 @@ namespace OmniConsole.PhantomLink
                 }
                 DebugLogger.Log("[Widget] focus re-entered → sentinel + arm advance");
             }
-        }
-
-        /// <summary>判斷節點是否為本 Page 視覺樹內的子元素。</summary>
-        private bool IsDescendant(DependencyObject node)
-        {
-            while (node != null)
-            {
-                if (ReferenceEquals(node, this)) return true;
-                node = VisualTreeHelper.GetParent(node);
-            }
-            return false;
         }
 
         // ── 分頁 ────────────────────────────────────────────────────────────
@@ -225,7 +210,7 @@ namespace OmniConsole.PhantomLink
 
         /// <summary>
         /// 切換分頁：只改 section 的 Visibility。
-        /// FocusSection 對 Collapsed 的元素會回 false，隱藏頁的 section 因此自動被跳過。
+        /// Collapsed 的 section 挑不到焦點落點，隱藏頁的 section 因此自動被跳過。
         /// </summary>
         private void SwitchToPage(string tag, bool moveFocus)
         {
@@ -247,7 +232,7 @@ namespace OmniConsole.PhantomLink
                 if (section.Visibility == Visibility.Visible
                     && section.Tag is string sectionTag
                     && sectionTag == tag
-                    && FocusSection(section))
+                    && WidgetFocusFlow.FocusSection(section))
                 {
                     break;
                 }
@@ -256,7 +241,7 @@ namespace OmniConsole.PhantomLink
 
         /// <summary>
         /// 把分頁列的選中態設成目前所在的分頁。
-        /// PickFocusTarget 也靠它把焦點落回目前這一頁的分頁鈕。
+        /// 焦點落點的挑選也靠它把焦點落回目前這一頁的分頁按鈕。
         /// </summary>
         private void SyncPageTabChecked()
         {
@@ -285,9 +270,7 @@ namespace OmniConsole.PhantomLink
         // ── 跨 Section D-pad 導航 ───────────────────────────────────────────
 
         /// <summary>
-        /// 跨 section D-pad 導航：落點挑選中態的 ToggleButton 或 Slider / ComboBox，
-        /// 為通用規則，未來新增 section 不需改程式。初始焦點由 OnGettingFocus 重導哨兵 + AdvanceFromSentinel
-        /// 自動前進到第一個真 section；D-pad Down 進入時吞掉緊接的那個 Down 避免雙跳。
+        /// 跨 section D-pad 導航：落點挑選中態的 ToggleButton 或 Slider / ComboBox，D-pad Down 進入時吞掉緊接的那個 Down 避免雙跳。
         /// </summary>
         private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
@@ -295,7 +278,7 @@ namespace OmniConsole.PhantomLink
             bool up = e.Key == VirtualKey.GamepadDPadUp || e.Key == VirtualKey.Up;
             if (!down && !up) return;
 
-            // D-pad Down 進入後 AdvanceFromSentinel 已自動前進一格，吞掉緊接著那個 Down 避免雙跳。
+            // D-pad Down 進入後已自動前進一格，吞掉緊接著那個 Down 避免雙跳。
             if (down && DateTime.UtcNow < _swallowNextDownUntil)
             {
                 _swallowNextDownUntil = DateTime.MinValue;
@@ -304,82 +287,19 @@ namespace OmniConsole.PhantomLink
                 return;
             }
 
-            var focused = FocusManager.GetFocusedElement() as DependencyObject;
-            if (focused == null) return;
+            if (WidgetFocusFlow.NavigateSection(RootPanel, down)) { e.Handled = true; return; }
 
-            var currentSection = FindSection(focused);
-            if (currentSection == null) return;
-
-            var sections = RootPanel.Children.OfType<FrameworkElement>().ToList();
-            int idx = sections.IndexOf(currentSection);
-            int step = down ? 1 : -1;
-            for (int i = idx + step; i >= 0 && i < sections.Count; i += step)
-            {
-                if (FocusSection(sections[i])) { e.Handled = true; return; }
-            }
+            // 走到這個方向的邊界；向上時補送一次焦點導航請求。
+            if (up) WidgetFocusFlow.NudgeFocusPastChrome(this, Dispatcher);
         }
 
         /// <summary>
-        /// 焦點從外部進入落哨兵後，自動前進到第一個可聚焦的真 section（跳過 sections[0] 哨兵）。
-        /// 走 FocusSection 的 Focus(FocusState.Keyboard) 真轉移點亮焦點框，統一 D-pad Down 與 A 鍵展開兩條
-        /// 路徑都直接落第一個真按鈕有框。僅在焦點仍停在哨兵時前進（使用者若已手動導航走則不干預）。
+        /// 焦點落哨兵之後前進到第一個真 section；真的前進時 arm swallow，吞掉 D-pad Down 進入時緊接著的那個 Down 避免雙跳。
         /// </summary>
         private void AdvanceFromSentinel()
         {
-            // 焦點已不在哨兵（使用者已自行導航）→ 不干預
-            var focused = FocusManager.GetFocusedElement() as DependencyObject;
-            if (focused == null || !ReferenceEquals(FindSection(focused), FocusSentinel))
-                return;
-
-            var sections = RootPanel.Children.OfType<FrameworkElement>().ToList();
-            for (int i = 1; i < sections.Count; i++) // 跳過 index 0（哨兵）
-            {
-                if (FocusSection(sections[i]))
-                {
-                    // 已自動前進一格。若是 D-pad Down 進入，緊接著那個 Down 還會再導航一格 → arm swallow 吞掉
-                    // 避免雙跳。A 鍵展開無 Down，swallow 視窗自然過期不影響。
-                    _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(200);
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 走到 RootPanel 的直屬子元素，作為「section」代表。
-        /// </summary>
-        private FrameworkElement? FindSection(DependencyObject? node)
-        {
-            while (node != null)
-            {
-                var parent = VisualTreeHelper.GetParent(node);
-                if (parent == RootPanel) return node as FrameworkElement;
-                node = parent;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Section 內挑焦點目標：checked ToggleButton > 第一顆 ToggleButton > Slider > ComboBox > Button。
-        /// Button 回退 供 Quick Actions 等只含一次性動作按鈕的 section 使用（無 checked 狀態）。
-        /// </summary>
-        private Control? PickFocusTarget(FrameworkElement? section)
-        {
-            if (section == null) return null;
-            var toggles = FindDescendants<ToggleButton>(section).Where(t => t.IsEnabled).ToList();
-            if (toggles.Count > 0)
-                return toggles.FirstOrDefault(t => t.IsChecked == true) ?? toggles[0];
-            var slider = FindDescendants<Slider>(section).FirstOrDefault(s => s.IsEnabled);
-            if (slider != null) return slider;
-            var combo = FindDescendants<ComboBox>(section).FirstOrDefault(c => c.IsEnabled);
-            if (combo != null) return combo;
-            return FindDescendants<Button>(section).FirstOrDefault(b => b.IsEnabled);
-        }
-
-        /// <summary>聚焦 section 的落點控制項；供跨 section 導航呼叫。</summary>
-        private bool FocusSection(FrameworkElement section)
-        {
-            var target = PickFocusTarget(section);
-            return target != null && target.Focus(FocusState.Keyboard);
+            if (WidgetFocusFlow.AdvanceFromSentinel(RootPanel, FocusSentinel))
+                _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(200);
         }
 
         // ── 資料繫結與啟用狀態 ──────────────────────────────────────────────

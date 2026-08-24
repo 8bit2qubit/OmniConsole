@@ -9,6 +9,8 @@
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseUwp>true</UseUwp>
+    <!-- 關掉封裝流程自動加的 VCLibs SDKReference；C++ 執行階段改由 BundleVCLibsRuntime 一併封裝。 -->
+    <AddMicrosoftVCLibsSDKReference>false</AddMicrosoftVCLibsSDKReference>
     <EnableMsixTooling>true</EnableMsixTooling>
     <RootNamespace>OmniConsole.PhantomLink</RootNamespace>
     <AssemblyName>OmniConsole.PhantomLinkWidget</AssemblyName>
@@ -61,6 +63,35 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- 移除 XboxGameBar 帶進來的 VCLibs SDKReference。 -->
+  <ItemGroup>
+    <SDKReference Remove="Microsoft.VCLibs, Version=14.0" />
+  </ItemGroup>
+
+  <Target Name="BundleVCLibsRuntime" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <_VCLibsAppx>$(MSBuildProgramFiles32)\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\Appx\Retail\$(Platform)\Microsoft.VCLibs.$(Platform).14.00.appx</_VCLibsAppx>
+      <_VCLibsStage>$(IntermediateOutputPath)VCLibsRuntime\</_VCLibsStage>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_VCLibsAppx)')" Text="VCLibs appx not found: $(_VCLibsAppx)" />
+    <Unzip SourceFiles="$(_VCLibsAppx)" DestinationFolder="$(_VCLibsStage)" SkipUnchangedFiles="true" />
+    <!-- Link 逐項寫死：Target 內的 ItemGroup 用 %(…) 不會逐項套用。 -->
+    <ItemGroup>
+      <Content Include="$(_VCLibsStage)vcruntime140_app.dll">
+        <Link>vcruntime140_app.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="$(_VCLibsStage)vcruntime140_1_app.dll">
+        <Link>vcruntime140_1_app.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="$(_VCLibsStage)msvcp140_app.dll">
+        <Link>msvcp140_app.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
 
   <!-- 單一專案 MSIX 封裝能力。 -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
