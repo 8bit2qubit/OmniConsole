@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap3 uap10 mp com rescap">
-  <Identity Name="4fa8e044-7ffa-4059-b034-e4111881d96e" Publisher="CN=8bit2qubit" Version="4.4.0.0" />
+  <Identity Name="4fa8e044-7ffa-4059-b034-e4111881d96e" Publisher="CN=8bit2qubit" Version="4.4.1.0" />
   <mp:PhoneIdentity PhoneProductId="4fa8e044-7ffa-4059-b034-e4111881d96e" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>OmniConsole OmniCharm</DisplayName>
