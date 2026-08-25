@@ -46,6 +46,9 @@ namespace OmniConsole.PhantomLink
         // A 鍵展開無 Down 故不受影響。哨兵真的前進一格時才 arm。
         private DateTime _swallowNextDownUntil;
 
+        // 吞掉宿主接手後緊接的那個重複 Up。只吃重複的那一個，第一個一律照常冒泡。
+        private DateTime _swallowNextUpUntil;
+
         // ── 生命週期與初始化 ─────────────────────────────────────────────────
 
         public PhantomLinkWidget()
@@ -53,6 +56,9 @@ namespace OmniConsole.PhantomLink
             DebugLogger.Log("[Widget] ctor enter");
             try { this.InitializeComponent(); DebugLogger.Log("[Widget] InitializeComponent OK"); }
             catch (Exception ex) { DebugLogger.Log("[Widget] InitializeComponent FAIL: " + ex); throw; }
+
+            // 不走哨兵時把它移出版面。
+            if (!WidgetFocusFlow.UseSentinel) FocusSentinel.Visibility = Visibility.Collapsed;
 
             this.PreviewKeyDown += OnPreviewKeyDown;
             this.GettingFocus += OnGettingFocus;
@@ -164,23 +170,27 @@ namespace OmniConsole.PhantomLink
             var oldFE = args.OldFocusedElement as DependencyObject;
             if (!WidgetFocusFlow.IsDescendant(this, oldFE))
             {
-                // 兩條進入路徑（D-pad Down 移入、A 鍵展開）事件無法區分，一律先重導到哨兵。
-                if (!ReferenceEquals(FocusSentinel, args.NewFocusedElement))
+                if (WidgetFocusFlow.UseSentinel)
                 {
-                    try { args.TrySetNewFocusedElement(FocusSentinel); }
-                    catch (Exception ex) { DebugLogger.Log("[Widget] TrySetNewFocusedElement FAIL: " + ex); }
-                }
-
-                // 連發去重：GettingFocus 進入時會連觸發數次，只 arm 一次自動前進。
-                if (!_advancePending)
-                {
-                    _advancePending = true;
-                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    // 兩條進入路徑（D-pad Down 移入、A 鍵展開）事件無法區分，一律先重導到哨兵。
+                    if (!ReferenceEquals(FocusSentinel, args.NewFocusedElement))
                     {
-                        _advancePending = false;
-                        AdvanceFromSentinel();
-                    });
+                        try { args.TrySetNewFocusedElement(FocusSentinel); }
+                        catch (Exception ex) { DebugLogger.Log("[Widget] TrySetNewFocusedElement FAIL: " + ex); }
+                    }
+
+                    // 連發去重：GettingFocus 進入時會連觸發數次，只 arm 一次自動前進。
+                    if (!_advancePending)
+                    {
+                        _advancePending = true;
+                        _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                        {
+                            _advancePending = false;
+                            AdvanceFromSentinel();
+                        });
+                    }
                 }
+                WidgetFocusFlow.ArmNudge();
                 DebugLogger.Log("[Widget] focus re-entered → sentinel + arm advance");
             }
         }
@@ -287,10 +297,23 @@ namespace OmniConsole.PhantomLink
                 return;
             }
 
+            // 吞掉緊接的那個重複 Up。
+            if (up && DateTime.UtcNow < _swallowNextUpUntil)
+            {
+                _swallowNextUpUntil = DateTime.MinValue;
+                DebugLogger.Log("[Widget] swallow exit Up (duplicate)");
+                e.Handled = true;
+                return;
+            }
+
             if (WidgetFocusFlow.NavigateSection(RootPanel, down)) { e.Handled = true; return; }
 
-            // 走到這個方向的邊界；向上時補送一次焦點導航請求。
-            if (up) WidgetFocusFlow.NudgeFocusPastChrome(this, Dispatcher);
+            // 走到這個方向的邊界。這次的 Up 不設 Handled，只 arm 下一個重複 Up 的吞鍵窗。
+            if (up)
+            {
+                _swallowNextUpUntil = DateTime.UtcNow.AddMilliseconds(WidgetFocusFlow.SwallowUpWindowMs);
+                WidgetFocusFlow.NudgeFocusPastChrome(this, Dispatcher);
+            }
         }
 
         /// <summary>
@@ -299,7 +322,7 @@ namespace OmniConsole.PhantomLink
         private void AdvanceFromSentinel()
         {
             if (WidgetFocusFlow.AdvanceFromSentinel(RootPanel, FocusSentinel))
-                _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(200);
+                _swallowNextDownUntil = DateTime.UtcNow.AddMilliseconds(WidgetFocusFlow.SwallowWindowMs);
         }
 
         // ── 資料繫結與啟用狀態 ──────────────────────────────────────────────
