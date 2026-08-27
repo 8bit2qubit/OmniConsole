@@ -78,15 +78,14 @@ Download the latest release from the [**Releases Page**](https://github.com/8bit
 
 **Option A: Install.bat (Recommended)**
 
-1.  Extract the `OmniConsole_*_x64.zip` file and run `Install.bat`. It will enable Developer Mode, install the certificate, install any missing framework dependencies, and install both MSIX packages automatically.
+1.  Extract the `OmniConsole_*_x64.zip` file and run `Install.bat`. It will enable Developer Mode, install the certificate, and install both MSIX packages automatically.
 
 **Option B: Manual Install**
 
 1.  **[Critical]** Go to **Windows Settings → System → Advanced** and enable **Developer Mode**.
 2.  **[Critical]** Double-click the `.cer` file → click **Install Certificate** → Store Location: **Local Machine** → **Place all certificates in the following store** → Browse → select **Trusted People** → Finish.
-3.  *(Optional — only needed on fresh/offline systems; online systems fetch these automatically)* Double-click each file inside `Dependencies\` to install the bundled framework packages (skip any that report an equal or newer version already installed).
-4.  Double-click `OmniConsole_*_x64.msix` to install the main app.
-5.  Double-click `OmniConsole.PhantomLink_*_x64-widget.msix` to install the OmniCharm widget.
+3.  Double-click `OmniConsole_*_x64.msix` to install the main app.
+4.  Double-click `OmniConsole.PhantomLink_*_x64-widget.msix` to install the OmniCharm widget.
 
 ### 2. Configure Your Default Platform
 

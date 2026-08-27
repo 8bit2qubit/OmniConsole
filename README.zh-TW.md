@@ -78,15 +78,14 @@ OmniConsole 需要 **Windows 11 24H2 (Build 26100.7019)** 以上，並需**完�
 
 **方式 A：Install.bat（建議）**
 
-1.  解壓縮 `OmniConsole_*_x64.zip` 後執行 `Install.bat`，將自動開啟開發人員模式、安裝憑證、補齊框架相依套件，並安裝兩個 MSIX 套件。
+1.  解壓縮 `OmniConsole_*_x64.zip` 後執行 `Install.bat`，將自動開啟開發人員模式、安裝憑證，並安裝兩個 MSIX 套件。
 
 **方式 B：手動安裝**
 
 1.  **[重要]** 前往 **Windows 設定 → 系統 → 進階**，啟用**開發人員模式**。
 2.  **[重要]** 點兩下 `.cer` 檔案 → 點選**安裝憑證** → 存放區位置選擇**本機電腦** → **將所有憑證放入以下的存放區** → 瀏覽 → 選擇**受信任的人** → 完成。
-3.  *（選用 — 僅全新或離線系統需要；連線系統會自動取得）* 點兩下 `Dependencies\` 內的各個檔案，安裝隨附的框架套件（若提示已安裝相同或更新版本，可略過）。
-4.  點兩下 `OmniConsole_*_x64.msix` 安裝主程式。
-5.  點兩下 `OmniConsole.PhantomLink_*_x64-widget.msix` 安裝 OmniCharm 小工具。
+3.  點兩下 `OmniConsole_*_x64.msix` 安裝主程式。
+4.  點兩下 `OmniConsole.PhantomLink_*_x64-widget.msix` 安裝 OmniCharm 小工具。
 
 ### 2. 設定預設平台
 
