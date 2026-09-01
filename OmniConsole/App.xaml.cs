@@ -168,6 +168,7 @@ namespace OmniConsole
 
         /// <summary>
         /// 從 FSE/Game Bar 重導時呼叫，重新啟動平台。
+        /// 一併把主視窗帶到前景。
         /// </summary>
         public static void ReactivateFromRedirect()
         {
@@ -181,7 +182,13 @@ namespace OmniConsole
             {
                 if (_window is MainWindow mainWindow)
                 {
+                    // 先搶前景再處理重導，順序不可對調。
+                    WindowForegroundService.BringToForeground(mainWindow);
                     mainWindow.Reactivate();
+                }
+                else
+                {
+                    DebugLogger.Log($"[App] ReactivateFromRedirect: window is not MainWindow ({_window?.GetType().Name ?? "null"})");
                 }
             });
         }

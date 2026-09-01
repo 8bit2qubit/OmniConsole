@@ -26,6 +26,7 @@ namespace OmniConsole.PhantomLink.Services
 
             try
             {
+                DebugLogger.Log($"[GameBarLauncher] {tag}: sending tick={Environment.TickCount64}");
                 bool accepted = await widget.LaunchUriAsync(new Uri(uri));
                 DebugLogger.Log($"[GameBarLauncher] {tag}: returned {accepted}");
                 return accepted;

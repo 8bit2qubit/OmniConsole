@@ -89,6 +89,9 @@ namespace OmniConsole.Pages
                 // 已有較新的啟動流程接手：本輪退場、不再動 UI
                 if (generation != s_launchGeneration) return;
 
+                // 一律把主視窗帶到前景，須在 WaitForInteractiveSessionAsync 之後。
+                await WindowForegroundService.BringToForegroundAsync(Hwnd);
+
                 // 重設為初始狀態，確保上次失敗殘留的按鈕等元素被收合
                 VisualStateManager.GoToState(this, "Idle", false);
 

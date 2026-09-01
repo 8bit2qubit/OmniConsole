@@ -560,13 +560,14 @@ namespace OmniConsole.PhantomLink
         // ── Quick Actions：一次性動作按鈕 ────────────────────────────────────
 
         /// <summary>
-        /// 收合 Game Bar 後喚起目標 App。
+        /// 收合 Game Bar 並喚起目標 App。
         /// </summary>
-        private async System.Threading.Tasks.Task LaunchViaGameBarAsync(string tag, string uri)
+        private System.Threading.Tasks.Task LaunchViaGameBarAsync(string tag, string uri)
         {
             var widget = App.CurrentWidget;
-            await GameBarLauncher.DismissGameBarAsync(widget, tag);
-            await GameBarLauncher.LaunchAsync(widget, uri, tag);
+            return GameBarUris.SendDismissThenLaunchAsync(
+                () => GameBarLauncher.DismissGameBarAsync(widget, tag),
+                () => GameBarLauncher.LaunchAsync(widget, uri, tag));
         }
 
         /// <summary>

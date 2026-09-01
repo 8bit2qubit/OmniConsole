@@ -17,9 +17,13 @@ namespace OmniConsole
         [STAThread]
         public static int Main(string[] args)
         {
+            // 把前景許可權確立在自己身上，須早於任何初始化與日誌。
+            WindowForegroundService.ClaimForegroundGrant();
+
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
             DebugLogger.Log("=== Main() started ===");
+            WindowForegroundService.LogForegroundGrant();
 
             // 語言：PrimaryLanguageOverride 必須在「任何資源載入前」設定（故置於 Main 最早處）。
             // 太晚設的話，x:Uid 繫結的 PRI 資源已用啟動當下的語言解析完、來不及改（要重啟才正確）。
