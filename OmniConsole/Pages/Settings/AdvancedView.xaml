@@ -427,6 +427,70 @@
             </Border>
             </StackPanel>
 
+            <!-- Xbox 模式 (FSE) 分類標題 -->
+            <StackPanel x:Name="FseDialogSection" Spacing="16" Visibility="Collapsed">
+            <TextBlock x:Uid="AdvancedSection_Fse" services:Localized.Uid="AdvancedSection_Fse" FontSize="14" FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Margin="2,0,0,0"/>
+
+            <!-- Xbox 模式 (FSE) 群組卡片：進入時的動作 / 返回桌面時的確認 -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    HorizontalAlignment="Stretch"
+                    MinWidth="700">
+                <StackPanel>
+                    <!-- 進入 Xbox 模式時的動作 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE740;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="FseEnterConfirmSetting_Title" services:Localized.Uid="FseEnterConfirmSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="FseEnterConfirmSetting_Description" services:Localized.Uid="FseEnterConfirmSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                            <!-- 選擇重新啟動時才顯示的補充說明 -->
+                            <TextBlock x:Name="FseEnterConfirmNoteText" x:Uid="FseEnterConfirmSetting_Note" services:Localized.Uid="FseEnterConfirmSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                        </StackPanel>
+
+                        <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 CursorSpeedCombo。 -->
+                        <ComboBox x:Name="FseEnterConfirmCombo" Grid.Column="2"
+                                  SelectionChanged="FseEnterConfirmCombo_SelectionChanged"
+                                  Width="280" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- 返回 Windows 桌面前的確認對話方塊 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xE73F;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="FseExitConfirmSetting_Title" services:Localized.Uid="FseExitConfirmSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="FseExitConfirmSetting_Description" services:Localized.Uid="FseExitConfirmSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch x:Name="FseExitConfirmSwitch"
+                                      Toggled="FseExitConfirmSwitch_Toggled"
+                                      FlowDirection="RightToLeft"
+                                      Grid.Column="2" VerticalAlignment="Center" Margin="0" MinWidth="0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            </StackPanel>
+
             <!-- 介面顯示分類標題 -->
             <TextBlock x:Uid="AdvancedSection_Display" services:Localized.Uid="AdvancedSection_Display" FontSize="14" FontWeight="SemiBold"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"

@@ -102,6 +102,9 @@ namespace OmniConsole.Pages.Settings
             // 疊加層（Pro 專屬）：讀 RTSS 現值填控制項
             RefreshOverlaySection();
 
+            // Xbox 模式 (FSE)：讀系統現值填兩個確認對話方塊的控制項
+            RefreshFseDialogSection();
+
             // 填充顯示語言下拉選單（官方 + 社群動態補）並還原選取
             PopulateLanguageCombo();
 
@@ -437,6 +440,106 @@ namespace OmniConsole.Pages.Settings
                 _resourceLoader.Loc("BuiltInMappingEnableDialog_Cancel"));
             await dlg.ShowAsync();
             return dlg.Result;
+        }
+
+        // ── Xbox 模式 (FSE) 確認對話方塊 ──────────────────────────────────────
+
+        /// <summary>還原選取期間抑制 SelectionChanged，避免撥回選項時又寫一次登錄檔。</summary>
+        private bool _suppressFseEnterConfirmChange;
+
+        /// <summary>還原開關狀態期間抑制 Toggled，避免又寫一次登錄檔。</summary>
+        private bool _suppressFseExitConfirmToggled;
+
+        /// <summary>依主機是否支援 FSE 切整段顯隱，並讀系統現值填兩個確認對話方塊的控制項。</summary>
+        private void RefreshFseDialogSection()
+        {
+            if (!FseService.IsSupported())
+            {
+                FseDialogSection.Visibility = Visibility.Collapsed;
+                return;
+            }
+            FseDialogSection.Visibility = Visibility.Visible;
+
+            _suppressFseEnterConfirmChange = true;
+            FseEnterConfirmCombo.Items.Clear();
+            FseEnterConfirmCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("FseEnterConfirmItem_Ask"), Tag = FseEnterConfirmation.Ask });
+            FseEnterConfirmCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("FseEnterConfirmItem_Restart"), Tag = FseEnterConfirmation.RestartForPerformance });
+            FseEnterConfirmCombo.Items.Add(new ComboBoxItem { Content = _resourceLoader.Loc("FseEnterConfirmItem_StartNow"), Tag = FseEnterConfirmation.StartNow });
+            var current = FseService.GetEnterConfirmation();
+            FseEnterConfirmCombo.SelectedIndex = IndexOfEnterConfirmation(current);
+            _suppressFseEnterConfirmChange = false;
+
+            UpdateFseEnterConfirmNote(current);
+
+            _suppressFseExitConfirmToggled = true;
+            FseExitConfirmSwitch.IsOn = FseService.GetExitConfirmationVisible();
+            _suppressFseExitConfirmToggled = false;
+        }
+
+        /// <summary>回傳某個進入方式在下拉選單中的位置，順序與 RefreshFseDialogSection 填入的一致。</summary>
+        private static int IndexOfEnterConfirmation(FseEnterConfirmation value) => value switch
+        {
+            FseEnterConfirmation.RestartForPerformance => 1,
+            FseEnterConfirmation.StartNow => 2,
+            _ => 0,
+        };
+
+        /// <summary>選了重新啟動才顯示補充說明。</summary>
+        private void UpdateFseEnterConfirmNote(FseEnterConfirmation value) =>
+            FseEnterConfirmNoteText.Visibility = value == FseEnterConfirmation.RestartForPerformance
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+        /// <summary>
+        /// 進入方式變更時寫入系統設定；選重新啟動要先徵詢確認，取消則把選取撥回登錄檔目前的值。
+        /// </summary>
+        private async void FseEnterConfirmCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressFseEnterConfirmChange) return;
+            if (FseEnterConfirmCombo.SelectedItem is not ComboBoxItem item) return;
+            if (item.Tag is not FseEnterConfirmation picked) return;
+
+            bool needsConfirm = picked == FseEnterConfirmation.RestartForPerformance;
+            if (needsConfirm && !await ConfirmRestartEveryTimeAsync())
+            {
+                // 取消：撥回登錄檔目前的值。賦值會再觸發一次 SelectionChanged，用旗標擋住避免遞迴寫入。
+                _suppressFseEnterConfirmChange = true;
+                FseEnterConfirmCombo.SelectedIndex = IndexOfEnterConfirmation(FseService.GetEnterConfirmation());
+                _suppressFseEnterConfirmChange = false;
+                RestoreFseEnterConfirmFocus();
+                return;
+            }
+
+            FseService.SetEnterConfirmation(picked);
+            UpdateFseEnterConfirmNote(picked);
+
+            // 對話方塊關掉後焦點留在它身上，確認與取消兩條路都要送回觸發的下拉選單。
+            if (needsConfirm) RestoreFseEnterConfirmFocus();
+        }
+
+        /// <summary>把焦點送回進入方式下拉選單。</summary>
+        private void RestoreFseEnterConfirmFocus() =>
+            DispatcherQueue.TryEnqueue(() =>
+                FseEnterConfirmCombo.Focus(FocusStateHelper.Preferred));
+
+        /// <summary>徵詢是否每次進入都直接重新啟動主機；回傳使用者是否確認。</summary>
+        private async Task<bool> ConfirmRestartEveryTimeAsync()
+        {
+            var dlg = new GamepadMessageDialog(
+                XamlRoot,
+                _resourceLoader.Loc("FseEnterConfirmDialog_Title"),
+                _resourceLoader.Loc("FseEnterConfirmDialog_Body"),
+                _resourceLoader.Loc("FseEnterConfirmDialog_Confirm"),
+                _resourceLoader.Loc("FseEnterConfirmDialog_Cancel"));
+            await dlg.ShowAsync();
+            return dlg.Result;
+        }
+
+        /// <summary>返回桌面確認開關變更時寫入系統設定。</summary>
+        private void FseExitConfirmSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_suppressFseExitConfirmToggled) return;
+            FseService.SetExitConfirmationVisible(FseExitConfirmSwitch.IsOn);
         }
 
         /// <summary>背景材質下拉選單變更時立即儲存並請殼層即時套用（無需重啟）；還原選取期間由旗標抑制。</summary>

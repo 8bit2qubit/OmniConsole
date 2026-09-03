@@ -130,7 +130,7 @@
     <value>“{0}”已启动</value>
   </data>
   <data name="LaunchSlowWarningText.Text" xml:space="preserve">
-    <value>平台启动时间比预期长，可能仍在初始化中，请耐心等候。如有需要，可长按 Xbox 键打开任务视图确认平台状态。</value>
+    <value>平台启动时间比预期长，可能仍在初始化中，请耐心等候。如有需要，可长按 XBOX 按钮打开任务视图确认平台状态。</value>
   </data>
   <data name="LaunchTimeout" xml:space="preserve">
     <value>启动等待超时，请确认“{0}”运行正常</value>
@@ -145,16 +145,16 @@
     <value>返回桌面</value>
   </data>
   <data name="FseNotAvailable" xml:space="preserve">
-    <value>Xbox 模式 (FSE) 尚未启用，请先启用后手动重启 {OmniConsole}。</value>
+    <value>XBOX 模式 (FSE) 尚未启用，请先启用后手动重启 {OmniConsole}。</value>
   </data>
   <data name="FseHandheldRequired" xml:space="preserve">
-    <value>检测到 PC 限制版 Xbox 模式 (FSE)，但 {OmniConsole} 需要掌机完整版。请使用 Xbox Full Screen Experience Tool 启用后，手动重启 {OmniConsole}。</value>
+    <value>检测到 PC 限制版 XBOX 模式 (FSE)，但 {OmniConsole} 需要掌机完整版。请使用 Xbox Full Screen Experience Tool 启用后，手动重启 {OmniConsole}。</value>
   </data>
   <data name="FseHomeAppNotSet" xml:space="preserve">
-    <value>请前往 Windows 设置 → 游戏 → Xbox 模式 (FSE)，在“选择主应用”中指定 {OmniConsole}，完成后手动重启 {OmniConsole}。</value>
+    <value>请前往 Windows 设置 → 游戏 → XBOX 模式 (FSE)，在“选择主应用”中指定 {OmniConsole}，完成后手动重启 {OmniConsole}。</value>
   </data>
   <data name="EnableFseButton.Content" xml:space="preserve">
-    <value>启用 Xbox 模式 (FSE)</value>
+    <value>启用 XBOX 模式 (FSE)</value>
   </data>
   <data name="OpenFseSettingsButton.Content" xml:space="preserve">
     <value>将 {OmniConsole} 设为主应用</value>
@@ -163,7 +163,7 @@
     <value>Steam Big Picture</value>
   </data>
   <data name="Platform_XboxApp" xml:space="preserve">
-    <value>Xbox 应用</value>
+    <value>XBOX 应用</value>
   </data>
   <data name="Platform_EpicGames" xml:space="preserve">
     <value>Epic Games Store</value>
@@ -178,10 +178,10 @@
     <value>OmniConsole</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>为游戏 PC 与掌机设计的自定义 Windows 11 Xbox 模式 (FSE) 主页 Shell。</value>
+    <value>为游戏 PC 与掌机设计的自定义 Windows 11 XBOX 模式 (FSE) 主页 Shell。</value>
   </data>
   <data name="AppExtensionDescription" xml:space="preserve">
-    <value>为 Windows Xbox 模式 (FSE) 设计的自定义主页 Shell。</value>
+    <value>为 Windows XBOX 模式 (FSE) 设计的自定义主页 Shell。</value>
   </data>
   <data name="SettingsAppDisplayName" xml:space="preserve">
     <value>OmniConsole 设置</value>
@@ -205,13 +205,13 @@
     <value>疑难解答</value>
   </data>
   <data name="TroubleshootSection_Fse.Text" xml:space="preserve">
-    <value>Xbox 模式 (FSE)</value>
+    <value>XBOX 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Title.Text" xml:space="preserve">
-    <value>重启 Game Bar 并进入 Xbox 模式 (FSE)</value>
+    <value>重启 Game Bar 并进入 XBOX 模式 (FSE)</value>
   </data>
   <data name="ResetGameBarSetting_Description.Text" xml:space="preserve">
-    <value>重启 Game Bar，以修复 Game Bar 无法打开、或进入 Xbox 模式 (FSE) 时未显示“重启以提高性能”对话框等问题。</value>
+    <value>重启 Game Bar，以修复 Game Bar 无法打开、或进入 XBOX 模式 (FSE) 时未显示“重启以提高性能”对话框等问题。前往“☰ &gt; 高级”更改从桌面进入 XBOX 模式 (FSE) 时要执行的操作。</value>
   </data>
   <data name="ResetGameBarSetting_Note.Text" xml:space="preserve">
     <value>部分 Windows 版本仍可能显示确认对话框。</value>
@@ -239,6 +239,45 @@
   </data>
   <data name="AdvancedSection_Overlay.Text" xml:space="preserve">
     <value>性能叠加层</value>
+  </data>
+  <data name="AdvancedSection_Fse.Text" xml:space="preserve">
+    <value>XBOX 模式 (FSE)</value>
+  </data>
+  <data name="FseEnterConfirmSetting_Title.Text" xml:space="preserve">
+    <value>从桌面进入时</value>
+  </data>
+  <data name="FseEnterConfirmSetting_Description.Text" xml:space="preserve">
+    <value>选择进入 XBOX 模式 (FSE) 时要执行的操作。</value>
+  </data>
+  <data name="FseEnterConfirmSetting_Note.Text" xml:space="preserve">
+    <value>进入前，主机会直接重启以优化性能。</value>
+  </data>
+  <data name="FseEnterConfirmItem_Ask" xml:space="preserve">
+    <value>每次询问</value>
+  </data>
+  <data name="FseEnterConfirmItem_Restart" xml:space="preserve">
+    <value>重启 (优化性能)</value>
+  </data>
+  <data name="FseEnterConfirmItem_StartNow" xml:space="preserve">
+    <value>立即启动 (无性能更改)</value>
+  </data>
+  <data name="FseExitConfirmSetting_Title.Text" xml:space="preserve">
+    <value>返回桌面时的确认</value>
+  </data>
+  <data name="FseExitConfirmSetting_Description.Text" xml:space="preserve">
+    <value>返回 Windows 桌面前显示确认对话框。</value>
+  </data>
+  <data name="FseEnterConfirmDialog_Title" xml:space="preserve">
+    <value>每次进入都重启主机？</value>
+  </data>
+  <data name="FseEnterConfirmDialog_Body" xml:space="preserve">
+    <value>之后从桌面启动 {OmniConsole} 时，主机会直接重启以优化性能，然后进入 XBOX 模式 (FSE)。这个设置以后随时可以改回来。</value>
+  </data>
+  <data name="FseEnterConfirmDialog_Confirm" xml:space="preserve">
+    <value>一律重启</value>
+  </data>
+  <data name="FseEnterConfirmDialog_Cancel" xml:space="preserve">
+    <value>取消</value>
   </data>
   <data name="OverlaySetting_ElevationNote.Text" xml:space="preserve">
     <value>这些设置需要管理员应用支持，可从上方安装。</value>
@@ -298,7 +337,7 @@
     <value>仅在默认平台设为 Steam Big Picture 时生效。</value>
   </data>
   <data name="SteamInGameOverlaySetting_ModifierNote.Text" xml:space="preserve">
-    <value>长按 &#xEDE3; 关闭叠加界面，避免修饰键（如 Shift、Ctrl、Alt）卡住游戏。
+    <value>长按 &#xEDE3; 关闭叠加界面，避免修饰键 (如 Shift、Ctrl、Alt) 卡住游戏。
 或至 Steam 设置 &gt; 游戏中 &gt; 叠加界面快捷键，改为非修饰键。</value>
   </data>
   <data name="GamepadMappingModeSetting_Title.Text" xml:space="preserve">
@@ -308,19 +347,19 @@
     <value>让猫又将手柄化作键鼠，并在“猫又”页为各应用量身调校。</value>
   </data>
   <data name="GamepadMappingModeSetting_Note.Text" xml:space="preserve">
-    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、文件资源管理器、Windows 文件选择器、打开方式对话框、Windows Installer、Steam、Discord、应用安装程序，以及一系列 Windows 内置工具与控制面板对话框。其中以管理员身份运行的程序（例如任务管理器）与屏幕键盘还需要管理员应用支持（专业版）。</value>
+    <value>内置映射涵盖 Edge、Chrome、Firefox、Opera、Brave、Epic Games Store、EA Desktop、Playnite 桌面版、文件资源管理器、Windows 文件选择器、打开方式对话框、Windows Installer、Steam、Discord、应用安装程序，以及一系列 Windows 内置工具与控制面板对话框。其中以管理员身份运行的程序 (例如任务管理器) 与屏幕键盘还需要管理员应用支持 (专业版)。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已禁用：此主机具备厂商内置的手柄映射。在此主机上启用猫又模式需要专业版。</value>
   </data>
   <data name="GamepadMappingModeSetting_BuiltInMappingProNote.Text" xml:space="preserve">
-    <value>此主机具备厂商内置的手柄映射。在 Command Center（控制中心）将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>此主机具备厂商内置的手柄映射。在 Command Center (控制中心) 将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Title" xml:space="preserve">
     <value>在此主机上启用猫又模式？</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Body" xml:space="preserve">
-    <value>此主机具备厂商内置的手柄映射。按下 Command Center（控制中心）键，将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
+    <value>此主机具备厂商内置的手柄映射。按下 Command Center (控制中心) 按钮，将“控制模式”设为“游戏控制器”，猫又就能在这台主机上如常运行。</value>
   </data>
   <data name="BuiltInMappingEnableDialog_Confirm" xml:space="preserve">
     <value>启用</value>
@@ -350,7 +389,7 @@
     <value>光标速度</value>
   </data>
   <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
-    <value>相对于默认值（100%）缩放光标移动速度。</value>
+    <value>相对于默认值 (100%) 缩放光标移动速度。</value>
   </data>
   <data name="BackgroundMaterialSetting_Title.Text" xml:space="preserve">
     <value>背景材质</value>
@@ -377,7 +416,7 @@
     <value>库按钮打开设置</value>
   </data>
   <data name="GameBarLibrarySetting_Description.Text" xml:space="preserve">
-    <value>选择 Game Bar 中”库”按钮的操作。</value>
+    <value>选择 Game Bar 中“库”按钮的操作。</value>
   </data>
   <data name="PassthroughSetting_Title.Text" xml:space="preserve">
     <value>直接导向平台</value>
@@ -386,7 +425,7 @@
     <value>“主页”和“库”按钮将直接导向默认平台，跳过 {OmniConsole}。</value>
   </data>
   <data name="PassthroughSetting_Note.Text" xml:space="preserve">
-    <value>目前仅支持 Xbox App。库按钮以上方设置为优先。</value>
+    <value>目前仅支持 XBOX App。库按钮以上方设置为优先。</value>
   </data>
   <data name="EnablePassthroughSwitch.OffContent" xml:space="preserve">
     <value>正常流程</value>
@@ -452,10 +491,10 @@
     <value>例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_IconLabel" xml:space="preserve">
-    <value>卡片封面图（可选）</value>
+    <value>卡片封面图 (可选)</value>
   </data>
   <data name="PlatformDialog_IconHint" xml:space="preserve">
-    <value>建议尺寸：800 x 560 px（10:7）</value>
+    <value>建议尺寸：800 x 560 px (10:7)</value>
   </data>
   <data name="PlatformDialog_ConfigWarning" xml:space="preserve">
     <value>注意：配置不正确可能导致平台启动失败或产生非预期的行为。</value>
@@ -482,19 +521,19 @@
     <value>路径格式无效。例如 C:\Program Files (x86)\Steam\steam.exe</value>
   </data>
   <data name="PlatformDialog_ValidationPathConsoleApp" xml:space="preserve">
-    <value>不支持控制台应用程序，可能导致 Xbox 模式 (FSE) 循环重新启动。</value>
+    <value>不支持控制台应用程序，可能导致 XBOX 模式 (FSE) 循环重新启动。</value>
   </data>
   <data name="PlatformDialog_ValidationArgsInvalid" xml:space="preserve">
     <value>启动参数包含不安全的字符。</value>
   </data>
   <data name="CustomPlatform_ConsentTitle.Text" xml:space="preserve">
-    <value>自定义平台支持（实验性功能）</value>
+    <value>自定义平台支持 (实验性)</value>
   </data>
   <data name="CustomPlatform_ConsentBody.Text" xml:space="preserve">
     <value>此功能允许您自行添加自定义平台启动配置。请在继续之前仔细阅读以下内容：
 
 - 本软件按“现状”提供，不提供明示或默示的担保；此自定义功能为实验性质，更不提供任何保证。
-- 配置错误的平台可能无法正常启动，进而导致 Xbox 模式 (FSE) 环境崩溃，甚至必须重置应用程序才能恢复正常。
+- 配置错误的平台可能无法正常启动，进而导致 XBOX 模式 (FSE) 环境崩溃，甚至必须重置应用程序才能恢复正常。
 - 开发者不对因使用本程序或自定义平台配置所造成的任何损害、数据丢失或其他问题承担责任。
 - 您需自行确保所有配置的安全性、正确性及合法性。
 
@@ -504,13 +543,13 @@
     <value>我了解并接受</value>
   </data>
   <data name="PlatformDialog_ArgsLabel" xml:space="preserve">
-    <value>启动参数（可选）</value>
+    <value>启动参数 (可选)</value>
   </data>
   <data name="PlatformDialog_ArgsPlaceholder" xml:space="preserve">
     <value>例如 -bigpicture</value>
   </data>
   <data name="PlatformDialog_ValidationPathNotExe" xml:space="preserve">
-    <value>仅支持可执行文件（.exe）。</value>
+    <value>仅支持可执行文件 (.exe)。</value>
   </data>
   <data name="PlatformDialog_ValidationArgsTooLong" xml:space="preserve">
     <value>启动参数不可超过 500 个字符。</value>
@@ -543,7 +582,7 @@
     <value>输入以搜索已安装的应用包...</value>
   </data>
   <data name="PlatformDialog_PackagedAppWarning" xml:space="preserve">
-    <value>注意：并非所有应用包都支持启动（例如各种扩展组件或后台服务）。请确保选择的是具备“用户界面”的应用程序。</value>
+    <value>注意：并非所有应用包都支持启动 (例如各种扩展组件或后台服务)。请确保选择的是具备“用户界面”的应用程序。</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppEmpty" xml:space="preserve">
     <value>请选择应用包。</value>
@@ -555,7 +594,7 @@
     <value>无法将 Game Bar 添加为平台。</value>
   </data>
   <data name="PlatformDialog_ValidationPackagedAppNotAllowed" xml:space="preserve">
-    <value>此包无法作为平台使用（例如扩展、后台服务或运行时组件）。</value>
+    <value>此包无法作为平台使用 (例如扩展、后台服务或运行时组件)。</value>
   </data>
   <data name="CardMenu_Export" xml:space="preserve">
     <value>导出</value>
@@ -615,7 +654,7 @@
     <value>不支持控制台应用程序。</value>
   </data>
   <data name="Import_Error_PackageNotAllowed" xml:space="preserve">
-    <value>此包无法作为平台使用（例如扩展、后台服务或运行时组件）。</value>
+    <value>此包无法作为平台使用 (例如扩展、后台服务或运行时组件)。</value>
   </data>
   <data name="ExportSuccessTeachingTip.Title" xml:space="preserve">
     <value>已复制！</value>
@@ -735,16 +774,16 @@
     <value>更新完成前，请勿关闭应用或主机。</value>
   </data>
   <data name="UpdateProgress_Phase1Download" xml:space="preserve">
-    <value>正在下载 OmniCharm 小组件（1 / 2）...</value>
+    <value>正在下载 OmniCharm 小组件 (1 / 2)...</value>
   </data>
   <data name="UpdateProgress_Phase1Install" xml:space="preserve">
-    <value>正在安装 OmniCharm 小组件（1 / 2）...</value>
+    <value>正在安装 OmniCharm 小组件 (1 / 2)...</value>
   </data>
   <data name="UpdateProgress_Phase2Download" xml:space="preserve">
-    <value>正在下载 {OmniConsole}（2 / 2）...</value>
+    <value>正在下载 {OmniConsole} (2 / 2)...</value>
   </data>
   <data name="UpdateProgress_Phase2Install" xml:space="preserve">
-    <value>正在安装 {OmniConsole}（2 / 2），即将重新启动...</value>
+    <value>正在安装 {OmniConsole} (2 / 2)，即将重新启动...</value>
   </data>
   <data name="UpdateProgress_LanguageSync" xml:space="preserve">
     <value>正在更新社区语言文件...</value>
@@ -828,19 +867,19 @@
     <value>未运行</value>
   </data>
   <data name="PhantomKeyResp_Responsive" xml:space="preserve">
-    <value>正常响应（{0} ms）</value>
+    <value>正常响应 ({0} ms)</value>
   </data>
   <data name="PhantomKeyResp_Busy" xml:space="preserve">
-    <value>繁忙（{0} ms）</value>
+    <value>繁忙 ({0} ms)</value>
   </data>
   <data name="PhantomKeyResp_Stuck" xml:space="preserve">
-    <value>主循环卡住（{0} ms 未推进）</value>
+    <value>主循环卡住 ({0} ms 未推进)</value>
   </data>
   <data name="PhantomKeyResp_Hung" xml:space="preserve">
-    <value>没有响应（进程可能冻结）</value>
+    <value>没有响应 (进程可能冻结)</value>
   </data>
   <data name="PhantomKeyResp_NoPingWindow" xml:space="preserve">
-    <value>找不到 ping 窗口（旧版或刚启动）</value>
+    <value>找不到 ping 窗口 (旧版或刚启动)</value>
   </data>
   <data name="AboutSection_System.Text" xml:space="preserve">
     <value>系统</value>
@@ -885,7 +924,7 @@
     <value>OS</value>
   </data>
   <data name="Label_FseState.Text" xml:space="preserve">
-    <value>Xbox 模式 (FSE) 状态</value>
+    <value>XBOX 模式 (FSE) 状态</value>
   </data>
   <data name="Label_MaxTouchPoints.Text" xml:space="preserve">
     <value>触摸点上限</value>
@@ -954,7 +993,7 @@
     <value>屏蔽此应用接收原生 XInput 与 DirectInput 输入信号，避免与模拟键鼠同时作动。</value>
   </data>
   <data name="GamepadProfile_BlockNativeGamepadInput_Note.Text" xml:space="preserve">
-    <value>需重启应用生效。请勿对含反作弊的游戏（例如 EAC、BattlEye、VAC）启用，否则可能触发违规。</value>
+    <value>需重启应用生效。请勿对含反作弊的游戏 (例如 EAC、BattlEye、VAC) 启用，否则可能触发违规。</value>
   </data>
   <data name="GamepadProfile_MappingServicePriority_Title.Text" xml:space="preserve">
     <value>猫又冲刺</value>
@@ -1521,10 +1560,10 @@
     <value>版本 {0}</value>
   </data>
   <data name="ManageLanguages_Revision_Installed" xml:space="preserve">
-    <value>版本 {0}（已安装）</value>
+    <value>版本 {0} (已安装)</value>
   </data>
   <data name="ManageLanguages_Revision_UpdateAvailable" xml:space="preserve">
-    <value>版本 {0}（已安装 {1}）</value>
+    <value>版本 {0} (已安装 {1})</value>
   </data>
   <data name="ManageLanguages_Result_Downloaded" xml:space="preserve">
     <value>已安装完成。</value>
@@ -1857,10 +1896,10 @@
     <value>知道了</value>
   </data>
   <data name="GamingCapabilityDialog_Title" xml:space="preserve">
-    <value>完成 Xbox 模式 (FSE) 的设置</value>
+    <value>完成 XBOX 模式 (FSE) 的设置</value>
   </data>
   <data name="GamingCapabilityDialog_Content" xml:space="preserve">
-    <value>{OmniConsole} 可以应用这台主机所需的设置，让 Xbox 模式 (FSE) 以完整体验运行。接下来会要求管理员授权。</value>
+    <value>{OmniConsole} 可以应用这台主机所需的设置，让 XBOX 模式 (FSE) 以完整体验运行。接下来会要求管理员授权。</value>
   </data>
   <data name="GamingCapabilityDialog_Apply" xml:space="preserve">
     <value>应用</value>
@@ -1869,7 +1908,7 @@
     <value>请重新启动主机</value>
   </data>
   <data name="GamingCapabilityRestart_Content" xml:space="preserve">
-    <value>设置已应用。重新启动主机之后，Xbox 模式 (FSE) 就会以完整体验启动。</value>
+    <value>设置已应用。重新启动主机之后，XBOX 模式 (FSE) 就会以完整体验启动。</value>
   </data>
   <data name="GamingCapabilityRestart_Close" xml:space="preserve">
     <value>关闭</value>

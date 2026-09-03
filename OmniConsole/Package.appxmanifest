@@ -26,6 +26,7 @@
 			<virtualization:ExcludedKeys>
 				<virtualization:ExcludedKey>HKCU\Software\Valve\Steam</virtualization:ExcludedKey>
 				<virtualization:ExcludedKey>HKCU\Control Panel\International\Geo</virtualization:ExcludedKey>
+				<virtualization:ExcludedKey>HKCU\Software\Microsoft\Windows\CurrentVersion\GamingConfiguration\SystemDialogResults</virtualization:ExcludedKey>
 			</virtualization:ExcludedKeys>
 		</virtualization:RegistryWriteVirtualization>
 	</Properties>

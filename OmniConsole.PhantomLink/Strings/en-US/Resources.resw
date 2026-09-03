@@ -130,7 +130,7 @@
     <value>Steam Overlay</value>
   </data>
   <data name="Widget_OpenXboxLibrary.Text" xml:space="preserve">
-    <value>Xbox Library</value>
+    <value>XBOX Library</value>
   </data>
   <data name="Widget_OpenFileExplorer" xml:space="preserve">
     <value>File Explorer</value>
