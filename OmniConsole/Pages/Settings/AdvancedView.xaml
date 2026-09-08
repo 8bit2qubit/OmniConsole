@@ -176,7 +176,7 @@
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        Margin="2,0,0,0"/>
 
-            <!-- 貓又群組卡片：手把滑鼠模式 / 控制器版面配置 / 游標速度 -->
+            <!-- 貓又群組卡片：手把滑鼠模式 / 控制器版面配置 / 游標速度 / 游標大小 -->
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -285,6 +285,29 @@
 
                         <ComboBox x:Name="CursorSpeedCombo" Grid.Column="2"
                                   SelectionChanged="CursorSpeedCombo_SelectionChanged"
+                                  MinWidth="120" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}" Margin="16,0"/>
+
+                    <!-- Cursor Size 下拉選單 -->
+                    <Grid Padding="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon Glyph="&#xF8AF;" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Uid="CursorSizeSetting_Title" services:Localized.Uid="CursorSizeSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+                            <TextBlock x:Uid="CursorSizeSetting_Description" services:Localized.Uid="CursorSizeSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ComboBox x:Name="CursorSizeCombo" Grid.Column="2"
+                                  SelectionChanged="CursorSizeCombo_SelectionChanged"
                                   MinWidth="120" VerticalAlignment="Center" />
                     </Grid>
                 </StackPanel>

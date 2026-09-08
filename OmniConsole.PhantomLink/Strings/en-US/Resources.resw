@@ -176,6 +176,9 @@
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>Cursor Speed</value>
   </data>
+  <data name="Widget_CursorSize_Title.Text" xml:space="preserve">
+    <value>Cursor Size</value>
+  </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
     <value>Disabled: this console has the manufacturer’s built-in gamepad mapping. Turning Nekomata Mode on for this console requires Pro.</value>
   </data>

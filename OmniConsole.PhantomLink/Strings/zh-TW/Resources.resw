@@ -176,6 +176,9 @@
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>游標速度</value>
   </data>
+  <data name="Widget_CursorSize_Title.Text" xml:space="preserve">
+    <value>游標大小</value>
+  </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已停用：此主機具備廠商內建的手把映射。在此主機上開啟貓又模式需要專業版。</value>
   </data>

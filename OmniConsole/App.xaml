@@ -12,18 +12,18 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 全域 ComboBox / AutoSuggestBox：展開下拉/建議清單時把游標設回箭頭，根治忙碌轉圈，手把+滑鼠皆涵蓋。
-                 透過 AutoFix attached property 套用；BasedOn 內建 style 保留外觀。 -->
+            <!-- 全域 ComboBox / AutoSuggestBox：展開下拉/建議清單時把游標設回箭頭，根治忙碌轉圈，手把+滑鼠皆涵蓋；
+                 下拉選單另在收合狀態把滑鼠滾輪讓給外層捲動區。透過 ControlQuirkFix 的附加屬性套用；BasedOn 內建 style 保留外觀。 -->
             <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
-                <Setter Property="svc:BusyCursorFix.AutoFix" Value="True"/>
+                <Setter Property="svc:ControlQuirkFix.BusyCursor" Value="True"/>
+                <Setter Property="svc:ControlQuirkFix.WheelScroll" Value="True"/>
             </Style>
             <Style TargetType="AutoSuggestBox" BasedOn="{StaticResource DefaultAutoSuggestBoxStyle}">
-                <Setter Property="svc:BusyCursorFix.AutoFix" Value="True"/>
+                <Setter Property="svc:ControlQuirkFix.BusyCursor" Value="True"/>
             </Style>
 
             <!-- NavigationView 內容區與頂部面板設為透明，讓底層背景材質透出。
-                 面板主背景 NavigationViewDefaultPaneBackground 不在此設，由 BackgroundMaterialService
-                 於 App 啟動時依背景材質覆寫。 -->
+                 面板主背景 NavigationViewDefaultPaneBackground 不在此設，由 BackgroundMaterialService 於 App 啟動時依背景材質覆寫。 -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent"/>

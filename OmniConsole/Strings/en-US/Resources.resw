@@ -391,6 +391,12 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
     <value>Scale cursor movement speed relative to the default (100%).</value>
   </data>
+  <data name="CursorSizeSetting_Title.Text" xml:space="preserve">
+    <value>Cursor Size</value>
+  </data>
+  <data name="CursorSizeSetting_Description.Text" xml:space="preserve">
+    <value>Scale cursor size relative to the default (100%).</value>
+  </data>
   <data name="BackgroundMaterialSetting_Title.Text" xml:space="preserve">
     <value>Background Material</value>
   </data>

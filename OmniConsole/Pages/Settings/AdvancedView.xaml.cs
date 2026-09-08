@@ -80,6 +80,12 @@ namespace OmniConsole.Pages.Settings
             int pct = SettingsService.GetCursorSpeedPercent();
             CursorSpeedCombo.SelectedIndex = Array.IndexOf(SettingsService.ValidCursorSpeedPercents, pct);
 
+            // 填充游標大小下拉選單並還原選取（還原期間抑制觸發，避免對系統多套用一次）。
+            CursorSizeCombo.Items.Clear();
+            foreach (var p in CursorSizeService.ValidCursorSizePercents)
+                CursorSizeCombo.Items.Add($"{p}%");
+            RefreshCursorSize();
+
             // 填充背景材質下拉選單並還原選取（還原期間抑制觸發，避免無謂重套材質）。
             _suppressBackgroundMaterialChange = true;
             BackgroundMaterialCombo.Items.Clear();
@@ -432,14 +438,14 @@ namespace OmniConsole.Pages.Settings
         /// <summary>徵詢在內建廠商映射的機種上開啟貓又模式；回傳使用者是否確認。</summary>
         private async Task<bool> ConfirmEnableOnBuiltInMappingAsync()
         {
-            var dlg = new GamepadMessageDialog(
+            var confirm = new GamepadMessageDialog(
                 XamlRoot,
                 _resourceLoader.Loc("BuiltInMappingEnableDialog_Title"),
                 _resourceLoader.Loc("BuiltInMappingEnableDialog_Body"),
                 _resourceLoader.Loc("BuiltInMappingEnableDialog_Confirm"),
                 _resourceLoader.Loc("BuiltInMappingEnableDialog_Cancel"));
-            await dlg.ShowAsync();
-            return dlg.Result;
+            await confirm.ShowAsync();
+            return confirm.Result;
         }
 
         // ── Xbox 模式 (FSE) 確認對話方塊 ──────────────────────────────────────
@@ -450,10 +456,10 @@ namespace OmniConsole.Pages.Settings
         /// <summary>還原開關狀態期間抑制 Toggled，避免又寫一次登錄檔。</summary>
         private bool _suppressFseExitConfirmToggled;
 
-        /// <summary>依主機是否支援 FSE 切整段顯隱，並讀系統現值填兩個確認對話方塊的控制項。</summary>
+        /// <summary>依主機是否為掌機完整版 FSE 切整段顯隱，並讀系統現值填兩個確認對話方塊的控制項。</summary>
         private void RefreshFseDialogSection()
         {
-            if (!FseService.IsSupported())
+            if (!FseService.IsHandheldFseAvailable())
             {
                 FseDialogSection.Visibility = Visibility.Collapsed;
                 return;
@@ -525,14 +531,14 @@ namespace OmniConsole.Pages.Settings
         /// <summary>徵詢是否每次進入都直接重新啟動主機；回傳使用者是否確認。</summary>
         private async Task<bool> ConfirmRestartEveryTimeAsync()
         {
-            var dlg = new GamepadMessageDialog(
+            var confirm = new GamepadMessageDialog(
                 XamlRoot,
                 _resourceLoader.Loc("FseEnterConfirmDialog_Title"),
                 _resourceLoader.Loc("FseEnterConfirmDialog_Body"),
                 _resourceLoader.Loc("FseEnterConfirmDialog_Confirm"),
                 _resourceLoader.Loc("FseEnterConfirmDialog_Cancel"));
-            await dlg.ShowAsync();
-            return dlg.Result;
+            await confirm.ShowAsync();
+            return confirm.Result;
         }
 
         /// <summary>返回桌面確認開關變更時寫入系統設定。</summary>
@@ -673,16 +679,16 @@ namespace OmniConsole.Pages.Settings
         /// </summary>
         private async Task PromptRestartForLanguageAsync()
         {
-            var dialog = new GamepadMessageDialog(
+            var confirm = new GamepadMessageDialog(
                 this.XamlRoot,
                 _resourceLoader.Loc("LanguageRestartDialog_Title"),
                 _resourceLoader.Loc("LanguageRestartDialog_Body"),
                 _resourceLoader.Loc("LanguageRestartDialog_Restart"),
                 _resourceLoader.Loc("LanguageRestartDialog_Later"),
                 defaultToPrimary: true); // 預設醒目「立即重啟」方便直接確認
-            await dialog.ShowAsync();
+            await confirm.ShowAsync();
 
-            if (dialog.Result)
+            if (confirm.Result)
             {
                 // 重啟後導回設定頁，使用者才看得到語言已套用（沿用 PhantomLink 安裝完重啟的旗標機制）。
                 SettingsService.SetPendingSettingsRestart(true);
@@ -849,9 +855,36 @@ namespace OmniConsole.Pages.Settings
             SettingsService.SetCursorSpeedPercent(pct);
         }
 
+        /// <summary>還原選取期間抑制 SelectionChanged，避免撥回選項時又對系統套用一次。</summary>
+        private bool _suppressCursorSizeChange;
+
+        /// <summary>Cursor Size 下拉選單選取變更時套用指標大小，套用走背景執行緒。</summary>
+        private async void CursorSizeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressCursorSizeChange) return;
+            if (CursorSizeCombo.SelectedIndex < 0) return;
+
+            int percent = CursorSizeService.ValidCursorSizePercents[CursorSizeCombo.SelectedIndex];
+            int level = CursorSizeService.PercentToLevel(percent);
+            bool applied = await Task.Run(() => CursorSizeService.SetLevel(level));
+            if (!applied)
+            {
+                // 套用失敗就把選取撥回系統的實際值。
+                RefreshCursorSize();
+            }
+        }
+
+        /// <summary>依系統目前的指標大小還原下拉選單的選取，還原期間不觸發套用。</summary>
+        private void RefreshCursorSize()
+        {
+            _suppressCursorSizeChange = true;
+            CursorSizeCombo.SelectedIndex = CursorSizeService.LevelToIndex(CursorSizeService.GetLevel());
+            _suppressCursorSizeChange = false;
+        }
+
         /// <summary>
         /// 套用 Mouse Mode 子控制項的反灰串聯：
-        /// PhantomKey 主開關 + 內建廠商映射偵測 → Mouse Mode 主開關 → Layout / Cursor Speed。
+        /// PhantomKey 主開關 + 內建廠商映射偵測 → Mouse Mode 主開關 → Layout / Cursor Speed / Cursor Size。
         /// 內建廠商映射的機種持有 Pro 時開關可用，兩則說明依授權擇一顯示。
         /// </summary>
         private void ApplyMouseModeEnabledState()
@@ -872,6 +905,7 @@ namespace OmniConsole.Pages.Settings
             MouseModeLayoutCombo.IsEnabled = mouseModeOn;
             EditCustomLayoutButton.IsEnabled = mouseModeOn;
             CursorSpeedCombo.IsEnabled = mouseModeOn;
+            CursorSizeCombo.IsEnabled = mouseModeOn;
         }
 
         // ── 更新檢查 ───────────────────────────────────────────────────────────

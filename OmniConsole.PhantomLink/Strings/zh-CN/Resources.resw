@@ -176,6 +176,9 @@
   <data name="Widget_CursorSpeed_Title.Text" xml:space="preserve">
     <value>光标速度</value>
   </data>
+  <data name="Widget_CursorSize_Title.Text" xml:space="preserve">
+    <value>光标大小</value>
+  </data>
   <data name="Widget_BuiltInMappingNote.Text" xml:space="preserve">
     <value>已禁用：此主机具备厂商内置的手柄映射。在此主机上启用猫又模式需要专业版。</value>
   </data>

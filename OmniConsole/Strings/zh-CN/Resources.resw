@@ -250,7 +250,7 @@
     <value>选择进入 XBOX 模式 (FSE) 时要执行的操作。</value>
   </data>
   <data name="FseEnterConfirmSetting_Note.Text" xml:space="preserve">
-    <value>进入前，主机会直接重启以优化性能。</value>
+    <value>主机会先重启以优化性能。</value>
   </data>
   <data name="FseEnterConfirmItem_Ask" xml:space="preserve">
     <value>每次询问</value>
@@ -271,7 +271,7 @@
     <value>每次进入都重启主机？</value>
   </data>
   <data name="FseEnterConfirmDialog_Body" xml:space="preserve">
-    <value>之后从桌面启动 {OmniConsole} 时，主机会直接重启以优化性能，然后进入 XBOX 模式 (FSE)。这个设置以后随时可以改回来。</value>
+    <value>之后从桌面启动 {OmniConsole} 时，主机会重启以优化性能，然后进入 XBOX 模式 (FSE)。这个设置以后随时可以改回来。</value>
   </data>
   <data name="FseEnterConfirmDialog_Confirm" xml:space="preserve">
     <value>一律重启</value>
@@ -390,6 +390,12 @@
   </data>
   <data name="CursorSpeedSetting_Description.Text" xml:space="preserve">
     <value>相对于默认值 (100%) 缩放光标移动速度。</value>
+  </data>
+  <data name="CursorSizeSetting_Title.Text" xml:space="preserve">
+    <value>光标大小</value>
+  </data>
+  <data name="CursorSizeSetting_Description.Text" xml:space="preserve">
+    <value>相对于默认值 (100%) 缩放光标大小。</value>
   </data>
   <data name="BackgroundMaterialSetting_Title.Text" xml:space="preserve">
     <value>背景材质</value>

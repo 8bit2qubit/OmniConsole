@@ -34,6 +34,18 @@ namespace OmniConsole.PhantomLink
         // 讀到 RTSS 現值之前，疊加層的控制項一律不得送出寫入命令。
         private bool _overlayStateLoaded;
 
+        // 讀到游標大小現值之前，滑桿一律不得送出寫入。
+        private bool _cursorSizeLoaded;
+
+        // 游標大小滑桿的最大索引，對應系統的第 15 級。與 PhantomLinkWidget.xaml 裡 CursorSizeSlider 的 Maximum 必須一致。
+        private const int CursorSizeMaxIndex = 14;
+
+        // Game Bar 顯示 widget 時那幾發事件之間的最短間隔。
+        private const int ReloadDedupeMs = 500;
+
+        // 上一次完整重讀的時刻。
+        private DateTime _lastReloadAt = DateTime.MinValue;
+
         // 前景程式狀態：顯示文字 + 「自訂此 App」按鈕傳給 PhantomBridge.OpenProfileEditor 的 appId / name
         private string? _foregroundAppId;     // "process:xxx" / "aumid:xxx"；null=取不到或在黑名單
         private string _foregroundAppName = string.Empty;   // 顯示用 title（PhantomBridge 端做 URL 編碼）
@@ -86,7 +98,11 @@ namespace OmniConsole.PhantomLink
                     catch (Exception ex) { DebugLogger.Log("[Widget] Hook ThemeChanged FAIL: " + ex); }
 
                     // Widget 重新顯示時重讀狀態。安裝/移除提權工作 與 匯入/移除授權 都發生在主程式
-                    try { w.VisibleChanged += OnGameBarVisibleChanged; }
+                    try
+                    {
+                        w.VisibleChanged += OnGameBarVisibleChanged;
+                        DebugLogger.Log($"[Widget] Hook VisibleChanged OK widget={w.GetHashCode()} page={this.GetHashCode()}");
+                    }
                     catch (Exception ex) { DebugLogger.Log("[Widget] Hook VisibleChanged FAIL: " + ex); }
                 }
             };
@@ -134,12 +150,13 @@ namespace OmniConsole.PhantomLink
             bool visible;
             try { visible = sender.Visible; }
             catch (Exception ex) { DebugLogger.Log("[Widget] VisibleChanged read FAIL: " + ex); return; }
+            DebugLogger.Log($"[Widget] VisibleChanged event visible={visible} widget={sender.GetHashCode()}");
             if (!visible) return;
 
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 DebugLogger.Log("[Widget] VisibleChanged → reload");
-                try { ReloadFromStore(); }
+                try { ReloadOnWidgetShown(); }
                 catch (Exception ex) { DebugLogger.Log("[Widget] VisibleChanged reload FAIL: " + ex); }
             });
         }
@@ -151,8 +168,8 @@ namespace OmniConsole.PhantomLink
         /// </summary>
         private void OnLeavingBackground(object sender, Windows.ApplicationModel.LeavingBackgroundEventArgs e)
         {
-            DebugLogger.Log("[Widget] LeavingBackground → reload");
-            try { ReloadFromStore(); }
+            DebugLogger.Log($"[Widget] LeavingBackground event page={this.GetHashCode()}");
+            try { ReloadOnWidgetShown(); }
             catch (Exception ex) { DebugLogger.Log("[Widget] Reload FAIL: " + ex); }
             // 主程式設定頁可能改過語言偏好 → 回前景時跟上，偏好已就位下次啟動即正確。
             try { App.ApplyUiLanguage(); }
@@ -327,12 +344,26 @@ namespace OmniConsole.PhantomLink
 
         // ── 資料繫結與啟用狀態 ──────────────────────────────────────────────
 
+        /// <summary>Game Bar 顯示 widget 時的重讀入口：距上次重讀太近就跳過。</summary>
+        private void ReloadOnWidgetShown()
+        {
+            if ((DateTime.UtcNow - _lastReloadAt).TotalMilliseconds < ReloadDedupeMs)
+            {
+                DebugLogger.Log("[Widget] Reload skipped (deduped)");
+                return;
+            }
+
+            ReloadFromStore();
+        }
+
         /// <summary>
         /// 從 Shared.ini 讀值並同步所有 UI 控制項狀態。
         /// _loading 旗標避免同步過程觸發 Click/ValueChanged 回寫造成遞迴。
         /// </summary>
         private void ReloadFromStore()
         {
+            _lastReloadAt = DateTime.UtcNow;
+
             _loading = true;
             try
             {
@@ -380,6 +411,9 @@ namespace OmniConsole.PhantomLink
                 if (idx < 0) idx = 3; // 100%
                 CursorSpeedSlider.Value = idx;
                 CursorSpeedValueText.Text = $"{pct}%";
+
+                // Cursor Size：讀寫都委派給 Bridge，在背景讀完再回填。
+                _ = RefreshCursorSizeAsync();
 
                 ApplyEnabledState(mode);
 
@@ -543,6 +577,7 @@ namespace OmniConsole.PhantomLink
             LayoutClassicBtn.IsEnabled = mouseOn;
             LayoutCustomBtn.IsEnabled = mouseOn;
             CursorSpeedSlider.IsEnabled = mouseOn;
+            CursorSizeSlider.IsEnabled = mouseOn;
 
             // 一併看分頁：這兩則只屬於主分頁，切到其他分頁時不論機種都要收起。
             // 未持 Pro 講停用與如何解鎖，持有 Pro 講怎麼與廠商映射並存；兩則互斥，與主程式進階頁一致。
@@ -834,6 +869,10 @@ namespace OmniConsole.PhantomLink
         /// <summary>等待送出的命令；同一項連續調整只會保留最後一次的值。</summary>
         private string? _pendingOverlayCommand;
 
+        // 游標大小的延後送出。
+        private DispatcherTimer? _cursorSizeApplyTimer;
+        private int _pendingCursorSizeLevel;
+
         /// <summary>依提權與 RTSS 狀態決定控制項可不可用，並顯示對應說明。</summary>
         private void ApplyOverlayEnabledState()
         {
@@ -1105,6 +1144,101 @@ namespace OmniConsole.PhantomLink
             int pct = PhantomKeyStore.ValidCursorSpeedPercents[idx];
             CursorSpeedValueText.Text = $"{pct}%";
             PhantomKeyStore.SetCursorSpeedPercent(pct);
+        }
+
+        /// <summary>Slider 值（0..14）映射為級數（1 到 15），更新顯示並委派 Bridge 套用。</summary>
+        private void CursorSizeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_loading || !_cursorSizeLoaded) return;
+
+            int idx = Math.Clamp((int)Math.Round(e.NewValue), 0, CursorSizeMaxIndex);
+
+            CursorSizeValueText.Text = $"{100 + idx * 50}%";
+            QueueCursorSizeApply(idx + 1);
+        }
+
+        /// <summary>排定送出；後一次呼叫會覆蓋前一次待送的級數。</summary>
+        private void QueueCursorSizeApply(int level)
+        {
+            _pendingCursorSizeLevel = level;
+
+            _cursorSizeApplyTimer ??= CreateCursorSizeApplyTimer();
+            _cursorSizeApplyTimer.Stop();
+            _cursorSizeApplyTimer.Start();
+        }
+
+        /// <summary>建立延後送出的計時器；停手後才真的送。</summary>
+        private DispatcherTimer CreateCursorSizeApplyTimer()
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                _ = FlushCursorSizeApplyAsync();
+            };
+            return timer;
+        }
+
+        /// <summary>把級數送給 Bridge，走背景執行緒。</summary>
+        private async System.Threading.Tasks.Task FlushCursorSizeApplyAsync()
+        {
+            int level = _pendingCursorSizeLevel;
+            if (level < 1) return;
+
+            try
+            {
+                int resultCode = -1;
+                await System.Threading.Tasks.Task.Run(() =>
+                    PhantomBridgeHelper.InvokeWithRetry(bridge => resultCode = bridge.ApplyCursorSize(level)));
+                DebugLogger.Log($"[Widget] ApplyCursorSize level={level} resultCode={resultCode}");
+
+                // 套用失敗就把滑桿撥回系統的實際值。
+                if (resultCode != 0) await RefreshCursorSizeAsync();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[Widget] ApplyCursorSize FAIL: {ex.Message}");
+                await RefreshCursorSizeAsync();
+            }
+        }
+
+        /// <summary>在背景向 Bridge 問目前的級數，回填時暫時擋住回寫。</summary>
+        private async System.Threading.Tasks.Task RefreshCursorSizeAsync()
+        {
+            int level = 0;
+            try
+            {
+                await System.Threading.Tasks.Task.Run(() =>
+                    PhantomBridgeHelper.InvokeWithRetry(bridge => level = bridge.GetCursorSize()));
+                DebugLogger.Log($"[Widget] GetCursorSize level={level}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"[Widget] GetCursorSize FAIL: {ex.Message}");
+                return;
+            }
+
+            if (level < 1) return;
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                bool wasLoading = _loading;
+                _loading = true;
+                try
+                {
+                    int idx = Math.Clamp(level - 1, 0, CursorSizeMaxIndex);
+                    CursorSizeSlider.Value = idx;
+                    CursorSizeValueText.Text = $"{100 + idx * 50}%";
+                    _cursorSizeLoaded = true;
+                    DebugLogger.Log($"[Widget] CursorSize UI idx={idx} sliderValue={CursorSizeSlider.Value} " +
+                        $"text={CursorSizeValueText.Text} wasLoading={wasLoading}");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"[Widget] CursorSize UI update FAIL: {ex.GetType().Name} {ex.Message}");
+                }
+                finally { _loading = wasLoading; }
+            });
         }
     }
 }

@@ -233,26 +233,53 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Cursor Speed: Slider -->
-                <StackPanel Tag="Main" Spacing="6" Margin="0,0,0,12">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="Widget_CursorSpeed_Title" services:Localized.Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="CursorSpeedValueText" Grid.Column="1"
-                                   VerticalAlignment="Center" FontWeight="SemiBold"/>
-                    </Grid>
-                    <Slider x:Name="CursorSpeedSlider"
-                            Minimum="0" Maximum="7" StepFrequency="1"
-                            SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
-                            ValueChanged="CursorSpeedSlider_ValueChanged"
-                            UseSystemFocusVisuals="True"
-                            XYFocusUp="{x:Bind LayoutNavBtn}"
-                            XYFocusLeft="{x:Bind CursorSpeedSlider}"
-                            XYFocusRight="{x:Bind CursorSpeedSlider}"/>
-                </StackPanel>
+                <!-- Cursor Speed 與 Cursor Size：並排兩欄，左速度右大小，合為一個 section；水平 XYFocus 在兩根滑桿之間互跳。 -->
+                <Grid Tag="Main" ColumnSpacing="12" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Uid="Widget_CursorSpeed_Title" services:Localized.Uid="Widget_CursorSpeed_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="CursorSpeedValueText" Grid.Column="1"
+                                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        </Grid>
+                        <Slider x:Name="CursorSpeedSlider"
+                                Minimum="0" Maximum="7" StepFrequency="1"
+                                SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
+                                ValueChanged="CursorSpeedSlider_ValueChanged"
+                                UseSystemFocusVisuals="True"
+                                XYFocusUp="{x:Bind LayoutNavBtn}"
+                                XYFocusLeft="{x:Bind CursorSpeedSlider}"
+                                XYFocusRight="{x:Bind CursorSizeSlider}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Uid="Widget_CursorSize_Title" services:Localized.Uid="Widget_CursorSize_Title" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="CursorSizeValueText" Grid.Column="1"
+                                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        </Grid>
+                        <Slider x:Name="CursorSizeSlider"
+                                Minimum="0" Maximum="14" StepFrequency="1"
+                                SnapsTo="StepValues" TickFrequency="1" TickPlacement="Outside"
+                                ValueChanged="CursorSizeSlider_ValueChanged"
+                                UseSystemFocusVisuals="True"
+                                XYFocusUp="{x:Bind LayoutClassicBtn}"
+                                XYFocusLeft="{x:Bind CursorSpeedSlider}"
+                                XYFocusRight="{x:Bind CursorSizeSlider}"/>
+                    </StackPanel>
+                </Grid>
 
                 <!-- 內建手把映射說明（ROG Ally 家族時顯示） -->
                 <TextBlock x:Name="BuiltInMappingNote" x:Uid="Widget_BuiltInMappingNote" services:Localized.Uid="Widget_BuiltInMappingNote"

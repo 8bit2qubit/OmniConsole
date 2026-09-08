@@ -83,6 +83,9 @@ namespace OmniConsole
 
             this.Activated += MainWindow_Activated;
 
+            // 視窗回到前景時把殘留的忙碌轉圈游標設回箭頭。
+            ControlQuirkFix.AttachWindow(this);
+
             // 監聽 Content.Loaded 作為 XamlRoot 可用的訊號
             if (this.Content is FrameworkElement rootElement)
             {
