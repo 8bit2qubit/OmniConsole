@@ -48,10 +48,12 @@
                                 <TextBlock x:Name="AdvancedVersionText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock x:Name="UpdateCheckStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" Visibility="Collapsed"/>
-                            <StackPanel x:Name="DeveloperModeWarningPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
-                                <TextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                <HyperlinkButton x:Name="DeveloperModeOpenSettingsButton" x:Uid="DeveloperMode_OpenSettings" services:Localized.Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2"/>
-                            </StackPanel>
+                            <!-- 開發人員模式關閉時才顯示的警告，文字尾端接開啟 Windows 設定的連結。寫法同 FseStartupNoteText。 -->
+                            <RichTextBlock x:Name="DeveloperModeWarningText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="False" Visibility="Collapsed">
+                                <Paragraph Margin="0">
+                                    <Run x:Name="DeveloperModeWarningRun"/><InlineUIContainer><HyperlinkButton x:Name="DeveloperModeOpenSettingsLink" x:Uid="DeveloperMode_OpenSettings" services:Localized.Uid="DeveloperMode_OpenSettings" Click="DeveloperModeOpenSettings_Click" FontSize="12" Padding="4,2" MinHeight="0" MinWidth="0" Margin="0,0,0,-6"/></InlineUIContainer>
+                                </Paragraph>
+                            </RichTextBlock>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -479,6 +481,14 @@
                             <TextBlock x:Uid="FseEnterConfirmSetting_Description" services:Localized.Uid="FseEnterConfirmSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
                             <!-- 選擇重新啟動時才顯示的補充說明 -->
                             <TextBlock x:Name="FseEnterConfirmNoteText" x:Uid="FseEnterConfirmSetting_Note" services:Localized.Uid="FseEnterConfirmSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"/>
+                            <!-- Windows 的「啟動時進入 Xbox 模式 (FSE)」關閉時才顯示的提示，文字尾端接開啟 Windows 設定的連結。
+                                 連結是包在 InlineUIContainer 裡的 HyperlinkButton，負的下緣 Margin 讓按鈕文字與前段文字對齊。
+                                 提示文字由 code-behind 填入。 -->
+                            <RichTextBlock x:Name="FseStartupNoteText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="False" Margin="0,4,0,0" Visibility="Collapsed">
+                                <Paragraph Margin="0">
+                                    <Run x:Name="FseStartupNoteRun"/><InlineUIContainer><HyperlinkButton x:Name="FseStartupOpenSettingsLink" x:Uid="FseStartup_OpenSettings" services:Localized.Uid="FseStartup_OpenSettings" Click="FseStartupOpenSettings_Click" FontSize="12" Padding="4,2" MinHeight="0" MinWidth="0" Margin="0,0,0,-6"/></InlineUIContainer>
+                                </Paragraph>
+                            </RichTextBlock>
                         </StackPanel>
 
                         <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 CursorSpeedCombo。 -->
@@ -540,7 +550,12 @@
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                             <TextBlock x:Uid="BackgroundMaterialSetting_Title" services:Localized.Uid="BackgroundMaterialSetting_Title" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
                             <TextBlock x:Uid="BackgroundMaterialSetting_Description" services:Localized.Uid="BackgroundMaterialSetting_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="14" TextWrapping="Wrap"/>
-                            <TextBlock x:Uid="BackgroundMaterialSetting_Note" services:Localized.Uid="BackgroundMaterialSetting_Note" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <!-- 只在選了玻璃材質，而系統透明效果關著時才顯示。寫法同 FseStartupNoteText。 -->
+                            <RichTextBlock x:Name="BackgroundMaterialNoteText" Foreground="{ThemeResource SystemFillColorCautionBrush}" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="False" Margin="0,4,0,0" Visibility="Collapsed">
+                                <Paragraph Margin="0">
+                                    <Run x:Name="BackgroundMaterialNoteRun"/><InlineUIContainer><HyperlinkButton x:Name="BackgroundMaterialOpenSettingsLink" x:Uid="BackgroundMaterialSetting_OpenSettings" services:Localized.Uid="BackgroundMaterialSetting_OpenSettings" Click="BackgroundMaterialOpenSettings_Click" FontSize="12" Padding="4,2" MinHeight="0" MinWidth="0" Margin="0,0,0,-6"/></InlineUIContainer>
+                                </Paragraph>
+                            </RichTextBlock>
                         </StackPanel>
 
                         <!-- 項目由 code-behind 動態填入（Content 走 .Loc 在地化），不用 XAML 宣告 x:Uid。同 CursorSpeedCombo。 -->

@@ -252,6 +252,12 @@
   <data name="FseEnterConfirmSetting_Note.Text" xml:space="preserve">
     <value>主机会先重启以优化性能。</value>
   </data>
+  <data name="FseStartup_Note" xml:space="preserve">
+    <value>仅在“启动时进入 XBOX 模式 (FSE)”开启时生效。</value>
+  </data>
+  <data name="FseStartup_OpenSettings.Content" xml:space="preserve">
+    <value>打开设置</value>
+  </data>
   <data name="FseEnterConfirmItem_Ask" xml:space="preserve">
     <value>每次询问</value>
   </data>
@@ -402,6 +408,9 @@
   </data>
   <data name="BackgroundMaterialSetting_Description.Text" xml:space="preserve">
     <value>选择背景的材质效果。</value>
+  </data>
+  <data name="BackgroundMaterialSetting_OpenSettings.Content" xml:space="preserve">
+    <value>打开设置</value>
   </data>
   <data name="BackgroundMaterialSetting_Note.Text" xml:space="preserve">
     <value>需要启用 Windows 透明效果。</value>
@@ -807,7 +816,7 @@
     <value>稍后</value>
   </data>
   <data name="DeveloperMode_Warning" xml:space="preserve">
-    <value>开发人员模式未启用，更新前请先开启。</value>
+    <value>“开发人员模式”未启用，更新前请先开启。</value>
   </data>
   <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
     <value>打开设置</value>

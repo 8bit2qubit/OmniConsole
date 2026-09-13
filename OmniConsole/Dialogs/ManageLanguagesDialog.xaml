@@ -62,11 +62,15 @@
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="12,8">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE783;" FontSize="14" VerticalAlignment="Center"
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE783;" FontSize="14" VerticalAlignment="Center"
                                   Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
-                        <TextBlock x:Name="OfflineBarText" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                    </StackPanel>
+                        <TextBlock x:Name="OfflineBarText" Grid.Column="1" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </Grid>
                 </Border>
 
                 <!-- 宣告順序「左欄語言清單在前」：ContentDialog 框架預設焦點落樹中第一個可聚焦元素，

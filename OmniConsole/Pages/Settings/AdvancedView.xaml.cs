@@ -100,6 +100,9 @@ namespace OmniConsole.Pages.Settings
             };
             _suppressBackgroundMaterialChange = false;
 
+            BackgroundMaterialNoteRun.Text = _resourceLoader.Loc("BackgroundMaterialSetting_Note") + " ";
+            UpdateBackgroundMaterialNote();
+
             ApplyMouseModeEnabledState();
 
             // 提權程式支援（Pro 專屬）：依授權與安裝狀態切顯示與按鈕文字
@@ -475,6 +478,7 @@ namespace OmniConsole.Pages.Settings
             FseEnterConfirmCombo.SelectedIndex = IndexOfEnterConfirmation(current);
             _suppressFseEnterConfirmChange = false;
 
+            FseStartupNoteRun.Text = _resourceLoader.Loc("FseStartup_Note") + " ";
             UpdateFseEnterConfirmNote(current);
 
             _suppressFseExitConfirmToggled = true;
@@ -490,11 +494,55 @@ namespace OmniConsole.Pages.Settings
             _ => 0,
         };
 
-        /// <summary>選了重新啟動才顯示補充說明。</summary>
-        private void UpdateFseEnterConfirmNote(FseEnterConfirmation value) =>
-            FseEnterConfirmNoteText.Visibility = value == FseEnterConfirmation.RestartForPerformance
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+        /// <summary>Windows 的啟動開關關閉時顯示警告並收起補充說明；開啟時選了重新啟動才顯示補充說明。</summary>
+        private void UpdateFseEnterConfirmNote(FseEnterConfirmation value)
+        {
+            bool startupEnabled = FseService.IsStartupToGamingHomeEnabled();
+            FseStartupNoteText.Visibility = startupEnabled ? Visibility.Collapsed : Visibility.Visible;
+            FseEnterConfirmNoteText.Visibility =
+                startupEnabled && value == FseEnterConfirmation.RestartForPerformance
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        /// <summary>回傳進入方式下拉選單目前選取的值，未選取時回傳每次詢問。</summary>
+        private FseEnterConfirmation CurrentEnterConfirmationSelection() =>
+            FseEnterConfirmCombo.SelectedItem is ComboBoxItem item && item.Tag is FseEnterConfirmation value
+                ? value
+                : FseEnterConfirmation.Ask;
+
+        /// <summary>
+        /// 重新檢查 Windows 的啟動開關與透明效果並更新對應提示（由殼層在視窗取回前景時呼叫）。
+        /// 只動提示的顯隱，不重填下拉選單。
+        /// </summary>
+        internal void RefreshSystemNotes()
+        {
+            if (FseDialogSection.Visibility == Visibility.Visible)
+                UpdateFseEnterConfirmNote(CurrentEnterConfirmationSelection());
+            UpdateBackgroundMaterialNote();
+        }
+
+        /// <summary>選了玻璃材質、而系統透明效果關著時才顯示提示。</summary>
+        private void UpdateBackgroundMaterialNote()
+        {
+            bool needsTransparency = BackgroundMaterialService.IsMaterialEnabled(SettingsService.GetBackgroundMaterial());
+            BackgroundMaterialNoteText.Visibility =
+                needsTransparency && !BackgroundMaterialService.IsTransparencyEnabled()
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        /// <summary>開啟 Windows 設定中的色彩頁面（透明效果開關所在處）。</summary>
+        private async void BackgroundMaterialOpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:personalization-colors"));
+        }
+
+        /// <summary>開啟 Windows 設定中的 Xbox 模式（全螢幕體驗）頁面。</summary>
+        private async void FseStartupOpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:gaming-fullscreen"));
+        }
 
         /// <summary>
         /// 進入方式變更時寫入系統設定；選重新啟動要先徵詢確認，取消則把選取撥回登錄檔目前的值。
@@ -1055,9 +1103,9 @@ namespace OmniConsole.Pages.Settings
         private void CheckDeveloperMode()
         {
             bool enabled = UpdateCheckService.IsDeveloperModeEnabled();
-            DeveloperModeWarningPanel.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
+            DeveloperModeWarningText.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
             if (!enabled)
-                DeveloperModeWarningText.Text = _resourceLoader.Loc("DeveloperMode_Warning");
+                DeveloperModeWarningRun.Text = _resourceLoader.Loc("DeveloperMode_Warning") + " ";
             DownloadInstallButton.IsEnabled = enabled;
         }
 

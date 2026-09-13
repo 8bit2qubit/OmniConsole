@@ -252,6 +252,12 @@
   <data name="FseEnterConfirmSetting_Note.Text" xml:space="preserve">
     <value>Restarts the console for optimized performance first.</value>
   </data>
+  <data name="FseStartup_Note" xml:space="preserve">
+    <value>Only available when “Enter XBOX mode (FSE) on startup” is turned on.</value>
+  </data>
+  <data name="FseStartup_OpenSettings.Content" xml:space="preserve">
+    <value>Open Settings</value>
+  </data>
   <data name="FseEnterConfirmItem_Ask" xml:space="preserve">
     <value>Ask every time</value>
   </data>
@@ -402,6 +408,9 @@ Alternatively, change the shortcut to a non-modifier key in Steam Settings &gt; 
   </data>
   <data name="BackgroundMaterialSetting_Description.Text" xml:space="preserve">
     <value>Choose the background material.</value>
+  </data>
+  <data name="BackgroundMaterialSetting_OpenSettings.Content" xml:space="preserve">
+    <value>Open Settings</value>
   </data>
   <data name="BackgroundMaterialSetting_Note.Text" xml:space="preserve">
     <value>Requires Windows transparency effects to be enabled.</value>
@@ -807,7 +816,7 @@ By clicking “I Understand and Accept”, you acknowledge these risks and agree
     <value>Later</value>
   </data>
   <data name="DeveloperMode_Warning" xml:space="preserve">
-    <value>Developer Mode is off. Enable it before updating.</value>
+    <value>“Developer Mode” is off. Turn it on before updating.</value>
   </data>
   <data name="DeveloperMode_OpenSettings.Content" xml:space="preserve">
     <value>Open Settings</value>

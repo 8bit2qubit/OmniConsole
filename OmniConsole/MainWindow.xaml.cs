@@ -176,6 +176,9 @@ namespace OmniConsole
             if (_launchView != null) _launchView.Hwnd = _hwnd;
             if (_settingsHostView != null) _settingsHostView.Hwnd = _hwnd;
 
+            // 重新檢查 Windows 的啟動開關與透明效果，更新進階分頁的提示。
+            _settingsHostView?.RefreshSystemNotes();
+
             // 系統的權限要求會讓視窗先失焦，關閉後再取得焦點，於是這個處理常式被重新叫進來一次。
             // 下面兩道閘門都是「檢查過就直接返回」，重入的那一次會穿過去把平台啟動起來，
             // 而第一次那條路的對話方塊還開著。閘門進行中就整個不處理，等第一次走完再啟動平台。

@@ -174,17 +174,17 @@
 		<ProjectCapability Include="Msix" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.8249" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.260610101">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
-		<PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.2.12" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.3.42" ExcludeAssets="all" />
 		<PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.4.4" ExcludeAssets="all" />
 		<PackageReference Include="Microsoft.WindowsAppSDK.Search" Version="2.4.4" ExcludeAssets="all" />
 		<PackageReference Include="Microsoft.WindowsAppSDK.Widgets" Version="2.0.5" ExcludeAssets="all" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" ExcludeAssets="all" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" ExcludeAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>

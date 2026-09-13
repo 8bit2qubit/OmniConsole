@@ -38,6 +38,7 @@ namespace OmniConsole
             UpdateCheckService.OnSelfTerminating = DisposeGamepadServices;
 
             DebugLogger.Log($"[DIAG] OnLaunched pid={Environment.ProcessId} tick={Environment.TickCount64} startWithSettings={_startWithSettings}");
+            UpdateCheckService.LogRestartProbeAtStartup();
 
             // 在建立任何 UI 前套用語言（官方語言需 UI 建立前設定、外掛語言須在控制項報到前載入好）。
             InitializeLocalization();

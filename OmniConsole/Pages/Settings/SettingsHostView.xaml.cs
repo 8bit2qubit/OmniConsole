@@ -413,6 +413,13 @@ namespace OmniConsole.Pages.Settings
         /// <summary>子分頁分類索引/同意狀態變更後重評底部手把提示列。</summary>
         private void SubView_HintsDirty(object? sender, EventArgs e) => UpdateGamepadHints();
 
+        /// <summary>
+        /// 視窗取回前景時，請進階分頁重新檢查相關的 Windows 設定（由 MainWindow 呼叫）。
+        /// 目前不在進階分頁時不做事。
+        /// </summary>
+        internal void RefreshSystemNotes() =>
+            (SettingsContentFrame.Content as AdvancedView)?.RefreshSystemNotes();
+
         /// <summary>進階分頁請求重新整理頂部更新 InfoBar。</summary>
         private void AdvancedView_UpdateInfoBarRefreshRequested(object? sender, EventArgs e) => ShowSettingsUpdateInfoBar();
 
